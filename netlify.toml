@@ -1,5 +1,18 @@
+[build]
+  publish = "."
+  # Site statique : aucune etape de build, les HTML sont deja prets.
+  command = ""
+
+[build.environment]
+  # index.html et admin.html contiennent l'URL Supabase et la cle "anon"
+  # (publiques par nature, protegees par RLS). Sans cette exclusion, le
+  # scanner de secrets de Netlify fait echouer le build git en detectant
+  # la valeur de SUPABASE_URL dans le HTML publie.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL"
+
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
 
 [functions."subscription-reminders"]
   schedule = "0 14 * * *"
