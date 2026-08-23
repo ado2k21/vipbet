@@ -6871,54 +6871,29 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     completePayment(state.payMethod);
   });
 
-  /* ===== Paiement par carte (Stripe) =====
-     REGLE : aucune ecriture en base n'a lieu ici. Tant que Stripe n'a
-     pas confirme un paiement REEL (webhook signe, verifie cote serveur
-     dans la fonction Netlify 'stripe-webhook'), aucun paiement ni
-     abonnement n'existe. Un simple aller-retour sur la page Stripe,
-     sans payer, ne laisse donc aucune trace dans l'espace admin —
-     c'est precisement le defaut corrige ici.
-     Le lien de paiement porte 'client_reference_id' : c'est le seul
-     moyen pour le webhook de savoir A QUI et POUR QUEL PLAN attribuer
-     le paiement au retour de Stripe. */
-  document.getElementById('wizStripeBtn').addEventListener('click',async function(){
+  /* ===== Paiement par carte (Stripe) — flux v134 restaure (choix explicite
+     de James, 23/08) =====
+     Comportement IDENTIQUE a MonCash/NatCash : le clic ouvre la page Stripe
+     dans un nouvel onglet ET enregistre immediatement un paiement 'pending'
+     via completePayment('stripe') (meme chemin que les methodes manuelles).
+     La confirmation reste 100% manuelle par l'admin — le webhook automatique
+     stripe-webhook.js N'EST PAS utilise dans ce flux et reste non deploye. */
+  document.getElementById('wizStripeBtn').addEventListener('click',()=>{
     payErr.style.display='none';
-    const btn=this;
     const planCible=state.pendingPlanId||state.planId;
     const lien=STRIPE_LINKS[planCible]||null;
+    /* L'ouverture de la page Stripe doit rester DANS le geste de clic :
+       un window.open place apres un 'await' est bloque par les
+       navigateurs mobiles. On ne l'ouvre que si le paiement est
+       reellement permis — sinon completePayment affiche le refus et
+       aucune page de paiement ne doit s'ouvrir pour rien. Si le
+       navigateur bloque quand meme l'onglet, l'etape 4 propose un lien
+       de secours (voir renderStep4). */
     const permis=renouvellementPermis(state,planCible);
-    if(!permis.ok){afficherRefusPaiement(permis.raison);return;}
-    if(!lien){afficherRefusPaiement('wiz_p_stripe_indispo');return;}
-    btn.disabled=true;
-    /* Identifiant Supabase obligatoire : sans lui, le paiement partirait
-       chez Stripe sans pouvoir jamais etre rattache a un compte. On
-       prefere bloquer et le dire clairement plutot que de laisser
-       quelqu'un payer pour un abonnement qui n'arriverait nulle part. */
-    let uid=state.supabaseUserId||null;
-    if(!uid){
-      try{
-        const sb=window.VB_getSupabase&&window.VB_getSupabase();
-        if(sb){
-          const {data:sd}=await sb.auth.getSession();
-          uid=(sd&&sd.session&&sd.session.user)?sd.session.user.id:null;
-          if(uid){state.supabaseUserId=uid;save();}
-        }
-      }catch(e){}
+    if(lien&&permis&&permis.ok){
+      try{window.open(lien,'_blank','noopener');}catch(e){}
     }
-    if(!uid){
-      btn.disabled=false;
-      afficherRefusPaiement('wiz_p_stripe_nosession');
-      return;
-    }
-    state.payMethod='stripe';save();
-    const url=lien+(lien.indexOf('?')>=0?'&':'?')
-      +'client_reference_id='+encodeURIComponent(uid+'__'+planCible)
-      +(state.email?'&prefilled_email='+encodeURIComponent(state.email):'');
-    if(window.VB_toast)window.VB_toast('wiz_p_stripe_go_h',t('wiz_p_stripe_go_p'));
-    /* Redirection dans le MEME onglet : plus fiable qu'un nouvel onglet,
-       systematiquement bloque par les navigateurs mobiles. La session et
-       l'etat local survivent a l'aller-retour (meme onglet, meme site). */
-    window.location.href=url;
+    completePayment('stripe');
   });
 
   /* ================= ETAPE 4 : acces ================= */

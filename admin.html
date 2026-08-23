@@ -6097,9 +6097,46 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       resume.hidden=false;
       const labels={1:t('wiz_s1'),3:t('wiz_s3')};
       resumeTxt.textContent=t('wiz_resume_at').replace('{step}',labels[need]||'');
+      /* CORRECTIF (restaure depuis index.html v135, absent d'admin.html,
+         23/08) : 'started' est un marqueur local qui, sans ceci, ne
+         retombait jamais si la personne abandonnait avant l'etape 3 — le
+         bandeau restait donc affiche indefiniment, y compris pour
+         quelqu'un dont l'inscription est en realite deja terminee (compte
+         cree depuis un autre appareil, ou paiement finalise ailleurs).
+         On verifie donc l'etat REEL en base : si un abonnement existe
+         deja pour cette adresse, l'inscription est terminee et le
+         bandeau n'a plus lieu d'etre. */
+      verifierInscriptionTerminee();
     }else{
       resume.hidden=true;
     }
+  }
+  /* Verification serveur, asynchrone et non bloquante : masque le bandeau
+     de reprise si l'inscription s'avere deja terminee cote base.
+     (Restaure depuis index.html v135, 23/08) */
+  let resumeVerifEnCours=false;
+  async function verifierInscriptionTerminee(){
+    if(resumeVerifEnCours)return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    const email=(state.email||'').trim().toLowerCase();
+    if(!sb||!email)return;
+    resumeVerifEnCours=true;
+    try{
+      const {data:profs}=await sb.from('profiles').select('id').eq('email',email).limit(1);
+      if(profs&&profs.length){
+        const {data:subs}=await sb.from('subscriptions')
+          .select('id').eq('user_id',profs[0].id)
+          .in('status',['active','pending']).limit(1);
+        if(subs&&subs.length){
+          // Inscription reellement terminee : on retire le marqueur local
+          // perime pour de bon, le bandeau ne reviendra plus.
+          state.started=false;
+          save();
+          resume.hidden=true;
+        }
+      }
+    }catch(e){ /* injoignable : on laisse le bandeau tel quel, jamais bloquant */ }
+    finally{ resumeVerifEnCours=false; }
   }
 
   /* ================= ETAPE 1 : creation du compte ================= */
@@ -7034,6 +7071,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
             if(window.VB_toast)window.VB_toast('auth_suspended_h',t('auth_suspended_p'));
             return;
           }
+          if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(data.user.id);
           if(role==='admin'){
             // Le 2FA est OBLIGATOIRE pour un compte admin : jamais
             // contourne, jamais facultatif. L'ouverture du tableau de
@@ -7399,8 +7437,34 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
     });
   }
+  /* Synchronise le simulateur ("Essayer la demo") : le nom de chaque
+     formule (ex. "VIP 7 JOU") reflete la VRAIE duree du plan. La cote
+     illustrative (data-cote) n'a pas de formule mathematique reliee au
+     prix/duree — elle reste telle quelle, c'est un exemple, pas un vrai
+     calcul. Le Lifetime n'apparait jamais ici : la formule "X JOU" n'a
+     pas de sens pour un acces a vie.
+     (Restaure depuis index.html v135, absente d'admin.html, 23/08) */
+  function syncerSimulateurFormules(){
+    (window.VB_allPlans?window.VB_allPlans():[]).forEach(pl=>{
+      if(!pl.days)return;   // exclut Lifetime automatiquement
+      const btn=document.querySelector('.sim2-formule[data-plan="'+pl.id+'"]');
+      if(!btn)return;
+      const nomEl=btn.querySelector('.f2-name');
+      const nouveauNom='VIP '+pl.days+' JOU';
+      if(nomEl)nomEl.textContent=nouveauNom;
+      btn.dataset.formule=nouveauNom;
+      // Si cette formule est actuellement affichee dans le resultat, on
+      // rafraichit aussi son libelle la-bas — sinon elle resterait perimee
+      // jusqu'au prochain clic.
+      const badge=document.getElementById('s2-formule');
+      if(badge&&btn.classList.contains('on'))badge.textContent=nouveauNom;
+    });
+  }
   // Lancement au chargement : discret, jamais bloquant.
   window.VB_syncPlansFromSupabase();
+  // Le simulateur doit refleter les vraies durees des le premier
+  // affichage, pas seulement apres un changement ulterieur.
+  syncerSimulateurFormules();
   // Reappliquer au changement de langue (le texte de duree, genere
   // dynamiquement, ne beneficie plus de la traduction automatique du DOM
   // une fois son attribut data-i18n retire).
@@ -7753,13 +7817,57 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      Les evenements poussees (changement de plan) sont conserves ;
      les evenements deductibles (fin de plan, rappel, fiches du jour,
      resultats) sont recalcules a chaque affichage. */
-  const NKEY='vipbetcote.notifs.v1';
+  /* ---- Chargement des VRAIES notifications (Supabase) ----
+     Restaure depuis index.html v135 (absent d'admin.html, 23/08) : sans
+     cette lecture, un evenement survenu cote admin sur un autre appareil
+     (paiement confirme/refuse, changement de plan force) n'apparaissait
+     jamais ici. */
+  let notifsReels=[];
+  async function chargerNotifsReelles(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    const st=getState();
+    if(!sb||!st||!st.supabaseUserId)return false;
+    try{
+      const {data:rows,error}=await sb.from('notifications')
+        .select('id,type,plan_id,reason,read,created_at')
+        .eq('user_id',st.supabaseUserId)
+        .order('created_at',{ascending:false}).limit(20);
+      if(error||!rows)return false;
+      const avant=JSON.stringify(notifsReels);
+      notifsReels=rows;
+      return JSON.stringify(notifsReels)!==avant;
+    }catch(e){return false;}
+  }
+  window.VB_chargerNotifsReelles=chargerNotifsReelles;
+
+  /* CORRECTIF (restaure depuis index.html v135, 23/08) : la cle de
+     stockage locale doit etre PROPRE A CHAQUE COMPTE. Avant ce
+     correctif, une seule cle globale etait partagee par tous les
+     comptes utilises sur le meme appareil — un nouvel inscrit voyait
+     donc l'historique de notifications de tous les comptes testes
+     precedemment sur ce meme telephone/navigateur. */
+  function nkeyPourCompte(){
+    const st=window.VB_getState?window.VB_getState():null;
+    const id=(st&&(st.supabaseUserId||st.email))||'anon';
+    return 'vipbetcote.notifs.v1.'+String(id).toLowerCase();
+  }
+  let NKEY=nkeyPourCompte();
   let pushed=[];
   try{pushed=JSON.parse(localStorage.getItem(NKEY))||[];}catch(e){pushed=[];}
   const savePushed=()=>{try{localStorage.setItem(NKEY,JSON.stringify(pushed.slice(0,20)));}catch(e){}};
   let lus={};
   try{lus=JSON.parse(localStorage.getItem(NKEY+'.lus'))||{};}catch(e){lus={};}
   const saveLus=()=>{try{localStorage.setItem(NKEY+'.lus',JSON.stringify(lus));}catch(e){}};
+  // Recharge pushed/lus depuis la cle du compte REELLEMENT connecte a cet
+  // instant — a appeler a chaque ouverture du Dashboard (les comptes
+  // peuvent changer sans recharger la page).
+  function rechargerNotifsLocales(){
+    const nouvelleCle=nkeyPourCompte();
+    if(nouvelleCle===NKEY)return;
+    NKEY=nouvelleCle;
+    try{pushed=JSON.parse(localStorage.getItem(NKEY))||[];}catch(e){pushed=[];}
+    try{lus=JSON.parse(localStorage.getItem(NKEY+'.lus'))||{};}catch(e){lus={};}
+  }
 
   function ilYA(ts){
     const min=Math.floor((Date.now()-ts)/60000);
@@ -7782,6 +7890,29 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     // 1. Evenements pousses (changement de plan, renouvellement)
     pushed.forEach(n=>out.push({id:n.id,type:n.type,texte:n.texte,ts:n.ts}));
+
+    // 1bis. Evenements REELS survenus cote serveur (paiement confirme ou
+    //       refuse par un admin, changement de plan force par un admin) —
+    //       visibles sur N'IMPORTE QUEL appareil, contrairement aux
+    //       evenements "pousses" ci-dessus. Voir chargerNotifsReelles().
+    //       (Restaure depuis index.html v135, 23/08)
+    notifsReels.forEach(n=>{
+      const plObj=(n.plan_id&&window.VB_planById)?window.VB_planById(n.plan_id):null;
+      const plNom=plObj?String(t(plObj.nameKey||'')).replace(/<[^>]*>/g,''):'—';
+      let texte='', type='sub';
+      if(n.type==='payment_confirmed'){
+        texte=t('notif_pay_confirmed').replace('{plan}',plNom); type='plan';
+      }else if(n.type==='payment_rejected'){
+        texte=t('notif_pay_rejected').replace('{plan}',plNom)
+          .replace('{raison}',n.reason||t('notif_pay_rejected_defaut')); type='sub';
+      }else if(n.type==='admin_plan_change'){
+        texte=t('notif_plan_change').replace('{plan}',plNom); type='plan';
+      }else if(n.type==='payment_pending'){
+        texte=t('notif_pay_pending').replace('{plan}',plNom); type='sub';
+      }else return;
+      out.push({id:'sb'+n.id, sbId:n.id, type:type, texte:texte,
+        ts:new Date(n.created_at).getTime(), sbRead:!!n.read});
+    });
 
     if(st.paid){
       const d=st.endDate?Math.ceil((new Date(st.endDate).getTime()-Date.now())/86400000):null;
@@ -7806,7 +7937,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
                      ts:Date.now()-won.day*86400000});
 
     out.sort((a,b)=>b.ts-a.ts);
-    return out.slice(0,12).map(n=>({...n,unread:!lus[n.id]}));
+    // Une notification issue du serveur (prefixe 'sb') se base sur son
+    // propre statut 'read' en base, jamais sur le seul marqueur local —
+    // sinon deux appareils du meme compte se desynchroniseraient l'un
+    // l'autre sur ce qui est deja lu ou non. (Restaure depuis v135, 23/08)
+    return out.slice(0,12).map(n=>({...n,unread:n.sbId!=null?!n.sbRead:!lus[n.id]}));
   }
   let notifs=[];
 
@@ -8307,6 +8442,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     dash.scrollTop=0;
     document.body.style.overflow='hidden';
     viewStack=[];
+    // Recharge pushed/lus depuis la cle du compte reellement connecte
+    // (le compte peut avoir change sans recharger la page). Restaure
+    // depuis index.html v135, 23/08.
+    rechargerNotifsLocales();
     renderAll();
     document.getElementById('dashMenuBtn').focus();
     // Rafraichissement silencieux : un admin a peut-etre valide/refuse
@@ -8317,6 +8456,35 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Meme principe pour les fiches : toujours essayer de charger le vrai
     // contenu publie par l'admin, sans jamais bloquer l'affichage.
     chargerFichesReelles().then(changed=>{ if(changed)renderAll(); });
+    // Meme principe pour les notifications reelles (paiement confirme ou
+    // refuse, changement de plan admin) : elles doivent apparaitre des
+    // l'ouverture, meme si l'action admin a eu lieu depuis un autre
+    // appareil. Restaure depuis index.html v135, 23/08.
+    chargerNotifsReelles().then(changed=>{ if(changed)renderNotifs(); });
+    demarrerResyncPeriodique();
+  }
+  /* Re-synchronisation automatique en arriere-plan, tant que le Dashboard
+     reste ouvert : sans ca, une confirmation admin ne serait visible
+     qu'apres avoir ferme puis rouvert le Dashboard (ou rafraichi la
+     page). Toutes les 45 secondes suffit largement — jamais agressif,
+     jamais bloquant, s'arrete des que le Dashboard se ferme.
+     (Restaure depuis index.html v135, absente d'admin.html, 23/08) */
+  let resyncTimer=null;
+  function demarrerResyncPeriodique(){
+    arreterResyncPeriodique();
+    resyncTimer=setInterval(()=>{
+      if(!dash.classList.contains('open')){arreterResyncPeriodique();return;}
+      if(window.VB_syncPayStatus){
+        window.VB_syncPayStatus().then(changed=>{ if(changed)chargerFichesReelles().then(f=>{if(f)renderAll();}); });
+      }
+      // Publication, modification, suppression ou changement de statut
+      // d'une fiche cote Admin : visible ici sans rien fermer ni recharger.
+      chargerFichesReelles().then(changed=>{ if(changed)renderAll(); });
+      chargerNotifsReelles().then(changed=>{ if(changed)renderNotifs(); });
+    },45000);
+  }
+  function arreterResyncPeriodique(){
+    if(resyncTimer){clearInterval(resyncTimer);resyncTimer=null;}
   }
   function closeDash(){
     dash.classList.remove('open');
@@ -8324,6 +8492,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('dashMenu').classList.remove('on');
     document.getElementById('dashMenuBtn').setAttribute('aria-expanded','false');
     document.body.style.overflow='';
+    arreterResyncPeriodique();
   }
   document.addEventListener('keydown',ev=>{
     if(ev.key==='Escape'&&dash.classList.contains('open')){
@@ -10350,6 +10519,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     delete m[email.toLowerCase()];
     try{localStorage.setItem(TRUST_KEY,JSON.stringify(m));}catch(e){}
   };
+  window.VB_mfaEstDigneDeConfiance=mfaEstDigneDeConfiance;
+  // "Verifie cet onglet" : sessionStorage (jamais localStorage) — survit
+  // un F5 dans le meme onglet, mais disparait a la fermeture de l'onglet
+  // ou dans un autre navigateur. Complementaire de la confiance 30 jours :
+  // meme sans avoir coche "se souvenir de moi", un simple rafraichissement
+  // pendant la meme visite ne doit jamais redemander le code.
+  // (Restaure depuis index.html v135 — absente d'admin.html, 23/08)
+  const TAB_KEY='vipbetcote.mfa_verified_tab';
+  function mfaVerifieCetOnglet(email){
+    try{return sessionStorage.getItem(TAB_KEY)===((email||'').toLowerCase());}catch(e){return false;}
+  }
+  function mfaMarquerOngletVerifie(email){
+    if(!email)return;
+    try{sessionStorage.setItem(TAB_KEY,email.toLowerCase());}catch(e){}
+  }
+  window.VB_mfaVerifiedThisTab=mfaVerifieCetOnglet;
 
   /* ---- Codes de secours : jamais stockes en clair — seul un hachage
      SHA-256 est ecrit en base. Le code en clair n'existe qu'un instant,
@@ -10605,6 +10790,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const {error:vErr}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:ch.id,code});
       if(vErr){enrollErr.textContent=t('mfa_err_code')+(vErr.message?(' — '+vErr.message):'');enrollErr.style.display='block';return;}
       if(seSouvenirCourant)mfaFaireConfiance(emailCourant);
+      mfaMarquerOngletVerifie(emailCourant);
       // Premiere activation : on genere les codes de secours et on les
       // montre UNE FOIS avant de continuer — c'est la seule occasion de
       // les voir en clair.
@@ -10629,6 +10815,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const {error}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:challengeIdCourant,code});
       if(error){challengeErr.textContent=t('mfa_err_code')+(error.message?(' — '+error.message):'');challengeErr.style.display='block';return;}
       if(seSouvenirCourant)mfaFaireConfiance(emailCourant);
+      mfaMarquerOngletVerifie(emailCourant);
       hideOverlay();
       if(onSuccessCourant)onSuccessCourant();
     }catch(e){
@@ -10655,6 +10842,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
       // Usage unique : jamais reutilisable, meme s'il n'est pas expire.
       await sb.from('admin_mfa_backup_codes').update({used:true}).eq('id',rows[0].id);
+      mfaMarquerOngletVerifie(emailCourant);
       hideOverlay();
       if(onSuccessCourant)onSuccessCourant();
     }catch(e){
@@ -10831,6 +11019,137 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // Aucune entree correspondante : comportement par defaut du navigateur
   // (sommet de la page, c'est-a-dire le hero) — rien a faire de plus.
 })();
+
+/* ================================================================
+   BLOC RESTAURE depuis index.html v135 (absent d'admin.html, 23/08) :
+   surveillance en direct de la suspension + restauration de session
+   au chargement. Sans ce bloc, un onglet admin.html deja ouvert au
+   moment ou un compte est suspendu restait actif jusqu'au prochain F5,
+   et un rafraichissement de page ne rouvrait jamais automatiquement le
+   Dashboard admin/utilisateur pour une session Supabase deja valide. */
+
+/* ---------- Surveillance en direct de la suspension ----------
+   Sans ca, un onglet deja ouvert au moment ou l'admin suspend le compte
+   resterait actif jusqu'au prochain F5 — c'est le bug corrige ici. Deux
+   mecanismes complementaires :
+     - Realtime Supabase : ecoute en direct les changements sur SA
+        PROPRE ligne profiles (protege par la RLS existante — personne
+        ne peut ecouter la ligne d'un autre). Des que suspended_at
+        change, deconnexion immediate, sans attendre quoi que ce soit.
+     - Sondage de secours toutes les 60s : si jamais la connexion
+        Realtime tombe (reseau instable, veille mobile...), le compte
+        est quand meme repere suspendu au plus tard 1 minute apres,
+        jamais indefiniment. */
+let vbSuspensionChannel=null, vbSuspensionPoll=null;
+let vbEstSuspendu=false, vbMotifSuspension='';
+window.VB_estSuspendu=()=>vbEstSuspendu;
+window.VB_suspensionMotif=()=>vbMotifSuspension;
+function vbArreterSurveillanceSuspension(){
+  if(vbSuspensionChannel){
+    try{const sb=window.VB_getSupabase&&window.VB_getSupabase();if(sb)sb.removeChannel(vbSuspensionChannel);}catch(e){}
+    vbSuspensionChannel=null;
+  }
+  if(vbSuspensionPoll){clearInterval(vbSuspensionPoll);vbSuspensionPoll=null;}
+}
+async function vbDeconnexionPourSuspension(reason){
+  // Verrou IMMEDIAT, synchrone, avant tout appel reseau : le dashboard
+  // (s'il est ouvert) doit refleter la suspension a l'instant, sans
+  // attendre la fin de la deconnexion Supabase ni un refresh. C'est ce
+  // qui masque les cotes deja chargees en memoire et fait apparaitre la
+  // banniere avec le motif reel dans "Mon Abonnement" avant meme que la
+  // navigation vers l'accueil ne se produise.
+  vbEstSuspendu=true;
+  vbMotifSuspension=reason||'';
+  if(window.VB_renderAll)try{window.VB_renderAll();}catch(e){}
+  vbArreterSurveillanceSuspension();
+  const sb=window.VB_getSupabase&&window.VB_getSupabase();
+  try{if(sb)await sb.auth.signOut();}catch(e){}
+  if(window.VB_toast)window.VB_toast('auth_suspended_h', reason?t('auth_suspended_reason_p').replace('{reason}',reason):t('auth_suspended_p'));
+  try{window.location.href='/';}catch(e){}
+}
+function vbDemarrerSurveillanceSuspension(userId){
+  vbArreterSurveillanceSuspension();
+  const sb=window.VB_getSupabase&&window.VB_getSupabase();
+  if(!sb||!userId)return;
+  try{
+    vbSuspensionChannel=sb.channel('profile-suspension-'+userId)
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'profiles',filter:'id=eq.'+userId},payload=>{
+        const nv=payload&&payload.new;
+        if(nv&&nv.suspended_at)vbDeconnexionPourSuspension(nv.suspended_reason);
+      })
+      .subscribe();
+  }catch(e){}
+  vbSuspensionPoll=setInterval(async()=>{
+    try{
+      const {data:prof}=await sb.from('profiles').select('suspended_at,suspended_reason').eq('id',userId).single();
+      if(prof&&prof.suspended_at)vbDeconnexionPourSuspension(prof.suspended_reason);
+    }catch(e){}
+  },60000);
+}
+window.VB_demarrerSurveillanceSuspension=vbDemarrerSurveillanceSuspension;
+
+let dejaRestaure=false;
+async function tenterRestaurationSession(){
+  if(dejaRestaure)return;   // jamais deux fois : la 2e tentative ne fait rien si la 1re a reussi
+  const sb=window.VB_getSupabase&&window.VB_getSupabase();
+  if(!sb)return;
+  try{
+    const {data:sessionData}=await sb.auth.getSession();
+    const session=sessionData&&sessionData.session;
+    if(!session||!session.user)return;   // pas de session valide : page d'accueil normale
+    dejaRestaure=true;
+    const emailSession=(session.user.email||'').trim().toLowerCase();
+
+    let profil=null;
+    try{
+      const {data:prof}=await sb.from('profiles')
+        .select('role,suspended_at,suspended_reason').eq('id',session.user.id).single();
+      profil=prof;
+    }catch(e){}
+    if(profil&&profil.suspended_at){
+      // Compte suspendu : aucune session active n'est jamais gardee,
+      // meme retrouvee au chargement.
+      try{await sb.auth.signOut();}catch(e){}
+      if(window.VB_toast)window.VB_toast('auth_suspended_h', profil.suspended_reason?t('auth_suspended_reason_p').replace('{reason}',profil.suspended_reason):t('auth_suspended_p'));
+      return;
+    }
+    if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(session.user.id);
+
+    if(profil&&profil.role==='admin'){
+      // Un simple F5 pendant la meme visite ne redemande jamais le 2FA
+      // (marque "verifie cet onglet"), ni si l'appareil est retenu
+      // ("se souvenir de moi", 30 jours) — sinon le code est redemande,
+      // jamais un contournement silencieux.
+      const dejaOk=(window.VB_mfaVerifiedThisTab&&window.VB_mfaVerifiedThisTab(emailSession))
+                 ||(window.VB_mfaEstDigneDeConfiance&&window.VB_mfaEstDigneDeConfiance(emailSession));
+      if(dejaOk){
+        if(window.VB_openAdminDash)window.VB_openAdminDash(session.user);
+      }else if(window.VB_handleAdminMFA){
+        window.VB_handleAdminMFA(()=>{
+          if(window.VB_openAdminDash)window.VB_openAdminDash(session.user);
+        },session.user.email,session.user.id,false);
+      }
+      return;
+    }
+
+    // Utilisateur normal : on ne restaure QUE si l'etat local correspond
+    // bien a CETTE session precise (meme email) — jamais les donnees
+    // d'un autre compte qui seraient restees en cache localement, et
+    // jamais sans un parcours reellement termine (voir VB_dashboardReady).
+    if(window.VB_dashboardReady&&window.VB_dashboardReady()){
+      const st=window.VB_getState&&window.VB_getState();
+      const emailLocal=(st&&st.email||'').trim().toLowerCase();
+      if(emailLocal&&emailLocal===emailSession&&window.VB_openDash){
+        window.VB_openDash();
+      }
+    }else if(window.VB_reprendreApresAdmin){
+      window.VB_reprendreApresAdmin(session.user);
+    }
+  }catch(e){ /* toute erreur degrade simplement vers la page d'accueil normale */ }
+}
+tenterRestaurationSession();
+window.addEventListener('load',tenterRestaurationSession);
+window.VB_tenterRestaurationSession=tenterRestaurationSession;
 
 </script>
 </body>
