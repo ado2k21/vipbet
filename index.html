@@ -4504,6 +4504,7 @@ dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS",
 dash_conf:"Score de confiance", dash_totalodd:"Cote totale",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
+dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
 dash_empty_hist:"Aucune fiche ne correspond à ces filtres.",
 dash_k_avail:"Fiches disponibles", dash_k_legs:"Sélections du jour", dash_k_bestodd:"Meilleure cote", dash_k_locked:"Fiches verrouillées",
 dash_k_played:"Fiches jouées", dash_k_won:"Gagnées", dash_k_lost:"Perdues", dash_k_rate:"Taux de réussite",
@@ -4888,6 +4889,7 @@ dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING",
 dash_conf:"Confidence score", dash_totalodd:"Total odds",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
+dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
 dash_empty_hist:"No slip matches these filters.",
 dash_k_avail:"Slips available", dash_k_legs:"Selections today", dash_k_bestodd:"Best odds", dash_k_locked:"Locked slips",
 dash_k_played:"Slips played", dash_k_won:"Won", dash_k_lost:"Lost", dash_k_rate:"Success rate",
@@ -5272,6 +5274,7 @@ dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN",
 dash_conf:"Nòt konfyans", dash_totalodd:"Cote total",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
+dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
 dash_empty_hist:"Pa gen fich ki matche ak filtè sa yo.",
 dash_k_avail:"Fich disponib", dash_k_legs:"Seleksyon jodi a", dash_k_bestodd:"Pi bon cote", dash_k_locked:"Fich fèmen",
 dash_k_played:"Fich jwe", dash_k_won:"Genyen", dash_k_lost:"Pèdi", dash_k_rate:"To reyisit",
@@ -8058,171 +8061,218 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const rank={p1:1,p2:2,p3:3,p4:4};
 
   /* ============================================================
-     SOURCE DE DONNEES — remplacable par un appel API en Phase 4.
-     Toute la vue ne lit que DATA.tickets ; aucun ticket n'est
-     ecrit en dur dans le HTML.
+     SOURCE DE DONNEES — la base Supabase, et elle seule.
+     Toute la vue ne lit que DATA.tickets, rempli uniquement par
+     chargerFichesReelles() a partir des fiches PUBLIEES en base.
+     Aucune fiche, aucune cote, aucun horaire n'est ecrit en dur ici :
+     si la base ne repond pas, le Dashboard le dit — il n'invente rien.
      ============================================================ */
   const DATA={
-    tickets:[
-      {id:'F-2411',day:0,sport:'foot',minPlan:1,status:'pending',conf:84,legs:[
-        {time:'15:29',league:'Premier League',match:'Chelsea FC — Liverpool FC',market:'mk_btts_l',pick:'pick_oui',odd:1.50},
-        {time:'15:22',league:'Premier League',match:'Brighton — Newcastle',market:'mk_btts_l',pick:'pick_oui',odd:1.47},
-        {time:'15:40',league:'Premier League',match:'West Ham — Tottenham',market:'mk_over_l',pick:'pick_over25',odd:1.56}
-      ]},
-      {id:'F-2401',day:1,sport:'foot',minPlan:1,status:'won',conf:81,legs:[
-        {time:'15:00',league:'Premier League',match:'Arsenal — Everton',market:'mk_1x2_l',pick:'pick_1',odd:1.35},
-        {time:'17:30',league:'Serie A',match:'Inter — Udinese',market:'mk_over_l',pick:'pick_over25',odd:1.58},
-        {time:'19:45',league:'La Liga',match:'Real Sociedad — Getafe',market:'mk_btts_l',pick:'pick_oui',odd:1.72}
-      ]},
-      {id:'F-2396',day:2,sport:'foot',minPlan:1,status:'lost',conf:69,legs:[
-        {time:'14:00',league:'Bundesliga',match:'Stuttgart — Wolfsburg',market:'mk_over_l',pick:'pick_over25',odd:1.55},
-        {time:'16:30',league:'Ligue 1',match:'Marseille — Rennes',market:'mk_btts_l',pick:'pick_oui',odd:1.60}
-      ]},
-      {id:'F-2384',day:4,sport:'foot',minPlan:1,status:'won',conf:83,legs:[
-        {time:'15:00',league:'Ligue 1',match:'PSG — Strasbourg',market:'mk_1x2_l',pick:'pick_1',odd:1.22},
-        {time:'17:00',league:'Premier League',match:'Aston Villa — Brentford',market:'mk_btts_l',pick:'pick_oui',odd:1.54},
-        {time:'20:00',league:'Bundesliga',match:'Dortmund — Freiburg',market:'mk_over_l',pick:'pick_over25',odd:1.49}
-      ]},
-      {id:'F-2412',day:0,sport:'foot',minPlan:2,status:'pending',conf:76,legs:[
-        {time:'14:00',league:'La Liga',match:'Real Betis — Villarreal',market:'mk_dc_l',pick:'pick_1x',odd:1.38},
-        {time:'16:15',league:'Serie A',match:'Atalanta — Torino',market:'mk_over_l',pick:'pick_over25',odd:1.62},
-        {time:'18:30',league:'Bundesliga',match:'Leverkusen — Mainz',market:'mk_1x2_l',pick:'pick_1',odd:1.44},
-        {time:'20:00',league:'Ligue 1',match:'Lyon — Nice',market:'mk_btts_l',pick:'pick_oui',odd:1.71},
-        {time:'20:45',league:'Serie A',match:'Napoli — Lecce',market:'mk_over_l',pick:'pick_over25',odd:1.66},
-        {time:'21:00',league:'La Liga',match:'Sevilla — Alavés',market:'mk_dc_l',pick:'pick_1x',odd:1.52},
-        {time:'19:00',league:'La Liga',match:'Girona — Alavés',market:'mk_over_l',pick:'pick_over25',odd:1.62}
-      ]},
-      {id:'N-1188',day:0,sport:'nba',minPlan:2,status:'pending',conf:71,legs:[
-        {time:'19:30',league:'NBA',match:'Boston Celtics — Miami Heat',market:'mk_total_l',pick:'pick_over2255',odd:1.85},
-        {time:'21:00',league:'NBA',match:'Denver Nuggets — Phoenix Suns',market:'mk_hand_l',pick:'pick_h45',odd:1.78},
-        {time:'21:30',league:'NBA',match:'Milwaukee — Chicago Bulls',market:'mk_total_l',pick:'pick_over2255',odd:1.80},
-        {time:'22:00',league:'NBA',match:'LA Lakers — Sacramento',market:'mk_1x2_l',pick:'pick_1',odd:1.65},
-        {time:'23:00',league:'NBA',match:'Golden State — Portland',market:'mk_total_l',pick:'pick_over2255',odd:1.83}
-      ]},
-      {id:'N-1181',day:1,sport:'nba',minPlan:2,status:'won',conf:74,legs:[
-        {time:'20:00',league:'NBA',match:'Milwaukee Bucks — Chicago Bulls',market:'mk_total_l',pick:'pick_over2255',odd:1.80},
-        {time:'22:30',league:'NBA',match:'LA Lakers — Sacramento Kings',market:'mk_1x2_l',pick:'pick_1',odd:1.65},
-        {time:'19:00',league:'NBA',match:'Oklahoma City — Houston',market:'mk_hand_l',pick:'pick_h45',odd:1.88},
-        {time:'21:30',league:'NBA',match:'New York Knicks — Orlando',market:'mk_total_l',pick:'pick_over2255',odd:1.76},
-        {time:'23:00',league:'NBA',match:'Cleveland — Detroit',market:'mk_1x2_l',pick:'pick_1',odd:1.72}
-      ]},
-      {id:'F-2390',day:3,sport:'foot',minPlan:2,status:'won',conf:78,legs:[
-        {time:'13:30',league:'Premier League',match:'Manchester City — Fulham',market:'mk_1x2_l',pick:'pick_1',odd:1.28},
-        {time:'16:00',league:'Serie A',match:'Napoli — Lecce',market:'mk_over_l',pick:'pick_over25',odd:1.66},
-        {time:'18:45',league:'La Liga',match:'Athletic Club — Osasuna',market:'mk_dc_l',pick:'pick_1x',odd:1.31},
-        {time:'20:00',league:'Ligue 1',match:'Monaco — Le Havre',market:'mk_1x2_l',pick:'pick_1',odd:1.42},
-        {time:'20:45',league:'Bundesliga',match:'Dortmund — Bochum',market:'mk_over_l',pick:'pick_over25',odd:1.55},
-        {time:'21:00',league:'Premier League',match:'Arsenal — Ipswich',market:'mk_1x2_l',pick:'pick_1',odd:1.30},
-        {time:'21:15',league:'Serie A',match:'Inter — Venezia',market:'mk_over_l',pick:'pick_over25',odd:1.60},
-        {time:'19:00',league:'La Liga',match:'Girona — Alavés',market:'mk_over_l',pick:'pick_over25',odd:1.62}
-      ]},
-      {id:'F-2377',day:5,sport:'foot',minPlan:2,status:'lost',conf:66,legs:[
-        {time:'16:00',league:'Serie A',match:'Roma — Bologna',market:'mk_1x2_l',pick:'pick_1',odd:1.70},
-        {time:'18:30',league:'La Liga',match:'Sevilla — Valencia',market:'mk_btts_l',pick:'pick_oui',odd:1.63},
-        {time:'20:00',league:'Ligue 1',match:'Lille — Reims',market:'mk_1x2_l',pick:'pick_1',odd:1.58},
-        {time:'20:45',league:'Bundesliga',match:'Stuttgart — Heidenheim',market:'mk_over_l',pick:'pick_over25',odd:1.60},
-        {time:'21:00',league:'Premier League',match:'Newcastle — Wolves',market:'mk_1x2_l',pick:'pick_1',odd:1.55},
-        {time:'19:00',league:'La Liga',match:'Girona — Alavés',market:'mk_over_l',pick:'pick_over25',odd:1.62}
-      ]},
-      {id:'N-1166',day:6,sport:'nba',minPlan:2,status:'won',conf:75,legs:[
-        {time:'20:30',league:'NBA',match:'Cleveland Cavaliers — Detroit Pistons',market:'mk_1x2_l',pick:'pick_1',odd:1.42},
-        {time:'23:00',league:'NBA',match:'Golden State — Portland',market:'mk_total_l',pick:'pick_over2255',odd:1.83},
-        {time:'21:00',league:'NBA',match:'Boston — Washington',market:'mk_1x2_l',pick:'pick_1',odd:1.35},
-        {time:'22:00',league:'NBA',match:'Denver — Utah Jazz',market:'mk_hand_l',pick:'pick_h45',odd:1.90},
-        {time:'23:30',league:'NBA',match:'Phoenix — San Antonio',market:'mk_total_l',pick:'pick_over2255',odd:1.79},
-        {time:'00:00',league:'NBA',match:'LA Clippers — Memphis',market:'mk_1x2_l',pick:'pick_1',odd:1.52}
-      ]},
-      {id:'F-2414',day:0,sport:'foot',minPlan:3,status:'pending',conf:68,legs:[
-        {time:'15:29',league:'Premier League',match:'Chelsea FC — Liverpool FC',market:'mk_btts_l',pick:'pick_oui',odd:1.50},
-        {time:'15:22',league:'Premier League',match:'Brighton — Newcastle',market:'mk_btts_l',pick:'pick_oui',odd:1.47},
-        {time:'15:40',league:'Premier League',match:'West Ham — Tottenham',market:'mk_over_l',pick:'pick_over25',odd:1.56},
-        {time:'16:15',league:'Serie A',match:'Atalanta — Torino',market:'mk_over_l',pick:'pick_over25',odd:1.62},
-        {time:'18:30',league:'Bundesliga',match:'Leverkusen — Mainz',market:'mk_1x2_l',pick:'pick_1',odd:1.44},
-        {time:'20:00',league:'Ligue 1',match:'Lyon — Nice',market:'mk_btts_l',pick:'pick_oui',odd:1.71},
-        {time:'20:45',league:'La Liga',match:'Real Madrid — Getafe',market:'mk_over_l',pick:'pick_over25',odd:1.58},
-        {time:'21:00',league:'Serie A',match:'Juventus — Empoli',market:'mk_1x2_l',pick:'pick_1',odd:1.55},
-        {time:'21:15',league:'Premier League',match:'Arsenal — Everton',market:'mk_1x2_l',pick:'pick_1',odd:1.38},
-        {time:'21:30',league:'La Liga',match:'Barcelona — Las Palmas',market:'mk_over_l',pick:'pick_over25',odd:1.45},
-        {time:'19:00',league:'La Liga',match:'Girona — Alavés',market:'mk_over_l',pick:'pick_over25',odd:1.62}
-      ]},
-      {id:'N-1174',day:3,sport:'nba',minPlan:3,status:'won',conf:70,legs:[
-        {time:'19:00',league:'NBA',match:'Oklahoma City — Houston Rockets',market:'mk_hand_l',pick:'pick_h45',odd:1.88},
-        {time:'21:30',league:'NBA',match:'New York Knicks — Orlando Magic',market:'mk_total_l',pick:'pick_over2255',odd:1.76},
-        {time:'20:00',league:'NBA',match:'Boston — Toronto',market:'mk_total_l',pick:'pick_over2255',odd:1.82},
-        {time:'22:00',league:'NBA',match:'Denver — Utah',market:'mk_hand_l',pick:'pick_h45',odd:1.85},
-        {time:'22:30',league:'NBA',match:'LA Lakers — Charlotte',market:'mk_1x2_l',pick:'pick_1',odd:1.40},
-        {time:'23:00',league:'NBA',match:'Golden State — Brooklyn',market:'mk_total_l',pick:'pick_over2255',odd:1.80},
-        {time:'23:30',league:'NBA',match:'Phoenix — Washington',market:'mk_1x2_l',pick:'pick_1',odd:1.44},
-        {time:'00:00',league:'NBA',match:'Miami — Chicago',market:'mk_total_l',pick:'pick_over2255',odd:1.78},
-        {time:'01:00',league:'NBA',match:'Sacramento — Indiana',market:'mk_total_l',pick:'pick_over2255',odd:1.84}
-      ]}
-    ],
-    exactScores:[
-      {time:'15:29',league:'Premier League',match:'Chelsea FC — Liverpool FC',score:'2 — 1',odd:8.50},
-      {time:'20:00',league:'Ligue 1',match:'Lyon — Nice',score:'2 — 0',odd:7.25},
-      {time:'16:15',league:'Serie A',match:'Atalanta — Torino',score:'2 — 1',odd:8.00},
-      {time:'18:30',league:'Bundesliga',match:'Leverkusen — Mainz',score:'3 — 1',odd:11.00},
-      {time:'20:45',league:'La Liga',match:'Real Madrid — Getafe',score:'2 — 0',odd:6.80},
-      {time:'15:40',league:'Premier League',match:'West Ham — Tottenham',score:'1 — 2',odd:9.40},
-      {time:'21:00',league:'Serie A',match:'Juventus — Empoli',score:'1 — 0',odd:6.20},
-      {time:'14:00',league:'La Liga',match:'Real Betis — Villarreal',score:'1 — 1',odd:6.50},
-      {time:'21:15',league:'Premier League',match:'Arsenal — Everton',score:'3 — 0',odd:10.50},
-      {time:'19:45',league:'Ligue 1',match:'Monaco — Le Havre',score:'2 — 1',odd:7.80}
-    ],
+    tickets:[],
     notifications:[]   // alimente dynamiquement, voir construireNotifs()
   };
+  /* Etat du dernier chargement : 'attente' | 'ok' | 'erreur'. Permet de
+     distinguer "aucune fiche publiee" (normal) de "la base n'a pas
+     repondu" (anormal) — deux messages differents, jamais un ecran vide
+     sans explication. */
+  let etatFiches='attente';
 
-  const totalOdd=tk=>tk.legs.reduce((a,l)=>a*l.odd,1);
-  const dayDate=d=>{const x=new Date();x.setDate(x.getDate()-d);return x;};
-  const fmtDate=d=>d.toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short'});
-  const fmtLong=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  /* ============================================================
+     FUSEAU HORAIRE OFFICIEL DU SITE : HAITI (America/Port-au-Prince)
+     ------------------------------------------------------------
+     Toutes les heures et toutes les dates du Dashboard sont celles
+     d'Haiti, JAMAIS celles de l'appareil : une personne qui ouvre le
+     site depuis Montreal, Paris ou Miami doit lire exactement les
+     memes horaires qu'a Port-au-Prince.
+     L'instant reel du coup d'envoi est stocke en base
+     (ticket_legs.kickoff_at) : on ne fait que le reexprimer ici.
+     ============================================================ */
+  const TZ_HAITI='America/Port-au-Prince';
+  /* Repli si le navigateur ne connait pas les fuseaux IANA (tres ancien) :
+     Haiti applique l'heure d'ete du 2e dimanche de mars au 1er dimanche
+     de novembre (UTC-4), et UTC-5 le reste de l'annee. */
+  function decalageHaitiSecours(d){
+    const a=d.getUTCFullYear();
+    const dim=(an,mois,n)=>{const x=new Date(Date.UTC(an,mois,1));
+      const dec=(7-x.getUTCDay())%7;return new Date(Date.UTC(an,mois,1+dec+(n-1)*7,7,0,0));};
+    return (d>=dim(a,2,2)&&d<dim(a,10,1))?-4:-5;
+  }
+  /* Date ('AAAA-MM-JJ') et heure ('HH:MM') haitiennes d'un instant donne. */
+  function partsHaiti(d){
+    try{
+      const f=new Intl.DateTimeFormat('en-CA',{timeZone:TZ_HAITI,year:'numeric',month:'2-digit',
+        day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+      const o={};f.formatToParts(d).forEach(p=>{o[p.type]=p.value;});
+      if(!o.year)throw new Error('tz');
+      return {iso:o.year+'-'+o.month+'-'+o.day,heure:(o.hour==='24'?'00':o.hour)+':'+o.minute};
+    }catch(e){
+      const x=new Date(d.getTime()+decalageHaitiSecours(d)*3600000);
+      const p2=n=>String(n).padStart(2,'0');
+      return {iso:x.getUTCFullYear()+'-'+p2(x.getUTCMonth()+1)+'-'+p2(x.getUTCDate()),
+              heure:p2(x.getUTCHours())+':'+p2(x.getUTCMinutes())};
+    }
+  }
+  const aujourdHuiHaiti=()=>partsHaiti(new Date()).iso;
+  const minuitHaitiMs=iso=>Date.parse(iso+'T00:00:00Z');
+  /* Nombre de jours (haitiens) entre une date de jeu et aujourd'hui. */
+  function ecartJoursHaiti(isoJour){
+    const a=minuitHaitiMs(isoJour),b=minuitHaitiMs(aujourdHuiHaiti());
+    if(isNaN(a)||isNaN(b))return 0;
+    return Math.round((b-a)/86400000);
+  }
+  /* La base renvoie l'instant au format ISO ('...T20:30:00+00:00'). On
+     tolere aussi les variantes ('... 20:30:00+00') pour ne jamais perdre
+     une heure a cause d'un simple ecart de format. */
+  function instantDeLeg(v){
+    if(!v)return null;
+    let d=new Date(v);
+    if(!isNaN(d.getTime()))return d;
+    d=new Date(String(v).replace(' ','T').replace(/([+-]\d{2})$/,'$1:00'));
+    return isNaN(d.getTime())?null:d;
+  }
+  /* Heure d'un match, toujours a l'heure d'Haiti. 'jour' reste vide quand
+     le match tombe bien le jour de la fiche, et porte la date (JJ/MM)
+     quand l'heure haitienne tombe la veille ou le lendemain — sans ca,
+     un match du samedi soir range dans la fiche du dimanche (heure UTC)
+     serait illisible. */
+  function heureAffichee(l,playDate){
+    let d=instantDeLeg(l.kickoff_at);
+    if((!d||isNaN(d.getTime()))&&l.match_time&&/^\d{1,2}:\d{2}$/.test(l.match_time)){
+      d=new Date(playDate+'T'+(l.match_time.length===4?'0':'')+l.match_time+':00Z');
+    }
+    if(!d||isNaN(d.getTime()))return {heure:l.match_time||'\u2014',jour:''};
+    const p=partsHaiti(d);
+    return {heure:p.heure,jour:(p.iso===playDate?'':p.iso.slice(8,10)+'/'+p.iso.slice(5,7))};
+  }
 
-  /* ---- Chargement des VRAIES fiches (Supabase) ----
-     Remplace DATA.tickets par le contenu reel publie par l'admin, en
-     conservant EXACTEMENT la meme forme que les donnees de demo (voir
-     le commentaire au-dessus de DATA) — aucune autre fonction n'a besoin
-     d'etre modifiee, elles lisent toutes DATA.tickets sans savoir d'ou
-     il vient. Si Supabase est injoignable ou qu'aucune fiche publiee
-     n'existe encore, les donnees de demo integrees au fichier restent
-     affichees telles quelles — jamais un dashboard vide sans explication. */
+  /* Cote totale : le produit des selections quand elles sont lisibles,
+     sinon l'agregat calcule par la base (fiche verrouillee par le plan,
+     dont les selections ne descendent jamais jusqu'ici). */
+  const totalOdd=tk=>(tk.legs&&tk.legs.length)?tk.legs.reduce((a,l)=>a*l.odd,1):(tk.totalOdd||0);
+  /* 'day' = nombre de jours haitiens ecoules depuis la date de jeu.
+     Negatif pour une fiche publiee a l'avance. */
+  const dayDate=d=>new Date(minuitHaitiMs(aujourdHuiHaiti())-d*86400000);
+  /* Une fiche reste dans la vue "du jour" tant qu'elle n'est pas reglee,
+     et des que sa date de jeu est atteinte ou a venir.
+     POURQUOI : le bot publie ses fiches sur la journee UTC, qui commence
+     le soir en Haiti. Avec une simple egalite de date, une fiche publiee
+     pour la journee UTC suivante restait invisible plusieurs heures, et
+     une fiche de la veille encore en cours disparaissait des deux vues.
+     Combinee a la vue Historique (qui prend tout ce qui est regle), cette
+     regle garantit qu'aucune fiche publiee n'est jamais introuvable. */
+  const estDuJour=k=>k.status==='pending'||k.day<=0;
+  const fmtDate=d=>d.toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',timeZone:'UTC'});
+  const fmtLong=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'long',year:'numeric',timeZone:TZ_HAITI}):'—';
+
+  /* ---- Chargement des fiches : la base est la SEULE source ----
+     On lit les fiches publiees (90 derniers jours) et leurs selections.
+     C'est la base qui filtre elle-meme, par RLS, les selections que le
+     plan actif ne couvre pas : une cote reservee ne descend JAMAIS
+     jusqu'au navigateur d'une personne qui n'y a pas droit — meme en
+     inspectant le reseau ou le code de la page.
+     Pour ces fiches verrouillees, la base fournit quand meme les
+     agregats publics (nombre de selections, cote totale) : la carte
+     verrouillee reste donc fidele au design, sans exposer un seul
+     pronostic.
+     Retourne true des que l'affichage doit etre refait. */
+  function signatureFiches(){
+    return etatFiches+'|'+DATA.tickets.map(k=>[k.uid,k.status,k.legs.length,k.legsCount,
+      k.totalOdd,k.conf,k.minPlan,k.playDate,k.scoreCount].join(':')).join(',');
+  }
   async function chargerFichesReelles(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    const avant=signatureFiches();
+    if(!sb){DATA.tickets=[];etatFiches='erreur';return signatureFiches()!==avant;}
+    try{
+      const limiteISO=new Date(minuitHaitiMs(aujourdHuiHaiti())-90*86400000).toISOString().slice(0,10);
+      const {data:fiches,error}=await sb.from('tickets')
+        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,legs_count,total_odd,score_legs_count')
+        .eq('published',true).gte('play_date',limiteISO)
+        .order('play_date',{ascending:false}).order('min_plan_rank',{ascending:true});
+      if(error)throw error;
+
+      // Anti-doublon : une meme fiche ne doit jamais apparaitre deux fois,
+      // quoi qu'il arrive cote reseau ou cote base.
+      const vues={},uniques=[];
+      (fiches||[]).forEach(tk=>{if(tk&&tk.id&&!vues[tk.id]){vues[tk.id]=1;uniques.push(tk);}});
+
+      let selections=[];
+      if(uniques.length){
+        const {data:legs,error:errLegs}=await sb.from('ticket_legs')
+          .select('ticket_id,match_time,kickoff_at,league,match_label,market,pick,odd,position')
+          .in('ticket_id',uniques.map(tk=>tk.id))
+          .order('kickoff_at',{ascending:true}).order('position',{ascending:true});
+        if(errLegs)throw errLegs;
+        selections=legs||[];
+      }
+      const parFiche={};
+      selections.forEach(l=>{(parFiche[l.ticket_id]=parFiche[l.ticket_id]||[]).push(l);});
+
+      DATA.tickets=uniques.map(tk=>{
+        const brut=parFiche[tk.id]||[];
+        return {
+          uid:tk.id,
+          id:tk.code||String(tk.id).slice(0,8).toUpperCase(),
+          playDate:tk.play_date,
+          day:ecartJoursHaiti(tk.play_date),
+          sport:tk.sport,
+          minPlan:tk.min_plan_rank,
+          status:tk.status,
+          conf:tk.confidence!=null?tk.confidence:0,
+          // Agregats publics — servent aux cartes verrouillees.
+          legsCount:tk.legs_count!=null?tk.legs_count:brut.length,
+          scoreCount:tk.score_legs_count||0,
+          totalOdd:Number(tk.total_odd)||0,
+          legs:brut.map(l=>{
+            const h=heureAffichee(l,tk.play_date);
+            return {time:h.heure,jour:h.jour,league:l.league||'',match:l.match_label||'',
+                    market:l.market||'',pick:l.pick||'',odd:Number(l.odd)||0};
+          })
+        };
+      });
+      etatFiches='ok';
+    }catch(e){
+      // Jamais de contenu invente en cas de panne : la vue le dit clairement.
+      DATA.tickets=[];
+      etatFiches='erreur';
+    }
+    return signatureFiches()!==avant;
+  }
+
+  /* ---- Rang de plan REEL, calcule par la base ----
+     C'est exactement la valeur qui gouverne les regles de visibilite
+     cote serveur (fonction user_plan_rank). L'utiliser ici garantit que
+     ce que l'interface montre comme accessible est exactement ce que la
+     base accepte de livrer : jamais une carte "ouverte" mais vide, jamais
+     une cote reservee affichee a quelqu'un sans plan actif. */
+  let rangServeur=null;
+  async function chargerRangServeur(){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return false;
     try{
-      const limite=new Date();limite.setDate(limite.getDate()-90);
-      const limiteISO=limite.toISOString().slice(0,10);
-      const {data:tickets,error}=await sb.from('tickets')
-        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published')
-        .eq('published',true).gte('play_date',limiteISO)
-        .order('play_date',{ascending:false});
-      if(error||!tickets||!tickets.length)return false;
+      const {data,error}=await sb.rpc('user_plan_rank');
+      if(error)return false;
+      const n=Number(data);
+      const val=isNaN(n)?0:n;
+      if(val!==rangServeur){rangServeur=val;return true;}
+    }catch(e){}
+    return false;
+  }
 
-      const ids=tickets.map(tk=>tk.id);
-      const {data:legs}=await sb.from('ticket_legs').select('*').in('ticket_id',ids).order('position',{ascending:true});
-      const legsByTicket={};
-      (legs||[]).forEach(l=>{
-        (legsByTicket[l.ticket_id]=legsByTicket[l.ticket_id]||[]).push({
-          time:l.match_time||'', league:l.league||'', match:l.match_label||'',
-          market:l.market||'', pick:l.pick||'', odd:Number(l.odd)||0
-        });
-      });
-
-      const aujourdhui=new Date();aujourdhui.setHours(0,0,0,0);
-      const nouveaux=tickets.map(tk=>{
-        const pd=new Date(tk.play_date+'T00:00:00');
-        const jourOffset=Math.round((aujourdhui-pd)/86400000);
-        return {
-          id:tk.code||tk.id.slice(0,8).toUpperCase(),
-          day:jourOffset, sport:tk.sport, minPlan:tk.min_plan_rank,
-          status:tk.status, conf:tk.confidence!=null?tk.confidence:0,
-          legs:legsByTicket[tk.id]||[]
-        };
-      }).filter(tk=>tk.legs.length>0);   // une fiche sans match n'a rien a afficher
-
-      if(!nouveaux.length)return false;
-      DATA.tickets=nouveaux;
-      return true;
-    }catch(e){return false;}
+  /* Rechargement complet : rang de plan reel PUIS fiches. Utilise a
+     l'ouverture du Dashboard, toutes les 45 s tant qu'il reste ouvert, et
+     immediatement apres tout changement d'abonnement — un plan qui change
+     modifie ce que la base accepte de livrer, les fiches doivent donc
+     etre relues, pas seulement re-affichees. */
+  async function rafraichirFiches(forcer){
+    let bouge=false;
+    try{
+      const r=await chargerRangServeur();
+      const f=await chargerFichesReelles();
+      bouge=!!(r||f);
+    }catch(e){}
+    if(bouge||forcer)renderAll();
+    return bouge;
   }
 
   /* ---- Chargement des VRAIES notifications (Supabase) ----
@@ -8351,7 +8401,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
 
     // 4. Fiches du jour reellement accessibles avec le plan actif
-    const dispo=DATA.tickets.filter(k=>k.day===0&&k.minPlan<=userRank()).length;
+    const dispo=DATA.tickets.filter(k=>estDuJour(k)&&k.minPlan<=userRank()).length;
     if(dispo>0)out.push({id:'today'+dispo,type:'new',texte:t('notif_today').replace('{n}',dispo),ts:Date.now()});
 
     // 5. Dernier resultat gagnant de l'historique
@@ -8370,8 +8420,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   let notifs=[];
 
   const getState=()=>(window.VB_getState?window.VB_getState():null);
-  const userPlan=()=>{const st=getState();return st&&st.planId?st.planId:'p1';};
-  const userRank=()=>(window.VB_estSuspendu&&window.VB_estSuspendu())?0:(rank[userPlan()]||1);
+  const userPlan=()=>{const st=getState();return st&&st.planId?st.planId:null;};
+  /* Rang du plan ACTIF. La base fait autorite des qu'elle a repondu
+     (chargerRangServeur) : l'interface montre alors exactement ce que la
+     base accepte de livrer. Sinon on retombe sur l'etat local, avec la
+     meme regle stricte — aucun plan actif = rang 0.
+     CORRECTIF : auparavant l'absence de plan valait 'p1' par defaut. Une
+     personne sans abonnement voyait donc les fiches du plan 1 comme
+     deverrouillees, alors que la base ne lui livre aucune cote. */
+  const userRank=()=>{
+    if(window.VB_estSuspendu&&window.VB_estSuspendu())return 0;
+    if(rangServeur!=null)return rangServeur;
+    const pl=userPlan();
+    if(!pl)return 0;
+    if(isExpired()||isPending()||isRejected())return 0;
+    return rank[pl]||0;
+  };
 
   /* ---- Rendu d'une fiche ---- */
   const isExpired=()=>!!(window.VB_isExpired&&window.VB_isExpired());
@@ -8395,22 +8459,41 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     const ul=document.createElement('ul');
     ul.className='dtk-legs';
-    tk.legs.forEach(lg=>{
-      const li=document.createElement('li');
-      li.className='dtk-leg';
-      // Une fiche de demo utilise des CLES i18n (mk_btts_l, pick_oui...).
-      // Une vraie fiche creee par l'admin contient du texte libre — on ne
-      // le fait passer par t() que si c'est reconnu comme une cle, sinon
-      // on l'affiche tel quel.
-      const pick=(lg.pick.indexOf(' — ')>-1||!translations.fr[lg.pick])?lg.pick:t(lg.pick);
-      const marketTxt=translations.fr[lg.market]?t(lg.market):(lg.market||'');
-      li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">'+lg.time+'</span>'+
-        '<span class="dtk-leg-league">'+lg.league+'</span></div>'+
-        '<div class="dtk-leg-match">'+lg.match+'</div>'+
-        '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+marketTxt+'</em>'+pick+'</span>'+
-        '<span class="dtk-leg-odd">'+lg.odd.toFixed(2)+'</span></div>';
-      ul.appendChild(li);
-    });
+    if(tk.legs.length){
+      tk.legs.forEach(lg=>{
+        const li=document.createElement('li');
+        li.className='dtk-leg';
+        // Le bot et l'admin peuvent ecrire soit une CLE i18n (mk_btts_l,
+        // pick_oui...), soit du texte libre : on ne traduit que ce qui est
+        // reconnu comme une cle, le reste s'affiche tel quel.
+        const pick=(lg.pick.indexOf(' — ')>-1||!translations.fr[lg.pick])?lg.pick:t(lg.pick);
+        const marketTxt=translations.fr[lg.market]?t(lg.market):(lg.market||'');
+        // Heure d'Haiti ; la date n'apparait que si le match tombe un
+        // autre jour que celui de la fiche (voir heureAffichee).
+        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">'+lg.time+
+          (lg.jour?' · '+lg.jour:'')+'</span>'+
+          '<span class="dtk-leg-league">'+lg.league+'</span></div>'+
+          '<div class="dtk-leg-match">'+lg.match+'</div>'+
+          '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+marketTxt+'</em>'+pick+'</span>'+
+          '<span class="dtk-leg-odd">'+lg.odd.toFixed(2)+'</span></div>';
+        ul.appendChild(li);
+      });
+    }else{
+      /* Fiche verrouillee : la base n'a livre AUCUNE selection (le plan
+         actif ne la couvre pas). On garde la silhouette de la carte —
+         autant de lignes que la fiche en compte reellement — avec un
+         contenu masque : aucune donnee inventee, aucune cote exposee. */
+      for(let i=0;i<tk.legsCount;i++){
+        const li=document.createElement('li');
+        li.className='dtk-leg';
+        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">--:--</span>'+
+          '<span class="dtk-leg-league">•••••</span></div>'+
+          '<div class="dtk-leg-match">••••••••• — •••••••••</div>'+
+          '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>•••</em>••••</span>'+
+          '<span class="dtk-leg-odd">•.••</span></div>';
+        ul.appendChild(li);
+      }
+    }
     el.appendChild(ul);
 
     const conf=document.createElement('div');
@@ -8454,65 +8537,88 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     return el;
   }
 
-  /* Scores exacts du jour : entre 4 et 10, nombre tire au sort mais
-     stable sur une meme journee (graine = date). Reserves aux plans
-     qui incluent le score exact (30 jours et Lifetime). */
-  const SCORE_MIN_PLAN=3;
-  function scoresDuJour(){
-    const j=new Date();
-    let g=(j.getFullYear()*10000+(j.getMonth()+1)*100+j.getDate())>>>0;
-    // brassage de la graine : sans lui, deux dates voisines donnent le meme tirage
-    g=Math.imul(g^0x9E3779B9,0x85EBCA6B)>>>0;
-    g=(g^(g>>>13))>>>0;
-    g=Math.imul(g,0xC2B2AE35)>>>0;
-    g=(g^(g>>>16))>>>0;
-    const rnd=()=>{g=(g*1664525+1013904223)>>>0;return g/4294967296;};
-    const n=4+Math.floor(rnd()*7);                 // 4 a 10
-    const pool=DATA.exactScores.slice();
-    for(let i=pool.length-1;i>0;i--){
-      const k=Math.floor(rnd()*(i+1));
-      const tmp=pool[i];pool[i]=pool[k];pool[k]=tmp;
-    }
-    return pool.slice(0,Math.min(n,pool.length));
+  /* ---- Scores exacts du jour ----
+     Plus aucun tirage de demonstration : ce sont les selections "score
+     exact" (market mk_score_l) des fiches reellement publiees pour
+     aujourd'hui. Comme pour tout le reste, c'est la base qui decide si
+     la personne a le droit de les lire. */
+  const fichesScoreDuJour=()=>DATA.tickets.filter(k=>estDuJour(k)&&k.scoreCount>0);
+  /* Une fiche composee UNIQUEMENT de scores exacts est le produit
+     "scores exacts" : elle s'affiche dans sa carte dediee, jamais deux
+     fois (une fois dans la liste, une fois dans la carte). */
+  const estFicheScore=k=>k.scoreCount>0&&k.scoreCount===k.legsCount;
+  /* Plan minimum reellement exige aujourd'hui pour les scores exacts,
+     lu sur les fiches en base — null s'il n'y en a aucune. */
+  function rangScoresDuJour(){
+    const f=fichesScoreDuJour();
+    return f.length?Math.min.apply(null,f.map(k=>k.minPlan)):null;
   }
+  function scoresDuJour(){
+    const out=[];
+    fichesScoreDuJour().forEach(k=>{k.legs.forEach(lg=>{if(lg.market==='mk_score_l')out.push(lg);});});
+    return out;
+  }
+  const nbScoresDuJour=()=>fichesScoreDuJour().reduce((a,k)=>a+k.scoreCount,0);
 
   function scoreCardEl(){
-    const locked=isExpired()||isPending()||isRejected()||SCORE_MIN_PLAN>userRank();
+    const besoin=rangScoresDuJour();
+    const locked=isExpired()||isPending()||isRejected()||besoin==null||besoin>userRank();
     const liste=scoresDuJour();
+    const total=nbScoresDuJour();
+    // Date affichee = celle des fiches concernees en base, pas la date
+    // de l'appareil ni une date supposee.
+    const fichesSc=fichesScoreDuJour();
+    const jourSc=fichesSc.length?Math.min.apply(null,fichesSc.map(k=>k.day)):0;
     const el=document.createElement('article');
     el.className='dtk'+(locked?' locked':'');
 
     const head=document.createElement('div');
     head.className='dtk-head';
     head.innerHTML='<span class="dtk-sport foot">'+t('mk_score_l').toUpperCase()+'</span>'+
-      '<span class="dtk-date">'+fmtDate(dayDate(0))+' · S-'+liste.length+'</span>'+
+      '<span class="dtk-date">'+fmtDate(dayDate(jourSc))+' · S-'+total+'</span>'+
       '<span class="dtk-res pending">'+t('dash_st_pending')+'</span>';
     el.appendChild(head);
 
     const ul=document.createElement('ul');
     ul.className='dtk-legs';
-    liste.forEach(sc=>{
-      const li=document.createElement('li');
-      li.className='dtk-leg';
-      li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">'+sc.time+'</span>'+
-        '<span class="dtk-leg-league">'+sc.league+'</span></div>'+
-        '<div class="dtk-leg-match">'+sc.match+'</div>'+
-        '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+t('mk_score_l')+'</em>'+sc.score+'</span>'+
-        '<span class="dtk-leg-odd">'+sc.odd.toFixed(2)+'</span></div>';
-      ul.appendChild(li);
-    });
+    if(liste.length){
+      liste.forEach(sc=>{
+        const li=document.createElement('li');
+        li.className='dtk-leg';
+        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">'+sc.time+
+          (sc.jour?' · '+sc.jour:'')+'</span>'+
+          '<span class="dtk-leg-league">'+sc.league+'</span></div>'+
+          '<div class="dtk-leg-match">'+sc.match+'</div>'+
+          '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+t('mk_score_l')+'</em>'+sc.pick+'</span>'+
+          '<span class="dtk-leg-odd">'+sc.odd.toFixed(2)+'</span></div>';
+        ul.appendChild(li);
+      });
+    }else{
+      // Verrouille : la base n'a livre aucun score exact. Meme silhouette,
+      // contenu masque — rien d'invente, rien d'expose.
+      for(let i=0;i<total;i++){
+        const li=document.createElement('li');
+        li.className='dtk-leg';
+        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">--:--</span>'+
+          '<span class="dtk-leg-league">•••••</span></div>'+
+          '<div class="dtk-leg-match">••••••••• — •••••••••</div>'+
+          '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+t('mk_score_l')+'</em>• — •</span>'+
+          '<span class="dtk-leg-odd">•.••</span></div>';
+        ul.appendChild(li);
+      }
+    }
     el.appendChild(ul);
 
     const foot=document.createElement('div');
     foot.className='dtk-foot';
-    foot.innerHTML='<span class="dtk-foot-lbl">'+t('dash_score_count').replace('{n}',liste.length)+'</span>'+
+    foot.innerHTML='<span class="dtk-foot-lbl">'+t('dash_score_count').replace('{n}',total)+'</span>'+
       '<span class="dtk-tag-pair">'+t('dash_tag_pair')+'</span>';
     el.appendChild(foot);
 
     if(locked){
       const ov=document.createElement('div');
       ov.className='dtk-lockover';
-      const needPlan=(window.VB_planById?window.VB_planById('p'+SCORE_MIN_PLAN):null);
+      const needPlan=(window.VB_planById?window.VB_planById('p'+(besoin||4)):null);
       const needName=needPlan?String(t(needPlan.nameKey)).replace(/<[^>]*>/g,''):'';
       const exp=isExpired();
       const pend=isPending();
@@ -8585,7 +8691,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('dashHiH').textContent=t('dash_hello').replace('{name}',name).trim();
     document.getElementById('dashHiP').textContent=t('dash_hello_p');
 
-    const todays=DATA.tickets.filter(k=>k.day===0);
+    // Les fiches 100 % "score exact" ont leur propre carte : on ne les
+    // compte pas deux fois dans la liste des fiches du jour.
+    const todays=DATA.tickets.filter(k=>estDuJour(k)&&!estFicheScore(k));
     const visible=todays.filter(k=>k.minPlan<=userRank());
     const legs=visible.reduce((a,k)=>a+k.legs.length,0);
     const best=visible.length?Math.max.apply(null,visible.map(totalOdd)):0;
@@ -8604,7 +8712,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       : todays.filter(k=>(f.sport==='all'||k.sport===f.sport)&&k.minPlan<=userRank());
     // Le Lifetime couvre tout : la categorie n'a plus d'objet pour lui
     const btnOther=document.getElementById('dashFbtnOther');
-    const rienDAutre=todays.every(k=>k.minPlan<=userRank())&&SCORE_MIN_PLAN<=userRank();
+    const rienDAutre=todays.every(k=>k.minPlan<=userRank())&&
+      (rangScoresDuJour()==null||rangScoresDuJour()<=userRank());
     btnOther.hidden=rienDAutre;
     if(rienDAutre&&f.sport==='other'){
       f.sport='all';
@@ -8616,9 +8725,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     const wrap=document.getElementById('dashListToday');
     wrap.innerHTML='';
-    const scoresVisibles=SCORE_MIN_PLAN<=userRank();
-    const montreScores=(f.sport==='all'&&scoresVisibles)||(f.sport==='other'&&!scoresVisibles);
-    if(!list.length&&!montreScores){wrap.appendChild(emptyEl(f.sport==='other'?'dash_empty_other':'dash_empty_today'));}
+    const rangScores=rangScoresDuJour();
+    const ilYaScores=rangScores!=null;
+    const scoresVisibles=ilYaScores&&rangScores<=userRank();
+    const montreScores=ilYaScores&&((f.sport==='all'&&scoresVisibles)||(f.sport==='other'&&!scoresVisibles));
+    if(!list.length&&!montreScores){
+      // Une panne de lecture ne doit jamais ressembler a "aucune fiche".
+      wrap.appendChild(emptyEl(etatFiches==='erreur'?'dash_empty_err'
+        :(f.sport==='other'?'dash_empty_other':'dash_empty_today')));
+    }
     else{
       list.forEach(k=>wrap.appendChild(ticketEl(k)));
       if(montreScores)wrap.appendChild(scoreCardEl());
@@ -8641,7 +8756,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const list=done.filter(k=>(f.sport==='all'||k.sport===f.sport)&&(f.status==='all'||k.status===f.status));
     const wrap=document.getElementById('dashListHist');
     wrap.innerHTML='';
-    if(!list.length){wrap.appendChild(emptyEl('dash_empty_hist'));}
+    if(!list.length){wrap.appendChild(emptyEl(etatFiches==='erreur'?'dash_empty_err':'dash_empty_hist'));}
     else list.forEach(k=>wrap.appendChild(ticketEl(k)));
     document.getElementById('dashCountHist').textContent=t('dash_count').replace('{n}',list.length);
   }
@@ -8976,11 +9091,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Rafraichissement silencieux : un admin a peut-etre valide/refuse
     // le paiement depuis la derniere visite. Ne bloque jamais l'ouverture.
     if(window.VB_syncPayStatus){
-      window.VB_syncPayStatus().then(changed=>{ if(changed)renderAll(); });
+      window.VB_syncPayStatus().then(changed=>{
+        // Un plan qui vient de changer donne acces a d'autres fiches :
+        // on relit la base, on ne se contente pas de re-afficher.
+        if(changed)rafraichirFiches(true);
+      });
     }
-    // Meme principe pour les fiches : toujours essayer de charger le vrai
-    // contenu publie par l'admin, sans jamais bloquer l'affichage.
-    chargerFichesReelles().then(changed=>{ if(changed)renderAll(); });
+    // Fiches : toujours relues depuis la base a l'ouverture (elles sont
+    // la seule source de verite), sans jamais bloquer l'affichage.
+    rafraichirFiches(true);
     // Meme principe pour les notifications reelles (paiement confirme ou
     // refuse, changement de plan admin) : elles doivent apparaitre des
     // l'ouverture, meme si l'action admin a eu lieu depuis un autre appareil.
@@ -8998,8 +9117,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     resyncTimer=setInterval(()=>{
       if(!dash.classList.contains('open')){arreterResyncPeriodique();return;}
       if(window.VB_syncPayStatus){
-        window.VB_syncPayStatus().then(changed=>{ if(changed)renderAll(); });
+        window.VB_syncPayStatus().then(changed=>{ if(changed)rafraichirFiches(true); });
       }
+      // Publication, modification, suppression ou changement de statut
+      // d'une fiche cote Admin : visible ici sans rien fermer ni recharger.
+      rafraichirFiches();
       chargerNotifsReelles().then(changed=>{ if(changed)renderNotifs(); });
     },45000);
   }

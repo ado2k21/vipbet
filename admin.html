@@ -4582,7 +4582,7 @@ adm_fiche_plan:"Plan minimum requis", adm_fiche_sport:"Sport",
 adm_fiche_sport_foot:"Football", adm_fiche_sport_nba:"NBA",
 adm_fiche_confidence:"Score de confiance (%)", adm_fiche_date:"Date de la fiche", adm_fiche_status:"Résultat",
 adm_fiche_legs_h:"Matchs de la fiche",
-adm_fiche_leg_match:"Équipes (ex. Chelsea - Liverpool)", adm_fiche_leg_time:"Heure",
+adm_fiche_leg_match:"Équipes (ex. Chelsea - Liverpool)", adm_fiche_leg_time:"Heure (Haïti)",
 adm_fiche_leg_league:"Championnat", adm_fiche_leg_market:"Marché (ex. Les 2 équipes marquent)",
 adm_fiche_leg_pick:"Pronostic (ex. Oui)", adm_fiche_leg_odd:"Cote",
 adm_fiche_leg_remove:"Retirer ce match", adm_fiche_leg_add:"+ Ajouter un match",
@@ -4592,6 +4592,8 @@ adm_fiche_err_incomplete:"La date est obligatoire.",
 adm_fiche_err_nolegs:"Ajoutez au moins un match.",
 adm_fiche_err_leg_incomplete:"Chaque match doit avoir au moins les équipes, le pronostic et la cote.",
 adm_fiche_err_save:"L'enregistrement a échoué.",
+adm_fiche_err_code_dup:"Ce code de fiche existe déjà. Choisissez-en un autre.",
+adm_fiche_err_forbidden:"Action réservée à un compte administrateur.",
 adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatement si publiée.",
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
 adm_menu_exit:"Quitter le Dashboard Admin",
@@ -4948,7 +4950,7 @@ adm_fiche_plan:"Minimum required plan", adm_fiche_sport:"Sport",
 adm_fiche_sport_foot:"Football", adm_fiche_sport_nba:"NBA",
 adm_fiche_confidence:"Confidence score (%)", adm_fiche_date:"Ticket date", adm_fiche_status:"Result",
 adm_fiche_legs_h:"Ticket matches",
-adm_fiche_leg_match:"Teams (e.g. Chelsea - Liverpool)", adm_fiche_leg_time:"Time",
+adm_fiche_leg_match:"Teams (e.g. Chelsea - Liverpool)", adm_fiche_leg_time:"Time (Haiti)",
 adm_fiche_leg_league:"League", adm_fiche_leg_market:"Market (e.g. Both teams to score)",
 adm_fiche_leg_pick:"Pick (e.g. Yes)", adm_fiche_leg_odd:"Odds",
 adm_fiche_leg_remove:"Remove this match", adm_fiche_leg_add:"+ Add a match",
@@ -4958,6 +4960,8 @@ adm_fiche_err_incomplete:"Date is required.",
 adm_fiche_err_nolegs:"Add at least one match.",
 adm_fiche_err_leg_incomplete:"Each match needs at least the teams, the pick, and the odds.",
 adm_fiche_err_save:"Save failed.",
+adm_fiche_err_code_dup:"This slip code already exists. Pick another one.",
+adm_fiche_err_forbidden:"Admin account required for this action.",
 adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if published.",
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
 adm_menu_exit:"Leave Admin Dashboard",
@@ -5314,7 +5318,7 @@ adm_fiche_plan:"Plan minimòm ki mande", adm_fiche_sport:"Espò",
 adm_fiche_sport_foot:"Foutbòl", adm_fiche_sport_nba:"NBA",
 adm_fiche_confidence:"Nòt konfyans (%)", adm_fiche_date:"Dat fich la", adm_fiche_status:"Rezilta",
 adm_fiche_legs_h:"Match fich la",
-adm_fiche_leg_match:"Ekip yo (egz. Chelsea - Liverpool)", adm_fiche_leg_time:"Lè",
+adm_fiche_leg_match:"Ekip yo (egz. Chelsea - Liverpool)", adm_fiche_leg_time:"Lè (Ayiti)",
 adm_fiche_leg_league:"Chanpyona", adm_fiche_leg_market:"Mache (egz. Tou de ekip make)",
 adm_fiche_leg_pick:"Pronostik (egz. Wi)", adm_fiche_leg_odd:"Kòt",
 adm_fiche_leg_remove:"Retire match sa a", adm_fiche_leg_add:"+ Ajoute yon match",
@@ -5324,6 +5328,8 @@ adm_fiche_err_incomplete:"Dat la obligatwa.",
 adm_fiche_err_nolegs:"Ajoute omwen yon match.",
 adm_fiche_err_leg_incomplete:"Chak match dwe gen omwen ekip yo, pronostik la, ak kòt la.",
 adm_fiche_err_save:"Anrejistreman echwe.",
+adm_fiche_err_code_dup:"Kòd fich sa a egziste deja. Chwazi yon lòt.",
+adm_fiche_err_forbidden:"Se yon kont administratè ki ka fè aksyon sa a.",
 adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li pibliye.",
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
 adm_menu_exit:"Kite Dashboard Admin",
@@ -9637,9 +9643,74 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      via le selecteur de date — c'est la "memoire" demandee. */
   let selectedFicheId=null;
   let fbLegsCourantes=[];   // manches en cours d'edition (pas encore enregistrees)
+
+  /* ============================================================
+     FUSEAU HORAIRE OFFICIEL : HAITI (America/Port-au-Prince)
+     ------------------------------------------------------------
+     L'admin saisit et relit TOUJOURS des heures d'Haiti, quel que soit
+     le fuseau de son appareil. En base, l'instant exact du coup d'envoi
+     est stocke dans ticket_legs.kickoff_at ; match_time reste renseigne
+     en UTC, comme l'ecrit le bot.
+     ============================================================ */
+  const TZ_HAITI='America/Port-au-Prince';
+  function decalageHaitiSecours(d){
+    const a=d.getUTCFullYear();
+    const dim=(an,mois,n)=>{const x=new Date(Date.UTC(an,mois,1));
+      const dec=(7-x.getUTCDay())%7;return new Date(Date.UTC(an,mois,1+dec+(n-1)*7,7,0,0));};
+    return (d>=dim(a,2,2)&&d<dim(a,10,1))?-4:-5;
+  }
+  function partsHaiti(d){
+    try{
+      const f=new Intl.DateTimeFormat('en-CA',{timeZone:TZ_HAITI,year:'numeric',month:'2-digit',
+        day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+      const o={};f.formatToParts(d).forEach(p=>{o[p.type]=p.value;});
+      if(!o.year)throw new Error('tz');
+      return {iso:o.year+'-'+o.month+'-'+o.day,heure:(o.hour==='24'?'00':o.hour)+':'+o.minute};
+    }catch(e){
+      const x=new Date(d.getTime()+decalageHaitiSecours(d)*3600000);
+      const p2=n=>String(n).padStart(2,'0');
+      return {iso:x.getUTCFullYear()+'-'+p2(x.getUTCMonth()+1)+'-'+p2(x.getUTCDate()),
+              heure:p2(x.getUTCHours())+':'+p2(x.getUTCMinutes())};
+    }
+  }
+  const heureValide=v=>/^[0-9]{1,2}:[0-9]{2}$/.test(String(v||'').trim());
+  /* Heure d'Haiti affichee dans le formulaire, a partir de ce que
+     contient la base (instant exact, ou heure UTC posee sur la date). */
+  function instantDeLeg(v){
+    if(!v)return null;
+    let d=new Date(v);
+    if(!isNaN(d.getTime()))return d;
+    d=new Date(String(v).replace(' ','T').replace(/([+-][0-9]{2})$/,'$1:00'));
+    return isNaN(d.getTime())?null:d;
+  }
+  function heureHaitiDeLeg(l,playDate){
+    let d=instantDeLeg(l.kickoff_at);
+    if((!d||isNaN(d.getTime()))&&heureValide(l.match_time)){
+      const hm=String(l.match_time).trim();
+      d=new Date(playDate+'T'+(hm.length===4?'0':'')+hm+':00Z');
+    }
+    if(!d||isNaN(d.getTime()))return l.match_time||'';
+    return partsHaiti(d).heure;
+  }
+  /* Instant reel a partir d'une heure d'Haiti saisie pour une date de jeu.
+     Deux passes suffisent, y compris au changement d'heure d'ete. */
+  function instantDepuisHaiti(isoJour,hhmm){
+    if(!heureValide(hhmm)||!isoJour)return null;
+    const hm=String(hhmm).trim();
+    const vise=Date.parse(isoJour+'T'+(hm.length===4?'0':'')+hm+':00Z');
+    if(isNaN(vise))return null;
+    let t=vise;
+    for(let i=0;i<2;i++){
+      const p=partsHaiti(new Date(t));
+      const vu=Date.parse(p.iso+'T'+p.heure+':00Z');
+      if(isNaN(vu))return null;
+      t=t+(vise-vu);
+    }
+    return new Date(t);
+  }
+  // Date du jour en Haiti — jamais celle de l'appareil de l'admin.
   function dateAujourdhui(){
-    const d=new Date();
-    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return partsHaiti(new Date()).iso;
   }
   async function renderFiches(){
     const dateInput=document.getElementById('admFichesDate');
@@ -9650,7 +9721,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     body.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
     try{
       const {data:tickets,error}=await sb.from('tickets')
-        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,created_at')
+        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,created_at,legs_count,total_odd')
         .eq('play_date',dateInput.value)
         .order('min_plan_rank',{ascending:true}).order('created_at',{ascending:true});
       if(error)throw error;
@@ -9658,9 +9729,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         body.innerHTML='<div class="admdash-empty">'+t('adm_fiches_empty')+'</div>';
         return;
       }
-      const ids=tickets.map(tk=>tk.id);
-      const {data:legs}=await sb.from('ticket_legs').select('ticket_id').in('ticket_id',ids);
-      const legCount={};(legs||[]).forEach(l=>{legCount[l.ticket_id]=(legCount[l.ticket_id]||0)+1;});
+      // Le nombre de selections est deja tenu a jour par la base
+      // (colonne legs_count) : une requete de moins, et surtout la meme
+      // valeur que celle vue par le Dashboard client.
+      const legCount={};(tickets||[]).forEach(tk=>{legCount[tk.id]=tk.legs_count||0;});
 
       const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
       const badgeCls={pending:'pending',won:'won',lost:'lost'};
@@ -9750,7 +9822,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         const {data:tdata}=await sb.from('tickets').select('*').eq('id',selectedFicheId).single();
         if(tdata)tk=tdata;
         const {data:ldata}=await sb.from('ticket_legs').select('*').eq('ticket_id',selectedFicheId).order('position',{ascending:true});
-        fbLegsCourantes=(ldata||[]).map(l=>({match_label:l.match_label,match_time:l.match_time,league:l.league,market:l.market,pick:l.pick,odd:l.odd}));
+        // L'heure est presentee a l'heure d'Haiti. fixture_id et result
+        // (renseignes par le bot) sont conserves tels quels : une simple
+        // correction de cote ne doit jamais effacer ces informations.
+        fbLegsCourantes=(ldata||[]).map(l=>({
+          match_label:l.match_label,
+          match_time:heureHaitiDeLeg(l,tk.play_date),
+          league:l.league,market:l.market,pick:l.pick,odd:l.odd,
+          fixture_id:l.fixture_id,result:l.result
+        }));
       }catch(e){}
     }
     const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
@@ -9815,36 +9895,58 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
   }
 
+  /* Messages d'erreur renvoyes par la base (fonction admin_save_ticket).
+     On les traduit en clair plutot que de montrer un code brut. */
+  function messageErreurFiche(e){
+    const brut=((e&&e.message)?e.message:String(e))||'';
+    if(brut.indexOf('aucune_selection')>-1)return t('adm_fiche_err_nolegs');
+    if(brut.indexOf('selection_invalide')>-1)return t('adm_fiche_err_leg_incomplete');
+    if(brut.indexOf('champs_manquants')>-1)return t('adm_fiche_err_incomplete');
+    if(brut.indexOf('tickets_code_key')>-1||brut.indexOf('duplicate key')>-1)return t('adm_fiche_err_code_dup');
+    if(brut.indexOf('non_autorise')>-1)return t('adm_fiche_err_forbidden');
+    return t('adm_fiche_err_save')+' — '+brut.slice(0,140);
+  }
+
   async function sauvegarderFiche(payload){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return;
     const btn=document.getElementById('admFicheSave');
     if(btn)btn.disabled=true;
     try{
-      let ticketId=selectedFicheId;
-      if(ticketId){
-        const {error}=await sb.from('tickets').update(payload).eq('id',ticketId);
-        if(error)throw error;
-        // On remplace toutes les manches : plus simple et fiable que de
-        // detecter ce qui a change ligne par ligne.
-        await sb.from('ticket_legs').delete().eq('ticket_id',ticketId);
-      }else{
-        const {data,error}=await sb.from('tickets').insert(payload).select('id').single();
-        if(error)throw error;
-        ticketId=data.id;
-      }
-      const legsAEcrire=fbLegsCourantes.map((l,i)=>({
-        ticket_id:ticketId, match_label:l.match_label, match_time:l.match_time||null,
-        league:l.league||null, market:l.market||null, pick:l.pick, odd:l.odd, position:i+1
-      }));
-      const {error:legErr}=await sb.from('ticket_legs').insert(legsAEcrire);
-      if(legErr)throw legErr;
+      /* Ecriture ATOMIQUE : la fiche et toutes ses selections sont
+         enregistrees en une seule transaction cote base. Avant, la
+         suppression des anciennes selections et l'insertion des nouvelles
+         etaient deux appels distincts : si le second echouait, la fiche
+         restait publiee mais VIDE cote client. Ce n'est plus possible. */
+      const legsAEcrire=fbLegsCourantes.map(l=>{
+        // L'heure saisie est une heure d'Haiti : on envoie l'instant exact
+        // (kickoff_at) et l'heure UTC correspondante, comme le bot.
+        const inst=instantDepuisHaiti(payload.play_date,l.match_time);
+        return {
+          match_label:(l.match_label||'').trim(),
+          match_time:inst?inst.toISOString().slice(11,16):((l.match_time||'').trim()||null),
+          kickoff_at:inst?inst.toISOString():null,
+          league:(l.league||'').trim()||null,
+          market:(l.market||'').trim()||null,
+          pick:(l.pick||'').trim(),
+          odd:l.odd,
+          fixture_id:l.fixture_id!=null?String(l.fixture_id):null,
+          result:l.result||null
+        };
+      });
+      const {data:idFiche,error}=await sb.rpc('admin_save_ticket',{
+        p_id:selectedFicheId,
+        p_ticket:payload,
+        p_legs:legsAEcrire
+      });
+      if(error)throw error;
+      if(!idFiche)throw new Error('fiche_non_enregistree');
 
       if(window.VB_toast)window.VB_toast('adm_fiche_toast_h',t('adm_fiche_toast_p'));
       if(viewStack.length)setView(viewStack.pop(),true);else setView('fiches',true);
     }catch(e){
       const err=document.getElementById('admFicheErr');
-      if(err){err.textContent=t('adm_fiche_err_save')+' — '+((e&&e.message)?e.message:String(e)).slice(0,140);err.style.display='block';}
+      if(err){err.textContent=messageErreurFiche(e);err.style.display='block';}
       if(btn)btn.disabled=false;
     }
   }
@@ -9852,14 +9954,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return;
     try{
-      await sb.from('ticket_legs').delete().eq('ticket_id',id);
-      const {error}=await sb.from('tickets').delete().eq('id',id);
+      // Suppression en un seul appel : les selections partent avec la
+      // fiche (cascade en base), jamais l'une sans l'autre.
+      const {error}=await sb.rpc('admin_delete_ticket',{p_id:id});
       if(error)throw error;
       if(window.VB_toast)window.VB_toast('adm_fiche_toast_del_h',t('adm_fiche_toast_del_p'));
       setView('fiches',true);
     }catch(e){
       const err=document.getElementById('admFicheErr');
-      if(err){err.textContent=t('adm_fiche_err_save')+' — '+((e&&e.message)?e.message:String(e)).slice(0,140);err.style.display='block';}
+      if(err){err.textContent=messageErreurFiche(e);err.style.display='block';}
     }
   }
 
