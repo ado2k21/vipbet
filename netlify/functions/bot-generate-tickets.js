@@ -1,0 +1,507 @@
+/**
+ * ============================================================================
+ * VIP BETCOTE — BOT DE GÉNÉRATION DES FICHES (Netlify Scheduled Function)
+ * Fichier : netlify/functions/bot-generate-tickets.js
+ * ----------------------------------------------------------------------------
+ * Ne touche NI index.html NI admin.html. Écrit directement dans Supabase
+ * (tables `tickets` et `ticket_legs`) via la clé service_role — exactement
+ * les mêmes tables que celles lues par le Dashboard client et l'admin.
+ *
+ * DÉCLENCHEMENT
+ * L'heure d'Haïti change de décalage UTC selon la saison (heure d'été/hiver,
+ * comme aux USA). Plutôt que de figer un cron UTC qui se déréglerait deux
+ * fois par an, cette fonction se réveille toutes les 15 min dans une large
+ * fenêtre (20h00–22h59 UTC, qui couvre 17h00 Haïti quel que soit le
+ * décalage) et ne génère RÉELLEMENT qu'au quart d'heure où il est
+ * effectivement 17h00 en Haïti. Une vérification en base empêche toute
+ * double génération si le cron se déclenche plusieurs fois dans la fenêtre.
+ * ============================================================================
+ */
+
+import { createClient } from '@supabase/supabase-js';
+
+export const config = {
+  // Toutes les 15 min entre 20h00 et 22h59 UTC — couvre 17h00 Haïti
+  // (UTC-4 en heure d'été → 21h00 UTC ; UTC-5 en heure standard → 22h00 UTC)
+  schedule: '*/15 20-22 * * *'
+};
+
+// ============================================================================
+// 1. CONFIGURATION
+// ============================================================================
+
+const TZ_HAITI = 'America/Port-au-Prince';
+
+// API-Sports EN DIRECT (dashboard.api-football.com) — PAS RapidAPI.
+// Deux abonnements gratuits séparés (100 req/jour chacun), même clé.
+const API_SPORTS_KEY = process.env.API_SPORTS_KEY || '';
+const FOOT_HOST = 'v3.football.api-sports.io';
+const NBA_HOST = 'v2.nba.api-sports.io';
+const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
+
+// Championnats autorisés (grandes divisions + quelques championnats fiables).
+// Liste à ajuster avec James selon ce que paryajpam.com propose réellement.
+const ALLOWED_LEAGUES_FOOT = [2, 3, 4, 5, 39, 40, 61, 62, 78, 88, 135, 140, 61];
+
+// Fenêtre horaire football en heure Haïti (règle métier stricte)
+const FOOT_MIN_HOUR = 8;   // 08:00 accepté
+const FOOT_MAX_MINUTES = 22 * 60; // 22:00 accepté, 22:01 refusé
+// Le basketball n'a AUCUNE limite horaire haute.
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function getSupabase() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant dans les variables Netlify');
+  }
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+}
+
+// ============================================================================
+// 2. OUTILS FUSEAU HORAIRE HAÏTI (même logique que admin.html : Intl natif)
+// ============================================================================
+
+function partsHaiti(date) {
+  const f = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ_HAITI, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+  const o = {};
+  f.formatToParts(date).forEach(p => { o[p.type] = p.value; });
+  return {
+    iso: `${o.year}-${o.month}-${o.day}`,
+    heure: (o.hour === '24' ? '00' : o.hour) + ':' + o.minute,
+    heureNum: parseInt(o.hour === '24' ? '0' : o.hour, 10),
+    minuteNum: parseInt(o.minute, 10)
+  };
+}
+
+// Date cible = demain, en heure Haïti (règle : le 23 à 17h prépare le 24)
+function dateCibleDemainHaiti() {
+  const maintenant = new Date();
+  const demain = new Date(maintenant.getTime() + 24 * 3600 * 1000);
+  return partsHaiti(demain).iso;
+}
+
+// L'API renvoie souvent la date/heure du match en UTC (ISO avec offset) —
+// on la reconvertit systématiquement en heure Haïti nous-mêmes, jamais
+// en se fiant à un éventuel paramètre timezone de l'API (défense en profondeur).
+function heureHaitiDuMatch(isoUtc) {
+  const d = new Date(isoUtc);
+  if (isNaN(d.getTime())) return null;
+  return partsHaiti(d);
+}
+
+// ============================================================================
+// 3. LOG STRUCTURÉ (règle 35 du cahier des charges)
+// ============================================================================
+
+const stats = {
+  demarre: new Date().toISOString(),
+  fuseauUtilise: TZ_HAITI,
+  dateCible: null,
+  matchsTrouves: 0,
+  matchsRetenus: 0,
+  matchsRejetes: 0,
+  raisonsRejet: {},
+  fichesGenerees: 0,
+  fichesPubliees: 0,
+  doublonsDetectes: false,
+  erreurs: []
+};
+function rejeter(raison) {
+  stats.matchsRejetes++;
+  stats.raisonsRejet[raison] = (stats.raisonsRejet[raison] || 0) + 1;
+}
+function logFinal() {
+  console.log('[BOT]', JSON.stringify(stats, null, 2));
+}
+
+// ============================================================================
+// 4. APPELS API-SPORTS (foot)
+// ============================================================================
+
+async function apiSportsGet(host, path, params) {
+  const url = new URL(`https://${host}${path}`);
+  Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+  const resp = await fetch(url.toString(), {
+    headers: { 'x-apisports-key': API_SPORTS_KEY }
+  });
+  if (!resp.ok) {
+    throw new Error(`API-Sports ${host}${path} → HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  if (data.errors && Array.isArray(data.errors) ? data.errors.length : Object.keys(data.errors || {}).length) {
+    // L'API-Sports renvoie errors:{} ou errors:[] même en cas de succès partiel —
+    // on logue sans bloquer, la donnée utile (response) reste exploitable.
+    console.warn('[BOT] avertissement API', host, path, JSON.stringify(data.errors));
+  }
+  return data.response || [];
+}
+
+// Une seule requête regroupe cotes + infos de match pour le foot (économe en quota)
+async function recupererCotesFoot(dateCible) {
+  try {
+    return await apiSportsGet(FOOT_HOST, '/odds', { date: dateCible, bookmaker: BOOKMAKER_ID, page: 1 });
+  } catch (e) {
+    stats.erreurs.push('foot/odds: ' + e.message);
+    return [];
+  }
+}
+
+// Résolution des vrais noms d'équipes — un seul appel groupé, uniquement
+// pour les matchs effectivement retenus (jamais tous les matchs du jour).
+async function resoudreNomsEquipes(fixtureIds) {
+  const noms = {};
+  const lots = [];
+  for (let i = 0; i < fixtureIds.length; i += 20) lots.push(fixtureIds.slice(i, i + 20));
+  for (const lot of lots) {
+    try {
+      const data = await apiSportsGet(FOOT_HOST, '/fixtures', { ids: lot.join('-') });
+      data.forEach(f => {
+        noms[f.fixture.id] = {
+          label: `${f.teams.home.name} — ${f.teams.away.name}`,
+          statut: f.fixture.status.short,
+          kickoffUtc: f.fixture.date
+        };
+      });
+    } catch (e) {
+      stats.erreurs.push('foot/fixtures(ids): ' + e.message);
+    }
+  }
+  return noms;
+}
+
+// ============================================================================
+// 5. EXTRACTION DES MARCHÉS PERTINENTS (foot)
+// ============================================================================
+
+function extraireMarchesFoot(oddsItem, dateCible) {
+  const fixture = oddsItem.fixture;
+  const league = oddsItem.league;
+  if (!fixture || !league) { rejeter('donnees_incompletes'); return []; }
+  if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) { rejeter('championnat_non_autorise'); return []; }
+
+  // Fenêtre horaire Haïti stricte pour le foot (règle 4)
+  const h = heureHaitiDuMatch(fixture.date);
+  if (!h) { rejeter('date_invalide'); return []; }
+  if (h.iso !== dateCible) { rejeter('mauvaise_date_locale'); return []; }
+  const minutesJour = h.heureNum * 60 + h.minuteNum;
+  if (minutesJour < FOOT_MIN_HOUR * 60 || minutesJour > FOOT_MAX_MINUTES) {
+    rejeter('hors_fenetre_horaire_foot');
+    return [];
+  }
+
+  const bets = (oddsItem.bookmakers && oddsItem.bookmakers[0] && oddsItem.bookmakers[0].bets) || [];
+  const trouvees = [];
+
+  bets.forEach(betType => {
+    // Score exact (id 10) — seulement si probabilité raisonnable (cote 4.0–15.0)
+    if (betType.id === 10) {
+      let meilleur = null, minCote = 999;
+      betType.values.forEach(v => {
+        const c = parseFloat(v.odd);
+        if (c < minCote) { minCote = c; meilleur = v; }
+      });
+      if (meilleur && minCote >= 4.0 && minCote <= 15.0) {
+        trouvees.push({
+          fixtureId: fixture.id, league: league.name, market: 'mk_score_exact',
+          pick: `Score exact : ${meilleur.value}`, odd: minCote, tier: 'EXACT_SCORE',
+          kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+        });
+      }
+    }
+    // Double chance (id 12) — profil "safe"
+    if (betType.id === 12) {
+      betType.values.forEach(v => {
+        const c = parseFloat(v.odd);
+        if (c >= 1.20 && c <= 1.70) {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: 'mk_double_chance',
+            pick: `Double chance : ${v.value}`, odd: c, tier: 'SAFE',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+          });
+        }
+      });
+    }
+    // Victoire directe (id 1) — profil "premium"
+    if (betType.id === 1) {
+      betType.values.forEach(v => {
+        const c = parseFloat(v.odd);
+        if (c >= 1.95 && c <= 2.50 && (v.value === 'Home' || v.value === 'Away')) {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: 'mk_1x2',
+            pick: `Victoire : ${v.value}`, odd: c, tier: 'PREMIUM',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+          });
+        }
+      });
+    }
+    // Total buts (id 5) — safe + exception premium sur Over 2.5
+    if (betType.id === 5) {
+      betType.values.forEach(v => {
+        const c = parseFloat(v.odd);
+        if (c >= 1.20 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: 'mk_total_buts',
+            pick: v.value, odd: c, tier: 'SAFE',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+          });
+        }
+        if (c >= 1.95 && c <= 2.40 && v.value === 'Over 2.5') {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: 'mk_total_buts',
+            pick: 'Plus de 2.5 buts', odd: c, tier: 'PREMIUM',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+          });
+        }
+      });
+    }
+    // BTTS (id 8, "Both Teams Score") — profil safe/premium selon la cote
+    if (betType.id === 8) {
+      betType.values.forEach(v => {
+        const c = parseFloat(v.odd);
+        if (v.value === 'Yes' && c >= 1.20 && c <= 2.20) {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: 'mk_btts',
+            pick: 'Les deux équipes marquent : Oui', odd: c,
+            tier: c <= 1.70 ? 'SAFE' : 'PREMIUM',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+          });
+        }
+      });
+    }
+  });
+
+  if (trouvees.length) stats.matchsRetenus++;
+  return trouvees;
+}
+
+// ============================================================================
+// 6. CONSTRUCTION DES FICHES PAR PLAN (diversification + anti-corrélation)
+// ============================================================================
+
+/**
+ * Choisit les sélections d'une fiche pour un plan donné.
+ * Priorité stricte : fiabilité > diversification > cote finale > nombre de matchs
+ * (jamais l'inverse — règle 40 du cahier des charges).
+ */
+function construireFiche(pool, plan) {
+  const cibleMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5;
+  const cibleMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : 999;
+  const maxLeg = plan.max_leg_odd != null ? Number(plan.max_leg_odd) : 2.5;
+  const autoriseScoreExact = !!plan.includes_exact_score;
+
+  const parTier = t => pool.filter(b => b.tier === t).sort(() => 0.5 - Math.random());
+  const safe = parTier('SAFE');
+  const premium = parTier('PREMIUM');
+  const exact = autoriseScoreExact ? parTier('EXACT_SCORE') : [];
+
+  const selections = [];
+  const matchsUtilises = new Set();
+  const championnatsUtilises = {};
+  const marchesUtilises = {};
+  let coteTotale = 1.0;
+
+  const MAX_PAR_MARCHE = 2;   // diversification des marchés
+  const MAX_PAR_CHAMPIONNAT = 3; // diversification des championnats
+  const MAX_SELECTIONS = 10;
+
+  function tenterAjout(bet) {
+    if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match
+    if (bet.odd > maxLeg && bet.tier !== 'EXACT_SCORE') return false;
+    if ((marchesUtilises[bet.market] || 0) >= MAX_PAR_MARCHE) return false;
+    if ((championnatsUtilises[bet.league] || 0) >= MAX_PAR_CHAMPIONNAT) return false;
+    if (selections.length >= MAX_SELECTIONS) return false;
+    if (coteTotale * bet.odd > cibleMax * 1.05) return false; // petite marge, jamais dépasser franchement
+    selections.push(bet);
+    matchsUtilises.add(bet.fixtureId);
+    marchesUtilises[bet.market] = (marchesUtilises[bet.market] || 0) + 1;
+    championnatsUtilises[bet.league] = (championnatsUtilises[bet.league] || 0) + 1;
+    coteTotale *= bet.odd;
+    return true;
+  }
+
+  // 1 score exact max, seulement si le plan l'autorise
+  if (autoriseScoreExact) {
+    for (const b of exact) { if (tenterAjout(b)) break; }
+  }
+  // Jusqu'à 2 sélections premium
+  let premCount = 0;
+  for (const b of premium) {
+    if (premCount >= 2) break;
+    if (tenterAjout(b)) premCount++;
+  }
+  // Compléter avec du safe jusqu'à atteindre la cible (jamais au-delà du max)
+  for (const b of safe) {
+    if (coteTotale >= cibleMin) break;
+    tenterAjout(b);
+  }
+
+  // Score de confiance = moyenne des probabilités implicites des cotes (1/cote),
+  // heuristique basée sur les cotes du marché — PAS une vraie analyse statistique
+  // indépendante (forme, blessures...) : cela demanderait un fournisseur de
+  // données stats séparé, à décider avec James si on veut aller plus loin.
+  const confiance = selections.length
+    ? Math.round(100 * selections.reduce((s, b) => s + 1 / b.odd, 0) / selections.length)
+    : 0;
+
+  return {
+    selections,
+    coteTotale: Math.round(coteTotale * 100) / 100,
+    confiance,
+    valide: selections.length > 0 && coteTotale >= cibleMin && coteTotale <= cibleMax
+  };
+}
+
+// ============================================================================
+// 7. IDEMPOTENCE — jamais deux fois la même génération pour la même date
+// ============================================================================
+
+async function dejaGenereAujourdhui(sb, dateCible) {
+  const { data, error } = await sb
+    .from('tickets')
+    .select('id')
+    .eq('play_date', dateCible)
+    .like('code', 'BOT-%')
+    .limit(1);
+  if (error) { stats.erreurs.push('verif_doublon: ' + error.message); return false; }
+  return !!(data && data.length);
+}
+
+// ============================================================================
+// 8. ÉCRITURE EN BASE
+// ============================================================================
+
+async function publierFiche(sb, plan, fiche, dateCible, sport, noms) {
+  const code = `BOT-${dateCible}-${sport.toUpperCase()}-R${plan.rank}`;
+  const { data: ticket, error: errTicket } = await sb
+    .from('tickets')
+    .insert({
+      code, sport, min_plan_rank: plan.rank, status: 'pending',
+      confidence: fiche.confiance, play_date: dateCible, published: true,
+      legs_count: fiche.selections.length, total_odd: fiche.coteTotale
+    })
+    .select('id').single();
+  if (errTicket) { stats.erreurs.push(`publication ticket rang ${plan.rank}: ${errTicket.message}`); return false; }
+
+  const legs = fiche.selections.map((s, i) => {
+    const nom = noms[s.fixtureId];
+    return {
+      ticket_id: ticket.id,
+      match_label: (nom && nom.label) || `Match ${s.fixtureId}`,
+      match_time: s.matchTimeHaiti,
+      kickoff_at: s.kickoffUtc,
+      league: s.league,
+      market: s.market,
+      pick: s.pick,
+      odd: s.odd,
+      position: i + 1,
+      fixture_id: String(s.fixtureId),
+      result: null
+    };
+  });
+  const { error: errLegs } = await sb.from('ticket_legs').insert(legs);
+  if (errLegs) {
+    stats.erreurs.push(`publication legs rang ${plan.rank}: ${errLegs.message}`);
+    // On retire le ticket orphelin plutôt que de laisser une fiche vide publiée
+    await sb.from('tickets').delete().eq('id', ticket.id);
+    return false;
+  }
+  stats.fichesPubliees++;
+  return true;
+}
+
+// ============================================================================
+// 9. ORCHESTRATION PRINCIPALE
+// ============================================================================
+
+export async function handler(event) {
+  // Ne générer que si on est effectivement à 17h00 (± 14 min) en Haïti —
+  // le cron se déclenche plus souvent que nécessaire par sécurité DST.
+  const maintenant = partsHaiti(new Date());
+  if (maintenant.heureNum !== 17) {
+    return { statusCode: 200, body: 'Hors fenêtre 17h00 Haïti — rien à faire.' };
+  }
+
+  if (!API_SPORTS_KEY) {
+    stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
+    logFinal();
+    return { statusCode: 500, body: 'Configuration incomplète.' };
+  }
+
+  let sb;
+  try { sb = getSupabase(); }
+  catch (e) { stats.erreurs.push(e.message); logFinal(); return { statusCode: 500, body: e.message }; }
+
+  const dateCible = dateCibleDemainHaiti();
+  stats.dateCible = dateCible;
+  console.log(`[BOT] ${new Date().toISOString()} — Date cible (Haïti, demain) : ${dateCible}`);
+
+  // --- Protection anti-doublon ---
+  if (await dejaGenereAujourdhui(sb, dateCible)) {
+    stats.doublonsDetectes = true;
+    logFinal();
+    return { statusCode: 200, body: `Fiches déjà générées pour ${dateCible} — abandon.` };
+  }
+
+  // --- Plans réels (cotes cible par rang) ---
+  const { data: plans, error: errPlans } = await sb
+    .from('plans')
+    .select('rank,min_total_odd,max_total_odd,max_leg_odd,includes_exact_score');
+  if (errPlans || !plans || !plans.length) {
+    stats.erreurs.push('lecture table plans: ' + (errPlans ? errPlans.message : 'vide'));
+    logFinal();
+    return { statusCode: 500, body: 'Impossible de lire les plans.' };
+  }
+
+  // --- Cotes réelles foot ---
+  const oddsRaw = await recupererCotesFoot(dateCible);
+  stats.matchsTrouves = oddsRaw.length;
+
+  if (!oddsRaw.length) {
+    // Aucune cote disponible (plan API insuffisant, pas de match, panne) :
+    // on ne publie RIEN plutôt que d'inventer — règle 29/39.
+    console.log('[BOT] Aucune cote reçue — vérifier le plan API-Sports (endpoint /odds).');
+    logFinal();
+    return { statusCode: 200, body: 'Aucune cote disponible — aucune fiche publiée.' };
+  }
+
+  let poolFoot = [];
+  oddsRaw.forEach(item => { poolFoot = poolFoot.concat(extraireMarchesFoot(item, dateCible)); });
+
+  if (!poolFoot.length) {
+    console.log('[BOT] Aucune sélection foot ne passe les filtres.');
+  }
+
+  // --- Résolution des vrais noms d'équipes (uniquement les matchs candidats) ---
+  const idsUtiles = [...new Set(poolFoot.map(b => b.fixtureId))];
+  const noms = idsUtiles.length ? await resoudreNomsEquipes(idsUtiles) : {};
+  // On exclut les matchs dont le statut réel n'est pas "programmé" (reporté/annulé avant même publication)
+  poolFoot = poolFoot.filter(b => {
+    const n = noms[b.fixtureId];
+    if (!n) { rejeter('nom_equipe_introuvable'); return false; }
+    if (!['NS', 'TBD'].includes(n.statut)) { rejeter('statut_match_non_programme'); return false; }
+    return true;
+  });
+
+  // --- Construction + publication par plan ---
+  for (const plan of plans) {
+    const fiche = construireFiche(poolFoot, plan);
+    stats.fichesGenerees++;
+    if (!fiche.valide) {
+      console.log(`[BOT] Rang ${plan.rank} : aucune fiche fiable dans la plage demandée — non publiée.`);
+      continue;
+    }
+    await publierFiche(sb, plan, fiche, dateCible, 'foot', noms);
+  }
+
+  logFinal();
+  return {
+    statusCode: 200,
+    body: `Terminé. ${stats.fichesPubliees} fiche(s) publiée(s) pour ${dateCible}.`
+  };
+}
