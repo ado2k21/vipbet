@@ -4501,7 +4501,7 @@ dash_f_all:"Tout", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues",
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS",
-dash_conf:"Score de confiance", dash_totalodd:"Cote totale",
+dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
 dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
@@ -4893,7 +4893,7 @@ dash_f_all:"All", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING",
-dash_conf:"Confidence score", dash_totalodd:"Total odds",
+dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
 dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
@@ -5285,7 +5285,7 @@ dash_f_all:"Tout", dash_f_foot:"Foutbòl", dash_f_nba:"NBA",
 dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN",
-dash_conf:"Nòt konfyans", dash_totalodd:"Cote total",
+dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
 dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
@@ -8134,6 +8134,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
   }
   const aujourdHuiHaiti=()=>partsHaiti(new Date()).iso;
+  // Partagee avec le reste de la page (bandeau de preuves de l'accueil) :
+  // une seule definition du "jour", celui d'Haiti.
+  window.VB_dateHaiti=aujourdHuiHaiti;
   const minuitHaitiMs=iso=>Date.parse(iso+'T00:00:00Z');
   /* Nombre de jours (haitiens) entre une date de jeu et aujourd'hui. */
   function ecartJoursHaiti(isoJour){
@@ -8283,7 +8286,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const avec=data.filter(p=>p.includes_exact_score).map(p=>p.rank);
       rangScoreMin=avec.length?Math.min.apply(null,avec):null;
       return true;
-    }catch(e){return false;}
+    }catch(e){
+      // Panne reseau ou base injoignable. On n'invente rien pour autant :
+      // mieux vaut un ecran vide qu'un faux resultat presente comme vrai.
+      DATA.tickets=[];
+      return true;
+    }
   }
 
   /* ---- Rang de plan REEL, calcule par la base ----
@@ -10989,6 +10997,100 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   initSupabase();
   window.addEventListener('load',initSupabase);
   window.VB_getSupabase=initSupabase;
+
+  /* ======================================================================
+     PREUVES DE LA PAGE D'ACCUEIL — alimentees par la BASE, jamais en dur.
+     ----------------------------------------------------------------------
+     Le bandeau defilant affichait six resultats ecrits dans le HTML
+     ("Chelsea - Liverpool - BTTS Oui 1.50 GAGNE"), identiques depuis le
+     premier jour. On les remplace par les VRAIES selections gagnantes des
+     fiches deja jouees et deja reglees.
+
+     Trois garde-fous, dans cet ordre :
+       1. seules les fiches `status='won'` ET `play_date` PASSEE sont lues :
+          jamais un pronostic du jour, jamais un resultat non tranche ;
+       2. la regle RLS "selections des fiches reglees visibles par tous"
+          autorise cette lecture sans compte, et RIEN d'autre ;
+       3. si la base ne renvoie rien, le bandeau est MASQUE. Il ne retombe
+          jamais sur les anciens exemples : une preuve inventee vaut moins
+          que pas de preuve du tout.
+     ====================================================================== */
+  async function chargerPreuvesAccueil(){
+    const piste=document.getElementById('tick');
+    if(!piste)return;
+    const bandeau=piste.closest('.ticker');
+    const masquer=()=>{if(bandeau)bandeau.style.display='none';};
+
+    const sb=initSupabase();
+    if(!sb){masquer();return;}
+
+    /* Petit traducteur local : `t()` est enferme dans les IIFE du dessus,
+       mais `translations` et `currentLang` sont au niveau du bloc. */
+    const trad=k=>{
+      try{
+        const lang=(typeof currentLang!=='undefined'&&currentLang)?currentLang:'fr';
+        const table=(translations&&translations[lang])||translations.fr||{};
+        if(table[k]!=null)return table[k];
+        return (translations.fr&&translations.fr[k])||k;
+      }catch(e){return k;}
+    };
+    const echapper=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    try{
+      /* Le jour de reference est celui d'Haiti : en fin de soiree locale,
+         UTC est deja au lendemain et une fiche du jour meme, deja reglee,
+         serait presentee comme une preuve passee. */
+      const aujourdhui=(window.VB_dateHaiti?window.VB_dateHaiti():new Date().toISOString().slice(0,10));
+      const depuis=new Date(Date.parse(aujourdhui+'T00:00:00Z')-14*86400000);
+
+      const {data:fiches,error}=await sb.from('tickets')
+        .select('id,play_date')
+        .eq('published',true).eq('status','won')
+        .lt('play_date',aujourdhui)
+        .gte('play_date',depuis.toISOString().slice(0,10))
+        .order('play_date',{ascending:false}).limit(8);
+
+      if(error||!fiches||!fiches.length){masquer();return;}
+
+      const {data:legs}=await sb.from('ticket_legs')
+        .select('ticket_id,league,match_label,market,pick,odd,result')
+        .in('ticket_id',fiches.map(f=>f.id))
+        .order('position',{ascending:true});
+
+      // Une selection annulee (match reporte) n'est pas une preuve.
+      const gagnantes=(legs||[]).filter(l=>l.result!=='void').slice(0,12);
+      if(!gagnantes.length){masquer();return;}
+
+      const html=gagnantes.map(l=>{
+        // Meme regle d'affichage que le Dashboard : une cle i18n connue est
+        // traduite, un score exact ("2 — 1") s'affiche tel quel.
+        const pick=(String(l.pick||'').indexOf(' — ')>-1||!(translations.fr||{})[l.pick])
+          ? l.pick : trad(l.pick);
+        const marche=(translations.fr||{})[l.market]?trad(l.market):(l.market||'');
+        const cote=Number(l.odd);
+        return '<span><i class="lg">'+echapper(String(l.league||'').toUpperCase())+'</i> &nbsp;'+
+          echapper(l.match_label)+' · '+echapper(marche)+' '+echapper(pick)+
+          ' <b>'+(isFinite(cote)?cote.toFixed(2):'')+'</b>'+
+          '<i class="w" data-i18n="tick_won">'+echapper(trad('tick_won')||'GAGNÉ')+'</i></span>';
+      }).join('');
+
+      // Doublee : le defilement en boucle a besoin d'une piste continue.
+      piste.innerHTML=html+html;
+      if(bandeau)bandeau.style.display='';
+    }catch(e){masquer();}
+  }
+
+  // Le bandeau part masque : il ne doit jamais montrer les anciens exemples
+  // ecrits en dur, meme une fraction de seconde.
+  (function(){
+    const p=document.getElementById('tick');
+    const b=p&&p.closest('.ticker');
+    if(b)b.style.display='none';
+    if(p)p.innerHTML='';
+  })();
+  chargerPreuvesAccueil();
+  window.addEventListener('load',chargerPreuvesAccueil);
+  window.VB_rechargerPreuves=chargerPreuvesAccueil;
 
   /* Auto-test, utilisable depuis la console du navigateur :
      VB_testSupabase() puis regarder le resultat affiche. Ne modifie rien
