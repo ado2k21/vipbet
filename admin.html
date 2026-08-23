@@ -4595,6 +4595,7 @@ adm_fiche_err_save:"L'enregistrement a échoué.",
 adm_fiche_err_code_dup:"Ce code de fiche existe déjà. Choisissez-en un autre.",
 adm_fiche_odds_total:"Cote totale : {n}", adm_fiche_odds_range:"plage autorisée pour ce plan : {min} à {max}",
 adm_fiche_odds_unlimited:"illimitée",
+adm_fiche_odds_risky:"{n} sélection(s) au-dessus de {max} — fiche risquée",
 adm_fiche_err_odds_range:"La cote totale ({n}) doit être comprise entre {min} et {max} pour ce plan.",
 adm_fiche_err_odds_plan:"Cote totale hors de la plage autorisée pour ce plan",
 adm_fiche_err_forbidden:"Action réservée à un compte administrateur.",
@@ -4967,6 +4968,7 @@ adm_fiche_err_save:"Save failed.",
 adm_fiche_err_code_dup:"This slip code already exists. Pick another one.",
 adm_fiche_odds_total:"Total odds: {n}", adm_fiche_odds_range:"allowed range for this plan: {min} to {max}",
 adm_fiche_odds_unlimited:"unlimited",
+adm_fiche_odds_risky:"{n} selection(s) above {max} — risky slip",
 adm_fiche_err_odds_range:"Total odds ({n}) must be between {min} and {max} for this plan.",
 adm_fiche_err_odds_plan:"Total odds outside the range allowed for this plan",
 adm_fiche_err_forbidden:"Admin account required for this action.",
@@ -5339,6 +5341,7 @@ adm_fiche_err_save:"Anrejistreman echwe.",
 adm_fiche_err_code_dup:"Kòd fich sa a egziste deja. Chwazi yon lòt.",
 adm_fiche_odds_total:"Cote total : {n}", adm_fiche_odds_range:"ranje ki otorize pou plan sa a : {min} a {max}",
 adm_fiche_odds_unlimited:"san limit",
+adm_fiche_odds_risky:"{n} seleksyon pi wo pase {max} — fich riske",
 adm_fiche_err_odds_range:"Cote total la ({n}) dwe ant {min} ak {max} pou plan sa a.",
 adm_fiche_err_odds_plan:"Cote total la deyò ranje ki otorize pou plan sa a",
 adm_fiche_err_forbidden:"Se yon kont administratè ki ka fè aksyon sa a.",
@@ -9735,11 +9738,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return null;
     try{
-      const {data,error}=await sb.from('plans').select('rank,min_total_odd,max_total_odd');
+      const {data,error}=await sb.from('plans').select('rank,min_total_odd,max_total_odd,max_leg_odd');
       if(error||!data)return null;
       plagesCotes={};
       data.forEach(p=>{plagesCotes[p.rank]={min:p.min_total_odd!=null?Number(p.min_total_odd):null,
-                                           max:p.max_total_odd!=null?Number(p.max_total_odd):null};});
+                                           max:p.max_total_odd!=null?Number(p.max_total_odd):null,
+                                           maxLeg:p.max_leg_odd!=null?Number(p.max_leg_odd):null};});
       return plagesCotes;
     }catch(e){return null;}
   }
@@ -9769,8 +9773,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         .replace('{max}',maxTxt);
       hors=total>0&&((pl.min!=null&&total<pl.min)||(pl.max!=null&&total>pl.max));
     }
-    box.textContent=txt;
-    box.style.color=hors?'#E4574C':'#9FB0C4';
+    /* Alerte de risque : une fiche qui empile les selections au-dessus du
+       plafond conseille (1,90 par defaut, hors score exact) a beaucoup
+       moins de chances de passer, meme si sa cote totale est correcte.
+       On le signale a l'admin avant publication — sans jamais bloquer. */
+    let risque='';
+    if(pl&&pl.maxLeg!=null){
+      const risquees=fbLegsCourantes.filter(l=>{
+        const o=parseFloat(l.odd);
+        return o>pl.maxLeg&&(l.market||'')!=='mk_score_l';
+      }).length;
+      if(risquees>0){
+        risque=' · '+t('adm_fiche_odds_risky')
+          .replace('{n}',risquees).replace('{max}',pl.maxLeg.toFixed(2));
+      }
+    }
+    box.textContent=txt+risque;
+    box.style.color=hors?'#E4574C':(risque?'#E0A32E':'#9FB0C4');
   }
   async function renderFiches(){
     const dateInput=document.getElementById('admFichesDate');
