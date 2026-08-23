@@ -8193,8 +8193,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
       // Anti-doublon : une meme fiche ne doit jamais apparaitre deux fois,
       // quoi qu'il arrive cote reseau ou cote base.
+      // Anti-doublon, et mise a l'ecart des fiches publiees SANS aucune
+      // selection : elles n'ont rien a montrer (fiche en cours de saisie,
+      // ou ecriture interrompue). Mieux vaut ne rien afficher qu'une
+      // carte vide.
       const vues={},uniques=[];
-      (fiches||[]).forEach(tk=>{if(tk&&tk.id&&!vues[tk.id]){vues[tk.id]=1;uniques.push(tk);}});
+      (fiches||[]).forEach(tk=>{
+        if(!tk||!tk.id||vues[tk.id])return;
+        if((tk.legs_count||0)===0)return;
+        vues[tk.id]=1;uniques.push(tk);
+      });
 
       let selections=[];
       if(uniques.length){
@@ -8239,6 +8247,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     return signatureFiches()!==avant;
   }
 
+  /* ---- Regles des plans, lues en base ----
+     Le rang minimum qui donne droit aux scores exacts est une donnee du
+     catalogue (plans.includes_exact_score), pas une constante ecrite ici :
+     changer l'offre se fait en base, jamais dans le code. */
+  let rangScoreMin=null;
+  async function chargerReglesPlans(){
+    if(rangScoreMin!=null)return false;          // catalogue stable, lu une fois
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return false;
+    try{
+      const {data,error}=await sb.from('plans').select('rank,includes_exact_score');
+      if(error||!data)return false;
+      const avec=data.filter(p=>p.includes_exact_score).map(p=>p.rank);
+      rangScoreMin=avec.length?Math.min.apply(null,avec):null;
+      return true;
+    }catch(e){return false;}
+  }
+
   /* ---- Rang de plan REEL, calcule par la base ----
      C'est exactement la valeur qui gouverne les regles de visibilite
      cote serveur (fonction user_plan_rank). L'utiliser ici garantit que
@@ -8267,9 +8293,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   async function rafraichirFiches(forcer){
     let bouge=false;
     try{
+      const g=await chargerReglesPlans();
       const r=await chargerRangServeur();
       const f=await chargerFichesReelles();
-      bouge=!!(r||f);
+      bouge=!!(g||r||f);
     }catch(e){}
     if(bouge||forcer)renderAll();
     return bouge;
@@ -8459,7 +8486,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     const ul=document.createElement('ul');
     ul.className='dtk-legs';
-    if(tk.legs.length){
+    /* IMPORTANT : on se base sur l'etat verrouille, pas sur la presence
+       de selections. La base peut livrer une partie des selections d'une
+       fiche verrouillee (les scores exacts, inclus des le plan 30 jours,
+       peuvent figurer dans une fiche reservee au plan a vie) : ces
+       selections-la ont leur propre carte, elles ne doivent jamais
+       apparaitre dans une carte verrouillee. */
+    if(!locked&&tk.legs.length){
       tk.legs.forEach(lg=>{
         const li=document.createElement('li');
         li.className='dtk-leg';
@@ -8547,11 +8580,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      "scores exacts" : elle s'affiche dans sa carte dediee, jamais deux
      fois (une fois dans la liste, une fois dans la carte). */
   const estFicheScore=k=>k.scoreCount>0&&k.scoreCount===k.legsCount;
-  /* Plan minimum reellement exige aujourd'hui pour les scores exacts,
-     lu sur les fiches en base — null s'il n'y en a aucune. */
+  /* Plan minimum exige pour les scores exacts : c'est l'offre du plan qui
+     decide (plans.includes_exact_score), pas le plan de la fiche qui les
+     porte — le bot peut tres bien les publier dans la fiche du plan a vie
+     alors qu'ils sont inclus des le plan 30 jours.
+     Retourne null quand aucun score exact n'est publie pour aujourd'hui. */
   function rangScoresDuJour(){
-    const f=fichesScoreDuJour();
-    return f.length?Math.min.apply(null,f.map(k=>k.minPlan)):null;
+    if(!fichesScoreDuJour().length)return null;
+    if(rangScoreMin!=null)return rangScoreMin;
+    // Catalogue pas encore lu : on reste prudent, la carte reste fermee
+    // jusqu'a ce que la regle reelle soit connue.
+    return Math.min.apply(null,fichesScoreDuJour().map(k=>k.minPlan));
   }
   function scoresDuJour(){
     const out=[];

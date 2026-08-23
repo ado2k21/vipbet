@@ -4593,6 +4593,10 @@ adm_fiche_err_nolegs:"Ajoutez au moins un match.",
 adm_fiche_err_leg_incomplete:"Chaque match doit avoir au moins les équipes, le pronostic et la cote.",
 adm_fiche_err_save:"L'enregistrement a échoué.",
 adm_fiche_err_code_dup:"Ce code de fiche existe déjà. Choisissez-en un autre.",
+adm_fiche_odds_total:"Cote totale : {n}", adm_fiche_odds_range:"plage autorisée pour ce plan : {min} à {max}",
+adm_fiche_odds_unlimited:"illimitée",
+adm_fiche_err_odds_range:"La cote totale ({n}) doit être comprise entre {min} et {max} pour ce plan.",
+adm_fiche_err_odds_plan:"Cote totale hors de la plage autorisée pour ce plan",
 adm_fiche_err_forbidden:"Action réservée à un compte administrateur.",
 adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatement si publiée.",
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
@@ -4961,6 +4965,10 @@ adm_fiche_err_nolegs:"Add at least one match.",
 adm_fiche_err_leg_incomplete:"Each match needs at least the teams, the pick, and the odds.",
 adm_fiche_err_save:"Save failed.",
 adm_fiche_err_code_dup:"This slip code already exists. Pick another one.",
+adm_fiche_odds_total:"Total odds: {n}", adm_fiche_odds_range:"allowed range for this plan: {min} to {max}",
+adm_fiche_odds_unlimited:"unlimited",
+adm_fiche_err_odds_range:"Total odds ({n}) must be between {min} and {max} for this plan.",
+adm_fiche_err_odds_plan:"Total odds outside the range allowed for this plan",
 adm_fiche_err_forbidden:"Admin account required for this action.",
 adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if published.",
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
@@ -5329,6 +5337,10 @@ adm_fiche_err_nolegs:"Ajoute omwen yon match.",
 adm_fiche_err_leg_incomplete:"Chak match dwe gen omwen ekip yo, pronostik la, ak kòt la.",
 adm_fiche_err_save:"Anrejistreman echwe.",
 adm_fiche_err_code_dup:"Kòd fich sa a egziste deja. Chwazi yon lòt.",
+adm_fiche_odds_total:"Cote total : {n}", adm_fiche_odds_range:"ranje ki otorize pou plan sa a : {min} a {max}",
+adm_fiche_odds_unlimited:"san limit",
+adm_fiche_err_odds_range:"Cote total la ({n}) dwe ant {min} ak {max} pou plan sa a.",
+adm_fiche_err_odds_plan:"Cote total la deyò ranje ki otorize pou plan sa a",
 adm_fiche_err_forbidden:"Se yon kont administratè ki ka fè aksyon sa a.",
 adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li pibliye.",
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
@@ -9712,6 +9724,54 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   function dateAujourdhui(){
     return partsHaiti(new Date()).iso;
   }
+
+  /* ---- Plage de cote totale imposee a chaque plan ----
+     Lue dans le catalogue (table plans), jamais ecrite en dur : c'est la
+     meme reference que celle appliquee par la base, qui REFUSE toute
+     fiche publiee dont la cote totale sort de la plage de son plan. */
+  let plagesCotes=null;
+  async function chargerPlagesCotes(){
+    if(plagesCotes)return plagesCotes;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{
+      const {data,error}=await sb.from('plans').select('rank,min_total_odd,max_total_odd');
+      if(error||!data)return null;
+      plagesCotes={};
+      data.forEach(p=>{plagesCotes[p.rank]={min:p.min_total_odd!=null?Number(p.min_total_odd):null,
+                                           max:p.max_total_odd!=null?Number(p.max_total_odd):null};});
+      return plagesCotes;
+    }catch(e){return null;}
+  }
+  // Produit des cotes saisies (0 si aucune cote valable)
+  function coteTotaleSaisie(){
+    let n=0,prod=1;
+    fbLegsCourantes.forEach(l=>{const o=parseFloat(l.odd);if(o>0){prod*=o;n++;}});
+    return n?Math.round(prod*100)/100:0;
+  }
+  function plagePlanCourant(){
+    const sel=document.getElementById('admFichePlan');
+    const rk=sel?parseInt(sel.value,10):null;
+    return (plagesCotes&&rk&&plagesCotes[rk])?plagesCotes[rk]:null;
+  }
+  // Rappel visible sous la liste des matchs : cote totale + plage autorisee
+  function majResumeCote(){
+    const box=document.getElementById('admFicheCoteResume');
+    if(!box)return;
+    const total=coteTotaleSaisie();
+    const pl=plagePlanCourant();
+    let txt=t('adm_fiche_odds_total').replace('{n}',total.toFixed(2));
+    let hors=false;
+    if(pl){
+      const maxTxt=pl.max!=null?pl.max.toFixed(2):t('adm_fiche_odds_unlimited');
+      txt+=' · '+t('adm_fiche_odds_range')
+        .replace('{min}',pl.min!=null?pl.min.toFixed(2):'0')
+        .replace('{max}',maxTxt);
+      hors=total>0&&((pl.min!=null&&total<pl.min)||(pl.max!=null&&total>pl.max));
+    }
+    box.textContent=txt;
+    box.style.color=hors?'#E4574C':'#9FB0C4';
+  }
   async function renderFiches(){
     const dateInput=document.getElementById('admFichesDate');
     if(!dateInput.value)dateInput.value=dateAujourdhui();
@@ -9794,6 +9854,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         const idx=parseInt(inp.closest('[data-legidx]').dataset.legidx,10);
         const champ=inp.dataset.f;
         fbLegsCourantes[idx][champ]=champ==='odd'?(inp.value?parseFloat(inp.value):null):inp.value;
+        if(champ==='odd')majResumeCote();
       });
     });
     document.querySelectorAll('.fb-leg-del').forEach(b=>{
@@ -9808,6 +9869,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!box)return;
     box.innerHTML=fbLegsCourantes.map((l,i)=>legRowHtml(l,i)).join('')||'<div class="admdash-hist-empty">'+t('adm_fiche_leg_none')+'</div>';
     rebrancherLegs();
+    majResumeCote();
   }
 
   async function renderFicheDetail(){
@@ -9857,6 +9919,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
       '<div class="admdash-section-h">'+t('adm_fiche_legs_h')+'</div>'+
       '<div id="admFicheLegsList"></div>'+
+      '<div id="admFicheCoteResume" style="margin-top:10px;font-size:12.5px;color:#9FB0C4"></div>'+
       '<button type="button" class="btn btn-ghost" id="admFicheLegAdd" style="width:100%;margin-top:10px">'+t('adm_fiche_leg_add')+'</button>'+
 
       '<button type="button" class="btn btn-confirm" id="admFicheSave" style="width:100%;margin-top:18px">'+t('adm_fiche_save')+'</button>'+
@@ -9864,6 +9927,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<div id="admFicheErr" class="field-err" style="display:none;margin-top:8px"></div>';
 
     rerenderLegsList();
+    // Le catalogue peut arriver apres le premier rendu : on rafraichit
+    // le rappel des que la plage du plan est connue.
+    chargerPlagesCotes().then(()=>majResumeCote());
+    document.getElementById('admFichePlan').addEventListener('change',majResumeCote);
 
     document.getElementById('admFicheLegAdd').addEventListener('click',()=>{
       fbLegsCourantes.push({match_label:'',match_time:'',league:'',market:'',pick:'',odd:null});
@@ -9883,8 +9950,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       };
       if(!payload.play_date){err.textContent=t('adm_fiche_err_incomplete');err.style.display='block';return;}
       if(!fbLegsCourantes.length){err.textContent=t('adm_fiche_err_nolegs');err.style.display='block';return;}
-      const legsIncomplets=fbLegsCourantes.some(l=>!l.match_label||!l.pick||l.odd==null);
+      const legsIncomplets=fbLegsCourantes.some(l=>!l.match_label||!l.pick||l.odd==null||!(parseFloat(l.odd)>0));
       if(legsIncomplets){err.textContent=t('adm_fiche_err_leg_incomplete');err.style.display='block';return;}
+      /* Plage de cote du plan : controlee ici pour un message clair et
+         traduit, et de nouveau par la base qui refuse l'ecriture — la
+         verification cote navigateur est un confort, jamais la garantie. */
+      const plage=plagesCotes?plagesCotes[payload.min_plan_rank]:null;
+      const totalSaisi=coteTotaleSaisie();
+      if(plage&&((plage.min!=null&&totalSaisi<plage.min)||(plage.max!=null&&totalSaisi>plage.max))){
+        err.textContent=t('adm_fiche_err_odds_range')
+          .replace('{n}',totalSaisi.toFixed(2))
+          .replace('{min}',plage.min!=null?plage.min.toFixed(2):'0')
+          .replace('{max}',plage.max!=null?plage.max.toFixed(2):t('adm_fiche_odds_unlimited'));
+        err.style.display='block';return;
+      }
       err.style.display='none';
       demanderConfirmation(this,t('adm_confirm_q_save'),()=>sauvegarderFiche(payload));
     });
@@ -9904,6 +9983,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(brut.indexOf('champs_manquants')>-1)return t('adm_fiche_err_incomplete');
     if(brut.indexOf('tickets_code_key')>-1||brut.indexOf('duplicate key')>-1)return t('adm_fiche_err_code_dup');
     if(brut.indexOf('non_autorise')>-1)return t('adm_fiche_err_forbidden');
+    if(brut.indexOf('cote_hors_plage')>-1){
+      // La base donne le detail chiffre : on le garde, precede du libelle traduit.
+      return t('adm_fiche_err_odds_plan')+' — '+brut.replace(/^.*cote_hors_plage:\s*/,'').slice(0,160);
+    }
     return t('adm_fiche_err_save')+' — '+brut.slice(0,140);
   }
 
