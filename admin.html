@@ -4676,6 +4676,7 @@ adm_pay_reason_required:"Une raison est obligatoire pour refuser un paiement.",
 adm_pay_action_error:"Action impossible. Vérifiez la connexion et réessayez.",
 adm_pay_toast_confirmed_h:"Paiement validé", adm_pay_toast_confirmed_p:"L'abonnement est désormais actif.",
 adm_pay_toast_rejected_h:"Paiement refusé", adm_pay_toast_rejected_p:"L'utilisateur verra la raison du refus.",
+adm_pay_blocked_suspended:"Ce compte est suspendu : aucune décision (confirmer ou refuser) n'est possible tant que le compte reste suspendu. Réactivez d'abord le compte.",
 sb_sync_err_h:"Compte créé localement uniquement",
 sb_sync_err_p:"La synchronisation avec le serveur a échoué. Réessayez plus tard depuis Mon abonnement.",
 sb_pay_sync_err_p:"Le paiement n'a pas pu être enregistré côté serveur — il ne sera jamais visible dans l'espace admin en l'état.",
@@ -5049,6 +5050,7 @@ adm_pay_reason_required:"A reason is required to reject a payment.",
 adm_pay_action_error:"Action failed. Check your connection and try again.",
 adm_pay_toast_confirmed_h:"Payment approved", adm_pay_toast_confirmed_p:"The subscription is now active.",
 adm_pay_toast_rejected_h:"Payment rejected", adm_pay_toast_rejected_p:"The user will see the rejection reason.",
+adm_pay_blocked_suspended:"This account is suspended: no decision (confirm or reject) is possible while the account remains suspended. Reactivate the account first.",
 sb_sync_err_h:"Account created locally only",
 sb_sync_err_p:"Server sync failed. Try again later from My subscription.",
 sb_pay_sync_err_p:"The payment could not be saved on the server — it won't be visible in the admin area as-is.",
@@ -5422,6 +5424,7 @@ adm_pay_reason_required:"Yon rezon obligatwa pou refize yon peman.",
 adm_pay_action_error:"Aksyon an echwe. Verifye koneksyon an epi eseye ankò.",
 adm_pay_toast_confirmed_h:"Peman valide", adm_pay_toast_confirmed_p:"Abònman an aktif kounye a.",
 adm_pay_toast_rejected_h:"Peman refize", adm_pay_toast_rejected_p:"Itilizatè a ap wè rezon refi a.",
+adm_pay_blocked_suspended:"Kont sa a sispann : pa gen okenn desizyon (konfime oswa refize) posib pandan kont lan sispann. Reyaktive kont lan anvan.",
 sb_sync_err_h:"Kont kreye sèlman lokalman",
 sb_sync_err_p:"Senkronizasyon ak sèvè a echwe. Eseye ankò pita.",
 sb_pay_sync_err_p:"Peman an pa t kapab anrejistre kote sèvè a — li pap parèt nan espas admin lan konsa.",
@@ -7114,7 +7117,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
            le mot de passe soit faux (choix delibere de Supabase, pour
            qu'on ne puisse pas deviner quels emails sont enregistres).
            On ne peut donc PAS conclure "mauvais mot de passe" ici : un
-           compte cree avant la migration (comme footinedit@gmail.com)
+           compte cree avant la migration vers Supabase (ex. un ancien
+           compte enregistre uniquement dans le registre local)
            n'existe simplement pas encore chez Supabase, et doit continuer
            a fonctionner via l'ancien registre local ci-dessous. */
       }catch(e){
@@ -8713,11 +8717,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           '<span class="dash-pending-tx"><b>'+(paiementEnAttente.plan_id||'').toUpperCase()+' — '+(paiementEnAttente.amount_htg||0)+' HTG</b>'+
           '<span>'+(paiementEnAttente.method||'—')+' · '+t('adm_pay_ref')+' '+(paiementEnAttente.reference||'—')+'</span></span>'+
         '</div>'+
+        (estSuspendu?
+          '<div class="field-err" style="display:block;margin:12px 0">'+t('adm_pay_blocked_suspended')+'</div>'
+          :'')+
         '<label class="field" style="margin-top:12px"><span class="field-lbl">'+t('adm_pay_reason_lbl')+'</span>'+
-        '<textarea id="admUserPayReason" placeholder="'+t('adm_pay_reason_ph')+'"></textarea></label>'+
+        '<textarea id="admUserPayReason" placeholder="'+t('adm_pay_reason_ph')+'"'+(estSuspendu?' disabled':'')+'></textarea></label>'+
         '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">'+
-        '<button type="button" class="btn btn-confirm" id="admUserPayValider" style="flex:1">'+t('adm_pay_valider')+'</button>'+
-        '<button type="button" class="btn btn-reject" id="admUserPayRefuser" style="flex:1">'+t('adm_pay_refuser')+'</button>'+
+        '<button type="button" class="btn btn-confirm" id="admUserPayValider" style="flex:1"'+(estSuspendu?' disabled':'')+'>'+t('adm_pay_valider')+'</button>'+
+        '<button type="button" class="btn btn-reject" id="admUserPayRefuser" style="flex:1"'+(estSuspendu?' disabled':'')+'>'+t('adm_pay_refuser')+'</button>'+
         '</div><div id="admUserPayActionErr" class="field-err" style="display:none;margin-top:8px"></div>'
         :'')+
       '<div class="admdash-section-h">'+t('adm_user_profile_h')+'</div>'+
@@ -8750,22 +8757,51 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<div class="admdash-section-h">'+t('adm_section_pays')+'</div>'+
       '<div class="admdash-hist">'+paysHtml+'</div>';
 
-    if(paiementEnAttente){
-      document.getElementById('admUserPayValider').addEventListener('click',function(){
+    if(paiementEnAttente&&!estSuspendu){
+      document.getElementById('admUserPayValider').addEventListener('click',async function(){
+        const encoreSuspendu=await (async()=>{
+          try{
+            const sbFresh=window.VB_getSupabase&&window.VB_getSupabase();
+            if(!sbFresh)return false;
+            const {data:profFresh}=await sbFresh.from('profiles')
+              .select('suspended_at').eq('id',u.id).single();
+            return !!(profFresh&&profFresh.suspended_at);
+          }catch(e){return false;}
+        })();
+        if(encoreSuspendu){
+          const errS=document.getElementById('admUserPayActionErr');
+          errS.textContent=t('adm_pay_blocked_suspended');
+          errS.style.display='block';
+          return;
+        }
         demanderConfirmation(this,t('adm_confirm_q_valider'),()=>
           traiterPaiement(paiementEnAttente,'confirmed',null,{
             btnV:document.getElementById('admUserPayValider'),
             btnR:document.getElementById('admUserPayRefuser'),
             errBox:document.getElementById('admUserPayActionErr'),
-            onSuccess:()=>renderUserDetail()   // reste sur la fiche, ne navigue jamais vers Paiements
+            onSuccess:()=>renderUserDetail()
           })
         );
       });
-      document.getElementById('admUserPayRefuser').addEventListener('click',function(){
+      document.getElementById('admUserPayRefuser').addEventListener('click',async function(){
         const raison=(document.getElementById('admUserPayReason').value||'').trim();
         const err=document.getElementById('admUserPayActionErr');
         if(!raison){err.textContent=t('adm_pay_reason_required');err.style.display='block';return;}
         err.style.display='none';
+        const encoreSuspendu=await (async()=>{
+          try{
+            const sbFresh=window.VB_getSupabase&&window.VB_getSupabase();
+            if(!sbFresh)return false;
+            const {data:profFresh}=await sbFresh.from('profiles')
+              .select('suspended_at').eq('id',u.id).single();
+            return !!(profFresh&&profFresh.suspended_at);
+          }catch(e){return false;}
+        })();
+        if(encoreSuspendu){
+          err.textContent=t('adm_pay_blocked_suspended');
+          err.style.display='block';
+          return;
+        }
         demanderConfirmation(this,t('adm_confirm_q_refuser'),()=>
           traiterPaiement(paiementEnAttente,'rejected',raison,{
             btnV:document.getElementById('admUserPayValider'),
@@ -8838,6 +8874,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           reason:raison||null
         });
       }catch(e){}
+      try{
+        await sb.from('notifications').insert({
+          user_id:u.id, type:'admin_plan_change', plan_id:nouveauPlanId, reason:raison||null
+        });
+      }catch(e){}
       if(window.VB_toast)window.VB_toast('adm_user_plan_changed_h',t('adm_user_plan_changed_p'));
       renderUserDetail();
     }catch(e){
@@ -8856,11 +8897,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const btn=document.getElementById('admUserSuspendBtn');
     if(btn)btn.disabled=true;
     try{
-      const maj=suspendre
-        ?{suspended_at:new Date().toISOString(), suspended_by:(currentUser&&currentUser.id)||null, suspended_reason:raison||null}
-        :{suspended_at:null, suspended_by:null, suspended_reason:null};
-      const {error:majErr}=await sb.from('profiles').update(maj).eq('id',u.id);
-      if(majErr)throw majErr;
+      const {error:rpcErr}=suspendre
+        ?await sb.rpc('admin_suspend_user',{target_id:u.id, reason:raison||null})
+        :await sb.rpc('admin_reactivate_user',{target_id:u.id});
+      if(rpcErr)throw rpcErr;
       try{
         await sb.from('audit_log').insert({
           admin_id:(currentUser&&currentUser.id)||null,
@@ -8994,23 +9034,55 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         :'')+
       (p.status==='pending'?
         '<div class="admdash-section-h">'+t('adm_pay_action_h')+'</div>'+
+        (u&&u.suspended_at?
+          '<div class="field-err" style="display:block;margin-bottom:12px">'+t('adm_pay_blocked_suspended')+'</div>'
+          :'')+
         '<label class="field"><span class="field-lbl">'+t('adm_pay_reason_lbl')+'</span>'+
-        '<textarea id="admPayReason" placeholder="'+t('adm_pay_reason_ph')+'"></textarea></label>'+
+        '<textarea id="admPayReason" placeholder="'+t('adm_pay_reason_ph')+'"'+(u&&u.suspended_at?' disabled':'')+'></textarea></label>'+
         '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">'+
-        '<button type="button" class="btn btn-confirm" id="admPayValider" style="flex:1">'+t('adm_pay_valider')+'</button>'+
-        '<button type="button" class="btn btn-reject" id="admPayRefuser" style="flex:1">'+t('adm_pay_refuser')+'</button>'+
+        '<button type="button" class="btn btn-confirm" id="admPayValider" style="flex:1"'+(u&&u.suspended_at?' disabled':'')+'>'+t('adm_pay_valider')+'</button>'+
+        '<button type="button" class="btn btn-reject" id="admPayRefuser" style="flex:1"'+(u&&u.suspended_at?' disabled':'')+'>'+t('adm_pay_refuser')+'</button>'+
         '</div><div id="admPayActionErr" class="field-err" style="display:none;margin-top:8px"></div>'
         :'');
 
-    if(p.status==='pending'){
-      document.getElementById('admPayValider').addEventListener('click',function(){
+    if(p.status==='pending'&&!(u&&u.suspended_at)){
+      document.getElementById('admPayValider').addEventListener('click',async function(){
+        const encoreSuspendu=await (async()=>{
+          try{
+            const sbFresh=window.VB_getSupabase&&window.VB_getSupabase();
+            if(!sbFresh)return false;
+            const {data:profFresh}=await sbFresh.from('profiles')
+              .select('suspended_at').eq('id',p.user_id).single();
+            return !!(profFresh&&profFresh.suspended_at);
+          }catch(e){return false;}
+        })();
+        if(encoreSuspendu){
+          const errS=document.getElementById('admPayActionErr');
+          errS.textContent=t('adm_pay_blocked_suspended');
+          errS.style.display='block';
+          return;
+        }
         demanderConfirmation(this,t('adm_confirm_q_valider'),()=>traiterPaiement(p,'confirmed'));
       });
-      document.getElementById('admPayRefuser').addEventListener('click',function(){
+      document.getElementById('admPayRefuser').addEventListener('click',async function(){
         const raison=(document.getElementById('admPayReason').value||'').trim();
         const err=document.getElementById('admPayActionErr');
         if(!raison){err.textContent=t('adm_pay_reason_required');err.style.display='block';return;}
         err.style.display='none';
+        const encoreSuspendu=await (async()=>{
+          try{
+            const sbFresh=window.VB_getSupabase&&window.VB_getSupabase();
+            if(!sbFresh)return false;
+            const {data:profFresh}=await sbFresh.from('profiles')
+              .select('suspended_at').eq('id',p.user_id).single();
+            return !!(profFresh&&profFresh.suspended_at);
+          }catch(e){return false;}
+        })();
+        if(encoreSuspendu){
+          err.textContent=t('adm_pay_blocked_suspended');
+          err.style.display='block';
+          return;
+        }
         demanderConfirmation(this,t('adm_confirm_q_refuser'),()=>traiterPaiement(p,'rejected',raison));
       });
     }
@@ -9056,10 +9128,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // que l'ancien plan (garde actif pendant toute l'attente) doit
         // ceder la place au nouveau. Jamais avant.
         if(subStatus==='active'&&p.user_id){
-          try{
-            await sb.from('subscriptions').update({status:'cancelled'})
-              .eq('user_id',p.user_id).eq('status','active').neq('id',p.subscription_id);
-          }catch(e){}
+          const {error:closeErr}=await sb.from('subscriptions').update({status:'cancelled'})
+            .eq('user_id',p.user_id).eq('status','active').neq('id',p.subscription_id);
+          if(closeErr)throw closeErr;
         }
         const subUpdate={status:subStatus};
         if(subStatus==='active'){
@@ -9077,7 +9148,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
             subUpdate.expires_at=null;   // plan Lifetime : jamais d'expiration
           }
         }
-        await sb.from('subscriptions').update(subUpdate).eq('id',p.subscription_id);
+        const {error:subErr,count:subCount}=await sb.from('subscriptions')
+          .update(subUpdate,{count:'exact'})
+          .eq('id',p.subscription_id).eq('status','pending');
+        if(subErr)throw subErr;
+        if(!subCount){
+          throw new Error('Abonnement deja modifie ailleurs (plus en attente) : aucune ecriture appliquee, par securite.');
+        }
       }
       // Journal d'audit — schema reel : id, admin_id, action, target_user_id,
       // old_value (jsonb), new_value (jsonb), reason, created_at.

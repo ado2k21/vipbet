@@ -1750,12 +1750,6 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .wiz-stripe-logos .wiz-stripe-word{
   font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.02em;color:#8E87F5;
 }
-/* Lien de secours Stripe (etape 4) : visible seulement si le paiement
-   a ete lance par carte, pour rouvrir la page Stripe si le navigateur
-   a bloque l'ouverture automatique de l'onglet. */
-a.wiz-stripe{text-decoration:none}
-.wiz-stripe-relay{margin-top:18px;padding-top:16px;border-top:1px solid var(--ligne);text-align:center}
-.wiz-stripe-relay p{font-size:12.5px;line-height:1.55;color:var(--gris);margin:0 0 11px}
 
 /* --- Robustesse du mot de passe --- */
 .pwmeter{margin-top:2px}
@@ -3623,13 +3617,6 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
                 <div><dt data-i18n="wiz_d_ref">Referans</dt><dd id="wizDoneRef"></dd></div>
               </dl>
               <button type="button" class="btn btn-or authpage-submit" id="wizDoneCta" data-i18n="wiz_d_cta">Ale nan dashboard la</button>
-              <div class="wiz-stripe-relay" id="wizStripeRelay" hidden>
-                <p id="wizStripeRelayTxt"></p>
-                <a class="wiz-stripe" id="wizStripeRelayLink" href="#" target="_blank" rel="noopener noreferrer">
-                  <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/></svg>
-                  <span></span>
-                </a>
-              </div>
             </div>
           </div>
 
@@ -4536,8 +4523,12 @@ logo_baseline:"Gagnez à chaque fois",
 auth_err_password_digit:"Le mot de passe doit contenir au moins un chiffre",
 auth_pw_weak:"Faible", auth_pw_mid:"Moyen", auth_pw_strong:"Fort",
 wiz_p_or:"ou", wiz_p_stripe:"Payer avec Stripe",
-wiz_d_stripe_relay:"Si la page de paiement Stripe ne s'est pas ouverte, terminez le paiement ici. Votre abonnement sera activé après vérification du paiement.",
-wiz_d_stripe_open:"Ouvrir la page de paiement Stripe",
+wiz_p_stripe_go_h:"Redirection vers Stripe",
+wiz_p_stripe_go_p:"Vous allez être redirigé vers la page de paiement sécurisée.",
+wiz_p_stripe_nosession:"Votre session a expiré. Reconnectez-vous avant de payer par carte.",
+wiz_p_stripe_indispo:"Le paiement par carte n'est pas disponible pour ce plan pour le moment.",
+stripe_back_h:"Paiement reçu",
+stripe_back_p:"Votre paiement a bien été reçu. Votre abonnement s'active dans quelques instants.",
 legal_updated:"Mise à jour : août 2026",
 hero_why:"POUKISA'W DWE ENSKRI NAN VIPBETCOTE??",
 auth_lbl_username:"Nom d'utilisateur", auth_ph_username:"Choisissez un nom d'utilisateur",
@@ -4928,8 +4919,12 @@ logo_baseline:"Win every time you play",
 auth_err_password_digit:"Password must contain at least one number",
 auth_pw_weak:"Weak", auth_pw_mid:"Medium", auth_pw_strong:"Strong",
 wiz_p_or:"or", wiz_p_stripe:"Pay with Stripe",
-wiz_d_stripe_relay:"If the Stripe payment page did not open, finish your payment here. Your plan will be activated once the payment has been checked.",
-wiz_d_stripe_open:"Open the Stripe payment page",
+wiz_p_stripe_go_h:"Redirecting to Stripe",
+wiz_p_stripe_go_p:"You are being redirected to the secure payment page.",
+wiz_p_stripe_nosession:"Your session has expired. Please sign in again before paying by card.",
+wiz_p_stripe_indispo:"Card payment is not available for this plan right now.",
+stripe_back_h:"Payment received",
+stripe_back_p:"Your payment has been received. Your plan will be activated in a few moments.",
 legal_updated:"Updated: August 2026",
 hero_why:"POUKISA'W DWE ENSKRI NAN VIPBETCOTE??",
 auth_lbl_username:"Username", auth_ph_username:"Choose a username",
@@ -5320,8 +5315,12 @@ logo_baseline:"Genyen chak lè w jwe",
 auth_err_password_digit:"Modpas la dwe gen omwen yon chif",
 auth_pw_weak:"Fèb", auth_pw_mid:"Mwayen", auth_pw_strong:"Fò",
 wiz_p_or:"oswa", wiz_p_stripe:"Peye ak Stripe",
-wiz_d_stripe_relay:"Si paj peman Stripe la pa t ouvri, fini peman an isit la. Abònman ou ap aktive apre nou verifye peman an.",
-wiz_d_stripe_open:"Ouvri paj peman Stripe la",
+wiz_p_stripe_go_h:"N ap voye w sou Stripe",
+wiz_p_stripe_go_p:"Nou pral voye w sou paj peman sekirize a.",
+wiz_p_stripe_nosession:"Sesyon ou fini. Konekte ankò anvan ou peye ak kat.",
+wiz_p_stripe_indispo:"Peman ak kat pa disponib pou plan sa a kounye a.",
+stripe_back_h:"Nou resevwa peman an",
+stripe_back_p:"Nou byen resevwa peman ou. Abònman ou ap aktive nan kèk segond.",
 legal_updated:"Mizajou : out 2026",
 hero_why:"POUKISA'W DWE ENSKRI NAN VIPBETCOTE??",
 auth_lbl_username:"Non itilizatè", auth_ph_username:"Chwazi yon non itilizatè",
@@ -6739,6 +6738,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
   }
 
+  /* 1 raison reelle = 1 message ; jamais de texte generique. Partage
+     par le parcours MonCash/NatCash et par le parcours Stripe, pour que
+     les deux affichent exactement le meme refus au meme endroit. */
+  function afficherRefusPaiement(raison){
+    const TITRE={
+      renew_err_encours:'renew_toast_h', renew_err_lifetime:'lifetime_toast_h',
+      renew_err_inferieur:'change_toast_h', renew_err_pending:'pending_toast_h',
+      wiz_p_stripe_nosession:'err_action_unavailable_h',
+      wiz_p_stripe_indispo:'err_action_unavailable_h'
+    };
+    payErr.textContent=t(raison);
+    payErr.style.display='block';
+    payErr.scrollIntoView({block:'nearest'});
+    if(window.VB_toast)window.VB_toast(TITRE[raison]||'renew_toast_h',t(raison));
+  }
+
   async function completePayment(method){
     if(sessionPerimee){
       if(window.VB_toast)window.VB_toast('session_stale_h',t('session_stale_p'));
@@ -6748,15 +6763,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const planCible=state.pendingPlanId||state.planId;  // plan que l'utilisateur a choisi d'acheter
     // Refus si le plan vise est deja en cours et hors periode de renouvellement/changement
     const permis=renouvellementPermis(state,planCible);
-    if(!permis.ok){
-      // 1 raison reelle = 1 message ; jamais de texte generique.
-      const TITRE={renew_err_encours:'renew_toast_h',renew_err_lifetime:'lifetime_toast_h',renew_err_inferieur:'change_toast_h',renew_err_pending:'pending_toast_h'};
-      payErr.textContent=t(permis.raison);
-      payErr.style.display='block';
-      payErr.scrollIntoView({block:'nearest'});
-      if(window.VB_toast)window.VB_toast(TITRE[permis.raison]||'renew_toast_h',t(permis.raison));
-      return;
-    }
+    if(!permis.ok){afficherRefusPaiement(permis.raison);return;}
     const wasRenew=renewMode;
     state.payMethod=method;
     const pl=planById(planCible);
@@ -6864,22 +6871,54 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     completePayment(state.payMethod);
   });
 
-  document.getElementById('wizStripeBtn').addEventListener('click',()=>{
+  /* ===== Paiement par carte (Stripe) =====
+     REGLE : aucune ecriture en base n'a lieu ici. Tant que Stripe n'a
+     pas confirme un paiement REEL (webhook signe, verifie cote serveur
+     dans la fonction Netlify 'stripe-webhook'), aucun paiement ni
+     abonnement n'existe. Un simple aller-retour sur la page Stripe,
+     sans payer, ne laisse donc aucune trace dans l'espace admin —
+     c'est precisement le defaut corrige ici.
+     Le lien de paiement porte 'client_reference_id' : c'est le seul
+     moyen pour le webhook de savoir A QUI et POUR QUEL PLAN attribuer
+     le paiement au retour de Stripe. */
+  document.getElementById('wizStripeBtn').addEventListener('click',async function(){
     payErr.style.display='none';
+    const btn=this;
     const planCible=state.pendingPlanId||state.planId;
     const lien=STRIPE_LINKS[planCible]||null;
-    /* L'ouverture de la page Stripe doit rester DANS le geste de clic :
-       un window.open place apres un 'await' est bloque par les
-       navigateurs mobiles. On ne l'ouvre que si le paiement est
-       reellement permis — sinon completePayment affiche le refus et
-       aucune page de paiement ne doit s'ouvrir pour rien. Si le
-       navigateur bloque quand meme l'onglet, l'etape 4 propose un lien
-       de secours (voir renderStep4). */
     const permis=renouvellementPermis(state,planCible);
-    if(lien&&permis&&permis.ok){
-      try{window.open(lien,'_blank','noopener');}catch(e){}
+    if(!permis.ok){afficherRefusPaiement(permis.raison);return;}
+    if(!lien){afficherRefusPaiement('wiz_p_stripe_indispo');return;}
+    btn.disabled=true;
+    /* Identifiant Supabase obligatoire : sans lui, le paiement partirait
+       chez Stripe sans pouvoir jamais etre rattache a un compte. On
+       prefere bloquer et le dire clairement plutot que de laisser
+       quelqu'un payer pour un abonnement qui n'arriverait nulle part. */
+    let uid=state.supabaseUserId||null;
+    if(!uid){
+      try{
+        const sb=window.VB_getSupabase&&window.VB_getSupabase();
+        if(sb){
+          const {data:sd}=await sb.auth.getSession();
+          uid=(sd&&sd.session&&sd.session.user)?sd.session.user.id:null;
+          if(uid){state.supabaseUserId=uid;save();}
+        }
+      }catch(e){}
     }
-    completePayment('stripe');
+    if(!uid){
+      btn.disabled=false;
+      afficherRefusPaiement('wiz_p_stripe_nosession');
+      return;
+    }
+    state.payMethod='stripe';save();
+    const url=lien+(lien.indexOf('?')>=0?'&':'?')
+      +'client_reference_id='+encodeURIComponent(uid+'__'+planCible)
+      +(state.email?'&prefilled_email='+encodeURIComponent(state.email):'');
+    if(window.VB_toast)window.VB_toast('wiz_p_stripe_go_h',t('wiz_p_stripe_go_p'));
+    /* Redirection dans le MEME onglet : plus fiable qu'un nouvel onglet,
+       systematiquement bloque par les navigateurs mobiles. La session et
+       l'etat local survivent a l'aller-retour (meme onglet, meme site). */
+    window.location.href=url;
   });
 
   /* ================= ETAPE 4 : acces ================= */
@@ -6907,18 +6946,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('wizDoneStart').textContent=enAttenteChangement?t('wiz_d_pending_dates'):fmt(state.startDate);
     document.getElementById('wizDoneEnd').textContent=enAttenteChangement?t('wiz_d_pending_dates'):(state.endDate?fmt(state.endDate):t('wiz_d_never'));
     document.getElementById('wizDoneRef').textContent=(enAttenteChangement?state.pendingRef:state.ref)||'—';
-    /* Paiement par carte : lien de secours vers la page Stripe du plan
-       reellement choisi, affiche uniquement dans ce cas. */
-    const relay=document.getElementById('wizStripeRelay');
-    const lienStripe=(pl&&STRIPE_LINKS[pl.id])?STRIPE_LINKS[pl.id]:null;
-    const montrerRelay=(state.payMethod==='stripe'&&!!lienStripe);
-    relay.hidden=!montrerRelay;
-    if(montrerRelay){
-      document.getElementById('wizStripeRelayTxt').textContent=t('wiz_d_stripe_relay');
-      const a=document.getElementById('wizStripeRelayLink');
-      a.href=lienStripe;
-      a.querySelector('span').textContent=t('wiz_d_stripe_open');
-    }
   }
 
   /* ================= REINITIALISATION DU MOT DE PASSE =================
@@ -7430,7 +7457,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
            le mot de passe soit faux (choix delibere de Supabase, pour
            qu'on ne puisse pas deviner quels emails sont enregistres).
            On ne peut donc PAS conclure "mauvais mot de passe" ici : un
-           compte cree avant la migration (comme footinedit@gmail.com)
+           compte cree avant la migration vers Supabase (ex. un ancien
+           compte enregistre uniquement dans le registre local)
            n'existe simplement pas encore chez Supabase, et doit continuer
            a fonctionner via l'ancien registre local ci-dessous. */
       }catch(e){
@@ -11861,6 +11889,48 @@ async function tenterRestaurationSession(){
 tenterRestaurationSession();
 window.addEventListener('load',tenterRestaurationSession);
 window.VB_tenterRestaurationSession=tenterRestaurationSession;
+
+/* ---------- Retour depuis la page de paiement Stripe ----------
+   Stripe peut renvoyer la personne sur le site apres un paiement reussi
+   (adresse de redirection configuree dans chaque Payment Link :
+   https://vipbetcote.com/?paiement=ok).
+   ATTENTION : ce bloc ne valide RIEN. Un parametre dans l'adresse est
+   fabricable par n'importe qui — il ne prouve aucun paiement et ne doit
+   jamais activer quoi que ce soit. Seul le webhook signe par Stripe,
+   verifie cote serveur, fait foi. Ce bloc sert uniquement a relire
+   l'etat REEL en base pendant les quelques secondes ou le webhook
+   ecrit l'abonnement, au lieu de laisser la personne devant une page
+   d'accueil muette. */
+(function(){
+  let params;
+  try{params=new URLSearchParams(window.location.search);}catch(e){return;}
+  if(params.get('paiement')!=='ok')return;
+  // Adresse nettoyee immediatement : un rafraichissement ou un lien
+  // partage ne doit jamais rejouer ce message.
+  try{history.replaceState(null,'',window.location.pathname+window.location.hash);}catch(e){}
+  setTimeout(()=>{ if(window.VB_toast)window.VB_toast('stripe_back_h',t('stripe_back_p')); },700);
+  let essais=0;
+  const timer=setInterval(async()=>{
+    const st=window.VB_getState&&window.VB_getState();
+    if(st&&st.paid&&st.planId){
+      clearInterval(timer);
+      if(window.VB_renderAll)try{window.VB_renderAll();}catch(e){}
+      return;
+    }
+    if(++essais>10){clearInterval(timer);return;}   // 40s au maximum, jamais de boucle infinie
+    try{
+      if(window.VB_syncPayStatus){
+        const change=await window.VB_syncPayStatus();
+        if(change&&window.VB_renderAll)window.VB_renderAll();
+      }
+      const sb=window.VB_getSupabase&&window.VB_getSupabase();
+      if(sb&&window.VB_reprendreApresAdmin){
+        const {data:sd}=await sb.auth.getSession();
+        if(sd&&sd.session&&sd.session.user)await window.VB_reprendreApresAdmin(sd.session.user);
+      }
+    }catch(e){}
+  },4000);
+})();
 
 </script>
 </body>
