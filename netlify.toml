@@ -6,9 +6,18 @@
 [build.environment]
   # index.html et admin.html contiennent l'URL Supabase et la cle "anon"
   # (publiques par nature, protegees par RLS). Sans cette exclusion, le
-  # scanner de secrets de Netlify fait echouer le build git en detectant
-  # la valeur de SUPABASE_URL dans le HTML publie.
-  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL"
+  # scanner de secrets de Netlify fait echouer le build en detectant la
+  # valeur de SUPABASE_URL dans le HTML publie.
+  #
+  # SECRETS_SCAN_OMIT_KEYS doit S'INCLURE ELLE-MEME dans sa propre liste.
+  # Sinon le scanner cherche aussi la VALEUR de cette variable partout
+  # dans le depot -- et comme sa valeur contient le texte "SUPABASE_URL",
+  # il retrouve ce texte (un simple nom de variable, jamais une donnee
+  # sensible) dans chaque fonction Netlify qui ecrit legitimement
+  # process.env.SUPABASE_URL, et fait echouer le build sur un faux
+  # positif en cascade. Cette entree ne cache aucun vrai secret : elle ne
+  # contient que des NOMS de variables, jamais leur contenu.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SECRETS_SCAN_OMIT_KEYS"
 
 [functions]
   directory = "netlify/functions"
