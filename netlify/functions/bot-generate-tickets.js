@@ -18,7 +18,10 @@
  * ============================================================================
  */
 
-import { createClient } from '@supabase/supabase-js';
+// PAS de dépendance @supabase/supabase-js : ce paquet n'est pas déclaré dans
+// le package.json du repo (les autres fonctions Netlify du site parlent à
+// Supabase en fetch() direct sur l'API REST). On fait pareil ici pour éviter
+// tout échec de build lié à une dépendance manquante.
 
 export const config = {
   // Toutes les 15 min entre 20h00 et 22h59 UTC — couvre 17h00 Haïti
@@ -51,13 +54,45 @@ const FOOT_MAX_MINUTES = 22 * 60; // 22:00 accepté, 22:01 refusé
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function getSupabase() {
+function verifierConfigSupabase() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error('SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant dans les variables Netlify');
   }
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false }
+}
+
+function sbHeaders(extra) {
+  return Object.assign({
+    apikey: SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    'Content-Type': 'application/json'
+  }, extra || {});
+}
+
+// SELECT via l'API REST PostgREST de Supabase (jamais SUPABASE_URL avec /rest/v1 en dur ici,
+// on le construit une seule fois — évite le bug PGRST125 déjà documenté sur ce projet)
+async function sbSelect(table, query) {
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${table}?${query}`;
+  const resp = await fetch(url, { headers: sbHeaders() });
+  if (!resp.ok) throw new Error(`Supabase SELECT ${table} → HTTP ${resp.status} : ${await resp.text()}`);
+  return resp.json();
+}
+
+async function sbInsert(table, rows) {
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${table}`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: sbHeaders({ Prefer: 'return=representation' }),
+    body: JSON.stringify(rows)
   });
+  if (!resp.ok) throw new Error(`Supabase INSERT ${table} → HTTP ${resp.status} : ${await resp.text()}`);
+  return resp.json();
+}
+
+async function sbDelete(table, query) {
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${table}?${query}`;
+  const resp = await fetch(url, { method: 'DELETE', headers: sbHeaders() });
+  if (!resp.ok) throw new Error(`Supabase DELETE ${table} → HTTP ${resp.status} : ${await resp.text()}`);
+  return true;
 }
 
 // ============================================================================
@@ -361,38 +396,44 @@ function construireFiche(pool, plan) {
 // 7. IDEMPOTENCE — jamais deux fois la même génération pour la même date
 // ============================================================================
 
-async function dejaGenereAujourdhui(sb, dateCible) {
-  const { data, error } = await sb
-    .from('tickets')
-    .select('id')
-    .eq('play_date', dateCible)
-    .like('code', 'BOT-%')
-    .limit(1);
-  if (error) { stats.erreurs.push('verif_doublon: ' + error.message); return false; }
-  return !!(data && data.length);
+async function dejaGenereAujourdhui(dateCible) {
+  try {
+    const data = await sbSelect(
+      'tickets',
+      `select=id&play_date=eq.${dateCible}&code=like.BOT-*&limit=1`
+    );
+    return !!(data && data.length);
+  } catch (e) {
+    stats.erreurs.push('verif_doublon: ' + e.message);
+    return false;
+  }
 }
 
 // ============================================================================
 // 8. ÉCRITURE EN BASE
 // ============================================================================
 
-async function publierFiche(sb, plan, fiche, dateCible, sport, noms) {
+async function publierFiche(plan, fiche, dateCible, sport, noms) {
   const code = `BOT-${dateCible}-${sport.toUpperCase()}-R${plan.rank}`;
   // score_legs_count : nombre de sélections "score exact" dans la fiche —
   // nécessaire au filtrage RLS côté Dashboard client (colonne NOT NULL,
   // default 0, mais doit refléter la réalité dès qu'une fiche en contient).
   const scoreLegsCount = fiche.selections.filter(s => s.tier === 'EXACT_SCORE').length;
 
-  const { data: ticket, error: errTicket } = await sb
-    .from('tickets')
-    .insert({
+  let ticket;
+  try {
+    const inserted = await sbInsert('tickets', [{
       code, sport, min_plan_rank: plan.rank, status: 'pending',
       confidence: fiche.confiance, play_date: dateCible, published: true,
       legs_count: fiche.selections.length, total_odd: fiche.coteTotale,
       score_legs_count: scoreLegsCount
-    })
-    .select('id').single();
-  if (errTicket) { stats.erreurs.push(`publication ticket rang ${plan.rank}: ${errTicket.message}`); return false; }
+    }]);
+    ticket = inserted && inserted[0];
+    if (!ticket) throw new Error('réponse vide à l\'insertion du ticket');
+  } catch (e) {
+    stats.erreurs.push(`publication ticket rang ${plan.rank}: ${e.message}`);
+    return false;
+  }
 
   const legs = fiche.selections.map((s, i) => {
     const nom = noms[s.fixtureId];
@@ -410,11 +451,14 @@ async function publierFiche(sb, plan, fiche, dateCible, sport, noms) {
       result: null
     };
   });
-  const { error: errLegs } = await sb.from('ticket_legs').insert(legs);
-  if (errLegs) {
-    stats.erreurs.push(`publication legs rang ${plan.rank}: ${errLegs.message}`);
+
+  try {
+    await sbInsert('ticket_legs', legs);
+  } catch (e) {
+    stats.erreurs.push(`publication legs rang ${plan.rank}: ${e.message}`);
     // On retire le ticket orphelin plutôt que de laisser une fiche vide publiée
-    await sb.from('tickets').delete().eq('id', ticket.id);
+    try { await sbDelete('tickets', `id=eq.${ticket.id}`); }
+    catch (e2) { stats.erreurs.push(`nettoyage ticket orphelin rang ${plan.rank}: ${e2.message}`); }
     return false;
   }
   stats.fichesPubliees++;
@@ -449,8 +493,7 @@ export async function handler(event) {
     return { statusCode: 500, body: 'Configuration incomplète.' };
   }
 
-  let sb;
-  try { sb = getSupabase(); }
+  try { verifierConfigSupabase(); }
   catch (e) { stats.erreurs.push(e.message); logFinal(); return { statusCode: 500, body: e.message }; }
 
   const dateCible = dateCibleDemainHaiti();
@@ -458,18 +501,19 @@ export async function handler(event) {
   console.log(`[BOT] ${new Date().toISOString()} — Date cible (Haïti, demain) : ${dateCible}`);
 
   // --- Protection anti-doublon ---
-  if (await dejaGenereAujourdhui(sb, dateCible)) {
+  if (await dejaGenereAujourdhui(dateCible)) {
     stats.doublonsDetectes = true;
     logFinal();
     return { statusCode: 200, body: `Fiches déjà générées pour ${dateCible} — abandon.` };
   }
 
   // --- Plans réels (cotes cible par rang) ---
-  const { data: plans, error: errPlans } = await sb
-    .from('plans')
-    .select('rank,min_total_odd,max_total_odd,max_leg_odd,includes_exact_score');
-  if (errPlans || !plans || !plans.length) {
-    stats.erreurs.push('lecture table plans: ' + (errPlans ? errPlans.message : 'vide'));
+  let plans;
+  try {
+    plans = await sbSelect('plans', 'select=rank,min_total_odd,max_total_odd,max_leg_odd,includes_exact_score');
+    if (!plans || !plans.length) throw new Error('table plans vide');
+  } catch (e) {
+    stats.erreurs.push('lecture table plans: ' + e.message);
     logFinal();
     return { statusCode: 500, body: 'Impossible de lire les plans.' };
   }
@@ -512,7 +556,7 @@ export async function handler(event) {
       console.log(`[BOT] Rang ${plan.rank} : aucune fiche fiable dans la plage demandée — non publiée.`);
       continue;
     }
-    await publierFiche(sb, plan, fiche, dateCible, 'foot', noms);
+    await publierFiche(plan, fiche, dateCible, 'foot', noms);
   }
 
   logFinal();
