@@ -378,12 +378,18 @@ async function dejaGenereAujourdhui(sb, dateCible) {
 
 async function publierFiche(sb, plan, fiche, dateCible, sport, noms) {
   const code = `BOT-${dateCible}-${sport.toUpperCase()}-R${plan.rank}`;
+  // score_legs_count : nombre de sélections "score exact" dans la fiche —
+  // nécessaire au filtrage RLS côté Dashboard client (colonne NOT NULL,
+  // default 0, mais doit refléter la réalité dès qu'une fiche en contient).
+  const scoreLegsCount = fiche.selections.filter(s => s.tier === 'EXACT_SCORE').length;
+
   const { data: ticket, error: errTicket } = await sb
     .from('tickets')
     .insert({
       code, sport, min_plan_rank: plan.rank, status: 'pending',
       confidence: fiche.confiance, play_date: dateCible, published: true,
-      legs_count: fiche.selections.length, total_odd: fiche.coteTotale
+      legs_count: fiche.selections.length, total_odd: fiche.coteTotale,
+      score_legs_count: scoreLegsCount
     })
     .select('id').single();
   if (errTicket) { stats.erreurs.push(`publication ticket rang ${plan.rank}: ${errTicket.message}`); return false; }
@@ -400,7 +406,7 @@ async function publierFiche(sb, plan, fiche, dateCible, sport, noms) {
       pick: s.pick,
       odd: s.odd,
       position: i + 1,
-      fixture_id: String(s.fixtureId),
+      fixture_id: s.fixtureId, // bigint en base — jamais convertir en texte
       result: null
     };
   });
@@ -420,12 +426,22 @@ async function publierFiche(sb, plan, fiche, dateCible, sport, noms) {
 // ============================================================================
 
 export async function handler(event) {
+  // MODE TEST : permet de déclencher le bot manuellement (hors fenêtre 17h)
+  // pour vérifier tout de suite s'il fonctionne, sans attendre le cron.
+  // Utilisation : ouvrir l'URL de la fonction avec ?token=<BOT_TEST_TOKEN>
+  // Protégé par jeton pour qu'un tiers ne puisse pas déclencher le bot à volonté.
+  const jetonTest = process.env.BOT_TEST_TOKEN || '';
+  const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';
+  const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
+
   // Ne générer que si on est effectivement à 17h00 (± 14 min) en Haïti —
   // le cron se déclenche plus souvent que nécessaire par sécurité DST.
+  // (ignoré en mode test)
   const maintenant = partsHaiti(new Date());
-  if (maintenant.heureNum !== 17) {
-    return { statusCode: 200, body: 'Hors fenêtre 17h00 Haïti — rien à faire.' };
+  if (!modeTest && maintenant.heureNum !== 17) {
+    return { statusCode: 200, body: 'Hors fenêtre 17h00 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
   }
+  if (modeTest) console.log('[BOT] === MODE TEST déclenché manuellement ===');
 
   if (!API_SPORTS_KEY) {
     stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
