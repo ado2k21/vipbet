@@ -176,6 +176,7 @@ const stats = {
   fuseauUtilise: TZ_HAITI,
   dateCible: null,
   championnatsInterroges: 0,
+  championnatsAvecMatchs: 0,
   championnatsEnErreur: 0,
   matchsTrouves: 0,
   matchsRetenus: 0,
@@ -198,6 +199,7 @@ function resetStats() {
   stats.demarre = new Date().toISOString();
   stats.dateCible = null;
   stats.championnatsInterroges = 0;
+  stats.championnatsAvecMatchs = 0;
   stats.championnatsEnErreur = 0;
   stats.matchsTrouves = 0;
   stats.matchsRetenus = 0;
@@ -259,13 +261,23 @@ async function apiSportsGet(host, path, params) {
 async function recupererCotesFoot(dateCible) {
   let toutes = [];
   let championnatsInterroges = 0;
+  let championnatsAvecMatchs = 0;
   let erreursChampionnat = 0;
+  // La saison doit être fournie dès qu'on filtre par championnat (sans quoi
+  // l'API peut renvoyer une réponse vide). Convention API-Sports : l'année
+  // de démarrage de la saison. Pour une date en juillet-décembre, c'est
+  // l'année en cours ; pour janvier-juin (mi-saison des championnats
+  // européens), ce serait l'année précédente — cas non couvert ici tant
+  // qu'on n'a pas de test sur cette période, à ajuster si besoin.
+  const saison = parseInt(dateCible.slice(0, 4), 10);
   for (const leagueId of ALLOWED_LEAGUES_FOOT) {
     try {
       const data = await apiSportsGetRaw(FOOT_HOST, '/odds', {
-        date: dateCible, league: leagueId, bookmaker: BOOKMAKER_ID
+        date: dateCible, league: leagueId, season: saison, bookmaker: BOOKMAKER_ID
       });
-      toutes = toutes.concat(data.response || []);
+      const resultats = data.response || [];
+      if (resultats.length) championnatsAvecMatchs++;
+      toutes = toutes.concat(resultats);
       championnatsInterroges++;
     } catch (e) {
       erreursChampionnat++;
@@ -273,6 +285,7 @@ async function recupererCotesFoot(dateCible) {
     }
   }
   stats.championnatsInterroges = championnatsInterroges;
+  stats.championnatsAvecMatchs = championnatsAvecMatchs;
   stats.championnatsEnErreur = erreursChampionnat;
   return toutes;
 }
