@@ -183,6 +183,7 @@ const stats = {
   raisonsRejet: {},
   championnatsVus: {}, // diagnostic : quels league.id/name l'API renvoie réellement
   marchesInconnus: {}, // diagnostic : quels types de marché on ne gère pas encore
+  echantillonsValeurs: {}, // diagnostic : format réel des valeurs pour les marchés ajoutés récemment
   fichesGenerees: 0,
   fichesPubliees: 0,
   doublonsDetectes: false,
@@ -204,6 +205,7 @@ function resetStats() {
   stats.raisonsRejet = {};
   stats.championnatsVus = {};
   stats.marchesInconnus = {};
+  stats.echantillonsValeurs = {};
   stats.fichesGenerees = 0;
   stats.fichesPubliees = 0;
   stats.doublonsDetectes = false;
@@ -248,21 +250,24 @@ async function apiSportsGet(host, path, params) {
 // BUG CORRIGÉ (24/08) : /odds est paginé par l'API (page fixe à 1 avant),
 // donc seule une fraction des matchs du jour était récupérée — matchsTrouves
 // plafonnait exactement à la taille d'une page. On récupère maintenant
-// toutes les pages disponibles (garde-fou à 10 pages pour ne jamais
-// dépasser le quota quotidien même un jour très chargé).
+// toutes les pages disponibles. Plan gratuit confirmé limité à 3 pages max
+// (message d'erreur reçu le 24/08 : "Free plans are limited to a maximum
+// value of 3 for the Page parameter") — plafond fixé en conséquence.
 async function recupererCotesFoot(dateCible) {
-  const MAX_PAGES = 10;
+  const MAX_PAGES = 3;
   let toutes = [];
+  let pagesRecuperees = 0;
   try {
     let page = 1;
     let totalPages = 1;
     do {
       const data = await apiSportsGetRaw(FOOT_HOST, '/odds', { date: dateCible, bookmaker: BOOKMAKER_ID, page });
       toutes = toutes.concat(data.response || []);
+      pagesRecuperees++;
       totalPages = (data.paging && data.paging.total) || 1;
       page++;
     } while (page <= totalPages && page <= MAX_PAGES);
-    stats.pagesOddsRecuperees = Math.min(totalPages, MAX_PAGES);
+    stats.pagesOddsRecuperees = pagesRecuperees;
     stats.pagesOddsTotal = totalPages;
   } catch (e) {
     stats.erreurs.push('foot/odds: ' + e.message);
@@ -408,15 +413,18 @@ function extraireMarchesFoot(oddsItem, dateCible) {
         }
       });
     }
-    // Buteur à tout moment (id 42 — SPÉCULATIF, à confirmer via le
-    // diagnostic marchesInconnus au prochain test). Cotes généralement
-    // ≥1.90 même pour un buteur fiable après analyse — tier PREMIUM,
-    // exempté du plafond 1.90 comme les autres marchés PREMIUM, mais
-    // limité à 1 par fiche (règle 14 du cahier des charges).
-    if (betType.id === 42) {
+    // Buteur à tout moment (id 92 — "Anytime Goal Scorer", confirmé via le
+    // diagnostic marchesInconnus du 24/08 ; id 42 utilisé avant était FAUX,
+    // ses valeurs numériques "0/1/2" ne sont pas des noms de joueur et ont
+    // produit 2 fiches erronées, supprimées). Garde-fou : on rejette toute
+    // valeur qui ressemble à un nombre pur, pour ne jamais reproduire cette
+    // erreur si l'ID s'avère à nouveau mal identifié. Tier PREMIUM, exempté
+    // du plafond 1.90, limité à 1 par fiche (règle 14 du cahier des charges).
+    if (betType.id === 92) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.90 && c <= 4.00) {
+        const ressembleANombre = /^-?\d+(\.\d+)?$/.test(String(v.value).trim());
+        if (!ressembleANombre && c >= 1.90 && c <= 6.00) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_buteur',
             pick: `Buteur : ${v.value}`, odd: c, tier: 'PREMIUM',
@@ -425,13 +433,41 @@ function extraireMarchesFoot(oddsItem, dateCible) {
         }
       });
     }
+    // Total buts par équipe (id 16 = domicile, id 17 = extérieur) — le
+    // marché décrit par James (ex: "Real Madrid 1.5+ buts"). Même logique
+    // safe/premium que le total buts du match.
+    if (betType.id === 16 || betType.id === 17) {
+      const cote = betType.id === 16 ? 'mk_total_domicile' : 'mk_total_exterieur';
+      const label = betType.id === 16 ? 'Domicile' : 'Extérieur';
+      betType.values.forEach(v => {
+        const c = parseFloat(v.odd);
+        if (c >= 1.19 && c <= 1.70) {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: cote,
+            pick: `${label} : ${v.value}`, odd: c, tier: 'SAFE',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
+          });
+        } else if (c >= 1.90 && c <= 2.60) {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: cote,
+            pick: `${label} : ${v.value}`, odd: c, tier: 'PREMIUM',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
+          });
+        }
+      });
+    }
     // Diagnostic : tout type de marché non encore géré ci-dessus, pour
-    // identifier au prochain test le marché "total buts par équipe" décrit
-    // (ex: "Real Madrid 1.5+ buts") et d'autres marchés qu'on pourrait ajouter.
-    const ID_CONNUS = [1, 5, 8, 10, 12, 42];
+    // repérer d'autres marchés à ajouter plus tard.
+    const ID_CONNUS = [1, 5, 8, 10, 12, 16, 17, 92];
     if (!ID_CONNUS.includes(betType.id)) {
       const clef = `${betType.id} — ${betType.name || '?'}`;
       stats.marchesInconnus[clef] = (stats.marchesInconnus[clef] || 0) + 1;
+    }
+    // Échantillon de valeurs brutes pour les marchés ajoutés cette session,
+    // pour confirmer le format réel (ex: "Over 1.5" vs autre chose) avant
+    // de leur faire pleinement confiance au prochain test.
+    if ([16, 17, 92].includes(betType.id) && !stats.echantillonsValeurs[betType.id]) {
+      stats.echantillonsValeurs[betType.id] = betType.values.slice(0, 3).map(v => `${v.value} @ ${v.odd}`);
     }
   });
 
