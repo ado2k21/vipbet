@@ -263,17 +263,16 @@ async function recupererCotesFoot(dateCible) {
   let championnatsInterroges = 0;
   let championnatsAvecMatchs = 0;
   let erreursChampionnat = 0;
-  // La saison doit être fournie dès qu'on filtre par championnat (sans quoi
-  // l'API peut renvoyer une réponse vide). Convention API-Sports : l'année
-  // de démarrage de la saison. Pour une date en juillet-décembre, c'est
-  // l'année en cours ; pour janvier-juin (mi-saison des championnats
-  // européens), ce serait l'année précédente — cas non couvert ici tant
-  // qu'on n'a pas de test sur cette période, à ajuster si besoin.
-  const saison = parseInt(dateCible.slice(0, 4), 10);
+  // CORRIGÉ (24/08, 3ᵉ révision) : le paramètre "season" est rejeté sur le
+  // plan gratuit pour la saison en cours ("Free plans do not have access
+  // to this season, try from 2022 to 2024") — retiré. "date" seul avait
+  // déjà démontré qu'il sait servir la saison actuelle sans qu'on la
+  // précise explicitement ; on teste ici si "league" + "date" (sans season)
+  // passe aussi.
   for (const leagueId of ALLOWED_LEAGUES_FOOT) {
     try {
       const data = await apiSportsGetRaw(FOOT_HOST, '/odds', {
-        date: dateCible, league: leagueId, season: saison, bookmaker: BOOKMAKER_ID
+        date: dateCible, league: leagueId, bookmaker: BOOKMAKER_ID
       });
       const resultats = data.response || [];
       if (resultats.length) championnatsAvecMatchs++;
