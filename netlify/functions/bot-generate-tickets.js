@@ -66,8 +66,10 @@ const TOP_LEAGUES_FOOT = [
   94,   // Primeira Liga (Portugal)
   88,   // Eredivisie (Pays-Bas)
   203,  // Süper Lig (Turquie)
+  307,  // Saudi Pro League — confirmé via diagnostic le 25/08 (Al-Nassr/Al-Ittihad, CR7/Benzema)
   2,    // Ligue des champions UEFA
   3,    // Europa League UEFA
+  13,   // CONMEBOL Libertadores — confirmé par un vrai match le 24/08
   1,    // Coupe du Monde
   4,    // Championnat d'Europe des Nations (Euro)
   9     // Copa America
@@ -79,7 +81,23 @@ const SECONDARY_LEAGUES_FOOT = [
   144,  // Pro League (Belgique)
   32,   // Qualifications Coupe du Monde — zone Europe
   34,   // Qualifications Coupe du Monde — zone Amérique du Sud
-  31    // Qualifications Coupe du Monde — zone CONCACAF
+  31,   // Qualifications Coupe du Monde — zone CONCACAF
+  1028, // CONCACAF Central American Cup — confirmé par un vrai match le 24/08
+  // --- Ajouts du 25/08, confirmés via diagnostic /leagues ---
+  95,   // Segunda Liga (Portugal, 2ᵉ div)
+  701,  // Liga Revelação U23 (Portugal) — ajoutée à la demande explicite de James
+  40,   // Championship (Angleterre, 2ᵉ div)
+  141,  // Segunda División (Espagne, 2ᵉ div)
+  136,  // Serie B (Italie, 2ᵉ div)
+  79,   // 2. Bundesliga (Allemagne, 2ᵉ div)
+  62,   // Ligue 2 (France, 2ᵉ div)
+  89,   // Eerste Divisie (Pays-Bas, 2ᵉ div)
+  145,  // Challenger Pro League (Belgique, 2ᵉ div)
+  308,  // Division 1 (Arabie Saoudite, 2ᵉ tier)
+  305,  // Stars League (Qatar)
+  239,  // Primera A (Colombie)
+  759,  // Liga Mayor (République Dominicaine)
+  288   // Premier Soccer League (Afrique du Sud)
 ];
 const ALLOWED_LEAGUES_FOOT = [...TOP_LEAGUES_FOOT, ...SECONDARY_LEAGUES_FOOT];
 
@@ -93,7 +111,8 @@ const ALLOWED_LEAGUES_FOOT = [...TOP_LEAGUES_FOOT, ...SECONDARY_LEAGUES_FOOT];
 const LEAGUES_BUTEUR_AUTORISEES = [
   39, 140, 135, 78, 61,  // Big 5 européens
   94, 88, 203,           // Portugal, Pays-Bas, Turquie
-  71, 128                // Brésil, Argentine
+  71, 128,               // Brésil, Argentine
+  307                    // Saudi Pro League (CR7, Benzema) — confirmé le 25/08
 ];
 
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
