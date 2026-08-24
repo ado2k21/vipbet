@@ -42,9 +42,28 @@ const FOOT_HOST = 'v3.football.api-sports.io';
 const NBA_HOST = 'v2.nba.api-sports.io';
 const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
 
-// Championnats autorisés (grandes divisions + quelques championnats fiables).
-// Liste à ajuster avec James selon ce que paryajpam.com propose réellement.
-const ALLOWED_LEAGUES_FOOT = [2, 3, 4, 5, 39, 40, 61, 62, 78, 88, 135, 140, 61];
+// Championnats autorisés — grandes premières divisions, plusieurs continents.
+// Liste vivante : confirmée/élargie à partir des vrais matchs reçus lors des
+// tests (23/08). Volontairement 1ʳᵉ division uniquement — jamais une division
+// inférieure (2ᵉ, 3ᵉ, 4ᵉ...) où les données stats/fiabilité sont trop faibles.
+const ALLOWED_LEAGUES_FOOT = [
+  2, 3,                    // Ligue des champions, Europa League
+  39, 40,                  // Premier League, Championship (Angleterre)
+  140,                     // La Liga (Espagne)
+  135,                     // Serie A (Italie)
+  78,                      // Bundesliga (Allemagne)
+  61, 62,                  // Ligue 1, Ligue 2 (France)
+  88,                      // Eredivisie (Pays-Bas)
+  94,                      // Primeira Liga (Portugal)
+  71,                      // Serie A (Brésil) — confirmé réel le 23/08
+  128,                     // Liga Profesional (Argentine) — confirmé réel le 23/08
+  113,                     // Allsvenskan (Suède) — confirmé réel le 23/08
+  253,                     // MLS (USA)
+  262                      // Liga MX (Mexique)
+];
+// Exclu volontairement (vu dans les tests, divisions inférieures) :
+// 114 Superettan (Suède, 2ᵉ div.), 129 Primera Nacional (Argentine, 2ᵉ div.),
+// 132 Primera C (Argentine, 4ᵉ div.)
 
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
 const FOOT_MIN_HOUR = 8;   // 08:00 accepté
