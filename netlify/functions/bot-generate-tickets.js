@@ -416,22 +416,33 @@ function extraireMarchesFoot(oddsItem, dateCible) {
     // Buteur à tout moment (id 92 — "Anytime Goal Scorer", confirmé via le
     // diagnostic marchesInconnus du 24/08 ; id 42 utilisé avant était FAUX,
     // ses valeurs numériques "0/1/2" ne sont pas des noms de joueur et ont
-    // produit 2 fiches erronées, supprimées). Garde-fou : on rejette toute
-    // valeur qui ressemble à un nombre pur, pour ne jamais reproduire cette
-    // erreur si l'ID s'avère à nouveau mal identifié. Tier PREMIUM, exempté
-    // du plafond 1.90, limité à 1 par fiche (règle 14 du cahier des charges).
+    // produit 2 fiches erronées, supprimées). CORRIGÉ (24/08, 2ᵉ incident) :
+    // ce marché liste 20-30 joueurs par match ; ne garder QUE le buteur le
+    // PLUS PROBABLE (cote la plus basse dans la plage fiable) — jamais tous
+    // les joueurs, sinon l'algorithme peut attraper un remplaçant à cote 6.0
+    // (a produit une fiche à cote 6.0 sur 1 seule sélection, supprimée).
+    // Plage resserrée à 1.90–3.00 : au-delà, probabilité jugée trop faible
+    // pour un "buteur fiable après analyse". Garde-fou : on rejette toute
+    // valeur qui ressemble à un nombre pur (protection contre un ID à
+    // nouveau mal identifié). Tier PREMIUM, exempté du plafond 1.90 du
+    // plan, limité à 1 par fiche (règle 14 du cahier des charges).
     if (betType.id === 92) {
+      let meilleurButeur = null, meilleureCote = 999;
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
         const ressembleANombre = /^-?\d+(\.\d+)?$/.test(String(v.value).trim());
-        if (!ressembleANombre && c >= 1.90 && c <= 6.00) {
-          trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: 'mk_buteur',
-            pick: `Buteur : ${v.value}`, odd: c, tier: 'PREMIUM',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
-          });
+        if (!ressembleANombre && c >= 1.90 && c <= 3.00 && c < meilleureCote) {
+          meilleureCote = c;
+          meilleurButeur = v;
         }
       });
+      if (meilleurButeur) {
+        trouvees.push({
+          fixtureId: fixture.id, league: league.name, market: 'mk_buteur',
+          pick: `Buteur : ${meilleurButeur.value}`, odd: meilleureCote, tier: 'PREMIUM',
+          kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
+        });
+      }
     }
     // Total buts par équipe (id 16 = domicile, id 17 = extérieur) — le
     // marché décrit par James (ex: "Real Madrid 1.5+ buts"). Même logique
@@ -570,7 +581,7 @@ function construireFiche(pool, plan) {
     selections,
     coteTotale: Math.round(coteTotale * 100) / 100,
     confiance,
-    valide: selections.length > 0 && coteTotale >= cibleMin && coteTotale <= cibleMax
+    valide: selections.length >= 2 && coteTotale >= cibleMin && coteTotale <= cibleMax
   };
 }
 
