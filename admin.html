@@ -2131,10 +2131,6 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .dtk-leg-league{font-size:10.5px;color:var(--gris);text-transform:uppercase;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dtk-leg-match{font-size:13.5px;font-weight:600;color:#F4F3ED;line-height:1.35;margin-bottom:5px}
 .dtk-leg-bot{display:flex;align-items:center;gap:10px}
-.dtk-leg-result{font-weight:700;font-size:13px;flex-shrink:0;margin-left:auto;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
-.dtk-leg-result.won{background:rgba(46,212,127,.16);color:var(--vert-vif)}
-.dtk-leg-result.lost{background:rgba(226,99,79,.14);color:#E2634F}
-.dtk-leg-result.void{background:rgba(201,164,76,.14);color:var(--or-clair);font-size:10px}
 .dtk-leg-pick{
   flex:1;min-width:0;font-size:12px;color:#CBD8E4;line-height:1.35;
 }
@@ -4093,10 +4089,6 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span data-i18n="adm_nav_fiches">Fich</span>
           </button>
-          <button class="dash-menu-item" type="button" role="menuitem" data-adm="historique">
-            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
-            <span data-i18n="adm_nav_historique">Istorik</span>
-          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="faq">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.8 2.8 0 1 1 3.9 2.6c-.9.4-1.6 1-1.6 2v.3"/><circle cx="12" cy="17" r=".3" fill="currentColor"/></svg>
             <span data-i18n="adm_nav_faq">FAQ</span>
@@ -4246,21 +4238,6 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <span data-i18n="dash_back">Retounen</span>
       </button>
       <div id="admFicheDetail"></div>
-    </div>
-
-    <!-- VUE : HISTORIQUE (fiches reglees par le bot, lecture seule) -->
-    <div class="dash-view" data-adview="historique">
-      <button class="dash-back" type="button" data-adback>
-        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
-        <span data-i18n="dash_back">Retounen</span>
-      </button>
-      <div class="dash-hi">
-        <h2 data-i18n="adm_nav_historique">Istorik</h2>
-        <p data-i18n="adm_hist_p">Fich regle yo, chak jou — verifye rezilta bot la.</p>
-      </div>
-      <label class="field"><span class="field-lbl" data-i18n="adm_fiches_date_lbl">Dat</span>
-        <input type="date" id="admHistDate"></label>
-      <div id="admHistBody"></div>
     </div>
 
     <!-- VUE : FAQ -->
@@ -4600,9 +4577,6 @@ adm_fiches_h:"Fiches", adm_fiches_p:"Fiches pour chaque jour, groupées par plan
 adm_fiches_date_lbl:"Date", adm_fiches_new:"+ Nouvelle fiche", adm_fiches_empty:"Aucune fiche pour cette date.",
 adm_fiche_draft:"brouillon", adm_fiche_legs:"match(s)",
 adm_fiche_st_pending:"En cours", adm_fiche_st_won:"Gagné", adm_fiche_st_lost:"Perdu",
-adm_fiche_normal:"Cote normal", adm_fiche_leg_won:"Gagné", adm_fiche_leg_lost:"Perdu", adm_fiche_leg_void:"Annulé",
-adm_nav_historique:"Historique", adm_hist_p:"Fiches réglées, jour par jour — vérification des résultats du bot.",
-adm_hist_empty:"Aucune fiche réglée pour cette date.",
 adm_fiche_code:"Référence", adm_fiche_code_ph:"Ex. : VB-2451 (optionnel)",
 adm_fiche_plan:"Plan minimum requis", adm_fiche_sport:"Sport",
 adm_fiche_sport_foot:"Football", adm_fiche_sport_nba:"NBA",
@@ -4977,9 +4951,6 @@ adm_fiches_h:"Tickets", adm_fiches_p:"Tickets for each day, grouped by plan. His
 adm_fiches_date_lbl:"Date", adm_fiches_new:"+ New ticket", adm_fiches_empty:"No tickets for this date.",
 adm_fiche_draft:"draft", adm_fiche_legs:"match(es)",
 adm_fiche_st_pending:"In progress", adm_fiche_st_won:"Won", adm_fiche_st_lost:"Lost",
-adm_fiche_normal:"Normal odds", adm_fiche_leg_won:"Won", adm_fiche_leg_lost:"Lost", adm_fiche_leg_void:"Void",
-adm_nav_historique:"History", adm_hist_p:"Settled tickets, day by day — verify the bot's results.",
-adm_hist_empty:"No settled ticket for this date.",
 adm_fiche_code:"Reference", adm_fiche_code_ph:"E.g.: VB-2451 (optional)",
 adm_fiche_plan:"Minimum required plan", adm_fiche_sport:"Sport",
 adm_fiche_sport_foot:"Football", adm_fiche_sport_nba:"NBA",
@@ -5354,9 +5325,6 @@ adm_fiches_h:"Fich", adm_fiches_p:"Fich pou chak jou, gwoupe pa plan. Istorik la
 adm_fiches_date_lbl:"Dat", adm_fiches_new:"+ Nouvo fich", adm_fiches_empty:"Pa gen fich pou dat sa a.",
 adm_fiche_draft:"bouyon", adm_fiche_legs:"match",
 adm_fiche_st_pending:"An kou", adm_fiche_st_won:"Genyen", adm_fiche_st_lost:"Pèdi",
-adm_fiche_normal:"Kòt nòmal", adm_fiche_leg_won:"Genyen", adm_fiche_leg_lost:"Pèdi", adm_fiche_leg_void:"Anile",
-adm_nav_historique:"Istorik", adm_hist_p:"Fich regle yo, chak jou — verifye rezilta bot la.",
-adm_hist_empty:"Pa gen fich regle pou dat sa a.",
 adm_fiche_code:"Referans", adm_fiche_code_ph:"Egz. : VB-2451 (opsyonèl)",
 adm_fiche_plan:"Plan minimòm ki mande", adm_fiche_sport:"Espò",
 adm_fiche_sport_foot:"Foutbòl", adm_fiche_sport_nba:"NBA",
@@ -8586,7 +8554,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='payments')renderPayments();
     if(view==='plans')renderPlans();
     if(view==='fiches')renderFiches();
-    if(view==='historique')renderHistoriqueAdmin();
     if(view==='faq')renderFaqList();
     if(view==='testimonials')renderTestiList();
     if(view==='settings')renderSettings();
@@ -10070,15 +10037,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     box.textContent=txt+risque;
     box.style.color=hors?'#E4574C':(risque?'#E0A32E':'#9FB0C4');
   }
-  // Libelle "25 aout 2026 - Cote normal / Score exact" : remplace l'ancien
-  // affichage du code brut du bot (ex: BOT-2026-08-25-FOOT-R3-EXACT),
-  // illisible pour l'admin. Detection par le suffixe -EXACT du code — jamais
-  // par une supposition sur legs_count, qui peut varier independamment.
-  function estFicheScoreExact(code){ return /-EXACT$/.test(String(code||'')); }
-  function libelleFiche(tk){
-    return fmtLong(tk.play_date)+' · '+(estFicheScoreExact(tk.code)?t('mk_score_l'):t('adm_fiche_normal'));
-  }
-
   async function renderFiches(){
     const dateInput=document.getElementById('admFichesDate');
     if(!dateInput.value)dateInput.value=dateAujourdhui();
@@ -10096,18 +10054,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         body.innerHTML='<div class="admdash-empty">'+t('adm_fiches_empty')+'</div>';
         return;
       }
-
-      // Legs reelles de toutes les fiches du jour, pour l'affichage façon
-      // Dashboard (chaque match visible directement dans la liste, pas
-      // seulement un compteur) — une seule requete groupee, pas une par fiche.
-      const {data:legsToutes}=await sb.from('ticket_legs')
-        .select('id,ticket_id,match_label,match_time,league,market,pick,odd,position')
-        .in('ticket_id',tickets.map(tk=>tk.id))
-        .order('position',{ascending:true});
-      const legsParFiche={};
-      (legsToutes||[]).forEach(lg=>{(legsParFiche[lg.ticket_id]=legsParFiche[lg.ticket_id]||[]).push(lg);});
+      // Le nombre de selections est deja tenu a jour par la base
+      // (colonne legs_count) : une requete de moins, et surtout la meme
+      // valeur que celle vue par le Dashboard client.
+      const legCount={};(tickets||[]).forEach(tk=>{legCount[tk.id]=tk.legs_count||0;});
 
       const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
+      const badgeCls={pending:'pending',won:'won',lost:'lost'};
       const badgeLbl={pending:'adm_fiche_st_pending',won:'adm_fiche_st_won',lost:'adm_fiche_st_lost'};
 
       body.innerHTML=plans.map(pl=>{
@@ -10115,110 +10068,27 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         if(!items.length)return '';
         const nom=stripTags(t(pl.nameKey));
         return '<div class="admdash-section-h">'+nom+' — '+items.length+'</div>'+
-          items.map(tk=>{
-            const legs=legsParFiche[tk.id]||[];
+          '<div class="admdash-list">'+items.map(tk=>{
+            const badge=badgeCls[tk.status]||'aucun';
             const lbl=badgeLbl[tk.status]?t(badgeLbl[tk.status]):tk.status;
-            const legsHtml=legs.length ? legs.map(lg=>{
-              const pick=(String(lg.pick||'').indexOf(' — ')>-1||!translations.fr[lg.pick])?lg.pick:t(lg.pick);
-              const marketTxt=translations.fr[lg.market]?t(lg.market):(lg.market||'');
-              return '<li class="dtk-leg" data-fid="'+tk.id+'" style="cursor:pointer">'+
-                '<div class="dtk-leg-top"><span class="dtk-leg-time">'+(lg.match_time||'--:--')+'</span>'+
-                '<span class="dtk-leg-league">'+(lg.league||'')+'</span></div>'+
-                '<div class="dtk-leg-match">'+(lg.match_label||'')+'</div>'+
-                '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+marketTxt+'</em>'+pick+'</span>'+
-                '<span class="dtk-leg-odd">'+(lg.odd!=null?Number(lg.odd).toFixed(2):'—')+'</span></div>'+
-                '</li>';
-            }).join('') : '<li class="dtk-leg" data-fid="'+tk.id+'" style="cursor:pointer">'+t('adm_fiche_leg_none')+'</li>';
-            return '<article class="dtk" style="margin-bottom:14px">'+
-              '<div class="dtk-head" data-fid="'+tk.id+'" style="cursor:pointer">'+
-              '<span class="dtk-sport '+(tk.sport||'foot')+'">'+(tk.sport==='nba'?'NBA':t('adm_fiche_sport_foot').toUpperCase())+'</span>'+
-              '<span class="dtk-date">'+libelleFiche(tk)+(tk.published?'':' · '+t('adm_fiche_draft'))+'</span>'+
-              '<span class="dtk-res '+tk.status+'">'+lbl+'</span></div>'+
-              '<ul class="dtk-legs">'+legsHtml+'</ul>'+
-              '</article>';
-          }).join('');
+            return '<button type="button" class="admdash-row" data-fid="'+tk.id+'">'+
+              '<span class="admdash-row-av">'+(tk.sport||'?').slice(0,2).toUpperCase()+'</span>'+
+              '<span class="admdash-row-tx"><b>'+(tk.code||tk.id.slice(0,8))+
+              (tk.published?'':' · '+t('adm_fiche_draft'))+'</b>'+
+              '<span>'+(legCount[tk.id]||0)+' '+t('adm_fiche_legs')+' · '+(tk.confidence!=null?tk.confidence+'%':'—')+'</span></span>'+
+              '<span class="admdash-row-badge '+badge+'">'+lbl+'</span>'+
+              '</button>';
+          }).join('')+'</div>';
       }).join('') || '<div class="admdash-empty">'+t('adm_fiches_empty')+'</div>';
 
-      body.querySelectorAll('[data-fid]').forEach(elm=>{
-        elm.addEventListener('click',()=>{selectedFicheId=elm.dataset.fid;setView('fichedetail');renderFicheDetail();});
+      body.querySelectorAll('[data-fid]').forEach(b=>{
+        b.addEventListener('click',()=>{selectedFicheId=b.dataset.fid;setView('fichedetail');renderFicheDetail();});
       });
     }catch(e){
       body.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';
     }
   }
   document.getElementById('admFichesDate').addEventListener('change',renderFiches);
-
-  // ---- VUE HISTORIQUE (lecture seule) ----
-  // Rappel du principe (confirme par James, 25/08) : une fiche est GAGNEE
-  // seulement si TOUTES ses selections sont gagnees, PERDUE des qu'une
-  // seule est perdue. Ce calcul est fait par bot-settle-results.js chaque
-  // jour, automatiquement — cette vue ne fait qu'AFFICHER tickets.status et
-  // ticket_legs.result deja ecrits par le bot, jamais de calcul ici.
-  async function renderHistoriqueAdmin(){
-    const dateInput=document.getElementById('admHistDate');
-    if(!dateInput.value)dateInput.value=dateAujourdhui();
-    const body=document.getElementById('admHistBody');
-    const sb=window.VB_getSupabase&&window.VB_getSupabase();
-    if(!sb){body.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
-    body.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
-    try{
-      const {data:tickets,error}=await sb.from('tickets')
-        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published')
-        .eq('play_date',dateInput.value).neq('status','pending')
-        .order('min_plan_rank',{ascending:true});
-      if(error)throw error;
-      if(!tickets||!tickets.length){
-        body.innerHTML='<div class="admdash-empty">'+t('adm_hist_empty')+'</div>';
-        return;
-      }
-      const {data:legsToutes}=await sb.from('ticket_legs')
-        .select('ticket_id,match_label,match_time,league,market,pick,odd,result,position')
-        .in('ticket_id',tickets.map(tk=>tk.id))
-        .order('position',{ascending:true});
-      const legsParFiche={};
-      (legsToutes||[]).forEach(lg=>{(legsParFiche[lg.ticket_id]=legsParFiche[lg.ticket_id]||[]).push(lg);});
-
-      const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
-      const badgeLbl={won:'adm_fiche_st_won',lost:'adm_fiche_st_lost'};
-      const legIcone={won:'V',lost:'X',void:'—'};
-      const legLbl={won:'adm_fiche_leg_won',lost:'adm_fiche_leg_lost',void:'adm_fiche_leg_void'};
-
-      body.innerHTML=plans.map(pl=>{
-        const items=tickets.filter(tk=>tk.min_plan_rank===rank[pl.id]);
-        if(!items.length)return '';
-        const nom=stripTags(t(pl.nameKey));
-        return '<div class="admdash-section-h">'+nom+' — '+items.length+'</div>'+
-          items.map(tk=>{
-            const legs=legsParFiche[tk.id]||[];
-            const lbl=badgeLbl[tk.status]?t(badgeLbl[tk.status]):tk.status;
-            const legsHtml=legs.map(lg=>{
-              const pick=(String(lg.pick||'').indexOf(' — ')>-1||!translations.fr[lg.pick])?lg.pick:t(lg.pick);
-              const marketTxt=translations.fr[lg.market]?t(lg.market):(lg.market||'');
-              const res=lg.result||'';
-              const puce=res?'<span class="dtk-leg-result '+res+'" title="'+(legLbl[res]?t(legLbl[res]):res)+'">'+(legIcone[res]||'?')+'</span>':'';
-              return '<li class="dtk-leg">'+
-                '<div class="dtk-leg-top"><span class="dtk-leg-time">'+(lg.match_time||'--:--')+'</span>'+
-                '<span class="dtk-leg-league">'+(lg.league||'')+'</span></div>'+
-                '<div class="dtk-leg-match">'+(lg.match_label||'')+'</div>'+
-                '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+marketTxt+'</em>'+pick+'</span>'+
-                '<span class="dtk-leg-odd">'+(lg.odd!=null?Number(lg.odd).toFixed(2):'—')+'</span>'+puce+'</div>'+
-                '</li>';
-            }).join('');
-            return '<article class="dtk" style="margin-bottom:14px">'+
-              '<div class="dtk-head">'+
-              '<span class="dtk-sport '+(tk.sport||'foot')+'">'+(tk.sport==='nba'?'NBA':t('adm_fiche_sport_foot').toUpperCase())+'</span>'+
-              '<span class="dtk-date">'+libelleFiche(tk)+'</span>'+
-              '<span class="dtk-res '+tk.status+'">'+lbl+'</span></div>'+
-              '<ul class="dtk-legs">'+legsHtml+'</ul>'+
-              '</article>';
-          }).join('');
-      }).join('') || '<div class="admdash-empty">'+t('adm_hist_empty')+'</div>';
-    }catch(e){
-      body.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';
-    }
-  }
-  document.getElementById('admHistDate').addEventListener('change',renderHistoriqueAdmin);
-
   document.getElementById('admFichesNew').addEventListener('click',()=>{
     selectedFicheId=null;
     fbLegsCourantes=[];
