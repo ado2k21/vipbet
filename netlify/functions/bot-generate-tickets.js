@@ -376,10 +376,21 @@ function construireFiche(pool, plan) {
   const maxLeg = plan.max_leg_odd != null ? Number(plan.max_leg_odd) : 2.5;
   const autoriseScoreExact = !!plan.includes_exact_score;
 
-  const parTier = t => pool.filter(b => b.tier === t).sort(() => 0.5 - Math.random());
-  const safe = parTier('SAFE');
-  const premium = parTier('PREMIUM');
-  const exact = autoriseScoreExact ? parTier('EXACT_SCORE') : [];
+  // CORRIGÉ : ne jamais laisser le hasard piocher une cote faible sur un match
+  // alors qu'une meilleure option existe sur ce même match — la règle anti-
+  // corrélation (1 seule sélection par match) verrouillerait alors ce match
+  // sur la moins bonne option pour toujours. On garde la MEILLEURE cote
+  // éligible par match, triée par cote décroissante (déterministe).
+  function meilleurParMatch(liste) {
+    const meilleur = {};
+    liste.forEach(b => {
+      if (!meilleur[b.fixtureId] || b.odd > meilleur[b.fixtureId].odd) meilleur[b.fixtureId] = b;
+    });
+    return Object.values(meilleur).sort((a, b) => b.odd - a.odd);
+  }
+  const safe = meilleurParMatch(pool.filter(b => b.tier === 'SAFE'));
+  const premium = meilleurParMatch(pool.filter(b => b.tier === 'PREMIUM'));
+  const exact = autoriseScoreExact ? meilleurParMatch(pool.filter(b => b.tier === 'EXACT_SCORE')) : [];
 
   const selections = [];
   const matchsUtilises = new Set();
