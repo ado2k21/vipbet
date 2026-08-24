@@ -83,6 +83,19 @@ const SECONDARY_LEAGUES_FOOT = [
 ];
 const ALLOWED_LEAGUES_FOOT = [...TOP_LEAGUES_FOOT, ...SECONDARY_LEAGUES_FOOT];
 
+// Ligues domestiques où le marché buteur est activé — grands championnats
+// uniquement, jamais les compétitions continentales/qualifications (clubs
+// parfois mineurs en phase préliminaire) ni les divisions secondaires.
+// Règle confirmée par James (25/08) : un vrai buteur reconnu (Haaland,
+// Mbappé, Kane, Benzema/CR7 type Saudi Pro League), jamais un joueur
+// choisi au hasard dans un petit club. Saudi Pro League et Qatar Stars
+// League à ajouter ici une fois leurs IDs confirmés (diagnostic en cours).
+const LEAGUES_BUTEUR_AUTORISEES = [
+  39, 140, 135, 78, 61,  // Big 5 européens
+  94, 88, 203,           // Portugal, Pays-Bas, Turquie
+  71, 128                // Brésil, Argentine
+];
+
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
 const FOOT_MIN_HOUR = 8;   // 08:00 accepté
 const FOOT_MAX_MINUTES = 22 * 60; // 22:00 accepté, 22:01 refusé
@@ -278,9 +291,39 @@ async function recupererCoteParFixture(fixtureId) {
   }
 }
 
+// DIAGNOSTIC (25/08) : retrouve les vrais id/nom/pays d'un championnat via
+// /leagues?search=... — utilisé uniquement en mode test (?diag=leagues) pour
+// confirmer un ID avant de l'ajouter à TOP_LEAGUES_FOOT/SECONDARY_LEAGUES_FOOT,
+// jamais deviné à la main (leçon du 23-24/08 : un ID faux échoue en silence).
+async function recupererLigues(recherche) {
+  const url = `https://${FOOT_HOST}/leagues?search=${encodeURIComponent(recherche)}`;
+  const resp = await fetch(url, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+  if (!resp.ok) return { erreur: `HTTP ${resp.status}` };
+  const data = await resp.json();
+  return (data.response || []).map(item => ({
+    id: item.league.id,
+    nom: item.league.name,
+    type: item.league.type,
+    pays: item.country && item.country.name,
+    saisonActuelle: (item.seasons || []).find(s => s.current)
+      ? item.seasons.find(s => s.current).year : null
+  }));
+}
+
 // ============================================================================
 // 5. EXTRACTION DES MARCHÉS PERTINENTS (foot)
 // ============================================================================
+
+// Traduit les libellés bruts "Over X.X" / "Under X.X" de l'API en français
+// ("Plus de X.X buts" / "Moins de X.X buts") — demande de James (25/08).
+// Si le format ne correspond pas au motif attendu, on garde la valeur brute
+// plutôt que de casser l'affichage (garde-fou).
+function traduireButs(value) {
+  const m = /^(Over|Under)\s+([\d.]+)$/i.exec(String(value).trim());
+  if (!m) return value;
+  const mot = m[1].toLowerCase() === 'over' ? 'Plus' : 'Moins';
+  return `${mot} de ${m[2]} buts`;
+}
 
 function extraireMarchesFoot(oddsItem, dateCible) {
   const fixture = oddsItem.fixture;
@@ -362,7 +405,7 @@ function extraireMarchesFoot(oddsItem, dateCible) {
         if (c >= 1.19 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_total_buts',
-            pick: v.value, odd: c, tier: 'SAFE',
+            pick: traduireButs(v.value), odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
@@ -402,12 +445,12 @@ function extraireMarchesFoot(oddsItem, dateCible) {
     // valeur qui ressemble à un nombre pur (protection contre un ID à
     // nouveau mal identifié). Tier PREMIUM, exempté du plafond 1.90 du
     // plan, limité à 1 par fiche (règle 14 du cahier des charges).
-    if (betType.id === 92) {
+    if (betType.id === 92 && LEAGUES_BUTEUR_AUTORISEES.includes(league.id)) {
       let meilleurButeur = null, meilleureCote = 999;
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
         const ressembleANombre = /^-?\d+(\.\d+)?$/.test(String(v.value).trim());
-        if (!ressembleANombre && c >= 1.90 && c <= 3.00 && c < meilleureCote) {
+        if (!ressembleANombre && c >= 1.30 && c <= 3.00 && c < meilleureCote) {
           meilleureCote = c;
           meilleurButeur = v;
         }
@@ -431,13 +474,13 @@ function extraireMarchesFoot(oddsItem, dateCible) {
         if (c >= 1.19 && c <= 1.70) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: cote,
-            pick: `${label} : ${v.value}`, odd: c, tier: 'SAFE',
+            pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         } else if (c >= 1.90 && c <= 2.60) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: cote,
-            pick: `${label} : ${v.value}`, odd: c, tier: 'PREMIUM',
+            pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
@@ -600,23 +643,44 @@ function construireFiche(pool, plan, options) {
  */
 function construireFicheScoreExact(pool, plan) {
   if (!plan.includes_exact_score) return { selections: [], coteTotale: 0, confiance: 0, valide: false };
+
+  const cibleMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5;
+  const cibleMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : 999;
+
   const meilleur = {};
   pool.filter(b => b.tier === 'EXACT_SCORE').forEach(b => {
     if (!meilleur[b.fixtureId] || b.odd < meilleur[b.fixtureId].odd) meilleur[b.fixtureId] = b;
   });
-  // Les scores les plus probables (cote la plus basse) d'abord
+  // Les scores les plus probables (cote la plus basse) d'abord — construction
+  // INCRÉMENTALE respectant [min_total_odd, max_total_odd] du plan, comme
+  // construireFiche le fait déjà pour la fiche normale. CORRIGE le bug du
+  // 24/08 : prendre 6 scores exacts d'un coup sans plafond produisait une
+  // cote totale de 3473 rejetée par Supabase (cote_hors_plage, max 100).
   const candidats = Object.values(meilleur).sort((a, b) => a.odd - b.odd);
-  const selections = candidats.slice(0, 6);
-  if (selections.length < 3) {
-    return { selections: [], coteTotale: 0, confiance: 0, valide: false };
+
+  const selections = [];
+  let coteTotale = 1.0;
+  for (const b of candidats) {
+    if (selections.length >= 6) break;
+    // Triés croissant : si celui-ci dépasse déjà le max, les suivants
+    // (plus chers) seraient pires — on arrête plutôt que de sauter au suivant.
+    if (coteTotale * b.odd > cibleMax * 1.05) break;
+    selections.push(b);
+    coteTotale *= b.odd;
+    if (selections.length >= 3 && coteTotale >= cibleMin) break;
   }
-  const coteTotale = selections.reduce((c, b) => c * b.odd, 1);
-  const confiance = Math.round(100 * selections.reduce((s, b) => s + 1 / b.odd, 0) / selections.length);
+
+  const valide = selections.length >= 3 && coteTotale >= cibleMin && coteTotale <= cibleMax * 1.05;
+
+  const confiance = selections.length
+    ? Math.round(100 * selections.reduce((s, b) => s + 1 / b.odd, 0) / selections.length)
+    : 0;
+
   return {
     selections,
     coteTotale: Math.round(coteTotale * 100) / 100,
     confiance,
-    valide: true
+    valide
   };
 }
 
@@ -716,6 +780,21 @@ export async function handler(event) {
     return { statusCode: 200, body: 'Hors fenêtre 17h00 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
   }
   if (modeTest) console.log('[BOT] === MODE TEST déclenché manuellement ===');
+
+  // MODE DIAGNOSTIC LIGUES (25/08) : ?token=...&diag=leagues&q=Portugal,Qatar,...
+  // Retourne les vrais id/nom/pays de chaque terme cherché sur API-Sports,
+  // pour confirmer un ID avant de l'ajouter aux listes de championnats —
+  // n'exécute PAS la génération normale de fiches.
+  if (modeTest && event.queryStringParameters.diag === 'leagues') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const termes = (event.queryStringParameters.q || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (!termes.length) return { statusCode: 400, body: 'Ajouter &q=terme1,terme2,...' };
+    const resultats = {};
+    for (const t of termes) {
+      resultats[t] = await recupererLigues(t);
+    }
+    return { statusCode: 200, body: JSON.stringify(resultats, null, 2) };
+  }
 
   if (!API_SPORTS_KEY) {
     stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
