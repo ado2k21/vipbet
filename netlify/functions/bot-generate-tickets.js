@@ -334,6 +334,14 @@ async function recupererLigues(recherche) {
   const resp = await fetch(url, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
   if (!resp.ok) return { erreur: `HTTP ${resp.status}` };
   const data = await resp.json();
+  const messagesErreur = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
+  if (messagesErreur && messagesErreur.length) {
+    return { erreurApi: messagesErreur, resultats: (data.response || []).map(item => ({
+      id: item.league.id, nom: item.league.name, type: item.league.type,
+      pays: item.country && item.country.name,
+      saisonActuelle: (item.seasons || []).find(s => s.current) ? item.seasons.find(s => s.current).year : null
+    })) };
+  }
   return (data.response || []).map(item => ({
     id: item.league.id,
     nom: item.league.name,
@@ -352,6 +360,12 @@ async function recupererEquipes(recherche) {
   const resp = await fetch(url, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
   if (!resp.ok) return { erreur: `HTTP ${resp.status}` };
   const data = await resp.json();
+  const messagesErreur = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
+  if (messagesErreur && messagesErreur.length) {
+    return { erreurApi: messagesErreur, resultats: (data.response || []).map(item => ({
+      id: item.team.id, nom: item.team.name, pays: item.team.country
+    })) };
+  }
   return (data.response || []).map(item => ({
     id: item.team.id,
     nom: item.team.name,
