@@ -42,28 +42,46 @@ const FOOT_HOST = 'v3.football.api-sports.io';
 const NBA_HOST = 'v2.nba.api-sports.io';
 const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
 
-// Championnats autorisés — grandes premières divisions, plusieurs continents.
-// Liste vivante : confirmée/élargie à partir des vrais matchs reçus lors des
-// tests (23/08). Volontairement 1ʳᵉ division uniquement — jamais une division
-// inférieure (2ᵉ, 3ᵉ, 4ᵉ...) où les données stats/fiabilité sont trop faibles.
-const ALLOWED_LEAGUES_FOOT = [
-  2, 3,                    // Ligue des champions, Europa League
-  39, 40,                  // Premier League, Championship (Angleterre)
-  140,                     // La Liga (Espagne)
-  135,                     // Serie A (Italie)
-  78,                      // Bundesliga (Allemagne)
-  61, 62,                  // Ligue 1, Ligue 2 (France)
-  88,                      // Eredivisie (Pays-Bas)
-  94,                      // Primeira Liga (Portugal)
-  71,                      // Serie A (Brésil) — confirmé réel le 23/08
-  128,                     // Liga Profesional (Argentine) — confirmé réel le 23/08
-  113,                     // Allsvenskan (Suède) — confirmé réel le 23/08
-  253,                     // MLS (USA)
-  262                      // Liga MX (Mexique)
+// Championnats autorisés — uniquement des compétitions couvertes par les
+// grands bookmakers en ligne (pour que l'utilisateur retrouve facilement
+// le match ailleurs et puisse parier rapidement). Deux niveaux :
+// TOP = 10 plus gros championnats + grandes compétitions internationales
+// (prioritaires dans la construction des fiches) ; SECONDAIRE = autres
+// 1ʳᵉ divisions reconnues, utilisées en complément si pas assez de matchs
+// TOP un jour donné. Jamais de division inférieure (2ᵉ, 3ᵉ, 4ᵉ...).
+//
+// IDs confirmés par un vrai test le 23/08 : 71, 128, 113. Les autres
+// proviennent de la documentation publique API-Sports (identifiants
+// stables et largement utilisés dans la communauté) — à confirmer/ajuster
+// au fil des prochains tests via le diagnostic championnatsVus des logs,
+// comme on l'a fait jusqu'ici.
+const TOP_LEAGUES_FOOT = [
+  39,   // Premier League (Angleterre)
+  140,  // La Liga (Espagne)
+  135,  // Serie A (Italie)
+  78,   // Bundesliga (Allemagne)
+  61,   // Ligue 1 (France)
+  71,   // Serie A (Brésil) — confirmé réel le 23/08
+  128,  // Liga Profesional (Argentine) — confirmé réel le 23/08
+  94,   // Primeira Liga (Portugal)
+  88,   // Eredivisie (Pays-Bas)
+  203,  // Süper Lig (Turquie)
+  2,    // Ligue des champions UEFA
+  3,    // Europa League UEFA
+  1,    // Coupe du Monde
+  4,    // Championnat d'Europe des Nations (Euro)
+  9     // Copa America
 ];
-// Exclu volontairement (vu dans les tests, divisions inférieures) :
-// 114 Superettan (Suède, 2ᵉ div.), 129 Primera Nacional (Argentine, 2ᵉ div.),
-// 132 Primera C (Argentine, 4ᵉ div.)
+const SECONDARY_LEAGUES_FOOT = [
+  113,  // Allsvenskan (Suède) — confirmé réel le 23/08
+  253,  // MLS (USA)
+  262,  // Liga MX (Mexique)
+  144,  // Pro League (Belgique)
+  32,   // Qualifications Coupe du Monde — zone Europe
+  34,   // Qualifications Coupe du Monde — zone Amérique du Sud
+  31    // Qualifications Coupe du Monde — zone CONCACAF
+];
+const ALLOWED_LEAGUES_FOOT = [...TOP_LEAGUES_FOOT, ...SECONDARY_LEAGUES_FOOT];
 
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
 const FOOT_MIN_HOUR = 8;   // 08:00 accepté
@@ -265,6 +283,7 @@ function extraireMarchesFoot(oddsItem, dateCible) {
     stats.championnatsVus[clef] = (stats.championnatsVus[clef] || 0) + 1;
     return [];
   }
+  const prioritaire = TOP_LEAGUES_FOOT.includes(league.id);
 
   // Fenêtre horaire Haïti stricte pour le foot (règle 4)
   const h = heureHaitiDuMatch(fixture.date);
@@ -279,6 +298,12 @@ function extraireMarchesFoot(oddsItem, dateCible) {
   const bets = (oddsItem.bookmakers && oddsItem.bookmakers[0] && oddsItem.bookmakers[0].bets) || [];
   const trouvees = [];
 
+  // PRINCIPE : la cote du marché reflète la probabilité implicite estimée
+  // par le bookmaker (1/cote) — plus la cote est basse, plus la probabilité
+  // de réussite est jugée élevée. C'est cette logique qui guide tous les
+  // seuils ci-dessous (SAFE = cotes basses = forte probabilité). Plancher
+  // absolu à 1.19 : en dessous, la marge de sécurité devient trop faible
+  // pour justifier une sélection.
   bets.forEach(betType => {
     // Score exact (id 10) — seulement si probabilité raisonnable (cote 4.0–15.0)
     if (betType.id === 10) {
@@ -291,7 +316,7 @@ function extraireMarchesFoot(oddsItem, dateCible) {
         trouvees.push({
           fixtureId: fixture.id, league: league.name, market: 'mk_score_exact',
           pick: `Score exact : ${meilleur.value}`, odd: minCote, tier: 'EXACT_SCORE',
-          kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+          kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
         });
       }
     }
@@ -299,11 +324,11 @@ function extraireMarchesFoot(oddsItem, dateCible) {
     if (betType.id === 12) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.20 && c <= 1.70) {
+        if (c >= 1.19 && c <= 1.70) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_double_chance',
             pick: `Double chance : ${v.value}`, odd: c, tier: 'SAFE',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
       });
@@ -316,7 +341,7 @@ function extraireMarchesFoot(oddsItem, dateCible) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_1x2',
             pick: `Victoire : ${v.value}`, odd: c, tier: 'PREMIUM',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
       });
@@ -325,18 +350,18 @@ function extraireMarchesFoot(oddsItem, dateCible) {
     if (betType.id === 5) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.20 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
+        if (c >= 1.19 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_total_buts',
             pick: v.value, odd: c, tier: 'SAFE',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
         if (c >= 1.95 && c <= 2.40 && v.value === 'Over 2.5') {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_total_buts',
             pick: 'Plus de 2.5 buts', odd: c, tier: 'PREMIUM',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
       });
@@ -345,12 +370,12 @@ function extraireMarchesFoot(oddsItem, dateCible) {
     if (betType.id === 8) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (v.value === 'Yes' && c >= 1.20 && c <= 2.20) {
+        if (v.value === 'Yes' && c >= 1.19 && c <= 2.20) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_btts',
             pick: 'Les deux équipes marquent : Oui', odd: c,
             tier: c <= 1.70 ? 'SAFE' : 'PREMIUM',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
       });
@@ -380,13 +405,18 @@ function construireFiche(pool, plan) {
   // alors qu'une meilleure option existe sur ce même match — la règle anti-
   // corrélation (1 seule sélection par match) verrouillerait alors ce match
   // sur la moins bonne option pour toujours. On garde la MEILLEURE cote
-  // éligible par match, triée par cote décroissante (déterministe).
+  // éligible par match. Tri : gros championnats d'abord (règle explicite —
+  // privilégier les 10 plus gros championnats et grandes compétitions quand
+  // ils jouent), puis cote décroissante à l'intérieur de chaque niveau.
   function meilleurParMatch(liste) {
     const meilleur = {};
     liste.forEach(b => {
       if (!meilleur[b.fixtureId] || b.odd > meilleur[b.fixtureId].odd) meilleur[b.fixtureId] = b;
     });
-    return Object.values(meilleur).sort((a, b) => b.odd - a.odd);
+    return Object.values(meilleur).sort((a, b) => {
+      if (a.prioritaire !== b.prioritaire) return a.prioritaire ? -1 : 1;
+      return b.odd - a.odd;
+    });
   }
   const safe = meilleurParMatch(pool.filter(b => b.tier === 'SAFE'));
   const premium = meilleurParMatch(pool.filter(b => b.tier === 'PREMIUM'));
