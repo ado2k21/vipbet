@@ -596,12 +596,25 @@ export async function handler(event) {
     return true;
   });
 
+  // --- Diagnostic : taille réelle du pool de sélections après tous les filtres ---
+  const parTierCompte = t => poolFoot.filter(b => b.tier === t).length;
+  stats.poolFinal = {
+    total: poolFoot.length,
+    SAFE: parTierCompte('SAFE'),
+    PREMIUM: parTierCompte('PREMIUM'),
+    EXACT_SCORE: parTierCompte('EXACT_SCORE'),
+    detail: poolFoot.map(b => ({
+      match: (noms[b.fixtureId] && noms[b.fixtureId].label) || b.fixtureId,
+      market: b.market, pick: b.pick, odd: b.odd, tier: b.tier
+    }))
+  };
+
   // --- Construction + publication par plan ---
   for (const plan of plans) {
     const fiche = construireFiche(poolFoot, plan);
     stats.fichesGenerees++;
     if (!fiche.valide) {
-      console.log(`[BOT] Rang ${plan.rank} : aucune fiche fiable dans la plage demandée — non publiée.`);
+      console.log(`[BOT] Rang ${plan.rank} : non publiée — ${fiche.selections.length} sélection(s), cote atteinte ${fiche.coteTotale}, cible [${plan.min_total_odd}–${plan.max_total_odd}]`);
       continue;
     }
     await publierFiche(plan, fiche, dateCible, 'foot', noms);
