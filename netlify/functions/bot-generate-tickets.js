@@ -224,25 +224,29 @@ async function recupererCotesFoot(dateCible) {
   }
 }
 
-// Résolution des vrais noms d'équipes — un seul appel groupé, uniquement
-// pour les matchs effectivement retenus (jamais tous les matchs du jour).
-async function resoudreNomsEquipes(fixtureIds) {
+// Résolution des vrais noms d'équipes — le paramètre groupé "ids" de
+// /fixtures est verrouillé sur le plan gratuit (confirmé en test le 23/08 :
+// "Free plans do not have access to the Ids parameter"). Alternative gratuite :
+// un seul appel /fixtures?date=...&timezone=... (tous les matchs du monde ce
+// jour-là, en heure Haïti), puis filtrage local sur les fixtures qui
+// nous intéressent. Un seul appel API quel que soit le nombre de matchs.
+async function resoudreNomsEquipes(fixtureIds, dateCible) {
   const noms = {};
-  const lots = [];
-  for (let i = 0; i < fixtureIds.length; i += 20) lots.push(fixtureIds.slice(i, i + 20));
-  for (const lot of lots) {
-    try {
-      const data = await apiSportsGet(FOOT_HOST, '/fixtures', { ids: lot.join('-') });
-      data.forEach(f => {
+  if (!fixtureIds.length) return noms;
+  const aTrouver = new Set(fixtureIds);
+  try {
+    const data = await apiSportsGet(FOOT_HOST, '/fixtures', { date: dateCible, timezone: TZ_HAITI });
+    data.forEach(f => {
+      if (aTrouver.has(f.fixture.id)) {
         noms[f.fixture.id] = {
           label: `${f.teams.home.name} — ${f.teams.away.name}`,
           statut: f.fixture.status.short,
           kickoffUtc: f.fixture.date
         };
-      });
-    } catch (e) {
-      stats.erreurs.push('foot/fixtures(ids): ' + e.message);
-    }
+      }
+    });
+  } catch (e) {
+    stats.erreurs.push('foot/fixtures(date): ' + e.message);
   }
   return noms;
 }
@@ -583,7 +587,7 @@ export async function handler(event) {
 
   // --- Résolution des vrais noms d'équipes (uniquement les matchs candidats) ---
   const idsUtiles = [...new Set(poolFoot.map(b => b.fixtureId))];
-  const noms = idsUtiles.length ? await resoudreNomsEquipes(idsUtiles) : {};
+  const noms = idsUtiles.length ? await resoudreNomsEquipes(idsUtiles, dateCible) : {};
   // On exclut les matchs dont le statut réel n'est pas "programmé" (reporté/annulé avant même publication)
   poolFoot = poolFoot.filter(b => {
     const n = noms[b.fixtureId];
