@@ -112,7 +112,22 @@ const LEAGUES_BUTEUR_AUTORISEES = [
   39, 140, 135, 78, 61,  // Big 5 européens
   94, 88, 203,           // Portugal, Pays-Bas, Turquie
   71, 128,               // Brésil, Argentine
-  307                    // Saudi Pro League (CR7, Benzema) — confirmé le 25/08
+  307,                   // Saudi Pro League (CR7, Benzema) — confirmé le 25/08
+  253                    // MLS — inclus pour permettre Inter Miami (Messi), voir GRANDS_CLUBS_BUTEUR
+];
+
+// Liste des IDs des grands clubs où le buteur est activé (règle du 25/08 :
+// pas n'importe quelle équipe d'un grand championnat, seulement les clubs
+// avec de vrais grands buteurs reconnus). VIDE pour l'instant — tant qu'elle
+// est vide, le filtre club est ignoré (seul LEAGUES_BUTEUR_AUTORISEES
+// s'applique) pour ne pas désactiver tout le marché buteur en attendant les
+// IDs confirmés via ?diag=teams. Dès qu'elle est remplie, le filtre club
+// s'active automatiquement.
+const GRANDS_CLUBS_BUTEUR = [
+  // À remplir avec les IDs confirmés : Real Madrid, Barcelone, Bayern,
+  // Man City, Man United, Liverpool, Arsenal, Chelsea, Tottenham,
+  // Inter Milan, Juventus, AC Milan, Napoli, PSG, Al-Nassr, Al-Ittihad,
+  // Al-Hilal, Inter Miami (Messi), etc.
 ];
 
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
@@ -329,6 +344,21 @@ async function recupererLigues(recherche) {
   }));
 }
 
+// DIAGNOSTIC (25/08) : retrouve les vrais id/nom/pays d'une équipe via
+// /teams?search=... — utilisé en mode test (?diag=teams) pour confirmer les
+// IDs des "grands clubs" avant de les ajouter à GRANDS_CLUBS_BUTEUR.
+async function recupererEquipes(recherche) {
+  const url = `https://${FOOT_HOST}/teams?search=${encodeURIComponent(recherche)}`;
+  const resp = await fetch(url, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+  if (!resp.ok) return { erreur: `HTTP ${resp.status}` };
+  const data = await resp.json();
+  return (data.response || []).map(item => ({
+    id: item.team.id,
+    nom: item.team.name,
+    pays: item.team.country
+  }));
+}
+
 // ============================================================================
 // 5. EXTRACTION DES MARCHÉS PERTINENTS (foot)
 // ============================================================================
@@ -344,7 +374,7 @@ function traduireButs(value) {
   return `${mot} de ${m[2]} buts`;
 }
 
-function extraireMarchesFoot(oddsItem, dateCible) {
+function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
   const fixture = oddsItem.fixture;
   const league = oddsItem.league;
   if (!fixture || !league) { rejeter('donnees_incompletes'); return []; }
@@ -464,7 +494,17 @@ function extraireMarchesFoot(oddsItem, dateCible) {
     // valeur qui ressemble à un nombre pur (protection contre un ID à
     // nouveau mal identifié). Tier PREMIUM, exempté du plafond 1.90 du
     // plan, limité à 1 par fiche (règle 14 du cahier des charges).
-    if (betType.id === 92 && LEAGUES_BUTEUR_AUTORISEES.includes(league.id)) {
+    // Règle du 25/08 : pas n'importe quelle équipe d'un grand championnat —
+    // seulement les grands clubs avec de vrais buteurs reconnus (voir
+    // GRANDS_CLUBS_BUTEUR). Tant que cette liste est vide, seul le filtre
+    // championnat s'applique (voir commentaire à sa définition). Aucun
+    // appel API supplémentaire : les IDs équipe viennent déjà de /fixtures.
+    const clubAutorise = GRANDS_CLUBS_BUTEUR.length === 0
+      || (infosFixture && (
+        GRANDS_CLUBS_BUTEUR.includes(infosFixture.equipeDomicileId) ||
+        GRANDS_CLUBS_BUTEUR.includes(infosFixture.equipeExterieurId)
+      ));
+    if (betType.id === 92 && LEAGUES_BUTEUR_AUTORISEES.includes(league.id) && clubAutorise) {
       let meilleurButeur = null, meilleureCote = 999;
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
@@ -815,6 +855,20 @@ export async function handler(event) {
     return { statusCode: 200, body: JSON.stringify(resultats, null, 2) };
   }
 
+  // MODE DIAGNOSTIC ÉQUIPES (25/08) : ?token=...&diag=teams&q=Real Madrid,Barcelona,...
+  // Même principe que diag=leagues, mais pour confirmer les IDs des "grands
+  // clubs" avant de les ajouter à GRANDS_CLUBS_BUTEUR.
+  if (modeTest && event.queryStringParameters.diag === 'teams') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const termes = (event.queryStringParameters.q || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (!termes.length) return { statusCode: 400, body: 'Ajouter &q=terme1,terme2,...' };
+    const resultats = {};
+    for (const t of termes) {
+      resultats[t] = await recupererEquipes(t);
+    }
+    return { statusCode: 200, body: JSON.stringify(resultats, null, 2) };
+  }
+
   if (!API_SPORTS_KEY) {
     stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
     logFinal();
@@ -879,7 +933,9 @@ export async function handler(event) {
     noms[fixture.id] = {
       label: `${f.teams.home.name} — ${f.teams.away.name}`,
       statut: fixture.status.short,
-      kickoffUtc: fixture.date
+      kickoffUtc: fixture.date,
+      equipeDomicileId: f.teams.home.id,
+      equipeExterieurId: f.teams.away.id
     };
     candidats.push({
       fixtureId: fixture.id,
@@ -897,7 +953,7 @@ export async function handler(event) {
   for (const c of candidats) {
     const oddsItem = await recupererCoteParFixture(c.fixtureId);
     if (!oddsItem) continue;
-    poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, dateCible));
+    poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, dateCible, noms[c.fixtureId]));
   }
 
   if (!poolFoot.length) {
