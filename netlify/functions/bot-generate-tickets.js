@@ -175,9 +175,8 @@ const stats = {
   demarre: null,
   fuseauUtilise: TZ_HAITI,
   dateCible: null,
-  championnatsInterroges: 0,
-  championnatsAvecMatchs: 0,
-  championnatsEnErreur: 0,
+  pagesOddsRecuperees: 0,
+  pagesOddsTotal: 0,
   matchsTrouves: 0,
   matchsRetenus: 0,
   matchsRejetes: 0,
@@ -198,9 +197,8 @@ const stats = {
 function resetStats() {
   stats.demarre = new Date().toISOString();
   stats.dateCible = null;
-  stats.championnatsInterroges = 0;
-  stats.championnatsAvecMatchs = 0;
-  stats.championnatsEnErreur = 0;
+  stats.pagesOddsRecuperees = 0;
+  stats.pagesOddsTotal = 0;
   stats.matchsTrouves = 0;
   stats.matchsRetenus = 0;
   stats.matchsRejetes = 0;
@@ -249,71 +247,35 @@ async function apiSportsGet(host, path, params) {
   return data.response || [];
 }
 
-// STRATÉGIE CHANGÉE (24/08, 2ᵉ révision) : la pagination générique par date
-// seule ne remonte que 3 pages sur ~10 disponibles (plafond du plan
-// gratuit), dans un ordre non contrôlé par nous — aucune garantie que les
-// grands championnats (Premier League, Liga, Serie A...) apparaissent dans
-// les 3 pages récupérées. On interroge maintenant CHAQUE championnat
-// autorisé individuellement (date + league combinés) : ça garantit qu'un
-// grand championnat est vu dès qu'il joue ce jour-là, quel que soit le
-// nombre total de matchs dans le monde. ~22 appels (un par championnat
-// autorisé), largement dans le quota de 100/jour.
-async function recupererCotesFoot(dateCible) {
-  let toutes = [];
-  let championnatsInterroges = 0;
-  let championnatsAvecMatchs = 0;
-  let erreursChampionnat = 0;
-  // CORRIGÉ (24/08, 3ᵉ révision) : le paramètre "season" est rejeté sur le
-  // plan gratuit pour la saison en cours ("Free plans do not have access
-  // to this season, try from 2022 to 2024") — retiré. "date" seul avait
-  // déjà démontré qu'il sait servir la saison actuelle sans qu'on la
-  // précise explicitement ; on teste ici si "league" + "date" (sans season)
-  // passe aussi.
-  for (const leagueId of ALLOWED_LEAGUES_FOOT) {
-    try {
-      const data = await apiSportsGetRaw(FOOT_HOST, '/odds', {
-        date: dateCible, league: leagueId, bookmaker: BOOKMAKER_ID
-      });
-      const resultats = data.response || [];
-      if (resultats.length) championnatsAvecMatchs++;
-      toutes = toutes.concat(resultats);
-      championnatsInterroges++;
-    } catch (e) {
-      erreursChampionnat++;
-      stats.erreurs.push(`foot/odds(league=${leagueId}): ${e.message}`);
-    }
+// STRATÉGIE DÉFINITIVEMENT FIXÉE (24/08, 5ᵉ et dernière révision) :
+// la requête par championnat (date + league) sur /odds est une IMPASSE sur
+// le plan gratuit (season obligatoire, rejetée pour la saison en cours).
+// La pagination générique par date sur /odds est limitée à 3 pages/10 et
+// ne garantit pas de voir les grands championnats.
+// SOLUTION : /fixtures?date=...&timezone=... n'a AUCUNE de ces
+// restrictions et renvoie TOUS les matchs du jour en un seul appel — on
+// filtre localement par championnat autorisé, fenêtre horaire et statut,
+// PUIS on demande la cote UNIQUEMENT pour ces matchs-là via
+// /odds?fixture=<id> (pas de "league", donc pas de "season" requis).
+// Garantit qu'un grand championnat apparaît dès qu'il joue ce jour-là.
+async function recupererFixturesJour(dateCible) {
+  try {
+    const data = await apiSportsGetRaw(FOOT_HOST, '/fixtures', { date: dateCible, timezone: TZ_HAITI });
+    return data.response || [];
+  } catch (e) {
+    stats.erreurs.push('foot/fixtures(jour): ' + e.message);
+    return [];
   }
-  stats.championnatsInterroges = championnatsInterroges;
-  stats.championnatsAvecMatchs = championnatsAvecMatchs;
-  stats.championnatsEnErreur = erreursChampionnat;
-  return toutes;
 }
 
-// Résolution des vrais noms d'équipes — le paramètre groupé "ids" de
-// /fixtures est verrouillé sur le plan gratuit (confirmé en test le 23/08 :
-// "Free plans do not have access to the Ids parameter"). Alternative gratuite :
-// un seul appel /fixtures?date=...&timezone=... (tous les matchs du monde ce
-// jour-là, en heure Haïti), puis filtrage local sur les fixtures qui
-// nous intéressent. Un seul appel API quel que soit le nombre de matchs.
-async function resoudreNomsEquipes(fixtureIds, dateCible) {
-  const noms = {};
-  if (!fixtureIds.length) return noms;
-  const aTrouver = new Set(fixtureIds);
+async function recupererCoteParFixture(fixtureId) {
   try {
-    const data = await apiSportsGet(FOOT_HOST, '/fixtures', { date: dateCible, timezone: TZ_HAITI });
-    data.forEach(f => {
-      if (aTrouver.has(f.fixture.id)) {
-        noms[f.fixture.id] = {
-          label: `${f.teams.home.name} — ${f.teams.away.name}`,
-          statut: f.fixture.status.short,
-          kickoffUtc: f.fixture.date
-        };
-      }
-    });
+    const data = await apiSportsGetRaw(FOOT_HOST, '/odds', { fixture: fixtureId, bookmaker: BOOKMAKER_ID });
+    return (data.response && data.response[0]) || null;
   } catch (e) {
-    stats.erreurs.push('foot/fixtures(date): ' + e.message);
+    stats.erreurs.push(`foot/odds(fixture=${fixtureId}): ${e.message}`);
+    return null;
   }
-  return noms;
 }
 
 // ============================================================================
@@ -786,35 +748,63 @@ export async function handler(event) {
     return { statusCode: 500, body: 'Impossible de lire les plans.' };
   }
 
-  // --- Cotes réelles foot ---
-  const oddsRaw = await recupererCotesFoot(dateCible);
-  stats.matchsTrouves = oddsRaw.length;
+  // --- Fixtures du jour (1 seul appel, aucune restriction championnat/saison) ---
+  const fixturesJour = await recupererFixturesJour(dateCible);
+  stats.matchsTrouves = fixturesJour.length;
 
-  if (!oddsRaw.length) {
-    // Aucune cote disponible (plan API insuffisant, pas de match, panne) :
-    // on ne publie RIEN plutôt que d'inventer — règle 29/39.
-    console.log('[BOT] Aucune cote reçue — vérifier le plan API-Sports (endpoint /odds).');
+  if (!fixturesJour.length) {
+    console.log('[BOT] Aucun match reçu — vérifier le plan API-Sports (endpoint /fixtures).');
     logFinal();
-    return { statusCode: 200, body: 'Aucune cote disponible — aucune fiche publiée.' };
+    return { statusCode: 200, body: 'Aucun match disponible — aucune fiche publiée.' };
   }
+
+  // Filtrage local : championnat autorisé, fenêtre horaire Haïti, statut
+  // programmé. On construit `noms` directement ici (label, statut, heure
+  // de coup d'envoi) — plus besoin d'un appel séparé pour les noms d'équipes.
+  const noms = {};
+  let candidats = [];
+  fixturesJour.forEach(f => {
+    const league = f.league;
+    const fixture = f.fixture;
+    if (!league || !fixture) return;
+    if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) {
+      const clef = `${league.id} — ${league.name} (${league.country || '?'})`;
+      stats.championnatsVus[clef] = (stats.championnatsVus[clef] || 0) + 1;
+      return;
+    }
+    const h = heureHaitiDuMatch(fixture.date);
+    if (!h || h.iso !== dateCible) return;
+    const minutesJour = h.heureNum * 60 + h.minuteNum;
+    if (minutesJour < FOOT_MIN_HOUR * 60 || minutesJour > FOOT_MAX_MINUTES) return;
+    if (!['NS', 'TBD'].includes(fixture.status.short)) return;
+
+    noms[fixture.id] = {
+      label: `${f.teams.home.name} — ${f.teams.away.name}`,
+      statut: fixture.status.short,
+      kickoffUtc: fixture.date
+    };
+    candidats.push({
+      fixtureId: fixture.id,
+      prioritaire: TOP_LEAGUES_FOOT.includes(league.id)
+    });
+  });
+
+  // Garde-fou quota : priorité aux grands championnats si trop de matchs
+  // candidats un même jour (1 appel /odds par match candidat).
+  const PLAFOND_APPELS_COTES = 60;
+  candidats.sort((a, b) => (b.prioritaire ? 1 : 0) - (a.prioritaire ? 1 : 0));
+  if (candidats.length > PLAFOND_APPELS_COTES) candidats = candidats.slice(0, PLAFOND_APPELS_COTES);
 
   let poolFoot = [];
-  oddsRaw.forEach(item => { poolFoot = poolFoot.concat(extraireMarchesFoot(item, dateCible)); });
-
-  if (!poolFoot.length) {
-    console.log('[BOT] Aucune sélection foot ne passe les filtres.');
+  for (const c of candidats) {
+    const oddsItem = await recupererCoteParFixture(c.fixtureId);
+    if (!oddsItem) continue;
+    poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, dateCible));
   }
 
-  // --- Résolution des vrais noms d'équipes (uniquement les matchs candidats) ---
-  const idsUtiles = [...new Set(poolFoot.map(b => b.fixtureId))];
-  const noms = idsUtiles.length ? await resoudreNomsEquipes(idsUtiles, dateCible) : {};
-  // On exclut les matchs dont le statut réel n'est pas "programmé" (reporté/annulé avant même publication)
-  poolFoot = poolFoot.filter(b => {
-    const n = noms[b.fixtureId];
-    if (!n) { rejeter('nom_equipe_introuvable'); return false; }
-    if (!['NS', 'TBD'].includes(n.statut)) { rejeter('statut_match_non_programme'); return false; }
-    return true;
-  });
+  if (!poolFoot.length) {
+    console.log('[BOT] Aucune sélection foot ne passe les filtres (0 cote disponible parmi les matchs candidats).');
+  }
 
   // --- Diagnostic : taille réelle du pool de sélections après tous les filtres ---
   const parTierCompte = t => poolFoot.filter(b => b.tier === t).length;
