@@ -135,18 +135,36 @@ function heureHaitiDuMatch(isoUtc) {
 // ============================================================================
 
 const stats = {
-  demarre: new Date().toISOString(),
+  demarre: null,
   fuseauUtilise: TZ_HAITI,
   dateCible: null,
   matchsTrouves: 0,
   matchsRetenus: 0,
   matchsRejetes: 0,
   raisonsRejet: {},
+  championnatsVus: {}, // diagnostic : quels league.id/name l'API renvoie réellement
   fichesGenerees: 0,
   fichesPubliees: 0,
   doublonsDetectes: false,
   erreurs: []
 };
+// BUG CORRIGÉ : sur un conteneur Netlify "chaud" (réutilisé entre deux
+// invocations rapprochées), un objet déclaré au niveau du module n'est PAS
+// réinitialisé automatiquement — les compteurs s'accumulaient d'un run à
+// l'autre. On réinitialise donc explicitement stats en tout début de handler.
+function resetStats() {
+  stats.demarre = new Date().toISOString();
+  stats.dateCible = null;
+  stats.matchsTrouves = 0;
+  stats.matchsRetenus = 0;
+  stats.matchsRejetes = 0;
+  stats.raisonsRejet = {};
+  stats.championnatsVus = {};
+  stats.fichesGenerees = 0;
+  stats.fichesPubliees = 0;
+  stats.doublonsDetectes = false;
+  stats.erreurs = [];
+}
 function rejeter(raison) {
   stats.matchsRejetes++;
   stats.raisonsRejet[raison] = (stats.raisonsRejet[raison] || 0) + 1;
@@ -218,7 +236,12 @@ function extraireMarchesFoot(oddsItem, dateCible) {
   const fixture = oddsItem.fixture;
   const league = oddsItem.league;
   if (!fixture || !league) { rejeter('donnees_incompletes'); return []; }
-  if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) { rejeter('championnat_non_autorise'); return []; }
+  if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) {
+    rejeter('championnat_non_autorise');
+    const clef = `${league.id} — ${league.name} (${league.country || '?'})`;
+    stats.championnatsVus[clef] = (stats.championnatsVus[clef] || 0) + 1;
+    return [];
+  }
 
   // Fenêtre horaire Haïti stricte pour le foot (règle 4)
   const h = heureHaitiDuMatch(fixture.date);
@@ -470,6 +493,8 @@ async function publierFiche(plan, fiche, dateCible, sport, noms) {
 // ============================================================================
 
 export async function handler(event) {
+  resetStats(); // corrige le bug de compteurs cumulatifs entre invocations à chaud
+
   // MODE TEST : permet de déclencher le bot manuellement (hors fenêtre 17h)
   // pour vérifier tout de suite s'il fonctionne, sans attendre le cron.
   // Utilisation : ouvrir l'URL de la fonction avec ?token=<BOT_TEST_TOKEN>
