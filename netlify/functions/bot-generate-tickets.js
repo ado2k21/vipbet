@@ -175,8 +175,8 @@ const stats = {
   demarre: null,
   fuseauUtilise: TZ_HAITI,
   dateCible: null,
-  pagesOddsRecuperees: 0,
-  pagesOddsTotal: 0,
+  championnatsInterroges: 0,
+  championnatsEnErreur: 0,
   matchsTrouves: 0,
   matchsRetenus: 0,
   matchsRejetes: 0,
@@ -197,8 +197,8 @@ const stats = {
 function resetStats() {
   stats.demarre = new Date().toISOString();
   stats.dateCible = null;
-  stats.pagesOddsRecuperees = 0;
-  stats.pagesOddsTotal = 0;
+  stats.championnatsInterroges = 0;
+  stats.championnatsEnErreur = 0;
   stats.matchsTrouves = 0;
   stats.matchsRetenus = 0;
   stats.matchsRejetes = 0;
@@ -247,31 +247,33 @@ async function apiSportsGet(host, path, params) {
   return data.response || [];
 }
 
-// BUG CORRIGÉ (24/08) : /odds est paginé par l'API (page fixe à 1 avant),
-// donc seule une fraction des matchs du jour était récupérée — matchsTrouves
-// plafonnait exactement à la taille d'une page. On récupère maintenant
-// toutes les pages disponibles. Plan gratuit confirmé limité à 3 pages max
-// (message d'erreur reçu le 24/08 : "Free plans are limited to a maximum
-// value of 3 for the Page parameter") — plafond fixé en conséquence.
+// STRATÉGIE CHANGÉE (24/08, 2ᵉ révision) : la pagination générique par date
+// seule ne remonte que 3 pages sur ~10 disponibles (plafond du plan
+// gratuit), dans un ordre non contrôlé par nous — aucune garantie que les
+// grands championnats (Premier League, Liga, Serie A...) apparaissent dans
+// les 3 pages récupérées. On interroge maintenant CHAQUE championnat
+// autorisé individuellement (date + league combinés) : ça garantit qu'un
+// grand championnat est vu dès qu'il joue ce jour-là, quel que soit le
+// nombre total de matchs dans le monde. ~22 appels (un par championnat
+// autorisé), largement dans le quota de 100/jour.
 async function recupererCotesFoot(dateCible) {
-  const MAX_PAGES = 3;
   let toutes = [];
-  let pagesRecuperees = 0;
-  try {
-    let page = 1;
-    let totalPages = 1;
-    do {
-      const data = await apiSportsGetRaw(FOOT_HOST, '/odds', { date: dateCible, bookmaker: BOOKMAKER_ID, page });
+  let championnatsInterroges = 0;
+  let erreursChampionnat = 0;
+  for (const leagueId of ALLOWED_LEAGUES_FOOT) {
+    try {
+      const data = await apiSportsGetRaw(FOOT_HOST, '/odds', {
+        date: dateCible, league: leagueId, bookmaker: BOOKMAKER_ID
+      });
       toutes = toutes.concat(data.response || []);
-      pagesRecuperees++;
-      totalPages = (data.paging && data.paging.total) || 1;
-      page++;
-    } while (page <= totalPages && page <= MAX_PAGES);
-    stats.pagesOddsRecuperees = pagesRecuperees;
-    stats.pagesOddsTotal = totalPages;
-  } catch (e) {
-    stats.erreurs.push('foot/odds: ' + e.message);
+      championnatsInterroges++;
+    } catch (e) {
+      erreursChampionnat++;
+      stats.erreurs.push(`foot/odds(league=${leagueId}): ${e.message}`);
+    }
   }
+  stats.championnatsInterroges = championnatsInterroges;
+  stats.championnatsEnErreur = erreursChampionnat;
   return toutes;
 }
 
@@ -494,20 +496,34 @@ function extraireMarchesFoot(oddsItem, dateCible) {
  * Choisit les sélections d'une fiche pour un plan donné.
  * Priorité stricte : fiabilité > diversification > cote finale > nombre de matchs
  * (jamais l'inverse — règle 40 du cahier des charges).
+ *
+ * Classement de fiabilité (défini par James, 24/08) :
+ * 🟢 très fiable = SAFE (double chance, over/under buts modérés, totaux équipe bas)
+ * 🟡 fiabilité moyenne = PREMIUM hors buteur (victoire directe, +2.5 buts, BTTS, totaux équipe hauts)
+ * 🔴 très risqué, usage exceptionnel = score exact ET buteur — tous deux réservés
+ * aux plans qui autorisent explicitement le score exact (includes_exact_score),
+ * jamais au Plan 1/2. Le buteur ne doit jamais être réutilisé dans une autre
+ * fiche le même jour (passé via options.buteursUtilises, partagé entre tous
+ * les appels de la génération du jour).
  */
-function construireFiche(pool, plan) {
-  const cibleMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5;
+function construireFiche(pool, plan, options) {
+  options = options || {};
+  const buteursUtilises = options.buteursUtilises || new Set();
+  const nbMatchsDisponibles = options.nbMatchsDisponibles || 0;
+
+  let cibleMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5;
   const cibleMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : 999;
   const maxLeg = plan.max_leg_odd != null ? Number(plan.max_leg_odd) : 2.5;
   const autoriseScoreExact = !!plan.includes_exact_score;
 
-  // CORRIGÉ : ne jamais laisser le hasard piocher une cote faible sur un match
-  // alors qu'une meilleure option existe sur ce même match — la règle anti-
-  // corrélation (1 seule sélection par match) verrouillerait alors ce match
-  // sur la moins bonne option pour toujours. On garde la MEILLEURE cote
-  // éligible par match. Tri : gros championnats d'abord (règle explicite —
-  // privilégier les 10 plus gros championnats et grandes compétitions quand
-  // ils jouent), puis cote décroissante à l'intérieur de chaque niveau.
+  // EXCEPTION (règle confirmée par James, seuil < 4 matchs valides) : les
+  // jours avec peu de matchs, les plans à cote cible élevée (rang ≥3)
+  // acceptent une cote réduite (~15) plutôt que de ne jamais publier.
+  // Ne s'applique jamais à la baisse au-delà de la cible d'origine.
+  if (plan.rank >= 3 && nbMatchsDisponibles < 4 && cibleMin > 15) {
+    cibleMin = 15;
+  }
+
   function meilleurParMatch(liste) {
     const meilleur = {};
     liste.forEach(b => {
@@ -519,8 +535,13 @@ function construireFiche(pool, plan) {
     });
   }
   const safe = meilleurParMatch(pool.filter(b => b.tier === 'SAFE'));
-  const premium = meilleurParMatch(pool.filter(b => b.tier === 'PREMIUM'));
+  // Buteur (🔴) exclu du pool PREMIUM général — réservé aux plans score-exact,
+  // et jamais un joueur déjà utilisé dans une fiche publiée plus tôt ce jour.
+  const premium = meilleurParMatch(pool.filter(b => b.tier === 'PREMIUM' && b.market !== 'mk_buteur'));
   const exact = autoriseScoreExact ? meilleurParMatch(pool.filter(b => b.tier === 'EXACT_SCORE')) : [];
+  const buteurs = autoriseScoreExact
+    ? meilleurParMatch(pool.filter(b => b.market === 'mk_buteur' && !buteursUtilises.has(b.pick)))
+    : [];
 
   const selections = [];
   const matchsUtilises = new Set();
@@ -532,12 +553,16 @@ function construireFiche(pool, plan) {
   const MAX_PAR_CHAMPIONNAT = 3; // diversification des championnats
   const MAX_SELECTIONS = 10;
   const PLAFOND_PAR_MARCHE = { mk_buteur: 1 }; // règle 14 : max 1 buteur par fiche
+  // Plan 1 : prudence renforcée — éviter de combiner trop de grosses cotes
+  // (règle explicite de James). Limite le nombre de sélections 🟡 (premium)
+  // autorisées, quasi tout doit venir du 🟢 (safe).
+  const MAX_PREMIUM_PLAN1 = 1;
 
   function tenterAjout(bet) {
     if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match
     // Cotes ≥1.90 acceptées pour les marchés SAFE/PREMIUM déjà bien établis
-    // et encadrés (victoire directe, plus de 2.5 buts, BTTS, buteur) — le
-    // plafond strict du plan ne s'applique qu'aux cotes hors de ces plages
+    // et encadrés (victoire directe, plus de 2.5 buts, BTTS) — le plafond
+    // strict du plan ne s'applique qu'aux cotes hors de ces plages
     // contrôlées. EXACT_SCORE et PREMIUM sont donc tous deux exemptés.
     if (bet.odd > maxLeg && bet.tier !== 'EXACT_SCORE' && bet.tier !== 'PREMIUM') return false;
     const plafondMarche = PLAFOND_PAR_MARCHE[bet.market] || MAX_PAR_MARCHE;
@@ -557,13 +582,21 @@ function construireFiche(pool, plan) {
   if (autoriseScoreExact) {
     for (const b of exact) { if (tenterAjout(b)) break; }
   }
-  // Jusqu'à 2 sélections premium
+  // 1 buteur max, seulement si le plan l'autorise et joueur pas déjà utilisé
+  // ailleurs aujourd'hui
+  if (autoriseScoreExact) {
+    for (const b of buteurs) {
+      if (tenterAjout(b)) { buteursUtilises.add(b.pick); break; }
+    }
+  }
+  // Sélections 🟡 (premium) : jusqu'à 2, sauf Plan 1 limité à 1 (prudence)
+  const maxPremium = plan.rank === 1 ? MAX_PREMIUM_PLAN1 : 2;
   let premCount = 0;
   for (const b of premium) {
-    if (premCount >= 2) break;
+    if (premCount >= maxPremium) break;
     if (tenterAjout(b)) premCount++;
   }
-  // Compléter avec du safe jusqu'à atteindre la cible (jamais au-delà du max)
+  // Compléter avec du 🟢 (safe) jusqu'à atteindre la cible (jamais au-delà du max)
   for (const b of safe) {
     if (coteTotale >= cibleMin) break;
     tenterAjout(b);
@@ -582,6 +615,34 @@ function construireFiche(pool, plan) {
     coteTotale: Math.round(coteTotale * 100) / 100,
     confiance,
     valide: selections.length >= 2 && coteTotale >= cibleMin && coteTotale <= cibleMax
+  };
+}
+
+/**
+ * Fiche "score exact" dédiée — jamais mélangée avec d'autres marchés.
+ * 3 à 6 sélections, toutes score exact, une par match distinct.
+ * Réservée aux plans score-exact ; s'ajoute à la fiche normale du même
+ * plan (ne la remplace pas — confirmé par James).
+ */
+function construireFicheScoreExact(pool, plan) {
+  if (!plan.includes_exact_score) return { selections: [], coteTotale: 0, confiance: 0, valide: false };
+  const meilleur = {};
+  pool.filter(b => b.tier === 'EXACT_SCORE').forEach(b => {
+    if (!meilleur[b.fixtureId] || b.odd < meilleur[b.fixtureId].odd) meilleur[b.fixtureId] = b;
+  });
+  // Les scores les plus probables (cote la plus basse) d'abord
+  const candidats = Object.values(meilleur).sort((a, b) => a.odd - b.odd);
+  const selections = candidats.slice(0, 6);
+  if (selections.length < 3) {
+    return { selections: [], coteTotale: 0, confiance: 0, valide: false };
+  }
+  const coteTotale = selections.reduce((c, b) => c * b.odd, 1);
+  const confiance = Math.round(100 * selections.reduce((s, b) => s + 1 / b.odd, 0) / selections.length);
+  return {
+    selections,
+    coteTotale: Math.round(coteTotale * 100) / 100,
+    confiance,
+    valide: true
   };
 }
 
@@ -606,8 +667,8 @@ async function dejaGenereAujourdhui(dateCible) {
 // 8. ÉCRITURE EN BASE
 // ============================================================================
 
-async function publierFiche(plan, fiche, dateCible, sport, noms) {
-  const code = `BOT-${dateCible}-${sport.toUpperCase()}-R${plan.rank}`;
+async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
+  const code = `BOT-${dateCible}-${sport.toUpperCase()}-R${plan.rank}${suffixeCode || ''}`;
   // score_legs_count : nombre de sélections "score exact" dans la fiche —
   // nécessaire au filtrage RLS côté Dashboard client (colonne NOT NULL,
   // default 0, mais doit refléter la réalité dès qu'une fiche en contient).
@@ -757,14 +818,33 @@ export async function handler(event) {
   };
 
   // --- Construction + publication par plan ---
+  // nbMatchsDisponibles : utilisé pour l'exception de cote basse (règle
+  // confirmée par James : <4 matchs valides → cote réduite acceptée pour
+  // les plans rang ≥3). buteursUtilises : partagé sur toute la génération
+  // du jour pour qu'un même buteur ne soit jamais réutilisé dans 2 fiches.
+  const nbMatchsDisponibles = new Set(poolFoot.map(b => b.fixtureId)).size;
+  const buteursUtilises = new Set();
+
   for (const plan of plans) {
-    const fiche = construireFiche(poolFoot, plan);
+    const fiche = construireFiche(poolFoot, plan, { buteursUtilises, nbMatchsDisponibles });
     stats.fichesGenerees++;
     if (!fiche.valide) {
       console.log(`[BOT] Rang ${plan.rank} : non publiée — ${fiche.selections.length} sélection(s), cote atteinte ${fiche.coteTotale}, cible [${plan.min_total_odd}–${plan.max_total_odd}]`);
-      continue;
+    } else {
+      await publierFiche(plan, fiche, dateCible, 'foot', noms);
     }
-    await publierFiche(plan, fiche, dateCible, 'foot', noms);
+
+    // Fiche score exact dédiée (3-6 sélections, jamais mélangée) — s'ajoute
+    // à la fiche normale, ne la remplace pas (confirmé par James).
+    if (plan.includes_exact_score) {
+      const ficheExacte = construireFicheScoreExact(poolFoot, plan);
+      stats.fichesGenerees++;
+      if (!ficheExacte.valide) {
+        console.log(`[BOT] Rang ${plan.rank} (score exact) : non publiée — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis)`);
+      } else {
+        await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
+      }
+    }
   }
 
   logFinal();
