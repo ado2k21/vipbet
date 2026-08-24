@@ -121,6 +121,7 @@ const stats = {
   ticketsExamines: 0,
   ticketsRegles: { won: 0, lost: 0 },
   ticketsEnAttente: 0, // au moins un match pas encore terminé — réessai au prochain passage
+  ticketsToutVoid: 0,  // toutes selections 'void' : décision manuelle admin, jamais de verdict inventé
   legsMisAJour: { won: 0, lost: 0, void: 0 },
   appelsEvents: 0,     // appels /fixtures/events pour vérifier un buteur
   erreurs: []
@@ -131,6 +132,7 @@ function resetStats() {
   stats.ticketsExamines = 0;
   stats.ticketsRegles = { won: 0, lost: 0 };
   stats.ticketsEnAttente = 0;
+  stats.ticketsToutVoid = 0;
   stats.legsMisAJour = { won: 0, lost: 0, void: 0 };
   stats.appelsEvents = 0;
   stats.erreurs = [];
@@ -295,7 +297,6 @@ async function reglerDate(dateIso) {
     }
 
     let toutesResolues = true;
-    let uneSeulePerdue = false;
     const ecouler = joursEcoules(dateIso); // 0 = aujourd'hui, 1 = hier, etc.
 
     for (const leg of legs) {
@@ -328,7 +329,14 @@ async function reglerDate(dateIso) {
       }
 
       try {
-        await sbUpdate('ticket_legs', leg.id, { result: nouveauResultat });
+        // settled_at : horodatage du règlement, écrit une seule fois. Une
+        // leg dont le result est déjà renseigné est ignorée plus haut
+        // (`if (leg.result) continue`), donc on n'écrase jamais un verdict
+        // déjà rendu — règle de fiabilité du 25/08.
+        await sbUpdate('ticket_legs', leg.id, {
+          result: nouveauResultat,
+          settled_at: new Date().toISOString()
+        });
         stats.legsMisAJour[nouveauResultat]++;
         leg.result = nouveauResultat; // reflète localement pour le calcul du ticket ci-dessous
       } catch (e) {
@@ -336,7 +344,6 @@ async function reglerDate(dateIso) {
         toutesResolues = false;
       }
 
-      if (nouveauResultat === 'lost') uneSeulePerdue = true;
     }
 
     if (!toutesResolues) {
@@ -344,9 +351,32 @@ async function reglerDate(dateIso) {
       continue; // au moins un match encore en cours ou en échec API : réessai au prochain passage
     }
 
-    const statutFinal = uneSeulePerdue ? 'lost' : 'won';
+    /* Statut global calculé sur TOUTES les selections de la fiche, pas
+       seulement celles réglées lors de ce passage : une leg déjà marquée
+       'lost' à une exécution précédente est sautée par `continue` plus
+       haut, et serait invisible si on se fiait au seul drapeau local.
+       Règle métier : GAGNÉ seulement si TOUTES les selections sont
+       gagnantes ; une seule perdante suffit à faire perdre le combiné.
+       Une selection 'void' (match reporté) est neutre — ni gagnante ni
+       perdante — conformément à ce qu'attend déjà index.html. */
+    const aPerdu = legs.some(l => l.result === 'lost');
+    const aGagne = legs.some(l => l.result === 'won');
+
+    if (!aPerdu && !aGagne) {
+      /* Toutes les selections sont 'void' (journée entièrement reportée) :
+         ce n'est ni une victoire ni une défaite. On laisse la fiche en
+         'pending' pour décision manuelle de l'admin plutôt que d'inventer
+         un verdict — jamais de résultat artificiel. */
+      stats.ticketsToutVoid++;
+      continue;
+    }
+
+    const statutFinal = aPerdu ? 'lost' : 'won';
     try {
-      await sbUpdate('tickets', ticket.id, { status: statutFinal });
+      await sbUpdate('tickets', ticket.id, {
+        status: statutFinal,
+        settled_at: new Date().toISOString()
+      });
       stats.ticketsRegles[statutFinal]++;
     } catch (e) {
       stats.erreurs.push(`maj ticket(${ticket.id}): ${e.message}`);

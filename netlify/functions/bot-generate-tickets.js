@@ -791,7 +791,11 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
       code, sport, min_plan_rank: plan.rank, status: 'pending',
       confidence: fiche.confiance, play_date: dateCible, published: true,
       legs_count: fiche.selections.length, total_odd: fiche.coteTotale,
-      score_legs_count: scoreLegsCount
+      score_legs_count: scoreLegsCount,
+      // Distinction interne BOT/ADMIN (25/08) : permet au panneau admin de
+      // signaler l'origine d'une fiche. Une correction manuelle ultérieure
+      // ne remet jamais cette valeur à 'admin' (voir admin_save_ticket).
+      source: 'bot'
     }]);
     ticket = inserted && inserted[0];
     if (!ticket) throw new Error('réponse vide à l\'insertion du ticket');
