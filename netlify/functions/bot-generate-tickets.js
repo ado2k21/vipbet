@@ -175,14 +175,18 @@ const stats = {
   demarre: null,
   fuseauUtilise: TZ_HAITI,
   dateCible: null,
+  pagesOddsRecuperees: 0,
+  pagesOddsTotal: 0,
   matchsTrouves: 0,
   matchsRetenus: 0,
   matchsRejetes: 0,
   raisonsRejet: {},
   championnatsVus: {}, // diagnostic : quels league.id/name l'API renvoie réellement
+  marchesInconnus: {}, // diagnostic : quels types de marché on ne gère pas encore
   fichesGenerees: 0,
   fichesPubliees: 0,
   doublonsDetectes: false,
+  poolFinal: null,
   erreurs: []
 };
 // BUG CORRIGÉ : sur un conteneur Netlify "chaud" (réutilisé entre deux
@@ -192,14 +196,18 @@ const stats = {
 function resetStats() {
   stats.demarre = new Date().toISOString();
   stats.dateCible = null;
+  stats.pagesOddsRecuperees = 0;
+  stats.pagesOddsTotal = 0;
   stats.matchsTrouves = 0;
   stats.matchsRetenus = 0;
   stats.matchsRejetes = 0;
   stats.raisonsRejet = {};
   stats.championnatsVus = {};
+  stats.marchesInconnus = {};
   stats.fichesGenerees = 0;
   stats.fichesPubliees = 0;
   stats.doublonsDetectes = false;
+  stats.poolFinal = null;
   stats.erreurs = [];
 }
 function rejeter(raison) {
@@ -214,7 +222,7 @@ function logFinal() {
 // 4. APPELS API-SPORTS (foot)
 // ============================================================================
 
-async function apiSportsGet(host, path, params) {
+async function apiSportsGetRaw(host, path, params) {
   const url = new URL(`https://${host}${path}`);
   Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
   const resp = await fetch(url.toString(), {
@@ -229,17 +237,37 @@ async function apiSportsGet(host, path, params) {
     // on logue sans bloquer, la donnée utile (response) reste exploitable.
     console.warn('[BOT] avertissement API', host, path, JSON.stringify(data.errors));
   }
+  return data;
+}
+
+async function apiSportsGet(host, path, params) {
+  const data = await apiSportsGetRaw(host, path, params);
   return data.response || [];
 }
 
-// Une seule requête regroupe cotes + infos de match pour le foot (économe en quota)
+// BUG CORRIGÉ (24/08) : /odds est paginé par l'API (page fixe à 1 avant),
+// donc seule une fraction des matchs du jour était récupérée — matchsTrouves
+// plafonnait exactement à la taille d'une page. On récupère maintenant
+// toutes les pages disponibles (garde-fou à 10 pages pour ne jamais
+// dépasser le quota quotidien même un jour très chargé).
 async function recupererCotesFoot(dateCible) {
+  const MAX_PAGES = 10;
+  let toutes = [];
   try {
-    return await apiSportsGet(FOOT_HOST, '/odds', { date: dateCible, bookmaker: BOOKMAKER_ID, page: 1 });
+    let page = 1;
+    let totalPages = 1;
+    do {
+      const data = await apiSportsGetRaw(FOOT_HOST, '/odds', { date: dateCible, bookmaker: BOOKMAKER_ID, page });
+      toutes = toutes.concat(data.response || []);
+      totalPages = (data.paging && data.paging.total) || 1;
+      page++;
+    } while (page <= totalPages && page <= MAX_PAGES);
+    stats.pagesOddsRecuperees = Math.min(totalPages, MAX_PAGES);
+    stats.pagesOddsTotal = totalPages;
   } catch (e) {
     stats.erreurs.push('foot/odds: ' + e.message);
-    return [];
   }
+  return toutes;
 }
 
 // Résolution des vrais noms d'équipes — le paramètre groupé "ids" de
@@ -380,6 +408,31 @@ function extraireMarchesFoot(oddsItem, dateCible) {
         }
       });
     }
+    // Buteur à tout moment (id 42 — SPÉCULATIF, à confirmer via le
+    // diagnostic marchesInconnus au prochain test). Cotes généralement
+    // ≥1.90 même pour un buteur fiable après analyse — tier PREMIUM,
+    // exempté du plafond 1.90 comme les autres marchés PREMIUM, mais
+    // limité à 1 par fiche (règle 14 du cahier des charges).
+    if (betType.id === 42) {
+      betType.values.forEach(v => {
+        const c = parseFloat(v.odd);
+        if (c >= 1.90 && c <= 4.00) {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, market: 'mk_buteur',
+            pick: `Buteur : ${v.value}`, odd: c, tier: 'PREMIUM',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
+          });
+        }
+      });
+    }
+    // Diagnostic : tout type de marché non encore géré ci-dessus, pour
+    // identifier au prochain test le marché "total buts par équipe" décrit
+    // (ex: "Real Madrid 1.5+ buts") et d'autres marchés qu'on pourrait ajouter.
+    const ID_CONNUS = [1, 5, 8, 10, 12, 42];
+    if (!ID_CONNUS.includes(betType.id)) {
+      const clef = `${betType.id} — ${betType.name || '?'}`;
+      stats.marchesInconnus[clef] = (stats.marchesInconnus[clef] || 0) + 1;
+    }
   });
 
   if (trouvees.length) stats.matchsRetenus++;
@@ -431,11 +484,17 @@ function construireFiche(pool, plan) {
   const MAX_PAR_MARCHE = 2;   // diversification des marchés
   const MAX_PAR_CHAMPIONNAT = 3; // diversification des championnats
   const MAX_SELECTIONS = 10;
+  const PLAFOND_PAR_MARCHE = { mk_buteur: 1 }; // règle 14 : max 1 buteur par fiche
 
   function tenterAjout(bet) {
     if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match
-    if (bet.odd > maxLeg && bet.tier !== 'EXACT_SCORE') return false;
-    if ((marchesUtilises[bet.market] || 0) >= MAX_PAR_MARCHE) return false;
+    // Cotes ≥1.90 acceptées pour les marchés SAFE/PREMIUM déjà bien établis
+    // et encadrés (victoire directe, plus de 2.5 buts, BTTS, buteur) — le
+    // plafond strict du plan ne s'applique qu'aux cotes hors de ces plages
+    // contrôlées. EXACT_SCORE et PREMIUM sont donc tous deux exemptés.
+    if (bet.odd > maxLeg && bet.tier !== 'EXACT_SCORE' && bet.tier !== 'PREMIUM') return false;
+    const plafondMarche = PLAFOND_PAR_MARCHE[bet.market] || MAX_PAR_MARCHE;
+    if ((marchesUtilises[bet.market] || 0) >= plafondMarche) return false;
     if ((championnatsUtilises[bet.league] || 0) >= MAX_PAR_CHAMPIONNAT) return false;
     if (selections.length >= MAX_SELECTIONS) return false;
     if (coteTotale * bet.odd > cibleMax * 1.05) return false; // petite marge, jamais dépasser franchement
