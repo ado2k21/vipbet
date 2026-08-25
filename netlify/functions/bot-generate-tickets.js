@@ -932,7 +932,12 @@ async function diagnostiquerBBSD(dateIso) {
       statut: premierMatch.status
     };
     const compo = await essayer('lineups', '/v1/stored/matches/' + premierMatch.id + '/lineups');
-    rapport.compositionsDisponibles = !!(compo && (compo.data || compo.home || compo.away));
+    // CORRECTIF (25/08) : la présence d'un objet `data` ne suffit pas — leur
+    // API renvoie `data:{home:[],away:[]}` avec `meta.available:false` quand
+    // rien n'est encore publié. Seuls des tableaux non vides comptent.
+    rapport.compositionsDisponibles = !!(compo && compo.data &&
+      ((compo.data.home && compo.data.home.length) || (compo.data.away && compo.data.away.length)));
+    rapport.compositionsMeta = compo && compo.meta;
 
     const stats = await essayer('stats_match', '/v1/stored/matches/' + premierMatch.id + '/stats');
     rapport.xgMatchDisponible = !!(stats && JSON.stringify(stats).toLowerCase().includes('xg'));
