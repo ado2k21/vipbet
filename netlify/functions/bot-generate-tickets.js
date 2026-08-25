@@ -1090,10 +1090,25 @@ export async function handler(event) {
   // MODE DIAGNOSTIC ÉQUIPES (25/08) : ?token=...&diag=teams&q=Real Madrid,Barcelona,...
   // Même principe que diag=leagues, mais pour confirmer les IDs des "grands
   // clubs" avant de les ajouter à GRANDS_CLUBS_BUTEUR.
+  // VARIANTE PAR CHAMPIONNAT : ?diag=teams&league=307&season=2026 — utile
+  // quand la recherche par nom échoue (clubs introuvables sous leur nom
+  // usuel, ex. Al Nassr/Al Hilal/Al Ittihad le 25/08) : retourne l'effectif
+  // complet du championnat sans dépendre d'une recherche textuelle.
   if (modeTest && event.queryStringParameters.diag === 'teams') {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const leagueId = event.queryStringParameters.league;
+    if (leagueId) {
+      const season = event.queryStringParameters.season || String(new Date().getFullYear());
+      try {
+        const data = await apiSportsGetRaw(FOOT_HOST, '/teams', { league: leagueId, season });
+        const resultats = (data.response || []).map(item => ({ id: item.team.id, nom: item.team.name }));
+        return { statusCode: 200, body: JSON.stringify({ league: leagueId, season, resultats }, null, 2) };
+      } catch (e) {
+        return { statusCode: 200, body: JSON.stringify({ erreur: e.message }, null, 2) };
+      }
+    }
     const termes = (event.queryStringParameters.q || '').split(',').map(s => s.trim()).filter(Boolean);
-    if (!termes.length) return { statusCode: 400, body: 'Ajouter &q=terme1,terme2,...' };
+    if (!termes.length) return { statusCode: 400, body: 'Ajouter &q=terme1,terme2,... ou &league=ID&season=AAAA' };
     const resultats = {};
     for (const t of termes) {
       resultats[t] = await recupererEquipes(t);
