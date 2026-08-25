@@ -838,6 +838,103 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
 // 9. ORCHESTRATION PRINCIPALE
 // ============================================================================
 
+
+// ============================================================================
+// DIAGNOSTIC NBA (25/08) — reconnaissance du plan gratuit
+// ----------------------------------------------------------------------------
+// L'API NBA (v2.nba.api-sports.io) est un abonnement SÉPARÉ du football :
+// quota distinct (100 req/jour), endpoints différents, restrictions
+// potentiellement différentes. Rien n'est supposé ici — chaque endpoint est
+// testé un par un et le rapport contient exactement ce que l'API répond, y
+// compris les messages d'erreur bruts. (Leçon des sessions précédentes : un
+// plan gratuit a des restrictions non documentées, découvertes uniquement
+// par des tests réels.)
+//
+// Question centrale à trancher : LES COTES SONT-ELLES DISPONIBLES ?
+// Sans cotes, tout le moteur de fiches — qui utilise la cote du bookmaker
+// comme proxy de probabilité — est inapplicable à la NBA.
+// ============================================================================
+async function diagnostiquerNBA(dateIso) {
+  const rapport = {
+    host: NBA_HOST, dateTestee: dateIso, endpoints: {},
+    coteDisponible: null, marchesVus: {}, echantillonCotes: [], conclusion: ''
+  };
+
+  async function essayer(nom, path, params) {
+    try {
+      const url = new URL('https://' + NBA_HOST + path);
+      Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+      const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+      const brut = await resp.json().catch(() => ({}));
+      const erreurs = brut.errors && (Array.isArray(brut.errors) ? brut.errors : Object.values(brut.errors));
+      rapport.endpoints[nom] = {
+        http: resp.status,
+        nbResultats: Array.isArray(brut.response) ? brut.response.length : 0,
+        erreursApi: (erreurs && erreurs.length) ? erreurs : null
+      };
+      return (resp.ok && Array.isArray(brut.response)) ? brut.response : null;
+    } catch (e) {
+      rapport.endpoints[nom] = { erreur: e.message };
+      return null;
+    }
+  }
+
+  // 1. Saisons accessibles (equivalent NBA du blocage "Free plans do not
+  //    have access to this season" rencontre cote football).
+  await essayer('seasons', '/seasons', {});
+
+  // 2. Matchs du jour vise.
+  const games = (await essayer('games?date', '/games', { date: dateIso })) || [];
+  if (games.length) {
+    const g = games[0];
+    rapport.exempleMatch = {
+      id: g.id,
+      date: g.date && (g.date.start || g.date),
+      statut: g.status && (g.status.long || g.status.short),
+      equipes: g.teams ? ((g.teams.home && g.teams.home.name) + ' — ' +
+                          (g.teams.visitors && g.teams.visitors.name)) : null
+    };
+  }
+
+  // 3. LE point critique : les cotes. Teste sur un vrai match du jour si
+  //    disponible, sinon a vide pour au moins connaitre le message d'erreur.
+  const idMatch = games.length ? games[0].id : null;
+  const cotes = idMatch
+    ? await essayer('odds?game', '/odds', { game: idMatch })
+    : await essayer('odds?date', '/odds', { date: dateIso });
+
+  if (cotes && cotes.length) {
+    rapport.coteDisponible = true;
+    // Inventaire des marches reellement proposes : determinera quels types
+    // de paris le bot pourra generer pour la NBA.
+    cotes.slice(0, 3).forEach(item => {
+      (item.bookmakers || []).forEach(bk => {
+        (bk.bets || []).forEach(bet => {
+          const cle = bet.id + ' — ' + bet.name;
+          rapport.marchesVus[cle] = (rapport.marchesVus[cle] || 0) + 1;
+          (bet.values || []).slice(0, 3).forEach(v => {
+            if (rapport.echantillonCotes.length < 12) {
+              rapport.echantillonCotes.push('[' + bet.name + '] ' + v.value + ' @ ' + v.odd);
+            }
+          });
+        });
+      });
+    });
+  } else {
+    rapport.coteDisponible = false;
+  }
+
+  // 4. Bookmakers et marches declares par l'API, independamment d'un match.
+  await essayer('bookmakers', '/odds/bookmakers', {});
+  await essayer('bets', '/odds/bets', {});
+
+  rapport.conclusion = rapport.coteDisponible
+    ? 'Cotes NBA accessibles — un moteur de fiches NBA est realisable sur ce plan.'
+    : 'Aucune cote NBA recuperee — voir endpoints.odds pour le motif exact (restriction de plan, aucun match ce jour-la, ou endpoint inexistant).';
+
+  return rapport;
+}
+
 export async function handler(event) {
   resetStats(); // corrige le bug de compteurs cumulatifs entre invocations à chaud
 
@@ -885,6 +982,18 @@ export async function handler(event) {
       resultats[t] = await recupererEquipes(t);
     }
     return { statusCode: 200, body: JSON.stringify(resultats, null, 2) };
+  }
+
+  // MODE DIAGNOSTIC NBA : ?token=...&diag=nba[&date=AAAA-MM-JJ]
+  // Quota NBA separe du football : ce test n'entame PAS le quota foot.
+  if (modeTest && event.queryStringParameters.diag === 'nba') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    // Par défaut la date d'aujourd'hui en heure Haïti (la NBA joue surtout
+    // en soirée américaine = nuit Haïti). Surchargeable avec &date=AAAA-MM-JJ
+    // pour tester un jour où l'on sait qu'il y a des matchs.
+    const dateNba = event.queryStringParameters.date || partsHaiti(new Date()).iso;
+    const rapport = await diagnostiquerNBA(dateNba);
+    return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
   }
 
   if (!API_SPORTS_KEY) {
