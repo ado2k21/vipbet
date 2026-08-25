@@ -1101,8 +1101,12 @@ export async function handler(event) {
       const season = event.queryStringParameters.season || String(new Date().getFullYear());
       try {
         const data = await apiSportsGetRaw(FOOT_HOST, '/teams', { league: leagueId, season });
+        const erreurs = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
         const resultats = (data.response || []).map(item => ({ id: item.team.id, nom: item.team.name }));
-        return { statusCode: 200, body: JSON.stringify({ league: leagueId, season, resultats }, null, 2) };
+        return { statusCode: 200, body: JSON.stringify({
+          league: leagueId, season, resultats,
+          erreurApi: (erreurs && erreurs.length) ? erreurs : null
+        }, null, 2) };
       } catch (e) {
         return { statusCode: 200, body: JSON.stringify({ erreur: e.message }, null, 2) };
       }
