@@ -479,12 +479,17 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
     }
     // Double chance (id 12) — profil "safe"
     if (betType.id === 12) {
+      // Notation standard des paris (25/08, demande explicite de James) :
+      // l'API renvoie "Home/Draw" / "Home/Away" / "Draw/Away" en anglais,
+      // jamais reconnu par le grand public haïtien — converti en 1X/12/X2,
+      // la notation utilisée partout ailleurs (bookmakers, paryajpam.com).
+      const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': '1X', 'Home/Away': '12', 'Draw/Away': 'X2' };
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
         if (c >= 1.19 && c <= 1.70) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: 'mk_double_chance',
-            pick: `Double chance : ${v.value}`, odd: c, tier: 'SAFE',
+            pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[v.value] || v.value}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }

@@ -404,15 +404,17 @@ async function handler(event) {
   try { verifierConfigSupabase(); }
   catch (e) { stats.erreurs.push(e.message); logFinal(); return { statusCode: 500, body: e.message }; }
 
-  // Toutes les dates distinctes ayant au moins une fiche encore "pending"
-  // avec une play_date strictement passée (jamais le jour même : un match
-  // du jour peut encore être en cours). En mode test, on autorise aussi la
-  // date du jour, pour pouvoir vérifier le comportement sans attendre minuit.
+  // Toutes les dates distinctes ayant au moins une fiche encore "pending",
+  // AUJOURD'HUI INCLUS (25/08 : retiré le blocage qui attendait le
+  // lendemain — demande explicite de James, "une fois tous les matchs
+  // terminés, va dans historique, pas le lendemain"). Aucun risque de faux
+  // verdict : reglerDate() ne marque un résultat que si le statut réel du
+  // match chez API-Sports est FT/AET/PEN (vraiment terminé) — un match du
+  // jour encore en cours reste "pending" et sera revérifié à l'heure
+  // suivante, exactement comme avant pour les dates passées.
   let dates;
   try {
-    const q = modeTest
-      ? `select=play_date&status=eq.pending&play_date=lte.${aujourdhuiHaiti()}`
-      : `select=play_date&status=eq.pending&play_date=lt.${aujourdhuiHaiti()}`;
+    const q = `select=play_date&status=eq.pending&play_date=lte.${aujourdhuiHaiti()}`;
     const lignes = await sbSelect('tickets', q);
     dates = [...new Set(lignes.map(l => l.play_date))];
   } catch (e) {
