@@ -1143,6 +1143,10 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   flex-shrink:0;font-family:var(--mono);font-size:12.5px;font-weight:700;
   color:var(--or-clair);margin-top:1px;
 }
+.admf-note-x2{
+  padding:7px 13px;font-size:11px;font-weight:700;color:var(--or-clair);
+  background:rgba(201,164,76,.09);border-top:1px solid rgba(244,243,237,.06);
+}
 .admf-card-f{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:10px 13px;border-top:1px solid rgba(244,243,237,.06);
@@ -2215,6 +2219,10 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .dtk-res.won{background:rgba(46,212,127,.16);color:var(--vert-vif)}
 .dtk-res.lost{background:rgba(226,99,79,.14);color:#E2634F}
 .dtk-res.pending{background:rgba(201,164,76,.14);color:var(--or-clair)}
+.dtk-note-x2{
+  padding:7px 14px;font-size:11px;font-weight:700;color:var(--or-clair);
+  background:rgba(201,164,76,.09);border-bottom:1px solid rgba(244,243,237,.045);
+}
 
 .dtk-legs{list-style:none;padding:4px 0;margin:0;flex:1}
 .dtk-leg{padding:11px 14px;border-bottom:1px solid rgba(244,243,237,.045);display:flex;gap:10px;align-items:flex-start}
@@ -4346,7 +4354,6 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <input type="date" id="admFichesDate"></label>
       <div class="admf-filters" id="admFichesFilters" hidden>
         <button type="button" class="admf-chip is-on" data-fstatus="all" data-i18n="adm_fiches_f_all">Tout</button>
-        <button type="button" class="admf-chip" data-fstatus="pending" data-i18n="adm_fiches_f_pending">An kou</button>
         <button type="button" class="admf-chip" data-fstatus="won" data-i18n="adm_fiches_f_won">Genyen</button>
         <button type="button" class="admf-chip" data-fstatus="lost" data-i18n="adm_fiches_f_lost">Pèdi</button>
       </div>
@@ -4600,6 +4607,7 @@ dash_f_all:"Tout", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues",
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
+fiche_note_x2:"Conseil : à jouer en 2 tickets séparés",
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
@@ -5011,6 +5019,7 @@ dash_f_all:"All", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
+fiche_note_x2:"Tip: play as 2 separate tickets",
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
@@ -5422,6 +5431,7 @@ dash_f_all:"Tout", dash_f_foot:"Foutbòl", dash_f_nba:"NBA",
 dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
+fiche_note_x2:"Konsèy : jwe l an 2 tikè separe",
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
@@ -8705,6 +8715,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<span class="dtk-res '+tk.status+'">'+t(statusKey)+'</span>';
     el.appendChild(head);
 
+    // Note "a jouer en 2 tickets separes" (25/08) : meme detection que
+    // titreFicheDash pour le genre "Score exact" — jamais sur une fiche
+    // a marches melanges.
+    const estScoreExact=tk.scoreCount>0&&tk.legsCount>0&&tk.scoreCount===tk.legsCount;
+    if(estScoreExact){
+      const noteEl=document.createElement('div');
+      noteEl.className='dtk-note-x2';
+      noteEl.textContent=t('fiche_note_x2');
+      el.appendChild(noteEl);
+    }
+
     const ul=document.createElement('ul');
     ul.className='dtk-legs';
     /* IMPORTANT : on se base sur l'etat verrouille, pas sur la presence
@@ -9570,7 +9591,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         kpi(users!=null?users:'—',t('adm_k_users'),null,'users') +
         kpi(subsActives!=null?subsActives:'—',t('adm_k_subs_active'),'green','users') +
         kpi(paysPending!=null?paysPending:'—',t('adm_k_pay_pending'),'gold','payments') +
-        kpi(tickets!=null?tickets:'—',t('adm_k_tickets'));
+        kpi(tickets!=null?tickets:'—',t('adm_k_tickets'),null,'fiches');
       document.getElementById('admHomeUpdated').textContent=t('adm_updated_at').replace('{t}',new Date().toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'}));
       box.querySelectorAll('[data-nav]').forEach(card=>{
         const aller=()=>setView(card.dataset.nav);
@@ -9607,13 +9628,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       box.innerHTML=pays.map(p=>{
         const u=usersById[p.user_id];
         const nom=u?(u.username||u.email):p.user_id;
-        return '<div class="admdash-row" style="cursor:default">'+
+        return '<button type="button" class="admdash-row" data-pid="'+p.id+'">'+
           '<span class="admdash-row-av">'+(p.plan_id||'?').toUpperCase().slice(0,2)+'</span>'+
           '<span class="admdash-row-tx"><b>'+t('adm_activity_pending_pay').replace('{name}',nom)+'</b>'+
           '<span>'+(p.amount_htg||0)+' HTG · '+(p.method||'—')+' · '+fmt(p.created_at)+'</span></span>'+
           '<span class="admdash-row-badge pending">'+t('adm_pay_f_pending')+'</span>'+
-          '</div>';
+          '</button>';
       }).join('');
+      // Clic sur un paiement en attente : ouvre exactement la meme
+      // interface de validation/refus que depuis le menu Paiements
+      // (25/08, demande explicite de James).
+      box.querySelectorAll('[data-pid]').forEach(b=>{
+        b.addEventListener('click',()=>{selectedPayId=b.dataset.pid;setView('paydetail');renderPayDetail();});
+      });
     }catch(e){
       box.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';
     }
@@ -11010,7 +11037,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        - origine BOT/ADMIN et derniere synchronisation du bot
      ============================================================ */
   let admFichesTab='day';          // 'day' | 'hist'
-  let admFichesStatut='all';       // 'all' | 'pending' | 'won' | 'lost'
+  let admFichesStatut='all';       // 'all' | 'won' | 'lost' (Historique uniquement, fiches reglees)
   let admFicheLegCible=null;       // index du match a ouvrir a l'ouverture du detail
 
   /* Une fiche "score exact" est identifiee par son contenu reel (toutes ses
@@ -11072,6 +11099,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        proposait "Modifier quand meme") — l'admin ne peut plus jamais
        toucher un resultat deja acquis. */
     const ficheTerminee=(tk.status==='won'||tk.status==='lost');
+    // Note "a jouer en 2 tickets separes" (25/08, demande explicite de
+    // James) : affichee sur TOUTE fiche 100% score exact, meme detection
+    // que titreFiche (estFicheScoreExact), jamais sur une fiche normale.
+    const noteX2=estFicheScoreExact(tk,legs)
+      ? '<div class="admf-note-x2">'+t('fiche_note_x2')+'</div>' : '';
     const legsHtml=(legs||[]).map((l,i)=>{
       const heure=heureHaitiDeLeg(l,tk.play_date)||'--:--';
       const marche=(translations.fr||{})[l.market]?t(l.market):(l.market||'');
@@ -11099,6 +11131,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<span class="admf-src '+src+'">'+t('adm_fiche_src_'+src)+'</span>'+
         '<span class="admdash-row-badge '+badgeCls+'">'+(badgeLbl?t(badgeLbl):tk.status)+'</span>'+
       '</div>'+
+      noteX2+
       '<ul class="admf-legs">'+(legsHtml||'')+'</ul>'+
       '<div class="admf-card-f">'+
         '<span>'+(tk.legs_count||0)+' '+t('adm_fiche_legs')+
@@ -11164,10 +11197,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         req=req.eq('play_date',dateInput.value)
                .order('min_plan_rank',{ascending:true}).order('created_at',{ascending:true});
       }else{
-        /* Historique : les fiches des dates PASSEES (une fiche du jour meme
-           n'est pas encore de l'historique), du plus recent au plus ancien,
-           filtrees par statut si demande. */
-        req=req.lt('play_date',dateAujourdhui())
+        /* Historique (25/08, redefinit sur demande explicite de James) :
+           TOUTE fiche REGLEE (Genyen/Pedi), des qu'elle l'est — plus
+           d'attente au lendemain, une fiche dont tous les matchs se
+           terminent aujourd'hui apparait ici aujourd'hui meme. Alignee sur
+           le Dashboard client, qui fonctionne deja ainsi (status!=='pending').
+           Triee par date de reglement (settled_at), la plus recente
+           d'abord ; repli sur play_date pour les tres rares fiches reglees
+           sans settled_at (ancien nettoyage manuel). "An kou" n'a plus sa
+           place ici : une fiche non reglee, meme datee du passe, ne
+           relevait jamais vraiment de l'Historique tel que voulu — elle
+           reste trouvable via l'onglet "Du jour" en choisissant sa date. */
+        req=req.neq('status','pending')
+               .order('settled_at',{ascending:false,nullsFirst:false})
                .order('play_date',{ascending:false}).order('min_plan_rank',{ascending:true})
                .limit(60);
         if(admFichesStatut!=='all')req=req.eq('status',admFichesStatut);
