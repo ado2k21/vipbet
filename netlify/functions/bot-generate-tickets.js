@@ -562,24 +562,23 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         });
       }
     }
-    // Total buts par équipe (id 16 = domicile, id 17 = extérieur) — le
-    // marché décrit par James (ex: "Real Madrid 1.5+ buts"). Même logique
-    // safe/premium que le total buts du match.
+    // Total buts par équipe (id 16 = domicile, id 17 = extérieur).
+    // RÈGLE DURCIE LE 25/08 (James) : ce marché est jugé plus risqué qu'un
+    // total sur le match entier — un but suffit à faire basculer une seule
+    // équipe, alors que le total du match lisse ce risque sur les deux. Le
+    // "Plus de X buts" doit se jouer sur le match ENTIER (mk_total_buts,
+    // ci-dessus) en priorité ; le total par équipe n'est conservé qu'à
+    // cote très basse et quasi garantie (≤1.30) — le palier PREMIUM
+    // (1.90–2.60) est purement et simplement retiré, jugé trop risqué.
     if (betType.id === 16 || betType.id === 17) {
       const cote = betType.id === 16 ? 'mk_total_domicile' : 'mk_total_exterieur';
       const label = betType.id === 16 ? 'Domicile' : 'Extérieur';
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.19 && c <= 1.70) {
+        if (c >= 1.10 && c <= 1.30) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, market: cote,
             pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'SAFE',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
-          });
-        } else if (c >= 1.90 && c <= 2.60) {
-          trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: cote,
-            pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
@@ -627,7 +626,9 @@ function construireFiche(pool, plan, options) {
   const buteursUtilises = options.buteursUtilises || new Set();
   const nbMatchsDisponibles = options.nbMatchsDisponibles || 0;
 
-  let cibleMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5;
+  let cibleMin = options.cibleMinOverride != null
+    ? Number(options.cibleMinOverride)
+    : (plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5);
   const cibleMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : 999;
   const maxLeg = plan.max_leg_odd != null ? Number(plan.max_leg_odd) : 2.5;
   const autoriseScoreExact = !!plan.includes_exact_score;
@@ -714,9 +715,14 @@ function construireFiche(pool, plan, options) {
     if (premCount >= maxPremium) break;
     if (tenterAjout(b)) premCount++;
   }
-  // Compléter avec du 🟢 (safe) jusqu'à atteindre la cible (jamais au-delà du max)
+  // Compléter avec du 🟢 (safe) jusqu'à atteindre la cible (jamais au-delà du max).
+  // CORRECTIF (25/08) : une seule sélection premium peut déjà dépasser
+  // cibleMin (ex. 2.50 pour un plan à 2.00 min) — sans le "selections.length<2"
+  // ci-dessous, la boucle s'arrêtait avant d'ajouter une 2ᵉ sélection, la
+  // fiche restait à 1 seule sélection et échouait la validation (≥2 requis),
+  // donc n'était JAMAIS publiée. C'est la cause du Plan 1 manquant le 25/08.
   for (const b of safe) {
-    if (coteTotale >= cibleMin) break;
+    if (selections.length >= 2 && coteTotale >= cibleMin) break;
     tenterAjout(b);
   }
 
@@ -1254,11 +1260,28 @@ export async function handler(event) {
   const buteursUtilises = new Set();
 
   for (const plan of plans) {
-    const fiche = construireFiche(poolFoot, plan, { buteursUtilises, nbMatchsDisponibles });
+    // Règle du 25/08 (James) : il doit TOUJOURS y avoir une fiche par plan.
+    // 1ᵉʳ essai : cible normale du plan. Si invalide (pool du jour trop
+    // pauvre pour l'atteindre), 2ᵉ essai avec un plancher très bas (1.5) —
+    // le MAXIMUM du plan, lui, reste strict dans les deux essais, jamais
+    // assoupli (protège toujours les abonnés d'un plan bas contre une
+    // fiche trop risquée). Les buteurs utilisés ne sont "consommés" dans le
+    // Set partagé qu'une fois la fiche réellement publiée, pour ne jamais
+    // priver un essai suivant d'un buteur à cause d'une tentative avortée.
+    function essayer(cibleMinOverride) {
+      const buteursTmp = new Set(buteursUtilises);
+      const f = construireFiche(poolFoot, plan, { buteursUtilises: buteursTmp, nbMatchsDisponibles, cibleMinOverride });
+      return { f, buteursTmp };
+    }
+    let { f: fiche, buteursTmp } = essayer(undefined);
+    if (!fiche.valide) {
+      ({ f: fiche, buteursTmp } = essayer(1.5));
+    }
     stats.fichesGenerees++;
     if (!fiche.valide) {
-      console.log(`[BOT] Rang ${plan.rank} : non publiée — ${fiche.selections.length} sélection(s), cote atteinte ${fiche.coteTotale}, cible [${plan.min_total_odd}–${plan.max_total_odd}]`);
+      console.log(`[BOT] Rang ${plan.rank} : non publiée même avec repli — ${fiche.selections.length} sélection(s), cote atteinte ${fiche.coteTotale}, cible [${plan.min_total_odd}–${plan.max_total_odd}]`);
     } else {
+      buteursTmp.forEach(p => buteursUtilises.add(p));
       await publierFiche(plan, fiche, dateCible, 'foot', noms);
     }
 
