@@ -150,11 +150,10 @@ const GRANDS_CLUBS_BUTEUR = [
   489,   // AC Milan (Italie)
   492,   // Napoli (Italie)
   85,    // Paris Saint Germain (France)
-  9568   // Inter Miami (MLS) — Messi
-  // À COMPLÉTER : Al-Nassr, Al-Ittihad, Al-Hilal (Arabie Saoudite).
-  // Le diagnostic du 25/08 n'a renvoyé que leurs équipes féminines
-  // ("Al Nassr W" 24884, "Al Ittihad W" 27714, "Al Hilal W" 27713) —
-  // les IDs des équipes masculines restent à confirmer par un test.
+  9568,  // Inter Miami (MLS) — Messi
+  2939,  // Al-Nassr (Arabie Saoudite) — CR7
+  2932,  // Al-Hilal Saudi FC (Arabie Saoudite)
+  2938   // Al-Ittihad FC (Arabie Saoudite) — Benzema
 ];
 
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
@@ -655,7 +654,12 @@ function construireFiche(pool, plan, options) {
   // Buteur (🔴) exclu du pool PREMIUM général — réservé aux plans score-exact,
   // et jamais un joueur déjà utilisé dans une fiche publiée plus tôt ce jour.
   const premium = meilleurParMatch(pool.filter(b => b.tier === 'PREMIUM' && b.market !== 'mk_buteur'));
-  const exact = autoriseScoreExact ? meilleurParMatch(pool.filter(b => b.tier === 'EXACT_SCORE')) : [];
+  // Le score exact n'apparaît JAMAIS dans la fiche normale — uniquement
+  // dans la fiche dédiée (construireFicheScoreExact, "jamais mélangée avec
+  // d'autres marchés"). Bug corrigé le 25/08 : une ancienne ligne insérait
+  // encore une sélection score-exact ici, mélangée à des marchés normaux
+  // (ex. fiche R3 avec "Score exact : 0:2" + "Domicile : Plus de 1.5 buts"
+  // dans la même fiche) — contraire à la règle documentée.
   const buteurs = autoriseScoreExact
     ? meilleurParMatch(pool.filter(b => b.market === 'mk_buteur' && !buteursUtilises.has(b.pick)))
     : [];
@@ -695,10 +699,7 @@ function construireFiche(pool, plan, options) {
     return true;
   }
 
-  // 1 score exact max, seulement si le plan l'autorise
-  if (autoriseScoreExact) {
-    for (const b of exact) { if (tenterAjout(b)) break; }
-  }
+  // NOTE : plus d'insertion de score exact ici (voir commentaire plus haut).
   // 1 buteur max, seulement si le plan l'autorise et joueur pas déjà utilisé
   // ailleurs aujourd'hui
   if (autoriseScoreExact) {
