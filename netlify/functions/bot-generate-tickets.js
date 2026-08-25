@@ -456,20 +456,26 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
   // absolu à 1.19 : en dessous, la marge de sécurité devient trop faible
   // pour justifier une sélection.
   bets.forEach(betType => {
-    // Score exact (id 10) — seulement si probabilité raisonnable (cote 4.0–15.0)
+    // Score exact (id 10) — probabilité raisonnable (cote 4.0–15.0).
+    // CORRECTIF (25/08, retour de James) : on ne garde plus SEULEMENT la
+    // cote la plus basse (qui donne quasi toujours 1-1/1-0/2-1, les scores
+    // les plus fréquents statistiquement, peu importe le match) — on garde
+    // jusqu'à 5 candidats par match, et c'est construireFicheScoreExact qui
+    // choisira celui cohérent avec le profil réel du match (BTTS/totaux
+    // déjà récupérés pour ce même match, voir plus bas).
     if (betType.id === 10) {
-      let meilleur = null, minCote = 999;
-      betType.values.forEach(v => {
-        const c = parseFloat(v.odd);
-        if (c < minCote) { minCote = c; meilleur = v; }
-      });
-      if (meilleur && minCote >= 4.0 && minCote <= 15.0) {
+      const candidats = betType.values
+        .map(v => ({ value: v.value, odd: parseFloat(v.odd) }))
+        .filter(v => isFinite(v.odd) && v.odd >= 4.0 && v.odd <= 15.0)
+        .sort((a, b) => a.odd - b.odd)
+        .slice(0, 5);
+      candidats.forEach(c => {
         trouvees.push({
           fixtureId: fixture.id, league: league.name, market: 'mk_score_exact',
-          pick: `Score exact : ${meilleur.value}`, odd: minCote, tier: 'EXACT_SCORE',
+          pick: `Score exact : ${c.value}`, odd: c.odd, tier: 'EXACT_SCORE',
           kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
         });
-      }
+      });
     }
     // Double chance (id 12) — profil "safe"
     if (betType.id === 12) {
@@ -604,7 +610,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
     // Échantillon de valeurs brutes pour les marchés ajoutés cette session,
     // pour confirmer le format réel (ex: "Over 1.5" vs autre chose) avant
     // de leur faire pleinement confiance au prochain test.
-    if ([16, 17, 92].includes(betType.id) && !stats.echantillonsValeurs[betType.id]) {
+    if ([9, 16, 17, 92].includes(betType.id) && !stats.echantillonsValeurs[betType.id]) {
       stats.echantillonsValeurs[betType.id] = betType.values.slice(0, 3).map(v => `${v.value} @ ${v.odd}`);
     }
   });
@@ -684,7 +690,14 @@ function construireFiche(pool, plan, options) {
   const MAX_PAR_MARCHE = 2;   // diversification des marchés
   const MAX_PAR_CHAMPIONNAT = 3; // diversification des championnats
   const MAX_SELECTIONS = 10;
-  const PLAFOND_PAR_MARCHE = { mk_buteur: 1 }; // règle 14 : max 1 buteur par fiche
+  // PLAFOND_PAR_MARCHE dynamique selon la cible : pour une fiche <20, le
+  // document d'optimisation (point 11) demande explicitement d'éviter
+  // plusieurs "Domicile Plus de X buts"/"Extérieur Plus de X buts" dans la
+  // même fiche, même à cote basse — un seul suffit, le reste doit venir
+  // d'un marché différent pour rester diversifié.
+  const PLAFOND_PAR_MARCHE = cibleMax < 20
+    ? { mk_buteur: 1, mk_total_domicile: 1, mk_total_exterieur: 1 }
+    : { mk_buteur: 1 };
   // Plan 1 : prudence renforcée — éviter de combiner trop de grosses cotes
   // (règle explicite de James). Limite le nombre de sélections 🟡 (premium)
   // autorisées, quasi tout doit venir du 🟢 (safe).
@@ -770,15 +783,61 @@ function construireFicheScoreExact(pool, plan) {
   const cibleMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5;
   const cibleMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : 999;
 
-  const meilleur = {};
+  // Extrait home/away d'un pick "Score exact : X:Y".
+  function parseScore(pick) {
+    const m = /(\d+):(\d+)/.exec(String(pick));
+    return m ? { home: parseInt(m[1], 10), away: parseInt(m[2], 10) } : null;
+  }
+
+  // PROFIL DU MATCH (25/08, retour de James : "pas toujours 1-1/1-0, selon
+  // des pronostics clairs") — utilise le BTTS et le total buts DÉJÀ
+  // récupérés pour ce même match (aucune donnée nouvelle inventée) pour
+  // orienter le choix du score plutôt que de prendre systématiquement la
+  // cote la plus basse (qui donne presque toujours 1-1/1-0/2-1, quel que
+  // soit le match). Signal faible par nature (peu de matchs ont les deux
+  // marchés), donc on ne l'applique que quand un signal SAFE existe
+  // vraiment ; sinon on retombe honnêtement sur la cote la plus basse.
+  function profil(fixtureId) {
+    const btts = pool.find(b => b.fixtureId === fixtureId && b.market === 'mk_btts' && b.tier === 'SAFE');
+    if (btts) return 'BTTS'; // les deux équipes marquent probablement
+    const under = pool.find(b => b.fixtureId === fixtureId && b.market === 'mk_total_buts'
+      && b.tier === 'SAFE' && /^Moins/.test(b.pick));
+    if (under) return 'PEU_DE_BUTS';
+    const overFort = pool.find(b => b.fixtureId === fixtureId && b.market === 'mk_total_buts'
+      && b.tier === 'PREMIUM' && /^Plus/.test(b.pick));
+    if (overFort) return 'BEAUCOUP_DE_BUTS';
+    return null; // aucun signal fiable pour ce match — repli sur la cote la plus basse
+  }
+
+  function correspond(score, prof) {
+    if (!prof || !score) return true;
+    const total = score.home + score.away;
+    if (prof === 'BTTS') return score.home > 0 && score.away > 0;
+    if (prof === 'PEU_DE_BUTS') return total <= 2;
+    if (prof === 'BEAUCOUP_DE_BUTS') return total >= 3;
+    return true;
+  }
+
+  const parFixture = {};
   pool.filter(b => b.tier === 'EXACT_SCORE').forEach(b => {
-    if (!meilleur[b.fixtureId] || b.odd < meilleur[b.fixtureId].odd) meilleur[b.fixtureId] = b;
+    (parFixture[b.fixtureId] = parFixture[b.fixtureId] || []).push(b);
   });
-  // Les scores les plus probables (cote la plus basse) d'abord — construction
-  // INCRÉMENTALE respectant [min_total_odd, max_total_odd] du plan, comme
-  // construireFiche le fait déjà pour la fiche normale. CORRIGE le bug du
-  // 24/08 : prendre 6 scores exacts d'un coup sans plafond produisait une
-  // cote totale de 3473 rejetée par Supabase (cote_hors_plage, max 100).
+  const meilleur = {};
+  Object.entries(parFixture).forEach(([fixtureId, candidats]) => {
+    candidats.sort((a, b) => a.odd - b.odd); // du moins cher au plus cher
+    const prof = profil(Number(fixtureId));
+    const correspondants = candidats.filter(c => correspond(parseScore(c.pick), prof));
+    // Si aucun candidat ne correspond au profil (rare), on garde quand même
+    // le moins cher plutôt que d'abandonner le match — mieux vaut un score
+    // publié avec un profil non confirmé qu'aucun score du tout.
+    meilleur[fixtureId] = (correspondants[0] || candidats[0]);
+  });
+  // Les scores les plus probables (cote la plus basse, DANS le profil retenu
+  // ci-dessus) d'abord — construction INCRÉMENTALE respectant
+  // [min_total_odd, max_total_odd] du plan, comme construireFiche le fait
+  // déjà pour la fiche normale. CORRIGE le bug du 24/08 : prendre 6 scores
+  // exacts d'un coup sans plafond produisait une cote totale de 3473
+  // rejetée par Supabase (cote_hors_plage, max 100).
   const candidats = Object.values(meilleur).sort((a, b) => a.odd - b.odd);
 
   const selections = [];
@@ -835,6 +894,18 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
   // default 0, mais doit refléter la réalité dès qu'une fiche en contient).
   const scoreLegsCount = fiche.selections.filter(s => s.tier === 'EXACT_SCORE').length;
 
+  // min_odd_exempted (26/08) : reflète un FAIT, pas un chemin de code —
+  // vrai dès que la cote réellement publiée est sous le vrai plancher du
+  // plan (plan.min_total_odd, la valeur RÉELLE en base, jamais le repli
+  // interne à 1.5 ni l'exception rank>=3/nbMatchsDisponibles<4, qui ne
+  // sont que des mécanismes de CONSTRUCTION). Couvre les deux chemins qui
+  // peuvent produire une cote sous le plancher, sans avoir à les tracer
+  // individuellement. Le trigger trg_valider_cote_plan lit ce flag pour
+  // ignorer le contrôle du minimum uniquement dans ce cas précis — le
+  // maximum, lui, reste toujours strict côté base, aucune exemption.
+  const trueMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : null;
+  const miniExempte = trueMin != null && fiche.coteTotale < trueMin;
+
   let ticket;
   try {
     const inserted = await sbInsert('tickets', [{
@@ -845,7 +916,13 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
       // Distinction interne BOT/ADMIN (25/08) : permet au panneau admin de
       // signaler l'origine d'une fiche. Une correction manuelle ultérieure
       // ne remet jamais cette valeur à 'admin' (voir admin_save_ticket).
-      source: 'bot'
+      source: 'bot',
+      // Jour pauvre en matchs (26/08) : la cote réelle est en dessous du
+      // plancher du plan — publiée quand même sur demande de James
+      // ("toujours une fiche par plan"), mais marquée comme telle pour que
+      // le trigger l'accepte et que le front puisse un jour l'afficher
+      // différemment si souhaité.
+      min_odd_exempted: miniExempte
     }]);
     ticket = inserted && inserted[0];
     if (!ticket) throw new Error('réponse vide à l\'insertion du ticket');
