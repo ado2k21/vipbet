@@ -124,16 +124,37 @@ const LEAGUES_BUTEUR_AUTORISEES = [
 
 // Liste des IDs des grands clubs où le buteur est activé (règle du 25/08 :
 // pas n'importe quelle équipe d'un grand championnat, seulement les clubs
-// avec de vrais grands buteurs reconnus). VIDE pour l'instant — tant qu'elle
-// est vide, le filtre club est ignoré (seul LEAGUES_BUTEUR_AUTORISEES
-// s'applique) pour ne pas désactiver tout le marché buteur en attendant les
-// IDs confirmés via ?diag=teams. Dès qu'elle est remplie, le filtre club
-// s'active automatiquement.
+// avec de vrais grands buteurs reconnus). Le marché buteur n'est propose
+// que si AU MOINS UNE des deux equipes du match figure ici.
+//
+// TOUS ces IDs ont ete confirmes par le diagnostic ?diag=teams (25/08),
+// jamais devines. Attention : la recherche renvoie aussi les equipes
+// feminines (suffixe W), reserves (II, B, Res.) et jeunes (U19/U21/U23) —
+// seuls les IDs des equipes PREMIERES masculines sont retenus ici.
+//
+// Une fiche n'a PAS toujours besoin d'un buteur : si aucun match du jour
+// n'implique un de ces clubs, aucune selection buteur n'est generee, et
+// c'est le comportement voulu (regle explicite de James).
 const GRANDS_CLUBS_BUTEUR = [
-  // À remplir avec les IDs confirmés : Real Madrid, Barcelone, Bayern,
-  // Man City, Man United, Liverpool, Arsenal, Chelsea, Tottenham,
-  // Inter Milan, Juventus, AC Milan, Napoli, PSG, Al-Nassr, Al-Ittihad,
-  // Al-Hilal, Inter Miami (Messi), etc.
+  541,   // Real Madrid (Espagne)
+  529,   // Barcelona (Espagne)
+  157,   // Bayern München (Allemagne)
+  50,    // Manchester City (Angleterre)
+  33,    // Manchester United (Angleterre)
+  40,    // Liverpool (Angleterre)
+  42,    // Arsenal (Angleterre)
+  49,    // Chelsea (Angleterre)
+  47,    // Tottenham (Angleterre)
+  505,   // Inter (Italie)
+  496,   // Juventus (Italie)
+  489,   // AC Milan (Italie)
+  492,   // Napoli (Italie)
+  85,    // Paris Saint Germain (France)
+  9568   // Inter Miami (MLS) — Messi
+  // À COMPLÉTER : Al-Nassr, Al-Ittihad, Al-Hilal (Arabie Saoudite).
+  // Le diagnostic du 25/08 n'a renvoyé que leurs équipes féminines
+  // ("Al Nassr W" 24884, "Al Ittihad W" 27714, "Al Hilal W" 27713) —
+  // les IDs des équipes masculines restent à confirmer par un test.
 ];
 
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
