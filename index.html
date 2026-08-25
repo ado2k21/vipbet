@@ -4590,7 +4590,7 @@ dash_ago_2h:"Il y a 2 heures", dash_ago_5h:"Il y a 5 heures", dash_ago_1d:"Hier"
 dash_f_all:"Tout", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues",
 dash_count:"{n} fiche(s)",
-dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS",
+dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
@@ -5001,7 +5001,7 @@ dash_ago_2h:"2 hours ago", dash_ago_5h:"5 hours ago", dash_ago_1d:"Yesterday",
 dash_f_all:"All", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
-dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING",
+dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
@@ -5412,7 +5412,7 @@ dash_ago_2h:"Gen 2 èdtan", dash_ago_5h:"Gen 5 èdtan", dash_ago_1d:"Yè",
 dash_f_all:"Tout", dash_f_foot:"Foutbòl", dash_f_nba:"NBA",
 dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
-dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN",
+dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
@@ -8337,6 +8337,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      regle garantit qu'aucune fiche publiee n'est jamais introuvable. */
   const estDuJour=k=>k.status==='pending'||k.day<=0;
   const fmtDate=d=>d.toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',timeZone:'UTC'});
+  /* Format long "25 août 2026" pour les titres de fiche (25/08, demande
+     explicite de James d'appliquer le meme format que le panneau Admin
+     dans le Dashboard utilisateur — remplace l'ancien "25 août · CODE"). */
+  function dateLongueDash(iso){
+    if(!iso)return '';
+    const d=new Date(iso+'T12:00:00Z');
+    if(isNaN(d.getTime()))return iso;
+    const loc={fr:'fr-FR',en:'en-GB',ht:'fr-FR'}[currentLang]||'fr-FR';
+    try{
+      return new Intl.DateTimeFormat(loc,{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(d);
+    }catch(e){return iso;}
+  }
+  /* Trois genres possibles, meme logique que titreFiche() cote Admin :
+     Basketball prime, sinon Score exact si toutes les selections en sont
+     (scoreCount===legsCount), sinon Cote normal. */
+  function titreFicheDash(tk){
+    let genre;
+    if(tk.sport==='nba'||tk.sport==='basket')genre='dash_kind_basket';
+    else if(tk.scoreCount>0&&tk.legsCount>0&&tk.scoreCount===tk.legsCount)genre='dash_kind_exact';
+    else genre='dash_kind_normal';
+    return dateLongueDash(tk.playDate)+' — '+t(genre);
+  }
   const fmtLong=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'long',year:'numeric',timeZone:TZ_HAITI}):'—';
 
   /* ---- Chargement des fiches : la base est la SEULE source ----
@@ -8660,7 +8682,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const head=document.createElement('div');
     head.className='dtk-head';
     head.innerHTML='<span class="dtk-sport '+tk.sport+'">'+(tk.sport==='nba'?'NBA':t('dash_f_foot').toUpperCase())+'</span>'+
-      '<span class="dtk-date">'+fmtDate(dayDate(tk.day))+' · '+tk.id+'</span>'+
+      '<span class="dtk-date">'+titreFicheDash(tk)+'</span>'+
       '<span class="dtk-res '+tk.status+'">'+t(statusKey)+'</span>';
     el.appendChild(head);
 
@@ -8794,7 +8816,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const head=document.createElement('div');
     head.className='dtk-head';
     head.innerHTML='<span class="dtk-sport foot">'+t('mk_score_l').toUpperCase()+'</span>'+
-      '<span class="dtk-date">'+fmtDate(dayDate(jourSc))+' · S-'+total+'</span>'+
+      '<span class="dtk-date">'+dateLongueDash(dayDate(jourSc).toISOString().slice(0,10))+' — '+t('dash_kind_exact')+'</span>'+
       '<span class="dtk-res pending">'+t('dash_st_pending')+'</span>';
     el.appendChild(head);
 
