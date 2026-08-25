@@ -28,7 +28,7 @@
  * ============================================================================
  */
 
-export const config = {
+const config = {
   // Une fois par heure entre 10h00 et 23h00 UTC — couvre la quasi-totalité
   // des heures où des matchs se terminent en Haïti (matchs de l'après-midi
   // jusqu'à ceux de fin de soirée). Le mode test permet de forcer un passage
@@ -388,7 +388,7 @@ async function reglerDate(dateIso) {
 // 7. ORCHESTRATION PRINCIPALE
 // ============================================================================
 
-export async function handler(event) {
+async function handler(event) {
   resetStats();
 
   const jetonTest = process.env.BOT_TEST_TOKEN || '';
@@ -436,3 +436,6 @@ export async function handler(event) {
     body: `Terminé. ${stats.ticketsRegles.won} gagnée(s), ${stats.ticketsRegles.lost} perdue(s), ${stats.ticketsEnAttente} en attente.`
   };
 }
+
+module.exports.handler = handler;
+module.exports.config = config;

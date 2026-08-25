@@ -23,7 +23,7 @@
 // Supabase en fetch() direct sur l'API REST). On fait pareil ici pour éviter
 // tout échec de build lié à une dépendance manquante.
 
-export const config = {
+const config = {
   // Toutes les 15 min entre 20h00 et 22h59 UTC — couvre 17h00 Haïti
   // (UTC-4 en heure d'été → 21h00 UTC ; UTC-5 en heure standard → 22h00 UTC)
   schedule: '*/15 20-22 * * *'
@@ -952,7 +952,8 @@ async function diagnostiquerBBSD(dateIso) {
   return rapport;
 }
 
- — reconnaissance du plan gratuit
+// ============================================================================
+// DIAGNOSTIC NBA (25/08) — reconnaissance du plan gratuit
 // ----------------------------------------------------------------------------
 // L'API NBA (v2.nba.api-sports.io) est un abonnement SÉPARÉ du football :
 // quota distinct (100 req/jour), endpoints différents, restrictions
@@ -1137,7 +1138,7 @@ async function diagnostiquerBasket(dateIso) {
   return rapport;
 }
 
-export async function handler(event) {
+async function handler(event) {
   resetStats(); // corrige le bug de compteurs cumulatifs entre invocations à chaud
 
   // MODE TEST : permet de déclencher le bot manuellement (hors fenêtre 17h)
@@ -1391,3 +1392,6 @@ export async function handler(event) {
     body: `Terminé. ${stats.fichesPubliees} fiche(s) publiée(s) pour ${dateCible}.`
   };
 }
+
+module.exports.handler = handler;
+module.exports.config = config;
