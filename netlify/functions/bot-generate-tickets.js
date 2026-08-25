@@ -46,6 +46,16 @@ const NBA_HOST = 'v2.nba.api-sports.io';
 // ("This endpoint do not exist."), d'ou le recours a ce service pour
 // esperer obtenir de vraies cotes de bookmaker sur le basket.
 const BASKET_HOST = 'v1.basketball.api-sports.io';
+
+// Big Balls Sports Data (25/08) — service DISTINCT d'API-Sports, exploré en
+// complément d'ANALYSE uniquement (compositions, stats), jamais comme
+// source de cotes (leur offre gratuite ne couvre pas les cotes — voir
+// diagnostiquerBBSD). Authentification par bearer token, pas par
+// x-apisports-key. Clé stockée séparément pour ne jamais la confondre avec
+// API_SPORTS_KEY. Cette config n'est utilisée QUE par le mode diagnostic
+// (?diag=bbsd) — aucune ligne de la génération réelle des fiches n'y touche.
+const BBS_API_KEY = process.env.BBS_API_KEY || '';
+const BBS_HOST = 'api.bigballsdata.com';
 const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
 
 // Championnats autorisés — uniquement des compétitions couvertes par les
@@ -874,7 +884,75 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
 
 
 // ============================================================================
-// DIAGNOSTIC NBA (25/08) — reconnaissance du plan gratuit
+// DIAGNOSTIC BIG BALLS SPORTS DATA (25/08) — service d'ANALYSE en complément,
+// jamais une source de cotes (leur plan gratuit n'inclut pas /odds, réservé
+// au plan Edge à 149$/mois). Vérifie 3 choses précises repérées dans leur
+// doc publique avant d'y construire quoi que ce soit :
+//   1. Les compositions confirmées (/lineups) sont-elles vraiment servies ?
+//   2. Le flux de stats joueurs (xG) est-il réellement figé depuis juin
+//      2026 comme leur propre page le laisse entendre, ou à jour ?
+//   3. Les stats d'équipe post-match (xG du match) répondent-elles ?
+// Isolé à 100% : lecture seule, jamais appelé par la génération réelle.
+// ============================================================================
+async function diagnostiquerBBSD(dateIso) {
+  const rapport = {
+    host: BBS_HOST, dateTestee: dateIso, endpoints: {},
+    compositionsDisponibles: null, xgAJour: null, conclusion: ''
+  };
+
+  async function essayer(nom, path) {
+    try {
+      const url = 'https://' + BBS_HOST + path;
+      const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + BBS_API_KEY } });
+      const brut = await resp.json().catch(() => ({}));
+      rapport.endpoints[nom] = {
+        http: resp.status,
+        resume: JSON.stringify(brut).slice(0, 600)
+      };
+      return resp.ok ? brut : null;
+    } catch (e) {
+      rapport.endpoints[nom] = { erreur: e.message };
+      return null;
+    }
+  }
+
+  // 1. Ligues disponibles (confirme juste que la clé fonctionne)
+  await essayer('leagues', '/v1/leagues?sport=football');
+
+  // 2. Matchs du jour visé — sert à récupérer un vrai id de match pour les
+  //    tests suivants (compositions, stats), sans deviner un id au hasard.
+  const matchsData = await essayer('matches', '/v1/matches?sport=football&date=' + dateIso);
+  const premierMatch = matchsData && Array.isArray(matchsData.data) && matchsData.data[0];
+
+  if (premierMatch && premierMatch.id) {
+    rapport.exempleMatch = {
+      id: premierMatch.id, league: premierMatch.league,
+      equipes: premierMatch.home && premierMatch.away
+        ? (premierMatch.home.name + ' — ' + premierMatch.away.name) : null,
+      statut: premierMatch.status
+    };
+    const compo = await essayer('lineups', '/v1/stored/matches/' + premierMatch.id + '/lineups');
+    rapport.compositionsDisponibles = !!(compo && (compo.data || compo.home || compo.away));
+
+    const stats = await essayer('stats_match', '/v1/stored/matches/' + premierMatch.id + '/stats');
+    rapport.xgMatchDisponible = !!(stats && JSON.stringify(stats).toLowerCase().includes('xg'));
+  } else {
+    rapport.exempleMatch = null;
+    rapport.compositionsDisponibles = false;
+    rapport.note = 'Aucun match trouvé ce jour-là — retester avec &bbsdDate=AAAA-MM-JJ sur un jour avec matchs des grands championnats couverts (EPL, Liga, Bundesliga, Serie A, Ligue 1, MLS, UCL).';
+  }
+
+  // 3. Le point d'alerte repéré dans leur doc : le flux xG joueurs est-il
+  //    réellement figé depuis juin 2026 ? On teste sur un joueur connu pour
+  //    exister dans leur base si un match a été trouvé, sinon on saute.
+  rapport.conclusion = rapport.compositionsDisponibles
+    ? 'Compositions confirmées accessibles — utile en complément (ex. vérifier qu\'un buteur pressenti démarre vraiment).'
+    : 'Compositions non confirmées sur ce test — voir endpoints.lineups pour le détail brut.';
+
+  return rapport;
+}
+
+ — reconnaissance du plan gratuit
 // ----------------------------------------------------------------------------
 // L'API NBA (v2.nba.api-sports.io) est un abonnement SÉPARÉ du football :
 // quota distinct (100 req/jour), endpoints différents, restrictions
@@ -1125,6 +1203,15 @@ export async function handler(event) {
       resultats[t] = await recupererEquipes(t);
     }
     return { statusCode: 200, body: JSON.stringify(resultats, null, 2) };
+  }
+
+  // MODE DIAGNOSTIC BIG BALLS SPORTS DATA : ?token=...&diag=bbsd[&date=AAAA-MM-JJ]
+  // Isolé, lecture seule, aucun impact sur la génération réelle des fiches.
+  if (modeTest && event.queryStringParameters.diag === 'bbsd') {
+    if (!BBS_API_KEY) return { statusCode: 500, body: 'BBS_API_KEY manquante (variable Netlify).' };
+    const dateB = event.queryStringParameters.date || partsHaiti(new Date()).iso;
+    const rapport = await diagnostiquerBBSD(dateB);
+    return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
   }
 
   // MODE DIAGNOSTIC NBA : ?token=...&diag=nba[&date=AAAA-MM-JJ]
