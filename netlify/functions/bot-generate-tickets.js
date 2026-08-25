@@ -718,8 +718,14 @@ function construireFiche(pool, plan, options) {
       if (tenterAjout(b)) { buteursUtilises.add(b.pick); break; }
     }
   }
-  // Sélections 🟡 (premium) : jusqu'à 2, sauf Plan 1 limité à 1 (prudence)
-  const maxPremium = plan.rank === 1 ? MAX_PREMIUM_PLAN1 : 2;
+  // Sélections 🟡 (premium) : jusqu'à 2, sauf si la CIBLE de la fiche est
+  // <20 (règle du document d'optimisation du 25/08, point 11 : "éviter
+  // plusieurs victoires proches de 2.00 dans une même fiche <20" — cette
+  // règle dépend de la cote cible réelle de la fiche, pas du rang du plan :
+  // un plan autre que le Plan 1 peut très bien avoir, un jour donné, une
+  // cible réduite via cibleMinOverride ou une config <20, et doit alors
+  // suivre la même prudence).
+  const maxPremium = cibleMax < 20 ? MAX_PREMIUM_PLAN1 : 2;
   let premCount = 0;
   for (const b of premium) {
     if (premCount >= maxPremium) break;
@@ -1167,6 +1173,25 @@ async function handler(event) {
   // Retourne les vrais id/nom/pays de chaque terme cherché sur API-Sports,
   // pour confirmer un ID avant de l'ajouter aux listes de championnats —
   // n'exécute PAS la génération normale de fiches.
+  // MODE DIAGNOSTIC CATALOGUE DES MARCHÉS FOOT : ?token=...&diag=bets
+  // Liste tous les types de paris connus d'API-Sports, pour vérifier
+  // l'existence réelle et l'ID exact d'un marché (ex. DNB/Handicap 0,
+  // recommandé par le document d'optimisation du 25/08) avant d'écrire du
+  // code d'extraction dessus — jamais deviner un ID (leçon du 23-24/08).
+  if (modeTest && event.queryStringParameters.diag === 'bets') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    try {
+      const data = await apiSportsGetRaw(FOOT_HOST, '/odds/bets', {});
+      const erreurs = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
+      return { statusCode: 200, body: JSON.stringify({
+        resultats: (data.response || []).map(b => ({ id: b.id, nom: b.name })),
+        erreurApi: (erreurs && erreurs.length) ? erreurs : null
+      }, null, 2) };
+    } catch (e) {
+      return { statusCode: 200, body: JSON.stringify({ erreur: e.message }, null, 2) };
+    }
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'leagues') {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
     const termes = (event.queryStringParameters.q || '').split(',').map(s => s.trim()).filter(Boolean);
