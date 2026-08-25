@@ -2217,7 +2217,16 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .dtk-res.pending{background:rgba(201,164,76,.14);color:var(--or-clair)}
 
 .dtk-legs{list-style:none;padding:4px 0;margin:0;flex:1}
-.dtk-leg{padding:11px 14px;border-bottom:1px solid rgba(244,243,237,.045)}
+.dtk-leg{padding:11px 14px;border-bottom:1px solid rgba(244,243,237,.045);display:flex;gap:10px;align-items:flex-start}
+.dtk-leg-mark{
+  flex-shrink:0;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--mono);font-size:10.5px;font-weight:900;margin-top:2px;
+}
+.dtk-leg-mark.won{background:rgba(46,212,127,.17);color:var(--vert-vif)}
+.dtk-leg-mark.lost{background:rgba(226,99,79,.15);color:#E2634F}
+.dtk-leg-mark.void{background:rgba(244,243,237,.06);color:var(--gris)}
+.dtk-leg-mark.none{background:rgba(201,164,76,.10);color:var(--or-clair)}
+.dtk-leg-body{flex:1;min-width:0}
 .dtk-leg:last-child{border-bottom:none}
 .dtk-leg-top{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
 .dtk-leg-time{font-family:var(--mono);font-size:11px;color:var(--or-clair);flex-shrink:0}
@@ -8359,6 +8368,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     else genre='dash_kind_normal';
     return dateLongueDash(tk.playDate)+' — '+t(genre);
   }
+  /* Badge V / X / — par selection dans le Dashboard utilisateur (25/08,
+     demande explicite de James — meme indicateurs que le panneau Admin).
+     won -> V vert, lost -> X rouge, void -> — (match reporte/annule,
+     neutre), null -> point discret (match pas encore joue). */
+  function marqueLegDash(result){
+    if(result==='won') return '<span class="dtk-leg-mark won">V</span>';
+    if(result==='lost')return '<span class="dtk-leg-mark lost">X</span>';
+    if(result==='void')return '<span class="dtk-leg-mark void">—</span>';
+    return '<span class="dtk-leg-mark none">·</span>';
+  }
   const fmtLong=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'long',year:'numeric',timeZone:TZ_HAITI}):'—';
 
   /* ---- Chargement des fiches : la base est la SEULE source ----
@@ -8404,7 +8423,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       let selections=[];
       if(uniques.length){
         const {data:legs,error:errLegs}=await sb.from('ticket_legs')
-          .select('ticket_id,match_time,kickoff_at,league,match_label,market,pick,odd,position')
+          .select('ticket_id,match_time,kickoff_at,league,match_label,market,pick,odd,position,result')
           .in('ticket_id',uniques.map(tk=>tk.id))
           .order('kickoff_at',{ascending:true}).order('position',{ascending:true});
         if(errLegs)throw errLegs;
@@ -8431,7 +8450,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           legs:brut.map(l=>{
             const h=heureAffichee(l,tk.play_date);
             return {time:h.heure,jour:h.jour,league:l.league||'',match:l.match_label||'',
-                    market:l.market||'',pick:l.pick||'',odd:Number(l.odd)||0};
+                    market:l.market||'',pick:l.pick||'',odd:Number(l.odd)||0,result:l.result||null};
           })
         };
       });
@@ -8705,12 +8724,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         const marketTxt=translations.fr[lg.market]?t(lg.market):(lg.market||'');
         // Heure d'Haiti ; la date n'apparait que si le match tombe un
         // autre jour que celui de la fiche (voir heureAffichee).
-        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">'+lg.time+
+        li.innerHTML=marqueLegDash(lg.result)+
+          '<div class="dtk-leg-body"><div class="dtk-leg-top"><span class="dtk-leg-time">'+lg.time+
           (lg.jour?' · '+lg.jour:'')+'</span>'+
           '<span class="dtk-leg-league">'+lg.league+'</span></div>'+
           '<div class="dtk-leg-match">'+lg.match+'</div>'+
           '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+marketTxt+'</em>'+pick+'</span>'+
-          '<span class="dtk-leg-odd">'+lg.odd.toFixed(2)+'</span></div>';
+          '<span class="dtk-leg-odd">'+lg.odd.toFixed(2)+'</span></div></div>';
         ul.appendChild(li);
       });
     }else{
@@ -8721,11 +8741,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       for(let i=0;i<tk.legsCount;i++){
         const li=document.createElement('li');
         li.className='dtk-leg';
-        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">--:--</span>'+
+        li.innerHTML='<span class="dtk-leg-mark none">·</span>'+
+          '<div class="dtk-leg-body"><div class="dtk-leg-top"><span class="dtk-leg-time">--:--</span>'+
           '<span class="dtk-leg-league">•••••</span></div>'+
           '<div class="dtk-leg-match">••••••••• — •••••••••</div>'+
           '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>•••</em>••••</span>'+
-          '<span class="dtk-leg-odd">•.••</span></div>';
+          '<span class="dtk-leg-odd">•.••</span></div></div>';
         ul.appendChild(li);
       }
     }
@@ -8826,12 +8847,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       liste.forEach(sc=>{
         const li=document.createElement('li');
         li.className='dtk-leg';
-        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">'+sc.time+
+        li.innerHTML=marqueLegDash(sc.result)+
+          '<div class="dtk-leg-body"><div class="dtk-leg-top"><span class="dtk-leg-time">'+sc.time+
           (sc.jour?' · '+sc.jour:'')+'</span>'+
           '<span class="dtk-leg-league">'+sc.league+'</span></div>'+
           '<div class="dtk-leg-match">'+sc.match+'</div>'+
           '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+t('mk_score_l')+'</em>'+sc.pick+'</span>'+
-          '<span class="dtk-leg-odd">'+sc.odd.toFixed(2)+'</span></div>';
+          '<span class="dtk-leg-odd">'+sc.odd.toFixed(2)+'</span></div></div>';
         ul.appendChild(li);
       });
     }else{
@@ -8840,11 +8862,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       for(let i=0;i<total;i++){
         const li=document.createElement('li');
         li.className='dtk-leg';
-        li.innerHTML='<div class="dtk-leg-top"><span class="dtk-leg-time">--:--</span>'+
+        li.innerHTML='<span class="dtk-leg-mark none">·</span>'+
+          '<div class="dtk-leg-body"><div class="dtk-leg-top"><span class="dtk-leg-time">--:--</span>'+
           '<span class="dtk-leg-league">•••••</span></div>'+
           '<div class="dtk-leg-match">••••••••• — •••••••••</div>'+
           '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+t('mk_score_l')+'</em>• — •</span>'+
-          '<span class="dtk-leg-odd">•.••</span></div>';
+          '<span class="dtk-leg-odd">•.••</span></div></div>';
         ul.appendChild(li);
       }
     }
