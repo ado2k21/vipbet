@@ -40,6 +40,12 @@ const TZ_HAITI = 'America/Port-au-Prince';
 const API_SPORTS_KEY = process.env.API_SPORTS_KEY || '';
 const FOOT_HOST = 'v3.football.api-sports.io';
 const NBA_HOST = 'v2.nba.api-sports.io';
+// API basketball GENERIQUE — service DIFFERENT de l'API NBA. Couvre les
+// championnats non-NBA (EuroLeague, Liga ACB, Lega A, BBL, NCAA...).
+// Teste le 25/08 : l'API NBA (v2) n'expose AUCUN endpoint /odds
+// ("This endpoint do not exist."), d'ou le recours a ce service pour
+// esperer obtenir de vraies cotes de bookmaker sur le basket.
+const BASKET_HOST = 'v1.basketball.api-sports.io';
 const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
 
 // Championnats autorisés — uniquement des compétitions couvertes par les
@@ -935,6 +941,96 @@ async function diagnostiquerNBA(dateIso) {
   return rapport;
 }
 
+
+// ============================================================================
+// DIAGNOSTIC BASKETBALL (25/08) — host v1.basketball, distinct de l'API NBA
+// ----------------------------------------------------------------------------
+// Objectif : verifier si CE service expose des cotes (contrairement a l'API
+// NBA v2 qui n'en a pas du tout), et inventorier les championnats couverts
+// par les bookmakers. Rien n'est suppose : chaque endpoint est teste et le
+// rapport contient le message d'erreur brut de l'API le cas echeant.
+// ============================================================================
+async function diagnostiquerBasket(dateIso) {
+  const rapport = {
+    host: BASKET_HOST, dateTestee: dateIso, endpoints: {},
+    coteDisponible: null, championnatsDuJour: {}, marchesVus: {},
+    echantillonCotes: [], exempleMatch: null, conclusion: ''
+  };
+
+  async function essayer(nom, path, params) {
+    try {
+      const url = new URL('https://' + BASKET_HOST + path);
+      Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+      const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+      const brut = await resp.json().catch(() => ({}));
+      const erreurs = brut.errors && (Array.isArray(brut.errors) ? brut.errors : Object.values(brut.errors));
+      rapport.endpoints[nom] = {
+        http: resp.status,
+        nbResultats: Array.isArray(brut.response) ? brut.response.length : 0,
+        erreursApi: (erreurs && erreurs.length) ? erreurs : null
+      };
+      return (resp.ok && Array.isArray(brut.response)) ? brut.response : null;
+    } catch (e) {
+      rapport.endpoints[nom] = { erreur: e.message };
+      return null;
+    }
+  }
+
+  // 1. Matchs du jour, tous championnats confondus (1 seul appel).
+  const games = (await essayer('games?date', '/games', { date: dateIso })) || [];
+  games.forEach(g => {
+    const lg = g.league ? (g.league.id + ' — ' + g.league.name +
+      (g.country && g.country.name ? ' (' + g.country.name + ')' : '')) : '?';
+    rapport.championnatsDuJour[lg] = (rapport.championnatsDuJour[lg] || 0) + 1;
+  });
+  if (games.length) {
+    const g = games[0];
+    rapport.exempleMatch = {
+      id: g.id,
+      date: g.date,
+      statut: g.status && (g.status.long || g.status.short),
+      championnat: g.league && g.league.name,
+      equipes: g.teams ? ((g.teams.home && g.teams.home.name) + ' — ' +
+                          (g.teams.away && g.teams.away.name)) : null
+    };
+  }
+
+  // 2. LE point critique : les cotes existent-elles sur ce service ?
+  const idMatch = games.length ? games[0].id : null;
+  const cotes = idMatch
+    ? await essayer('odds?game', '/odds', { game: idMatch })
+    : await essayer('odds?date', '/odds', { date: dateIso });
+
+  if (cotes && cotes.length) {
+    rapport.coteDisponible = true;
+    cotes.slice(0, 3).forEach(item => {
+      (item.bookmakers || []).forEach(bk => {
+        (bk.bets || []).forEach(bet => {
+          const cle = bet.id + ' — ' + bet.name;
+          rapport.marchesVus[cle] = (rapport.marchesVus[cle] || 0) + 1;
+          (bet.values || []).slice(0, 3).forEach(v => {
+            if (rapport.echantillonCotes.length < 15) {
+              rapport.echantillonCotes.push('[' + bet.name + '] ' + v.value + ' @ ' + v.odd);
+            }
+          });
+        });
+      });
+    });
+  } else {
+    rapport.coteDisponible = false;
+  }
+
+  // 3. Marches et bookmakers declares (independamment d'un match).
+  await essayer('bets', '/odds/bets', {});
+  await essayer('bookmakers', '/odds/bookmakers', {});
+
+  rapport.conclusion = rapport.coteDisponible
+    ? 'Cotes basketball accessibles sur ' + BASKET_HOST + ' — un moteur de fiches basket est realisable.'
+    : 'Aucune cote basket recuperee — voir endpoints pour le motif exact (endpoint inexistant, restriction de plan, ou aucun match ce jour-la).';
+
+  return rapport;
+}
+
 export async function handler(event) {
   resetStats(); // corrige le bug de compteurs cumulatifs entre invocations à chaud
 
@@ -986,6 +1082,14 @@ export async function handler(event) {
 
   // MODE DIAGNOSTIC NBA : ?token=...&diag=nba[&date=AAAA-MM-JJ]
   // Quota NBA separe du football : ce test n'entame PAS le quota foot.
+  // MODE DIAGNOSTIC BASKETBALL : ?token=...&diag=basket[&date=AAAA-MM-JJ]
+  if (modeTest && event.queryStringParameters.diag === 'basket') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const dateB = event.queryStringParameters.date || partsHaiti(new Date()).iso;
+    const rapport = await diagnostiquerBasket(dateB);
+    return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'nba') {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
     // Par défaut la date d'aujourd'hui en heure Haïti (la NBA joue surtout
