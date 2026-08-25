@@ -58,6 +58,23 @@ const BBS_API_KEY = process.env.BBS_API_KEY || '';
 const BBS_HOST = 'api.bigballsdata.com';
 const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
 
+// Bzzoiro Sports Data / "BSD" (25/08, demande explicite de James) — 2e
+// source INDÉPENDANTE d'API-Football, utilisée en complément, jamais en
+// remplacement (voir point 18 de son cahier des charges : ne rien casser
+// de l'existant). Contrairement à BBS_* ci-dessus (service différent,
+// jamais retenu faute de cotes gratuites), BSD offre un vrai plan gratuit
+// avec cotes ET prédictions ML — vérifié le 25/08 sur sports.bzzoiro.com.
+// Rôle STRICT et volontairement limité au départ ("commencer petit") :
+// uniquement une vérification de convergence sur les picks 1X2 (marché le
+// plus simple à comparer objectivement, deux sources → deux probabilités
+// implicites). N'affecte JAMAIS la cote publiée (toujours celle d'API-
+// Football, jamais inventée) — seulement une pondération légère du score
+// de confiance. Aucun impact sur double_chance/total_buts/btts/buteur/
+// score_exact pour l'instant — extension possible plus tard si James le
+// souhaite, une fois ce premier étage validé en conditions réelles.
+const BSD_API_KEY = process.env.BSD_API_KEY || '';
+const BSD_HOST = 'sports.bzzoiro.com';
+
 // Championnats autorisés — uniquement des compétitions couvertes par les
 // grands bookmakers en ligne (pour que l'utilisateur retrouve facilement
 // le match ailleurs et puisse parier rapidement). Deux niveaux :
@@ -271,6 +288,7 @@ const stats = {
   fichesPubliees: 0,
   doublonsDetectes: false,
   poolFinal: null,
+  bsd: { actif: false, evenementsRecuperes: 0, correspondances: 0, erreur: null },
   erreurs: []
 };
 // BUG CORRIGÉ : sur un conteneur Netlify "chaud" (réutilisé entre deux
@@ -293,6 +311,7 @@ function resetStats() {
   stats.fichesPubliees = 0;
   stats.doublonsDetectes = false;
   stats.poolFinal = null;
+  stats.bsd = { actif: false, evenementsRecuperes: 0, correspondances: 0, erreur: null };
   stats.erreurs = [];
 }
 function rejeter(raison) {
@@ -410,8 +429,82 @@ async function recupererEquipes(recherche) {
 }
 
 // ============================================================================
-// 5. EXTRACTION DES MARCHÉS PERTINENTS (foot)
+// 4bis. BSD (Bzzoiro Sports Data) — 2e SOURCE, VÉRIFICATION 1X2 UNIQUEMENT
 // ============================================================================
+// Voir commentaire de config plus haut pour le rôle exact. Trois fonctions :
+// récupération (1 seul appel/jour, même philosophie que fixturesJour),
+// appariement par nom d'équipe (aucun identifiant commun entre les deux
+// fournisseurs), puis annotation du pool déjà construit.
+
+async function recupererEvenementsBSD(dateCible) {
+  if (!BSD_API_KEY) return []; // pas de clé configurée → source simplement absente, jamais bloquant
+  try {
+    const url = `https://${BSD_HOST}/api/events/?date=${dateCible}`;
+    const resp = await fetch(url, { headers: { Authorization: `Token ${BSD_API_KEY}` } });
+    if (!resp.ok) {
+      stats.bsd.erreur = `HTTP ${resp.status}`;
+      return [];
+    }
+    const data = await resp.json();
+    return (data.results || data || []);
+  } catch (e) {
+    stats.bsd.erreur = e.message;
+    return [];
+  }
+}
+
+// Normalisation minimale pour comparer un nom d'équipe API-Football à un nom
+// BSD : accents retirés, ponctuation retirée, suffixes génériques (FC/CF/SC/
+// AFC) retirés — jamais de suffixe porteur d'identité (United, Real, Club...)
+// pour ne pas créer de faux positifs entre deux clubs différents.
+function normaliserNomEquipe(nom) {
+  return String(nom || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter(mot => mot && !['fc', 'cf', 'sc', 'afc'].includes(mot))
+    .join(' ')
+    .trim();
+}
+
+// Apparie un match API-Football (via son label "Domicile — Exterieur") à un
+// évènement BSD. Comparaison sur les DEUX noms d'équipe, jamais un seul —
+// réduit fortement le risque de faux appariement un jour à beaucoup de matchs.
+function trouverEvenementBSD(labelMatch, evenementsBSD) {
+  const [dom, ext] = String(labelMatch || '').split(' — ');
+  if (!dom || !ext) return null;
+  const domN = normaliserNomEquipe(dom), extN = normaliserNomEquipe(ext);
+  if (!domN || !extN) return null;
+  return evenementsBSD.find(e => {
+    const eDom = normaliserNomEquipe(e.home_team), eExt = normaliserNomEquipe(e.away_team);
+    if (!eDom || !eExt) return false;
+    const domOk = eDom === domN || eDom.includes(domN) || domN.includes(eDom);
+    const extOk = eExt === extN || eExt.includes(extN) || extN.includes(eExt);
+    return domOk && extOk;
+  }) || null;
+}
+
+// Annote EN PLACE les entrées mk_1x2 du pool déjà construit avec la
+// probabilité implicite BSD du même côté (Home ou Away). Ne touche à AUCUNE
+// cote publiée, uniquement à un champ interne (bsdProbImplicite) lu ensuite
+// par le calcul de confiance dans construireFiche. Silencieux et jamais
+// bloquant si BSD est indisponible, vide, ou ne connaît pas le match.
+function annoterPoolAvecBSD(poolFoot, noms, evenementsBSD) {
+  if (!evenementsBSD.length) return;
+  for (const bet of poolFoot) {
+    if (bet.market !== 'mk_1x2') continue;
+    const info = noms[bet.fixtureId];
+    if (!info) continue;
+    const evt = trouverEvenementBSD(info.label, evenementsBSD);
+    if (!evt) continue;
+    const cote = bet.pick.endsWith('Home') ? evt.odds_home : bet.pick.endsWith('Away') ? evt.odds_away : null;
+    if (!cote || !isFinite(cote) || cote <= 1) continue;
+    bet.bsdProbImplicite = 1 / cote;
+    stats.bsd.correspondances++;
+  }
+}
+
 
 // Traduit les libellés bruts "Over X.X" / "Under X.X" de l'API en français
 // ("Plus de X.X buts" / "Moins de X.X buts") — demande de James (25/08).
@@ -483,7 +576,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       // l'API renvoie "Home/Draw" / "Home/Away" / "Draw/Away" en anglais,
       // jamais reconnu par le grand public haïtien — converti en 1X/12/X2,
       // la notation utilisée partout ailleurs (bookmakers, paryajpam.com).
-      const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': '1X', 'Home/Away': '12', 'Draw/Away': 'X2' };
+      const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': 'X1', 'Home/Away': '12', 'Draw/Away': 'X2' };
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
         if (c >= 1.19 && c <= 1.70) {
@@ -762,10 +855,21 @@ function construireFiche(pool, plan, options) {
 
   // Score de confiance = moyenne des probabilités implicites des cotes (1/cote),
   // heuristique basée sur les cotes du marché — PAS une vraie analyse statistique
-  // indépendante (forme, blessures...) : cela demanderait un fournisseur de
-  // données stats séparé, à décider avec James si on veut aller plus loin.
+  // indépendante. Complété le 25/08 : pour les seules sélections 1X2 pour
+  // lesquelles BSD (2e source indépendante) a confirmé le même match, on
+  // mélange légèrement (25%) sa probabilité implicite à celle du marché —
+  // convergence entre les 2 sources fait monter la confiance, divergence la
+  // fait baisser. Poids volontairement faible : BSD reste une confirmation,
+  // jamais la source principale. Aucun effet sur les sélections non-1X2 ou
+  // non appariées (bsdProbImplicite absent → comportement identique à avant).
   const confiance = selections.length
-    ? Math.round(100 * selections.reduce((s, b) => s + 1 / b.odd, 0) / selections.length)
+    ? Math.round(100 * selections.reduce((s, b) => {
+        const probMarche = 1 / b.odd;
+        const prob = (b.bsdProbImplicite != null)
+          ? (probMarche * 0.75 + b.bsdProbImplicite * 0.25)
+          : probMarche;
+        return s + prob;
+      }, 0) / selections.length)
     : 0;
 
   return {
@@ -1327,6 +1431,28 @@ async function handler(event) {
     return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
   }
 
+  // MODE DIAGNOSTIC BSD : ?token=...&diag=bsd[&date=AAAA-MM-JJ]
+  // (25/08) Vérifie que BSD_API_KEY fonctionne et que des matchs sont bien
+  // reçus pour la date visée, AVANT de lancer une vraie génération. Isolé,
+  // lecture seule, n'écrit rien en base, n'affecte aucune fiche.
+  if (modeTest && event.queryStringParameters.diag === 'bsd') {
+    if (!BSD_API_KEY) return { statusCode: 500, body: 'BSD_API_KEY manquante (variable Netlify).' };
+    const dateBsd = event.queryStringParameters.date || partsHaiti(new Date()).iso;
+    const evenements = await recupererEvenementsBSD(dateBsd);
+    return { statusCode: 200, body: JSON.stringify({
+      date: dateBsd,
+      cleConfiguree: true,
+      erreur: stats.bsd.erreur,
+      nombreMatchs: evenements.length,
+      // Échantillon (10 max) pour vérifier visuellement que les noms
+      // d'équipe et les cotes 1X2 ont un sens, sans noyer la réponse.
+      echantillon: evenements.slice(0, 10).map(e => ({
+        match: `${e.home_team} — ${e.away_team}`,
+        odds_home: e.odds_home, odds_draw: e.odds_draw, odds_away: e.odds_away
+      }))
+    }, null, 2) };
+  }
+
   // MODE DIAGNOSTIC NBA : ?token=...&diag=nba[&date=AAAA-MM-JJ]
   // Quota NBA separe du football : ce test n'entame PAS le quota foot.
   // MODE DIAGNOSTIC BASKETBALL : ?token=...&diag=basket[&date=AAAA-MM-JJ]
@@ -1436,6 +1562,14 @@ async function handler(event) {
 
   if (!poolFoot.length) {
     console.log('[BOT] Aucune sélection foot ne passe les filtres (0 cote disponible parmi les matchs candidats).');
+  }
+
+  // --- BSD (25/08) : vérification croisée 1X2, 1 seul appel, jamais bloquant ---
+  stats.bsd.actif = !!BSD_API_KEY;
+  if (BSD_API_KEY && poolFoot.length) {
+    const evenementsBSD = await recupererEvenementsBSD(dateCible);
+    stats.bsd.evenementsRecuperes = evenementsBSD.length;
+    annoterPoolAvecBSD(poolFoot, noms, evenementsBSD);
   }
 
   // --- Diagnostic : taille réelle du pool de sélections après tous les filtres ---
