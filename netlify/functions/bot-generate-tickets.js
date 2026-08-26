@@ -1350,6 +1350,22 @@ async function handler(event) {
   const jetonFourni = ((event.queryStringParameters && event.queryStringParameters.token) || '').trim();
   const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
 
+  // DIAGNOSTIC ENV (25/08) : ?debugenv=1 — volontairement PAS protégé par
+  // modeTest (sinon on ne pourrait jamais s'en servir pour diagnostiquer un
+  // token qui ne marche pas). Ne révèle AUCUNE valeur secrète, seulement
+  // des longueurs et le résultat de la comparaison — sert uniquement à
+  // savoir si BOT_TEST_TOKEN existe bien côté Netlify Functions (variable
+  // non définie, mal scopée, ou vraiment différente de ce qui est envoyé).
+  if (event.queryStringParameters && event.queryStringParameters.debugenv === '1') {
+    return { statusCode: 200, body: JSON.stringify({
+      BOT_TEST_TOKEN_defini: !!process.env.BOT_TEST_TOKEN,
+      BOT_TEST_TOKEN_longueur: jetonTest.length,
+      tokenFourni_longueur: jetonFourni.length,
+      correspondance_exacte: modeTest,
+      BSD_API_KEY_defini: !!process.env.BSD_API_KEY
+    }, null, 2) };
+  }
+
   // Ne générer que si on est effectivement à 17h00 (± 14 min) en Haïti —
   // le cron se déclenche plus souvent que nécessaire par sécurité DST.
   // (ignoré en mode test)
