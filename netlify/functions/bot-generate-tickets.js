@@ -743,7 +743,14 @@ function construireFiche(pool, plan, options) {
   let cibleMin = options.cibleMinOverride != null
     ? Number(options.cibleMinOverride)
     : (plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5);
-  const cibleMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : 999;
+  // cibleMaxOverride (26/08) : uniquement utilisé par la génération
+  // manuelle admin, quand l'admin choisit lui-même une cote max propre à
+  // la fiche (déjà clampée au max réel du plan avant l'appel — voir
+  // bot-generate-tickets-manual.js). Aucun appelant existant ne le passe,
+  // donc le bot quotidien garde exactement le même comportement.
+  const cibleMax = options.cibleMaxOverride != null
+    ? Number(options.cibleMaxOverride)
+    : (plan.max_total_odd != null ? Number(plan.max_total_odd) : 999);
   const maxLeg = plan.max_leg_odd != null ? Number(plan.max_leg_odd) : 2.5;
   const autoriseScoreExact = !!plan.includes_exact_score;
 
@@ -886,11 +893,23 @@ function construireFiche(pool, plan, options) {
  * Réservée aux plans score-exact ; s'ajoute à la fiche normale du même
  * plan (ne la remplace pas — confirmé par James).
  */
-function construireFicheScoreExact(pool, plan) {
+function construireFicheScoreExact(pool, plan, options) {
+  options = options || {};
   if (!plan.includes_exact_score) return { selections: [], coteTotale: 0, confiance: 0, valide: false };
 
-  const cibleMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5;
-  const cibleMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : 999;
+  // cibleMinOverride (26/08, demande explicite de James : "toujours au
+  // moins une fiche par plan, meme les jours pauvres, sans respecter le
+  // minimum — SEULEMENT les jours pauvres"). Meme mecanisme que pour la
+  // fiche normale (voir essayer() dans le handler) : 1er essai avec la
+  // vraie cible du plan, repli sur un plancher tres bas si invalide. Le
+  // nombre MINIMUM de selections (3) et le MAXIMUM du plan, eux, restent
+  // toujours stricts — jamais assouplis, meme en repli.
+  const cibleMin = options.cibleMinOverride != null
+    ? Number(options.cibleMinOverride)
+    : (plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5);
+  const cibleMax = options.cibleMaxOverride != null
+    ? Number(options.cibleMaxOverride)
+    : (plan.max_total_odd != null ? Number(plan.max_total_odd) : 999);
 
   // Extrait home/away d'un pick "Score exact : X:Y".
   function parseScore(pick) {
@@ -996,8 +1015,13 @@ async function dejaGenereAujourdhui(dateCible) {
 // 8. ÉCRITURE EN BASE
 // ============================================================================
 
-async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
-  const code = `BOT-${dateCible}-${sport.toUpperCase()}-R${plan.rank}${suffixeCode || ''}`;
+async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode, options) {
+  // options (26/08, ajouté pour la génération manuelle admin — 100%
+  // rétrocompatible : aucun appelant existant ne passe ce paramètre, donc
+  // le bot quotidien garde EXACTEMENT le même comportement qu'avant).
+  options = options || {};
+  const prefixeCode = options.codePrefix || 'BOT';
+  const code = `${prefixeCode}-${dateCible}-${sport.toUpperCase()}-R${plan.rank}${suffixeCode || ''}`;
   // score_legs_count : nombre de sélections "score exact" dans la fiche —
   // nécessaire au filtrage RLS côté Dashboard client (colonne NOT NULL,
   // default 0, mais doit refléter la réalité dès qu'une fiche en contient).
@@ -1012,26 +1036,36 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode) {
   // individuellement. Le trigger trg_valider_cote_plan lit ce flag pour
   // ignorer le contrôle du minimum uniquement dans ce cas précis — le
   // maximum, lui, reste toujours strict côté base, aucune exemption.
+  // La génération manuelle admin (options.forcerExemption) est TOUJOURS
+  // exemptée : par construction, l'admin choisit une cote max propre à
+  // cette fiche, potentiellement sous le plancher normal du plan — ce
+  // n'est jamais une anomalie à signaler comme un jour pauvre du bot.
   const trueMin = plan.min_total_odd != null ? Number(plan.min_total_odd) : null;
-  const miniExempte = trueMin != null && fiche.coteTotale < trueMin;
+  const miniExempte = !!options.forcerExemption || (trueMin != null && fiche.coteTotale < trueMin);
+
+  const publie = options.published != null ? !!options.published : true;
 
   let ticket;
   try {
     const inserted = await sbInsert('tickets', [{
       code, sport, min_plan_rank: plan.rank, status: 'pending',
-      confidence: fiche.confiance, play_date: dateCible, published: true,
+      confidence: fiche.confiance, play_date: dateCible, published: publie,
       legs_count: fiche.selections.length, total_odd: fiche.coteTotale,
       score_legs_count: scoreLegsCount,
       // Distinction interne BOT/ADMIN (25/08) : permet au panneau admin de
       // signaler l'origine d'une fiche. Une correction manuelle ultérieure
       // ne remet jamais cette valeur à 'admin' (voir admin_save_ticket).
-      source: 'bot',
+      source: options.source || 'bot',
       // Jour pauvre en matchs (26/08) : la cote réelle est en dessous du
       // plancher du plan — publiée quand même sur demande de James
       // ("toujours une fiche par plan"), mais marquée comme telle pour que
       // le trigger l'accepte et que le front puisse un jour l'afficher
       // différemment si souhaité.
-      min_odd_exempted: miniExempte
+      min_odd_exempted: miniExempte,
+      // scheduled_publish_at (26/08) : uniquement rempli pour une fiche
+      // générée manuellement en admin avec publication PROGRAMMÉE — NULL
+      // dans tous les autres cas (bot quotidien, publication immédiate).
+      scheduled_publish_at: options.scheduledPublishAt || null
     }]);
     ticket = inserted && inserted[0];
     if (!ticket) throw new Error('réponse vide à l\'insertion du ticket');
@@ -1342,29 +1376,9 @@ async function handler(event) {
   // pour vérifier tout de suite s'il fonctionne, sans attendre le cron.
   // Utilisation : ouvrir l'URL de la fonction avec ?token=<BOT_TEST_TOKEN>
   // Protégé par jeton pour qu'un tiers ne puisse pas déclencher le bot à volonté.
-  // Comparaison tolérante aux espaces/retours à la ligne accidentels (25/08,
-  // blocage persistant constaté en pratique : un simple copier-coller dans
-  // le champ Netlify peut ajouter un espace ou un saut de ligne invisible,
-  // ce qui faisait échouer la comparaison stricte même avec la "bonne" valeur).
-  const jetonTest = (process.env.BOT_TEST_TOKEN || '').trim();
-  const jetonFourni = ((event.queryStringParameters && event.queryStringParameters.token) || '').trim();
+  const jetonTest = process.env.BOT_TEST_TOKEN || '';
+  const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';
   const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
-
-  // DIAGNOSTIC ENV (25/08) : ?debugenv=1 — volontairement PAS protégé par
-  // modeTest (sinon on ne pourrait jamais s'en servir pour diagnostiquer un
-  // token qui ne marche pas). Ne révèle AUCUNE valeur secrète, seulement
-  // des longueurs et le résultat de la comparaison — sert uniquement à
-  // savoir si BOT_TEST_TOKEN existe bien côté Netlify Functions (variable
-  // non définie, mal scopée, ou vraiment différente de ce qui est envoyé).
-  if (event.queryStringParameters && event.queryStringParameters.debugenv === '1') {
-    return { statusCode: 200, body: JSON.stringify({
-      BOT_TEST_TOKEN_defini: !!process.env.BOT_TEST_TOKEN,
-      BOT_TEST_TOKEN_longueur: jetonTest.length,
-      tokenFourni_longueur: jetonFourni.length,
-      correspondance_exacte: modeTest,
-      BSD_API_KEY_defini: !!process.env.BSD_API_KEY
-    }, null, 2) };
-  }
 
   // Ne générer que si on est effectivement à 17h00 (± 14 min) en Haïti —
   // le cron se déclenche plus souvent que nécessaire par sécurité DST.
@@ -1641,11 +1655,18 @@ async function handler(event) {
 
     // Fiche score exact dédiée (3-6 sélections, jamais mélangée) — s'ajoute
     // à la fiche normale, ne la remplace pas (confirmé par James).
+    // Repli jour pauvre (26/08) : même principe que la fiche normale —
+    // 1ᵉʳ essai à la vraie cible du plan, 2ᵉ essai à plancher très bas
+    // (1.5) si invalide. Le minimum de 3 sélections reste strict dans les
+    // deux essais (règle structurelle, pas une cote-cible qu'on assouplit).
     if (plan.includes_exact_score) {
-      const ficheExacte = construireFicheScoreExact(poolFoot, plan);
+      let ficheExacte = construireFicheScoreExact(poolFoot, plan);
+      if (!ficheExacte.valide) {
+        ficheExacte = construireFicheScoreExact(poolFoot, plan, { cibleMinOverride: 1.5 });
+      }
       stats.fichesGenerees++;
       if (!ficheExacte.valide) {
-        console.log(`[BOT] Rang ${plan.rank} (score exact) : non publiée — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis)`);
+        console.log(`[BOT] Rang ${plan.rank} (score exact) : non publiée même avec repli — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}`);
       } else {
         await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
       }
@@ -1661,3 +1682,33 @@ async function handler(event) {
 
 module.exports.handler = handler;
 module.exports.config = config;
+
+// ============================================================================
+// EXPORTS RÉUTILISABLES (26/08) — pour bot-generate-tickets-manual.js, la
+// génération manuelle depuis le panneau admin. Exports purement ADDITIFS :
+// rien n'est retiré ni modifié dans le comportement du handler cron
+// ci-dessus, qui reste le SEUL point d'entrée déclenché automatiquement.
+// Objectif : une seule et même logique de marché (extraireMarchesFoot,
+// construireFiche...) pour le bot ET la génération manuelle — jamais deux
+// copies qui pourraient diverger silencieusement au fil des ajustements.
+// ============================================================================
+module.exports.verifierConfigSupabase = verifierConfigSupabase;
+module.exports.sbSelect = sbSelect;
+module.exports.sbInsert = sbInsert;
+module.exports.sbDelete = sbDelete;
+module.exports.partsHaiti = partsHaiti;
+module.exports.heureHaitiDuMatch = heureHaitiDuMatch;
+module.exports.resetStats = resetStats;
+module.exports.stats = stats;
+module.exports.apiSportsGetRaw = apiSportsGetRaw;
+module.exports.apiSportsGet = apiSportsGet;
+module.exports.recupererFixturesJour = recupererFixturesJour;
+module.exports.recupererCoteParFixture = recupererCoteParFixture;
+module.exports.extraireMarchesFoot = extraireMarchesFoot;
+module.exports.construireFiche = construireFiche;
+module.exports.construireFicheScoreExact = construireFicheScoreExact;
+module.exports.publierFiche = publierFiche;
+module.exports.ALLOWED_LEAGUES_FOOT = ALLOWED_LEAGUES_FOOT;
+module.exports.TOP_LEAGUES_FOOT = TOP_LEAGUES_FOOT;
+module.exports.TZ_HAITI = TZ_HAITI;
+module.exports.API_SPORTS_KEY = API_SPORTS_KEY;
