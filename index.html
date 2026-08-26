@@ -4358,7 +4358,8 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <button type="button" class="admf-chip" data-fstatus="lost" data-i18n="adm_fiches_f_lost">Pèdi</button>
       </div>
       <div id="admFichesSync" class="admf-sync"></div>
-      <button type="button" class="btn btn-or" id="admFichesNew" style="width:100%;margin:12px 0 14px" data-i18n="adm_fiches_new">+ Nouvelle fiche</button>
+      <button type="button" class="btn btn-or" id="admFichesNew" style="width:100%;margin:12px 0 8px" data-i18n="adm_fiches_new">+ Nouvelle fiche</button>
+      <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
       <div id="admFichesBody"></div>
     </div>
 
@@ -4369,6 +4370,48 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <span data-i18n="dash_back">Retounen</span>
       </button>
       <div id="admFicheDetail"></div>
+    </div>
+
+    <!-- VUE : GÉNÉRATION MANUELLE DE FICHE (26/08) -->
+    <div class="dash-view" data-adview="fichegenerer">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="dash-hi">
+        <h2 data-i18n="adm_fiche_gen_h">Générer une fiche</h2>
+        <p data-i18n="adm_fiche_gen_p">Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.</p>
+      </div>
+      <div id="admFicheGenererForm">
+        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_date">Date des matchs</span>
+          <input type="date" id="admGenDate"></label>
+        <div style="display:flex;gap:10px">
+          <label class="field" style="flex:1"><span class="field-lbl" data-i18n="adm_fiche_gen_hdebut">Heure début (PAP)</span>
+            <input type="time" id="admGenHeureDebut" value="12:00"></label>
+          <label class="field" style="flex:1"><span class="field-lbl" data-i18n="adm_fiche_gen_hfin">Heure fin (PAP)</span>
+            <input type="time" id="admGenHeureFin" value="20:00"></label>
+        </div>
+        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_sport">Sport</span>
+          <select id="admGenSport">
+            <option value="foot" data-i18n="adm_fiche_sport_foot">Football</option>
+            <option value="nba" data-i18n="adm_fiche_kind_basket">Basketball / NBA</option>
+          </select></label>
+        <div id="admGenSportNote" class="admf-note-x2" style="display:none;margin:-4px 0 10px" data-i18n="adm_fiche_gen_nba_note">Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.</div>
+        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_plans">Plans concernés</span></label>
+        <div id="admGenPlans" class="admf-filters" style="flex-wrap:wrap"></div>
+        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_cotemax">Cote max souhaitée</span>
+          <input type="number" id="admGenCoteMax" min="1.1" step="0.1" value="20"></label>
+        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_publish">Publication</span>
+          <select id="admGenPublishMode">
+            <option value="now" data-i18n="adm_fiche_gen_now">Immédiate</option>
+            <option value="scheduled" data-i18n="adm_fiche_gen_scheduled">Programmée</option>
+          </select></label>
+        <label class="field" id="admGenScheduledWrap" style="display:none">
+          <span class="field-lbl" data-i18n="adm_fiche_gen_scheduled_at">Date/heure de publication (PAP)</span>
+          <input type="datetime-local" id="admGenScheduledAt"></label>
+        <button type="button" class="btn btn-or" id="admGenSubmit" style="width:100%;margin-top:8px" data-i18n="adm_fiche_gen_submit">Générer</button>
+        <div id="admGenResult" style="margin-top:14px"></div>
+      </div>
     </div>
 
     <!-- VUE : FAQ -->
@@ -4608,6 +4651,16 @@ dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
 fiche_note_x2:"Conseil : à jouer en 2 tickets séparés",
+adm_fiche_gen_btn:"⚡ GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
+adm_fiche_gen_date:"Date des matchs", adm_fiche_gen_hdebut:"Heure début (PAP)", adm_fiche_gen_hfin:"Heure fin (PAP)", adm_fiche_gen_sport:"Sport",
+adm_fiche_gen_nba_note:"Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.",
+adm_fiche_gen_plans:"Plans concernés", adm_fiche_gen_cotemax:"Cote max souhaitée", adm_fiche_gen_publish:"Publication",
+adm_fiche_gen_now:"Immédiate", adm_fiche_gen_scheduled:"Programmée", adm_fiche_gen_scheduled_at:"Date/heure de publication (PAP)",
+adm_fiche_gen_submit:"Générer", adm_fiche_gen_wait:"Génération…",
+adm_fiche_gen_err_champs:"Remplissez la date et la fenêtre horaire.", adm_fiche_gen_err_plans:"Choisissez au moins un plan.",
+adm_fiche_gen_err_prog:"Choisissez une date/heure de publication.", adm_fiche_gen_err_session:"Session admin introuvable — reconnectez-vous.",
+adm_fiche_gen_echec:"Aucune fiche générée pour ce plan.", adm_fiche_gen_ok_now:"publiée immédiatement",
+adm_fiche_gen_ok_prog:"programmée pour le {h}", adm_fiche_gen_clamped:"cote max ramenée au plafond du plan",
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
@@ -5020,6 +5073,16 @@ dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
 fiche_note_x2:"Tip: play as 2 separate tickets",
+adm_fiche_gen_btn:"⚡ GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
+adm_fiche_gen_date:"Match date", adm_fiche_gen_hdebut:"Start time (PAP)", adm_fiche_gen_hfin:"End time (PAP)", adm_fiche_gen_sport:"Sport",
+adm_fiche_gen_nba_note:"Not available yet — no reliable odds source wired for basketball/NBA.",
+adm_fiche_gen_plans:"Plans concerned", adm_fiche_gen_cotemax:"Desired max odds", adm_fiche_gen_publish:"Publishing",
+adm_fiche_gen_now:"Immediate", adm_fiche_gen_scheduled:"Scheduled", adm_fiche_gen_scheduled_at:"Publish date/time (PAP)",
+adm_fiche_gen_submit:"Generate", adm_fiche_gen_wait:"Generating…",
+adm_fiche_gen_err_champs:"Fill in the date and time window.", adm_fiche_gen_err_plans:"Choose at least one plan.",
+adm_fiche_gen_err_prog:"Choose a publish date/time.", adm_fiche_gen_err_session:"Admin session not found — please log in again.",
+adm_fiche_gen_echec:"No slip generated for this plan.", adm_fiche_gen_ok_now:"published immediately",
+adm_fiche_gen_ok_prog:"scheduled for {h}", adm_fiche_gen_clamped:"max odds capped to the plan's ceiling",
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
@@ -5432,6 +5495,16 @@ dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
 fiche_note_x2:"Konsèy : jwe l an 2 tikè separe",
+adm_fiche_gen_btn:"⚡ JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
+adm_fiche_gen_date:"Dat match yo", adm_fiche_gen_hdebut:"Lè kòmanse (PAP)", adm_fiche_gen_hfin:"Lè fini (PAP)", adm_fiche_gen_sport:"Espò",
+adm_fiche_gen_nba_note:"Pa disponib pou kounye a — pa gen sous kòt serye konekte pou basketball/NBA.",
+adm_fiche_gen_plans:"Plan konsène", adm_fiche_gen_cotemax:"Kòt maksimòm ou vle a", adm_fiche_gen_publish:"Piblikasyon",
+adm_fiche_gen_now:"Imedya", adm_fiche_gen_scheduled:"Pwograme", adm_fiche_gen_scheduled_at:"Dat/lè piblikasyon (PAP)",
+adm_fiche_gen_submit:"Jenere", adm_fiche_gen_wait:"L ap jenere…",
+adm_fiche_gen_err_champs:"Ranpli dat la ak fenèt orè a.", adm_fiche_gen_err_plans:"Chwazi omwen yon plan.",
+adm_fiche_gen_err_prog:"Chwazi yon dat/lè piblikasyon.", adm_fiche_gen_err_session:"Pa jwenn sesyon admin — konekte ankò.",
+adm_fiche_gen_echec:"Pa gen fich ki jenere pou plan sa a.", adm_fiche_gen_ok_now:"pibliye imedyatman",
+adm_fiche_gen_ok_prog:"pwograme pou {h}", adm_fiche_gen_clamped:"kòt max redwi jiska plafon plan an",
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
@@ -11295,6 +11368,107 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     admFicheLegCible=null;
     setView('fichedetail');
     renderFicheDetail();
+  });
+
+  /* ---- Génération manuelle de fiche (26/08) ----
+     Appelle la fonction Netlify dédiée bot-generate-tickets-manual.js,
+     jamais Supabase directement (la clé API-Sports doit rester côté
+     serveur). Réservé aux administrateurs : le jeton de session est
+     transmis, revérifié côté serveur avant toute génération. */
+  let admGenPlansCache=null;
+  async function renderAdmGenPlans(){
+    const box=document.getElementById('admGenPlans');
+    box.innerHTML='<span class="admdash-empty" style="padding:6px 0">'+t('adm_k_loading')+'</span>';
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return;
+    try{
+      if(!admGenPlansCache){
+        const {data,error}=await sb.from('plans').select('rank,name').order('rank',{ascending:true});
+        if(error)throw error;
+        admGenPlansCache=data||[];
+      }
+      box.innerHTML=admGenPlansCache.map(p=>
+        '<label class="admf-chip" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">'+
+          '<input type="checkbox" class="admGenPlanChk" value="'+p.rank+'" style="margin:0">'+stripTags(p.name||('Plan '+p.rank))+
+        '</label>'
+      ).join('');
+    }catch(e){
+      box.innerHTML='<span class="admdash-empty">'+t('adm_k_error')+'</span>';
+    }
+  }
+  document.getElementById('admFicheGenererBtn').addEventListener('click',()=>{
+    document.getElementById('admGenDate').value=partsHaiti(new Date(Date.now()+24*3600*1000)).iso;
+    document.getElementById('admGenResult').innerHTML='';
+    setView('fichegenerer');
+    renderAdmGenPlans();
+  });
+  document.getElementById('admGenSport').addEventListener('change',e=>{
+    document.getElementById('admGenSportNote').style.display=(e.target.value==='nba')?'block':'none';
+  });
+  document.getElementById('admGenPublishMode').addEventListener('change',e=>{
+    document.getElementById('admGenScheduledWrap').style.display=(e.target.value==='scheduled')?'block':'none';
+  });
+  document.getElementById('admGenSubmit').addEventListener('click',async()=>{
+    const btn=document.getElementById('admGenSubmit');
+    const resBox=document.getElementById('admGenResult');
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){resBox.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+
+    const playDate=document.getElementById('admGenDate').value;
+    const heureDebut=document.getElementById('admGenHeureDebut').value;
+    const heureFin=document.getElementById('admGenHeureFin').value;
+    const sport=document.getElementById('admGenSport').value;
+    const plansChoisis=Array.from(document.querySelectorAll('.admGenPlanChk:checked')).map(c=>Number(c.value));
+    const coteMax=Number(document.getElementById('admGenCoteMax').value);
+    const publishMode=document.getElementById('admGenPublishMode').value;
+    const scheduledAt=document.getElementById('admGenScheduledAt').value;
+
+    if(!playDate||!heureDebut||!heureFin){
+      resBox.innerHTML='<div class="admdash-empty">'+t('adm_fiche_gen_err_champs')+'</div>';return;
+    }
+    if(!plansChoisis.length){
+      resBox.innerHTML='<div class="admdash-empty">'+t('adm_fiche_gen_err_plans')+'</div>';return;
+    }
+    if(publishMode==='scheduled'&&!scheduledAt){
+      resBox.innerHTML='<div class="admdash-empty">'+t('adm_fiche_gen_err_prog')+'</div>';return;
+    }
+
+    btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
+    resBox.innerHTML='';
+    try{
+      const {data:sessionData}=await sb.auth.getSession();
+      const token=sessionData&&sessionData.session&&sessionData.session.access_token;
+      if(!token)throw new Error(t('adm_fiche_gen_err_session'));
+
+      const resp=await fetch('/.netlify/functions/bot-generate-tickets-manual',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+        body:JSON.stringify({playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt})
+      });
+      const out=await resp.json().catch(()=>({}));
+      if(!resp.ok){
+        resBox.innerHTML='<div class="admdash-empty">'+stripTags(out.erreur||('HTTP '+resp.status))+'</div>';
+      }else{
+        const lignes=(out.resultats||[]).map(r=>{
+          const titre='Rang '+r.rank+(r.exact?' (score exact)':'');
+          if(!r.publie){
+            return '<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+titre+'</b>'+
+              '<span>'+stripTags(r.raison||t('adm_fiche_gen_echec'))+'</span></span></div>';
+          }
+          const etat=r.programmee?t('adm_fiche_gen_ok_prog').replace('{h}',new Date(r.scheduledPublishAt).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})):t('adm_fiche_gen_ok_now');
+          return '<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+titre+'</b>'+
+            '<span>Cote '+Number(r.coteTotale).toFixed(2)+' · '+r.selections+' sélection(s) · '+etat+
+            (r.clampeAuMaxDuPlan?' · '+t('adm_fiche_gen_clamped'):'')+'</span></span>'+
+            '<span class="admdash-row-badge won">OK</span></div>';
+        }).join('');
+        resBox.innerHTML=lignes||'<div class="admdash-empty">'+t('adm_fiche_gen_echec')+'</div>';
+        renderFiches();
+      }
+    }catch(e){
+      resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
+    }finally{
+      btn.disabled=false;btn.textContent=t('adm_fiche_gen_submit');
+    }
   });
 
   function legRowHtml(leg,i){
