@@ -1342,8 +1342,12 @@ async function handler(event) {
   // pour vérifier tout de suite s'il fonctionne, sans attendre le cron.
   // Utilisation : ouvrir l'URL de la fonction avec ?token=<BOT_TEST_TOKEN>
   // Protégé par jeton pour qu'un tiers ne puisse pas déclencher le bot à volonté.
-  const jetonTest = process.env.BOT_TEST_TOKEN || '';
-  const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';
+  // Comparaison tolérante aux espaces/retours à la ligne accidentels (25/08,
+  // blocage persistant constaté en pratique : un simple copier-coller dans
+  // le champ Netlify peut ajouter un espace ou un saut de ligne invisible,
+  // ce qui faisait échouer la comparaison stricte même avec la "bonne" valeur).
+  const jetonTest = (process.env.BOT_TEST_TOKEN || '').trim();
+  const jetonFourni = ((event.queryStringParameters && event.queryStringParameters.token) || '').trim();
   const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
 
   // Ne générer que si on est effectivement à 17h00 (± 14 min) en Haïti —
