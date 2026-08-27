@@ -264,7 +264,7 @@ async function reglerDate(dateIso) {
   let tickets;
   try {
     tickets = await sbSelect('tickets',
-      `select=id,play_date&status=eq.pending&play_date=eq.${dateIso}`);
+      `select=id,code,play_date&status=eq.pending&play_date=eq.${dateIso}`);
   } catch (e) {
     stats.erreurs.push(`lecture tickets(${dateIso}): ${e.message}`);
     return;
@@ -273,13 +273,27 @@ async function reglerDate(dateIso) {
 
   const fixturesJour = await recupererFixturesDate(dateIso);
   // Index rapide fixture_id → {statut, golHome, golAway}
+  //
+  // PROLONGATIONS (27/08, section 11 du cahier des charges) : tous les
+  // marchés actuellement generes par le bot (1X2, double chance, BTTS,
+  // totaux, score exact, buteur) sont des marches "90 minutes" au sens
+  // bookmaker standard — jamais un marche qui inclut explicitement la
+  // prolongation. f.goals.home/away d'API-Sports est le score APRES
+  // prolongation pour un match AET (mais AVANT tirs au but, qui ne sont
+  // jamais des buts). f.score.fulltime.home/away est le vrai score a la
+  // 90e minute, quel que soit ce qui s'est passe ensuite. On utilise
+  // TOUJOURS fulltime en priorite ; goals ne sert que de repli si
+  // fulltime est absent (ne devrait arriver que pour un match qui n'est
+  // pas alle en prolongation, ou` les deux valeurs sont de toute facon
+  // identiques).
   const parFixture = {};
   fixturesJour.forEach(f => {
     if (!f.fixture) return;
+    const ft = f.score && f.score.fulltime;
     parFixture[f.fixture.id] = {
       statut: f.fixture.status && f.fixture.status.short,
-      golHome: f.goals && f.goals.home,
-      golAway: f.goals && f.goals.away
+      golHome: (ft && ft.home != null) ? ft.home : (f.goals && f.goals.home),
+      golAway: (ft && ft.away != null) ? ft.away : (f.goals && f.goals.away)
     };
   });
 
@@ -371,7 +385,17 @@ async function reglerDate(dateIso) {
       continue;
     }
 
-    const statutFinal = aPerdu ? 'lost' : 'won';
+    // RÈGLE SPÉCIALE SCORE EXACT (27/08, section 10 du cahier des charges) :
+    // UNIQUEMENT pour la fiche dédiée "-EXACT" produite par
+    // construireFicheScoreExact (jamais pour une fiche normale, même si
+    // elle contient une ou plusieurs sélections mk_score_exact parmi
+    // d'autres marchés — c'est exactement pourquoi on teste le SUFFIXE DU
+    // CODE de la fiche, jamais le marché des legs individuellement).
+    // Un seul score exact correct suffit à faire gagner toute la fiche.
+    const estFicheScoreExacteDediee = String(ticket.code || '').endsWith('-EXACT');
+    const statutFinal = estFicheScoreExacteDediee
+      ? (aGagne ? 'won' : 'lost')
+      : (aPerdu ? 'lost' : 'won');
     try {
       await sbUpdate('tickets', ticket.id, {
         status: statutFinal,
