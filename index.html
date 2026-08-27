@@ -8514,7 +8514,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       let selections=[];
       if(uniques.length){
         const {data:legs,error:errLegs}=await sb.from('ticket_legs')
-          .select('ticket_id,match_time,kickoff_at,league,match_label,market,pick,odd,position,result')
+          .select('ticket_id,match_time,kickoff_at,league,league_country,match_label,market,pick,odd,position,result')
           .in('ticket_id',uniques.map(tk=>tk.id))
           .order('kickoff_at',{ascending:true}).order('position',{ascending:true});
         if(errLegs)throw errLegs;
@@ -8540,7 +8540,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           totalOdd:Number(tk.total_odd)||0,
           legs:brut.map(l=>{
             const h=heureAffichee(l,tk.play_date);
-            return {time:h.heure,jour:h.jour,league:l.league||'',match:l.match_label||'',
+            // league_country (Phase 2, section 2, 27/08) : pays tel que
+            // retourne par API-Sports, jamais invente -- null/'' pour les
+            // fiches generees avant ce correctif, gere silencieusement a
+            // l'affichage (pas de "(undefined)" ni de valeur inventee).
+            return {time:h.heure,jour:h.jour,league:l.league||'',leagueCountry:l.league_country||'',match:l.match_label||'',
                     market:l.market||'',pick:l.pick||'',odd:Number(l.odd)||0,result:l.result||null};
           })
         };
@@ -8829,7 +8833,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         li.innerHTML=marqueLegDash(lg.result)+
           '<div class="dtk-leg-body"><div class="dtk-leg-top"><span class="dtk-leg-time">'+lg.time+
           (lg.jour?' · '+lg.jour:'')+'</span>'+
-          '<span class="dtk-leg-league">'+lg.league+'</span></div>'+
+          '<span class="dtk-leg-league">'+lg.league+(lg.leagueCountry?' ('+lg.leagueCountry+')':'')+'</span></div>'+
           '<div class="dtk-leg-match">'+lg.match+'</div>'+
           '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+marketTxt+'</em>'+pick+'</span>'+
           '<span class="dtk-leg-odd">'+lg.odd.toFixed(2)+'</span></div></div>';
@@ -8952,7 +8956,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         li.innerHTML=marqueLegDash(sc.result)+
           '<div class="dtk-leg-body"><div class="dtk-leg-top"><span class="dtk-leg-time">'+sc.time+
           (sc.jour?' · '+sc.jour:'')+'</span>'+
-          '<span class="dtk-leg-league">'+sc.league+'</span></div>'+
+          '<span class="dtk-leg-league">'+sc.league+(sc.leagueCountry?' ('+sc.leagueCountry+')':'')+'</span></div>'+
           '<div class="dtk-leg-match">'+sc.match+'</div>'+
           '<div class="dtk-leg-bot"><span class="dtk-leg-pick"><em>'+t('mk_score_l')+'</em>'+sc.pick+'</span>'+
           '<span class="dtk-leg-odd">'+sc.odd.toFixed(2)+'</span></div></div>';
@@ -11194,7 +11198,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const corps=marqueLeg(l.result)+
         '<span class="admf-leg-body">'+
           '<span class="admf-leg-top">'+stripTags(heure)+
-            '<span class="admf-leg-league">'+stripTags(l.league||'')+'</span></span>'+
+            '<span class="admf-leg-league">'+stripTags(l.league||'')+(l.league_country?' ('+stripTags(l.league_country)+')':'')+'</span></span>'+
           '<span class="admf-leg-match">'+stripTags(l.match_label||'')+'</span>'+
           '<span class="admf-leg-pick"><em>'+stripTags(marche)+'</em>'+stripTags(pick||'')+'</span>'+
         '</span>'+
@@ -11308,7 +11312,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          (matchs, heures, marches, cotes, resultats), pas un simple compteur. */
       const ids=tickets.map(tk=>tk.id);
       const {data:legs}=await sb.from('ticket_legs')
-        .select('ticket_id,match_label,match_time,kickoff_at,league,market,pick,odd,position,result,fixture_id')
+        .select('ticket_id,match_label,match_time,kickoff_at,league,league_country,market,pick,odd,position,result,fixture_id')
         .in('ticket_id',ids).order('position',{ascending:true});
       const parFiche={};
       (legs||[]).forEach(l=>{(parFiche[l.ticket_id]=parFiche[l.ticket_id]||[]).push(l);});
@@ -11907,7 +11911,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(error||!fiches||!fiches.length){masquer();return;}
 
       const {data:legs}=await sb.from('ticket_legs')
-        .select('ticket_id,league,match_label,market,pick,odd,result')
+        .select('ticket_id,league,league_country,match_label,market,pick,odd,result')
         .in('ticket_id',fiches.map(f=>f.id))
         .order('position',{ascending:true});
 
@@ -11922,7 +11926,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           ? l.pick : trad(l.pick);
         const marche=(translations.fr||{})[l.market]?trad(l.market):(l.market||'');
         const cote=Number(l.odd);
-        return '<span><i class="lg">'+echapper(String(l.league||'').toUpperCase())+'</i> &nbsp;'+
+        return '<span><i class="lg">'+echapper(String(l.league||'').toUpperCase())+(l.league_country?' ('+echapper(l.league_country)+')':'')+'</i> &nbsp;'+
           echapper(l.match_label)+' · '+echapper(marche)+' '+echapper(pick)+
           ' <b>'+(isFinite(cote)?cote.toFixed(2):'')+'</b>'+
           '<i class="w" data-i18n="tick_won">'+echapper(trad('tick_won')||'GAGNÉ')+'</i></span>';
