@@ -8427,7 +8427,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      une fiche de la veille encore en cours disparaissait des deux vues.
      Combinee a la vue Historique (qui prend tout ce qui est regle), cette
      regle garantit qu'aucune fiche publiee n'est jamais introuvable. */
-  const estDuJour=k=>k.status==='pending'||k.day<=0;
+  // 27/08 : une fiche REGLEE (won/lost) ne doit JAMAIS apparaitre a la fois
+  // dans "Jodi a" et dans "Istorik" (demande explicite de James — "cela
+  // devrait etre impossible"). L'ancien `|| k.day<=0` faisait qu'une fiche
+  // d'aujourd'hui deja reglee restait visible ici EN PLUS de l'Historique
+  // (qui prend tout ce qui n'est plus 'pending'). Desormais "Jodi a" =
+  // strictement les fiches encore en attente, quelle que soit leur date —
+  // et l'Historique = strictement les fiches reglees. Mutuellement
+  // exclusif par construction, plus jamais de chevauchement possible.
+  const estDuJour=k=>k.status==='pending';
   const fmtDate=d=>d.toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',timeZone:'UTC'});
   /* Format long "25 août 2026" pour les titres de fiche (25/08, demande
      explicite de James d'appliquer le meme format que le panneau Admin
