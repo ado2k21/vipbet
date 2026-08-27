@@ -82,6 +82,35 @@ async function sbUpdate(table, id, champs) {
   return true;
 }
 
+// Insertion simple (ajoutée le 27/08 pour validation_log — jusqu'ici ce
+// fichier n'écrivait qu'avec sbUpdate/PATCH sur des lignes existantes).
+async function sbInsert(table, lignes) {
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${table}`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: sbHeaders({ Prefer: 'return=minimal' }),
+    body: JSON.stringify(lignes)
+  });
+  if (!resp.ok) throw new Error(`Supabase POST ${table} → HTTP ${resp.status} : ${await resp.text()}`);
+  return true;
+}
+
+// ============================================================================
+// LOG DE VALIDATION PERSISTANT (Phase 2, section 23 du cahier des charges,
+// 27/08/2026) : trace exhaustive de CE QUI a servi à régler chaque leg et
+// chaque fiche — match, marché, valeur jouée, donnée réelle utilisée,
+// source, statuts avant/après. Purement additif et jamais bloquant : un
+// échec d'écriture ici est journalisé dans stats.erreurs mais n'empêche
+// JAMAIS le règlement réel (ticket_legs/tickets) de se terminer — le log
+// est un outil de diagnostic, pas une dépendance du chemin critique.
+async function enregistrerValidationLog(entree) {
+  try {
+    await sbInsert('validation_log', [entree]);
+  } catch (e) {
+    stats.erreurs.push(`validation_log: ${e.message}`);
+  }
+}
+
 // ============================================================================
 // 2. OUTILS FUSEAU HORAIRE HAÏTI (identiques à bot-generate-tickets.js)
 // ============================================================================
@@ -174,8 +203,20 @@ async function recupererButeurs(fixtureId) {
   stats.appelsEvents++;
   try {
     const events = await apiSportsGet('/fixtures/events', { fixture: fixtureId });
+    // Règle temps réglementaire (27/08, rappelée explicitement par James) :
+    // par défaut, TOUS les marchés — buteur inclus — comptent uniquement
+    // le temps réglementaire (90 min + arrêts de jeu), jamais la
+    // prolongation, sauf si le marché dit explicitement le contraire (ce
+    // qui n'est le cas d'aucun marché actuellement généré par le bot).
+    // API-Sports encode le temps de jeu dans e.time.elapsed : 1-90 pour le
+    // temps réglementaire (arrêts de jeu inclus via e.time.extra, qui ne
+    // fait jamais dépasser 90 dans elapsed), 91+ pour la prolongation. Un
+    // but sans e.time exploitable est écarté par prudence plutôt que
+    // compté à tort (mieux vaut une sélection non reconnue → en attente,
+    // qu'un verdict faux sur de l'argent réel).
     return events
       .filter(e => e.type === 'Goal' && e.detail !== 'Missed Penalty')
+      .filter(e => e.time && typeof e.time.elapsed === 'number' && e.time.elapsed <= 90)
       .map(e => (e.player && e.player.name) || '');
   } catch (e) {
     stats.erreurs.push(`events(fixture=${fixtureId}): ${e.message}`);
@@ -272,28 +313,43 @@ async function reglerDate(dateIso) {
   if (!tickets.length) return;
 
   const fixturesJour = await recupererFixturesDate(dateIso);
-  // Index rapide fixture_id → {statut, golHome, golAway}
+  // Index rapide fixture_id → {statut, golHome, golAway, scoreFiable}
   //
-  // PROLONGATIONS (27/08, section 11 du cahier des charges) : tous les
-  // marchés actuellement generes par le bot (1X2, double chance, BTTS,
-  // totaux, score exact, buteur) sont des marches "90 minutes" au sens
-  // bookmaker standard — jamais un marche qui inclut explicitement la
-  // prolongation. f.goals.home/away d'API-Sports est le score APRES
-  // prolongation pour un match AET (mais AVANT tirs au but, qui ne sont
-  // jamais des buts). f.score.fulltime.home/away est le vrai score a la
-  // 90e minute, quel que soit ce qui s'est passe ensuite. On utilise
-  // TOUJOURS fulltime en priorite ; goals ne sert que de repli si
-  // fulltime est absent (ne devrait arriver que pour un match qui n'est
-  // pas alle en prolongation, ou` les deux valeurs sont de toute facon
-  // identiques).
+  // PROLONGATIONS (27/08, section 11 du cahier des charges — "le bot doit
+  // avoir de vraies données pour mettre won ou lost, jamais deviner") :
+  // tous les marchés actuellement générés par le bot (1X2, double chance,
+  // BTTS, totaux, score exact, buteur) sont des marchés "90 minutes" au
+  // sens bookmaker standard — les cotes sont toujours calculées sur le
+  // temps réglementaire, jamais la prolongation (sauf marché explicite de
+  // qualification, qu'on ne génère pas). f.goals.home/away d'API-Sports
+  // est le score APRÈS prolongation pour un match AET — donc FAUX pour
+  // ces marchés si on l'utilise tel quel. f.score.fulltime.home/away est
+  // le vrai score à la 90e minute.
+  //
+  // RÈGLE STRICTE : pour un match FT (jamais allé en prolongation), goals
+  // et fulltime sont par définition identiques — les deux sont fiables.
+  // Pour un match AET ou PEN, fulltime est OBLIGATOIRE : s'il manque,
+  // scoreFiable=false et le match est traité comme "pas encore
+  // exploitable" (le leg reste en attente, jamais réglé sur une
+  // supposition) — plutôt qu'un repli silencieux sur goals qui donnerait
+  // un verdict inventé, potentiellement faux, comme cela s'est produit
+  // pour Celje–Slovan Bratislava le 26/08.
   const parFixture = {};
   fixturesJour.forEach(f => {
     if (!f.fixture) return;
+    const statut = f.fixture.status && f.fixture.status.short;
     const ft = f.score && f.score.fulltime;
+    const ftFiable = ft && ft.home != null && ft.away != null;
+    const alleeEnProlongation = statut === 'AET' || statut === 'PEN';
     parFixture[f.fixture.id] = {
-      statut: f.fixture.status && f.fixture.status.short,
-      golHome: (ft && ft.home != null) ? ft.home : (f.goals && f.goals.home),
-      golAway: (ft && ft.away != null) ? ft.away : (f.goals && f.goals.away)
+      statut,
+      golHome: ftFiable ? ft.home : (f.goals && f.goals.home),
+      golAway: ftFiable ? ft.away : (f.goals && f.goals.away),
+      // scoreFiable=false uniquement quand le match EST allé en
+      // prolongation ET que fulltime n'est pas fourni par l'API — le seul
+      // cas où utiliser goals serait une supposition, jamais la vraie
+      // donnée du temps réglementaire.
+      scoreFiable: !alleeEnProlongation || ftFiable
     };
   });
 
@@ -319,7 +375,8 @@ async function reglerDate(dateIso) {
       const info = parFixture[leg.fixture_id];
       let nouveauResultat = null;
 
-      if (info && STATUTS_TERMINES.includes(info.statut)) {
+      let buteursPourLog = null; // section 23 : trace la donnée réelle utilisée, si applicable
+      if (info && STATUTS_TERMINES.includes(info.statut) && info.scoreFiable) {
         let buteurs = undefined;
         if (leg.market === 'mk_buteur') {
           if (!(leg.fixture_id in cacheButeurs)) {
@@ -327,9 +384,23 @@ async function reglerDate(dateIso) {
           }
           buteurs = cacheButeurs[leg.fixture_id];
         }
+        buteursPourLog = buteurs || null;
         nouveauResultat = evaluerLeg(leg, info.golHome, info.golAway, buteurs);
       } else if (info && STATUTS_ANNULES.includes(info.statut)) {
         nouveauResultat = 'void';
+      } else if (info && STATUTS_TERMINES.includes(info.statut) && !info.scoreFiable) {
+        // Match AET/PEN terminé mais fulltime absent de la réponse
+        // API-Sports : on refuse de deviner avec le score final (qui
+        // inclurait la prolongation) — sauf si le filet de sécurité 23h59
+        // se déclenche déjà (ecouler>=1), auquel cas on ne bloque jamais
+        // indéfiniment un leg dont l'API ne complétera peut-être jamais
+        // fulltime. Entre les deux (match d'aujourd'hui, données encore
+        // incomplètes) : reste en attente, un prochain passage réessaiera.
+        if (ecouler >= 1) {
+          nouveauResultat = 'void';
+        } else {
+          stats.erreurs.push(`fixture ${leg.fixture_id} : AET/PEN sans score fulltime fiable, leg ${leg.id} laissé en attente`);
+        }
       } else if (ecouler >= 1) {
         // Règle des 23h59 Haïti : match sans statut final le lendemain de
         // sa date de jeu (introuvable dans /fixtures, ou statut bloqué en
@@ -353,6 +424,33 @@ async function reglerDate(dateIso) {
         });
         stats.legsMisAJour[nouveauResultat]++;
         leg.result = nouveauResultat; // reflète localement pour le calcul du ticket ci-dessous
+
+        // Section 23 du cahier des charges (27/08) : une ligne de log par
+        // leg réglé — jamais bloquant pour le règlement réel lui-même (voir
+        // enregistrerValidationLog, qui avale ses propres erreurs).
+        // status_before toujours null ici : le `if (leg.result) continue`
+        // plus haut garantit qu'on n'entre dans ce bloc que pour un leg
+        // jamais encore réglé.
+        await enregistrerValidationLog({
+          scope: 'leg',
+          fixture_id: leg.fixture_id,
+          ticket_id: ticket.id,
+          ticket_code: ticket.code,
+          leg_id: leg.id,
+          market: leg.market,
+          pick: leg.pick,
+          actual_result: !info
+            ? 'Statut indisponible (fixture absente de la réponse API-Sports du jour) — règle 23h59 appliquée'
+            : buteursPourLog !== null
+              ? `Buteurs 90min : ${buteursPourLog.length ? buteursPourLog.join(', ') : 'aucun'}`
+              : `Score temps réglementaire ${info.golHome}-${info.golAway} (statut ${info.statut})`,
+          statistic_used: !info
+            ? 'aucune donnée fixture pour cette date'
+            : `statut=${info.statut} fulltime_fiable=${info.scoreFiable}`,
+          source: 'api-sports',
+          status_before: null,
+          status_after: nouveauResultat
+        });
       } catch (e) {
         stats.erreurs.push(`maj leg(${leg.id}): ${e.message}`);
         toutesResolues = false;
@@ -402,6 +500,26 @@ async function reglerDate(dateIso) {
         settled_at: new Date().toISOString()
       });
       stats.ticketsRegles[statutFinal]++;
+
+      // Section 23 : log de validation au niveau fiche — statut_before
+      // toujours 'pending' ici (la requête qui a sélectionné ce ticket plus
+      // haut filtre déjà status=eq.pending).
+      await enregistrerValidationLog({
+        scope: 'ticket',
+        fixture_id: null,
+        ticket_id: ticket.id,
+        ticket_code: ticket.code,
+        leg_id: null,
+        market: null,
+        pick: null,
+        actual_result: `${legs.filter(l => l.result === 'won').length} won / ${legs.filter(l => l.result === 'lost').length} lost / ${legs.filter(l => l.result === 'void').length} void sur ${legs.length} sélection(s)`,
+        statistic_used: estFicheScoreExacteDediee
+          ? 'règle score-exact dédiée : un seul won suffit (logique OR)'
+          : 'règle normale : un seul lost suffit à perdre (logique AND)',
+        source: 'api-sports',
+        status_before: 'pending',
+        status_after: statutFinal
+      });
     } catch (e) {
       stats.erreurs.push(`maj ticket(${ticket.id}): ${e.message}`);
     }

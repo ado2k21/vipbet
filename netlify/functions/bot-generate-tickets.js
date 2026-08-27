@@ -130,7 +130,15 @@ const SECONDARY_LEAGUES_FOOT = [
   305,  // Stars League (Qatar)
   239,  // Primera A (Colombie)
   759,  // Liga Mayor (République Dominicaine)
-  288   // Premier Soccer League (Afrique du Sud)
+  288,  // Premier Soccer League (Afrique du Sud)
+  // --- Ajouts du 27/08, demande explicite de James (matchs vus ce jour
+  // sur des championnats absents de la liste) — IDs issus de la
+  // documentation publique API-Sports, PAS confirmés par un vrai match
+  // comme les autres entrées ci-dessus : à vérifier au premier passage via
+  // le diagnostic stats.championnatsVus, comme fait jusqu'ici pour toute
+  // nouvelle ligue.
+  48,   // EFL Cup / Carabao Cup (Angleterre) — à confirmer
+  848   // UEFA Europa Conference League — à confirmer
 ];
 const ALLOWED_LEAGUES_FOOT = [...TOP_LEAGUES_FOOT, ...SECONDARY_LEAGUES_FOOT];
 
@@ -564,7 +572,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         .slice(0, 5);
       candidats.forEach(c => {
         trouvees.push({
-          fixtureId: fixture.id, league: league.name, market: 'mk_score_exact',
+          fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_score_exact',
           pick: `Score exact : ${c.value}`, odd: c.odd, tier: 'EXACT_SCORE',
           kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
         });
@@ -581,7 +589,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.19 && c <= 1.70) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: 'mk_double_chance',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_double_chance',
             pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[v.value] || v.value}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -594,7 +602,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.95 && c <= 2.50 && (v.value === 'Home' || v.value === 'Away')) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: 'mk_1x2',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_1x2',
             pick: `Victoire : ${v.value}`, odd: c, tier: 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -607,14 +615,14 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.19 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: 'mk_total_buts',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_total_buts',
             pick: traduireButs(v.value), odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
         if (c >= 1.95 && c <= 2.40 && v.value === 'Over 2.5') {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: 'mk_total_buts',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_total_buts',
             pick: 'Plus de 2.5 buts', odd: c, tier: 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -627,7 +635,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (v.value === 'Yes' && c >= 1.19 && c <= 2.20) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: 'mk_btts',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_btts',
             pick: 'Les deux équipes marquent : Oui', odd: c,
             tier: c <= 1.70 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
@@ -670,7 +678,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       });
       if (meilleurButeur) {
         trouvees.push({
-          fixtureId: fixture.id, league: league.name, market: 'mk_buteur',
+          fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_buteur',
           pick: `Buteur : ${meilleurButeur.value}`, odd: meilleureCote, tier: 'PREMIUM',
           kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
         });
@@ -691,7 +699,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.10 && c <= 1.30) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, market: cote,
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: cote,
             pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -1082,6 +1090,10 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode, op
       match_time: s.matchTimeHaiti,
       kickoff_at: s.kickoffUtc,
       league: s.league,
+      // Phase 2, section 2 (27/08) : pays du championnat tel que retourné
+      // par API-Sports (league.country), jamais une association inventée.
+      // null pour les rares cas où l'API ne le fournit pas (jamais bloquant).
+      league_country: s.leagueCountry || null,
       market: s.market,
       pick: s.pick,
       odd: s.odd,

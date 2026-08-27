@@ -227,6 +227,17 @@ async function handler(event) {
 
   const nbMatchsDisponibles = new Set(poolFoot.map(b => b.fixtureId)).size;
   const buteursUtilises = new Set();
+  // Diversification inter-plans (27/08, correctif demandé par James) :
+  // sans ceci, un pool de matchs pauvre produit la MÊME combinaison pour
+  // plusieurs plans d'affilée (même 2 sélections, même cote) — visible
+  // côté Dashboard comme "la même fiche affichée plusieurs fois". Chaque
+  // sélection déjà utilisée par un plan précédent DANS CETTE GÉNÉRATION
+  // est retirée du pool avant de construire le plan suivant. Repli
+  // automatique sur le pool complet si le filtrage laisse trop peu de
+  // candidats — ne sacrifie JAMAIS la règle "toujours une fiche par plan"
+  // à la diversité, mais le signale alors dans resultats[].dupliquee.
+  const cleSelection = b => `${b.fixtureId}|${b.market}|${b.pick}`;
+  const selectionsUtiliseesCombine = new Set();
   // Suffixe de génération (26/08) : garantit un code unique même si
   // l'admin génère plusieurs fois le même plan le même jour — l'anti-
   // doublon normal (dejaGenereAujourdhui) est volontairement IGNORÉ ici,
@@ -243,10 +254,24 @@ async function handler(event) {
     const coteMaxEffective = planMax != null ? Math.min(coteMaxDemandee, planMax) : coteMaxDemandee;
     const clamped = planMax != null && coteMaxDemandee > planMax;
 
-    const fiche = construireFiche(poolFoot, plan, {
+    const poolDiversifie = poolFoot.filter(b => !selectionsUtiliseesCombine.has(cleSelection(b)));
+    // Repli : moins de 2 candidats restants après filtrage → on reprend le
+    // pool complet plutôt que d'échouer une publication (règle établie :
+    // toujours au moins une fiche par plan). `dupliquee` reflète ce repli.
+    const repliSurPoolComplet = poolDiversifie.length < 2;
+    const poolPourCePlan = repliSurPoolComplet ? poolFoot : poolDiversifie;
+
+    const fiche = construireFiche(poolPourCePlan, plan, {
       buteursUtilises, nbMatchsDisponibles,
       cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
     });
+    // Calculé AVANT d'ajouter les sélections de CETTE fiche au set partagé
+    // (sinon le test serait trivialement toujours vrai). Vrai uniquement
+    // si on a dû replier sur le pool complet ET que la fiche obtenue est
+    // entièrement composée de sélections déjà publiées plus tôt dans ce lot.
+    const dupliquee = repliSurPoolComplet && fiche.valide && fiche.selections.length > 0
+      && fiche.selections.every(s => selectionsUtiliseesCombine.has(cleSelection(s)));
+    if (fiche.valide) fiche.selections.forEach(s => selectionsUtiliseesCombine.add(cleSelection(s)));
 
     const publierOptions = {
       source: 'admin', published: !programmee,
@@ -261,7 +286,7 @@ async function handler(event) {
       resultats.push({
         rank: plan.rank, publie: ok, coteTotale: fiche.coteTotale, selections: fiche.selections.length,
         coteMaxDemandee: coteMaxDemandee, coteMaxAppliquee: coteMaxEffective, clampeAuMaxDuPlan: clamped,
-        programmee, scheduledPublishAt: scheduledPublishAtIso,
+        programmee, scheduledPublishAt: scheduledPublishAtIso, dupliquee,
         raison: ok ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
       });
     }
