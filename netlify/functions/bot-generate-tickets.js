@@ -572,7 +572,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         .slice(0, 5);
       candidats.forEach(c => {
         trouvees.push({
-          fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_score_exact',
+          fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_score_exact',
           pick: `Score exact : ${c.value}`, odd: c.odd, tier: 'EXACT_SCORE',
           kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
         });
@@ -589,7 +589,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.19 && c <= 1.70) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_double_chance',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_double_chance',
             pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[v.value] || v.value}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -602,7 +602,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.95 && c <= 2.50 && (v.value === 'Home' || v.value === 'Away')) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_1x2',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_1x2',
             pick: `Victoire : ${v.value}`, odd: c, tier: 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -615,14 +615,14 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.19 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_total_buts',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
             pick: traduireButs(v.value), odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
         if (c >= 1.95 && c <= 2.40 && v.value === 'Over 2.5') {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_total_buts',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
             pick: 'Plus de 2.5 buts', odd: c, tier: 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -635,7 +635,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (v.value === 'Yes' && c >= 1.19 && c <= 2.20) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_btts',
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_btts',
             pick: 'Les deux équipes marquent : Oui', odd: c,
             tier: c <= 1.70 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
@@ -678,7 +678,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       });
       if (meilleurButeur) {
         trouvees.push({
-          fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: 'mk_buteur',
+          fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_buteur',
           pick: `Buteur : ${meilleurButeur.value}`, odd: meilleureCote, tier: 'PREMIUM',
           kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
         });
@@ -699,7 +699,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         const c = parseFloat(v.odd);
         if (c >= 1.10 && c <= 1.30) {
           trouvees.push({
-            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, market: cote,
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: cote,
             pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
@@ -747,6 +747,20 @@ function construireFiche(pool, plan, options) {
   options = options || {};
   const buteursUtilises = options.buteursUtilises || new Set();
   const nbMatchsDisponibles = options.nbMatchsDisponibles || 0;
+  // Partie 1/2 (27/08, spec anti-doublon de James) : clé logique
+  // fixtureId|market|pick déjà utilisée AILLEURS aujourd'hui (autre plan de
+  // ce même lot, OU fiche déjà publiée en base — voir le code appelant qui
+  // alimente ce Set avant l'appel). Une sélection ici exclue ne peut PLUS
+  // être choisie, point final — pas de repli qui la réintroduirait, pour
+  // qu'un doublon exact devienne structurellement impossible plutôt que
+  // simplement découragé.
+  const selectionsExclues = options.selectionsExclues || new Set();
+  // Partie 3/4 : compteur d'apparitions par équipe, PARTAGÉ sur toute la
+  // génération du jour (comme buteursUtilises) — jamais appliqué aux
+  // fiches score exact (elles passent par construireFicheScoreExact, qui
+  // ne reçoit jamais cette option — exemption structurelle, Partie 4).
+  const equipesUtilisees = options.equipesUtilisees || new Map();
+  const MAX_APPARITIONS_EQUIPE = 2;
 
   let cibleMin = options.cibleMinOverride != null
     ? Number(options.cibleMinOverride)
@@ -818,6 +832,13 @@ function construireFiche(pool, plan, options) {
 
   function tenterAjout(bet) {
     if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match
+    // Partie 1/2 : jamais une sélection déjà publiée ailleurs aujourd'hui.
+    if (selectionsExclues.has(`${bet.fixtureId}|${bet.market}|${bet.pick}`)) return false;
+    // Partie 3 : une équipe (domicile OU extérieur) ne peut pas dépasser
+    // MAX_APPARITIONS_EQUIPE fiches dans la même journée. IDs absents
+    // (anciennes données) → aucune restriction, jamais bloquant.
+    if (bet.equipeDomicileId != null && (equipesUtilisees.get(bet.equipeDomicileId) || 0) >= MAX_APPARITIONS_EQUIPE) return false;
+    if (bet.equipeExterieurId != null && (equipesUtilisees.get(bet.equipeExterieurId) || 0) >= MAX_APPARITIONS_EQUIPE) return false;
     // Cotes ≥1.90 acceptées pour les marchés SAFE/PREMIUM déjà bien établis
     // et encadrés (victoire directe, plus de 2.5 buts, BTTS) — le plafond
     // strict du plan ne s'applique qu'aux cotes hors de ces plages
@@ -832,6 +853,8 @@ function construireFiche(pool, plan, options) {
     matchsUtilises.add(bet.fixtureId);
     marchesUtilises[bet.market] = (marchesUtilises[bet.market] || 0) + 1;
     championnatsUtilises[bet.league] = (championnatsUtilises[bet.league] || 0) + 1;
+    if (bet.equipeDomicileId != null) equipesUtilisees.set(bet.equipeDomicileId, (equipesUtilisees.get(bet.equipeDomicileId) || 0) + 1);
+    if (bet.equipeExterieurId != null) equipesUtilisees.set(bet.equipeExterieurId, (equipesUtilisees.get(bet.equipeExterieurId) || 0) + 1);
     coteTotale *= bet.odd;
     return true;
   }
@@ -976,19 +999,43 @@ function construireFicheScoreExact(pool, plan, options) {
   // rejetée par Supabase (cote_hors_plage, max 100).
   const candidats = Object.values(meilleur).sort((a, b) => a.odd - b.odd);
 
+  // Partie 1/2/4 : "même fiche exacte répétée plusieurs fois → toujours
+  // interdit" (contrairement à la limite d'apparition par équipe, cette
+  // règle-ci S'APPLIQUE au score exact — seule la Partie 3 est exemptée).
+  const selectionsExclues = options.selectionsExclues || new Set();
+
+  // Mode "nombre de matchs" (27/08, demande explicite de James pour le
+  // bouton admin GÉNÉRER SCORE EXACT) : l'admin choisit directement COMBIEN
+  // de matchs inclure (3 à 6), au lieu d'une cote cible — le principe de
+  // sélection reste identique (profil du match, cote la plus basse dans ce
+  // profil, jamais de sélection déjà utilisée). cibleMax reste un plafond
+  // de SÉCURITÉ (le trigger base le refuserait de toute façon), jamais le
+  // critère d'arrêt dans ce mode. Comportement PAR COTE (défaut) inchangé
+  // quand cette option est absente.
+  const nombreCible = options.nombreMatchsOverride != null
+    ? Math.max(3, Math.min(6, Math.round(Number(options.nombreMatchsOverride))))
+    : null;
+
   const selections = [];
   let coteTotale = 1.0;
   for (const b of candidats) {
-    if (selections.length >= 6) break;
+    if (selections.length >= (nombreCible || 6)) break;
+    if (selectionsExclues.has(`${b.fixtureId}|${b.market}|${b.pick}`)) continue;
     // Triés croissant : si celui-ci dépasse déjà le max, les suivants
     // (plus chers) seraient pires — on arrête plutôt que de sauter au suivant.
     if (coteTotale * b.odd > cibleMax * 1.05) break;
     selections.push(b);
     coteTotale *= b.odd;
-    if (selections.length >= 3 && coteTotale >= cibleMin) break;
+    if (!nombreCible && selections.length >= 3 && coteTotale >= cibleMin) break;
   }
 
-  const valide = selections.length >= 3 && coteTotale >= cibleMin && coteTotale <= cibleMax * 1.05;
+  // En mode "nombre de matchs" : valide dès 3 sélections minimum (règle
+  // structurelle jamais assouplie), même si moins que demandé faute de
+  // matchs disponibles — best-effort, jamais de fiche inventée pour
+  // atteindre pile le nombre choisi (même philosophie que le reste du site).
+  const valide = nombreCible
+    ? selections.length >= 3 && coteTotale <= cibleMax * 1.05
+    : selections.length >= 3 && coteTotale >= cibleMin && coteTotale <= cibleMax * 1.05;
 
   const confiance = selections.length
     ? Math.round(100 * selections.reduce((s, b) => s + 1 / b.odd, 0) / selections.length)
@@ -1638,48 +1685,84 @@ async function handler(event) {
   // du jour pour qu'un même buteur ne soit jamais réutilisé dans 2 fiches.
   const nbMatchsDisponibles = new Set(poolFoot.map(b => b.fixtureId)).size;
   const buteursUtilises = new Set();
+  // Partie 3 (27/08, spec anti-doublon de James) : compteur d'apparitions
+  // par équipe, partagé sur toute la génération du jour — max 2 fiches
+  // par équipe, jamais appliqué au score exact (Partie 4).
+  const equipesUtilisees = new Map();
+  // Partie 1/2/9 : sélections déjà utilisées AUJOURD'HUI, relues depuis la
+  // base (pas seulement depuis ce lot en mémoire) — protège aussi contre
+  // une double-exécution accidentelle du bot le même jour (idempotence,
+  // Partie 9). Alimenté au fil de la boucle dès qu'une fiche est publiée ;
+  // ne bloque jamais construireFiche, seulement une RÉUTILISATION de la
+  // même sélection exacte.
+  const cleSelection = s => `${s.fixture_id}|${s.market}|${s.pick}`;
+  const selectionsExclues = new Set();
+  try {
+    const legsExistants = await sbSelect('ticket_legs',
+      `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${dateCible}&tickets.sport=eq.foot`);
+    legsExistants.forEach(l => selectionsExclues.add(cleSelection(l)));
+  } catch (e) {
+    // Non bloquant : au pire on revient au comportement d'avant (pas de
+    // protection cross-run), jamais une raison d'empêcher la génération.
+    stats.erreurs.push(`lecture legsExistants (anti-doublon): ${e.message}`);
+  }
 
   for (const plan of plans) {
-    // Règle du 25/08 (James) : il doit TOUJOURS y avoir une fiche par plan.
-    // 1ᵉʳ essai : cible normale du plan. Si invalide (pool du jour trop
-    // pauvre pour l'atteindre), 2ᵉ essai avec un plancher très bas (1.5) —
-    // le MAXIMUM du plan, lui, reste strict dans les deux essais, jamais
-    // assoupli (protège toujours les abonnés d'un plan bas contre une
-    // fiche trop risquée). Les buteurs utilisés ne sont "consommés" dans le
-    // Set partagé qu'une fois la fiche réellement publiée, pour ne jamais
-    // priver un essai suivant d'un buteur à cause d'une tentative avortée.
+    // Repli "au mieux" (25/08) : 1ᵉʳ essai à la vraie cible du plan, 2ᵉ essai
+    // avec un plancher très bas (1.5) si invalide — jamais le MAXIMUM du
+    // plan, qui reste strict dans les deux essais. Les Sets/Map temporaires
+    // ne sont "consommés" dans les partagés qu'une fois la fiche RÉELLEMENT
+    // publiée, pour ne jamais priver un essai suivant à cause d'une
+    // tentative avortée.
+    // Partie 6/7 (27/08, spec anti-doublon) : cette règle n'oblige PLUS à
+    // publier à tout prix — si tout le contenu disponible est déjà utilisé
+    // ailleurs aujourd'hui (selectionsExclues), le plan reste simplement
+    // sans fiche PROPRE : ses abonnés voient quand même la fiche du rang
+    // inférieur grâce à l'accès en cascade (minPlan<=rang abonné), donc
+    // personne ne se retrouve sans contenu — jamais de doublon créé pour
+    // combler artificiellement ce rang.
     function essayer(cibleMinOverride) {
       const buteursTmp = new Set(buteursUtilises);
-      const f = construireFiche(poolFoot, plan, { buteursUtilises: buteursTmp, nbMatchsDisponibles, cibleMinOverride });
-      return { f, buteursTmp };
+      const equipesTmp = new Map(equipesUtilisees);
+      const f = construireFiche(poolFoot, plan, {
+        buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues,
+        nbMatchsDisponibles, cibleMinOverride
+      });
+      return { f, buteursTmp, equipesTmp };
     }
-    let { f: fiche, buteursTmp } = essayer(undefined);
+    let { f: fiche, buteursTmp, equipesTmp } = essayer(undefined);
     if (!fiche.valide) {
-      ({ f: fiche, buteursTmp } = essayer(1.5));
+      ({ f: fiche, buteursTmp, equipesTmp } = essayer(1.5));
     }
     stats.fichesGenerees++;
     if (!fiche.valide) {
-      console.log(`[BOT] Rang ${plan.rank} : non publiée même avec repli — ${fiche.selections.length} sélection(s), cote atteinte ${fiche.coteTotale}, cible [${plan.min_total_odd}–${plan.max_total_odd}]`);
+      console.log(`[BOT] Rang ${plan.rank} : aucune fiche propre publiable (contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre) — ${fiche.selections.length} sélection(s), cote atteinte ${fiche.coteTotale}, cible [${plan.min_total_odd}–${plan.max_total_odd}]. Abonnés couverts via cascade par le rang inférieur.`);
     } else {
       buteursTmp.forEach(p => buteursUtilises.add(p));
+      equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
+      fiche.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
       await publierFiche(plan, fiche, dateCible, 'foot', noms);
     }
 
     // Fiche score exact dédiée (3-6 sélections, jamais mélangée) — s'ajoute
-    // à la fiche normale, ne la remplace pas (confirmé par James).
+    // à la fiche normale, ne la remplace pas (confirmé par James). Exemptée
+    // de la limite d'apparition par équipe (Partie 4), mais PAS de
+    // l'anti-doublon de sélection exacte (Partie 4 : "même fiche exacte
+    // répétée → toujours interdit").
     // Repli jour pauvre (26/08) : même principe que la fiche normale —
     // 1ᵉʳ essai à la vraie cible du plan, 2ᵉ essai à plancher très bas
     // (1.5) si invalide. Le minimum de 3 sélections reste strict dans les
     // deux essais (règle structurelle, pas une cote-cible qu'on assouplit).
     if (plan.includes_exact_score) {
-      let ficheExacte = construireFicheScoreExact(poolFoot, plan);
+      let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues });
       if (!ficheExacte.valide) {
-        ficheExacte = construireFicheScoreExact(poolFoot, plan, { cibleMinOverride: 1.5 });
+        ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, cibleMinOverride: 1.5 });
       }
       stats.fichesGenerees++;
       if (!ficheExacte.valide) {
-        console.log(`[BOT] Rang ${plan.rank} (score exact) : non publiée même avec repli — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}`);
+        console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
       } else {
+        ficheExacte.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
         await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
       }
     }

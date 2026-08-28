@@ -117,7 +117,12 @@ async function handler(event) {
   try { body = JSON.parse(event.body || '{}'); }
   catch (e) { return jsonResponse(400, { erreur: 'JSON invalide.' }); }
 
-  const { playDate, heureDebut, heureFin, sport, plans, coteMax, publishMode, scheduledAt } = body;
+  const { playDate, heureDebut, heureFin, sport, plans, coteMax, nombreMatchs, mode, publishMode, scheduledAt } = body;
+  // mode==='exact' (27/08, bouton admin "GÉNÉRER SCORE EXACT" demandé par
+  // James) : génère UNIQUEMENT des fiches score-exact, l'admin choisit le
+  // NOMBRE de matchs (3-6) au lieu d'une cote cible. Toute autre valeur
+  // (ou absence de mode) garde le comportement normal existant, inchangé.
+  const modeScoreExact = mode === 'exact';
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(playDate || ''))) {
     return jsonResponse(400, { erreur: 'Date de match invalide (AAAA-MM-JJ attendu).' });
@@ -140,8 +145,12 @@ async function handler(event) {
     return jsonResponse(400, { erreur: 'Choisissez au moins un plan.' });
   }
   const coteMaxDemandee = Number(coteMax);
-  if (!isFinite(coteMaxDemandee) || coteMaxDemandee <= 1.01) {
+  if (!modeScoreExact && (!isFinite(coteMaxDemandee) || coteMaxDemandee <= 1.01)) {
     return jsonResponse(400, { erreur: 'Cote maximale invalide (doit être > 1.01).' });
+  }
+  const nombreMatchsDemande = Math.round(Number(nombreMatchs));
+  if (modeScoreExact && (!isFinite(nombreMatchsDemande) || nombreMatchsDemande < 3 || nombreMatchsDemande > 6)) {
+    return jsonResponse(400, { erreur: 'Nombre de matchs invalide (entre 3 et 6 pour une fiche score exact).' });
   }
   const programmee = publishMode === 'scheduled';
   let scheduledPublishAtIso = null;
@@ -227,17 +236,29 @@ async function handler(event) {
 
   const nbMatchsDisponibles = new Set(poolFoot.map(b => b.fixtureId)).size;
   const buteursUtilises = new Set();
-  // Diversification inter-plans (27/08, correctif demandé par James) :
-  // sans ceci, un pool de matchs pauvre produit la MÊME combinaison pour
-  // plusieurs plans d'affilée (même 2 sélections, même cote) — visible
-  // côté Dashboard comme "la même fiche affichée plusieurs fois". Chaque
-  // sélection déjà utilisée par un plan précédent DANS CETTE GÉNÉRATION
-  // est retirée du pool avant de construire le plan suivant. Repli
-  // automatique sur le pool complet si le filtrage laisse trop peu de
-  // candidats — ne sacrifie JAMAIS la règle "toujours une fiche par plan"
-  // à la diversité, mais le signale alors dans resultats[].dupliquee.
-  const cleSelection = b => `${b.fixtureId}|${b.market}|${b.pick}`;
-  const selectionsUtiliseesCombine = new Set();
+  // Partie 1/2/3/4/9 (27/08, spec anti-doublon de James — même mécanisme
+  // central que bot-generate-tickets.js, voir construireFiche) :
+  // - selectionsExclues : toute sélection déjà publiée AUJOURD'HUI, pour
+  //   CE sport, qu'elle vienne du bot automatique ou d'une génération
+  //   manuelle précédente le même jour (protège aussi contre deux clics
+  //   admin successifs sur GÉNÉRER FICHE — idempotence, Partie 9).
+  // - equipesUtilisees : compteur d'apparitions par équipe, max 2/jour,
+  //   jamais appliqué au score exact (Partie 4).
+  // Sans repli possible : si le contenu restant est épuisé, le plan reste
+  // simplement sans fiche PROPRE (Partie 6/7 — jamais de doublon forcé),
+  // ses abonnés restent couverts par le rang inférieur via la cascade
+  // d'accès (minPlan<=rang abonné).
+  const cleSelection = s => `${s.fixture_id || s.fixtureId}|${s.market}|${s.pick}`;
+  const selectionsExclues = new Set();
+  try {
+    const legsExistants = await sbSelect('ticket_legs',
+      `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${playDate}&tickets.sport=eq.${sport}`);
+    legsExistants.forEach(l => selectionsExclues.add(cleSelection(l)));
+  } catch (e) {
+    // Non bloquant : au pire on revient au comportement sans protection
+    // cross-run, jamais une raison de bloquer une génération manuelle.
+  }
+  const equipesUtilisees = new Map();
   // Suffixe de génération (26/08) : garantit un code unique même si
   // l'admin génère plusieurs fois le même plan le même jour — l'anti-
   // doublon normal (dejaGenereAujourdhui) est volontairement IGNORÉ ici,
@@ -247,6 +268,43 @@ async function handler(event) {
 
   const resultats = [];
   for (const plan of plansChoisis) {
+    // Mode "GÉNÉRER SCORE EXACT" (27/08) : uniquement des fiches score
+    // exact, nombre de matchs choisi par l'admin au lieu d'une cote —
+    // remplace ENTIÈREMENT la génération normale pour ce mode (pas de
+    // fiche classique en plus, contrairement au mode normal qui ajoute
+    // toujours le score exact EN COMPLÉMENT).
+    if (modeScoreExact) {
+      const publierOptionsExact = {
+        source: 'admin', published: !programmee,
+        scheduledPublishAt: programmee ? scheduledPublishAtIso : null,
+        forcerExemption: true, codePrefix
+      };
+      if (!plan.includes_exact_score) {
+        resultats.push({ rank: plan.rank, exact: true, publie: false, raison: 'Ce plan n\'inclut pas les scores exacts.' });
+        continue;
+      }
+      const ficheExacte = construireFicheScoreExact(poolFoot, plan, {
+        selectionsExclues, nombreMatchsOverride: nombreMatchsDemande,
+        // cibleMax reste un plafond de sécurité (jamais le critère
+        // d'arrêt en mode nombre-de-matchs, voir construireFicheScoreExact) —
+        // celui du plan lui-même, jamais une valeur inventée ici.
+        cibleMaxOverride: plan.max_total_odd != null ? Number(plan.max_total_odd) : undefined
+      });
+      if (!ficheExacte.valide) {
+        resultats.push({ rank: plan.rank, exact: true, publie: false, raison: `Aucune combinaison possible (${ficheExacte.selections.length} sélection(s) trouvée(s), minimum 3 requis) — contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre.` });
+        continue;
+      }
+      ficheExacte.selections.forEach(s => selectionsExclues.add(cleSelection(s)));
+      const okExact = await publierFiche(plan, ficheExacte, playDate, 'foot', noms, '-EXACT', publierOptionsExact);
+      resultats.push({
+        rank: plan.rank, exact: true, publie: okExact, coteTotale: ficheExacte.coteTotale,
+        selections: ficheExacte.selections.length, nombreMatchsDemande,
+        programmee, scheduledPublishAt: scheduledPublishAtIso,
+        raison: okExact ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
+      });
+      continue;
+    }
+
     // Cote max : celle choisie par l'admin, jamais au-delà du max RÉEL du
     // plan (le trigger base le refuserait de toute façon — on le signale
     // proprement plutôt que de laisser échouer l'insertion en silence).
@@ -254,24 +312,11 @@ async function handler(event) {
     const coteMaxEffective = planMax != null ? Math.min(coteMaxDemandee, planMax) : coteMaxDemandee;
     const clamped = planMax != null && coteMaxDemandee > planMax;
 
-    const poolDiversifie = poolFoot.filter(b => !selectionsUtiliseesCombine.has(cleSelection(b)));
-    // Repli : moins de 2 candidats restants après filtrage → on reprend le
-    // pool complet plutôt que d'échouer une publication (règle établie :
-    // toujours au moins une fiche par plan). `dupliquee` reflète ce repli.
-    const repliSurPoolComplet = poolDiversifie.length < 2;
-    const poolPourCePlan = repliSurPoolComplet ? poolFoot : poolDiversifie;
-
-    const fiche = construireFiche(poolPourCePlan, plan, {
-      buteursUtilises, nbMatchsDisponibles,
+    const fiche = construireFiche(poolFoot, plan, {
+      buteursUtilises, equipesUtilisees, selectionsExclues, nbMatchsDisponibles,
       cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
     });
-    // Calculé AVANT d'ajouter les sélections de CETTE fiche au set partagé
-    // (sinon le test serait trivialement toujours vrai). Vrai uniquement
-    // si on a dû replier sur le pool complet ET que la fiche obtenue est
-    // entièrement composée de sélections déjà publiées plus tôt dans ce lot.
-    const dupliquee = repliSurPoolComplet && fiche.valide && fiche.selections.length > 0
-      && fiche.selections.every(s => selectionsUtiliseesCombine.has(cleSelection(s)));
-    if (fiche.valide) fiche.selections.forEach(s => selectionsUtiliseesCombine.add(cleSelection(s)));
+    if (fiche.valide) fiche.selections.forEach(s => selectionsExclues.add(cleSelection(s)));
 
     const publierOptions = {
       source: 'admin', published: !programmee,
@@ -280,23 +325,26 @@ async function handler(event) {
     };
 
     if (!fiche.valide) {
-      resultats.push({ rank: plan.rank, publie: false, raison: `Aucune combinaison possible (${fiche.selections.length} sélection(s) trouvée(s), minimum 2 requis).` });
+      resultats.push({ rank: plan.rank, publie: false, raison: `Aucune combinaison NOUVELLE possible (${fiche.selections.length} sélection(s) trouvée(s), minimum 2 requis) — le contenu disponible est déjà utilisé ailleurs aujourd'hui, ou le pool est trop pauvre. Les abonnés de ce plan restent couverts par le rang inférieur (accès en cascade).` });
     } else {
       const ok = await publierFiche(plan, fiche, playDate, 'foot', noms, '', publierOptions);
       resultats.push({
         rank: plan.rank, publie: ok, coteTotale: fiche.coteTotale, selections: fiche.selections.length,
         coteMaxDemandee: coteMaxDemandee, coteMaxAppliquee: coteMaxEffective, clampeAuMaxDuPlan: clamped,
-        programmee, scheduledPublishAt: scheduledPublishAtIso, dupliquee,
+        programmee, scheduledPublishAt: scheduledPublishAtIso,
         raison: ok ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
       });
     }
 
     // Fiche score exact dédiée, même principe que le bot quotidien.
+    // Exemptée de la limite d'apparition par équipe (Partie 4), mais PAS
+    // de l'anti-doublon de sélection exacte (toujours actif).
     if (plan.includes_exact_score) {
       const ficheExacte = construireFicheScoreExact(poolFoot, plan, {
-        cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
+        selectionsExclues, cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
       });
       if (ficheExacte.valide) {
+        ficheExacte.selections.forEach(s => selectionsExclues.add(cleSelection(s)));
         const okExact = await publierFiche(plan, ficheExacte, playDate, 'foot', noms, '-EXACT', publierOptions);
         resultats.push({
           rank: plan.rank, exact: true, publie: okExact, coteTotale: ficheExacte.coteTotale,
