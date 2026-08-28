@@ -513,6 +513,53 @@ function annoterPoolAvecBSD(poolFoot, noms, evenementsBSD) {
   }
 }
 
+// ============================================================================
+// FIABILITÉ RÉELLE PAR CHAMPIONNAT+MARCHÉ (28/08, demande explicite de
+// James : "l'algorithme doit privilégier les résultats réels pour
+// augmenter chaque jour les gains, pas choisir les cotes au hasard").
+// Lit la vue SQL market_reliability (voir migration du 28/08) — un taux de
+// réussite calculé UNIQUEMENT à partir de vrais résultats déjà réglés par
+// bot-settle-results.js, jamais une statistique inventée ou estimée. Sous
+// SEUIL_MIN_FIABILITE légs réglés, un championnat+marché est ignoré (pas
+// assez d'historique pour en tirer une vraie conclusion) — le score retombe
+// alors sur la seule probabilité implicite du marché (1/cote), jamais une
+// valeur bricolée pour compenser.
+// ============================================================================
+const SEUIL_MIN_FIABILITE = 8;
+
+async function recupererFiabiliteMarches() {
+  const carte = new Map(); // clé "league|market" -> taux_reussite (0-1)
+  try {
+    const lignes = await sbSelect('market_reliability', 'select=league,market,echantillon,taux_reussite');
+    lignes.forEach(l => {
+      if (l.echantillon >= SEUIL_MIN_FIABILITE && l.taux_reussite != null) {
+        carte.set(`${l.league}|${l.market}`, Number(l.taux_reussite));
+      }
+    });
+  } catch (e) {
+    // Non bloquant : sans cette donnée, tout retombe sur la probabilité de
+    // marché seule (comportement précédent) — jamais une raison de bloquer
+    // la génération.
+  }
+  return carte;
+}
+
+// Score de sélection = mélange 50/50 entre la probabilité implicite du
+// bookmaker (1/cote — toujours disponible, vraie donnée de marché) et le
+// taux de réussite RÉEL observé pour ce championnat+marché (quand assez
+// d'historique existe). Remplace l'ancien tri "toujours la cote la plus
+// haute par match" par un tri qui privilégie la fiabilité réelle — peut
+// tout aussi bien favoriser une cote basse (1.20) qu'une cote plus élevée
+// (1.70), selon ce qui a VRAIMENT le mieux réussi jusqu'ici pour ce
+// championnat et ce marché précis.
+function annoterPoolAvecFiabilite(poolFoot, carteFiabilite) {
+  poolFoot.forEach(bet => {
+    const probMarche = 1 / bet.odd;
+    const tauxReel = carteFiabilite.get(`${bet.league}|${bet.market}`);
+    bet.scoreFiabilite = (tauxReel != null) ? (probMarche * 0.5 + tauxReel * 0.5) : probMarche;
+  });
+}
+
 
 // Traduit les libellés bruts "Over X.X" / "Under X.X" de l'API en français
 // ("Plus de X.X buts" / "Moins de X.X buts") — demande de James (25/08).
@@ -755,6 +802,16 @@ function construireFiche(pool, plan, options) {
   // qu'un doublon exact devienne structurellement impossible plutôt que
   // simplement découragé.
   const selectionsExclues = options.selectionsExclues || new Set();
+  // Exclusion au niveau du MATCH ENTIER (28/08, retour explicite de James :
+  // "une fiche avec V1 et une autre X2 sur le même match crée de la
+  // confusion"). Sans ceci, deux fiches DIFFÉRENTES pouvaient utiliser le
+  // même match avec des marchés différents (ex. Victoire domicile dans une
+  // fiche, Double chance extérieur dans une autre) — logiquement
+  // contradictoire aux yeux d'un abonné qui verrait les deux. Un match déjà
+  // utilisé dans une fiche publiée aujourd'hui (n'importe quel marché) est
+  // désormais DÉFINITIVEMENT écarté de toute autre fiche ce jour-là, y
+  // compris score exact (voir construireFicheScoreExact).
+  const fixturesExclues = options.fixturesExclues || new Set();
   // Partie 3/4 : compteur d'apparitions par équipe, PARTAGÉ sur toute la
   // génération du jour (comme buteursUtilises) — jamais appliqué aux
   // fiches score exact (elles passent par construireFicheScoreExact, qui
@@ -784,14 +841,25 @@ function construireFiche(pool, plan, options) {
     cibleMin = 15;
   }
 
+  // CORRIGÉ (28/08, demande explicite de James) : gardait avant
+  // systématiquement la cote LA PLUS HAUTE par match, triée décroissante —
+  // ignorait toujours les cotes basses même quand elles étaient la
+  // sélection la plus fiable pour ce match. Utilise maintenant
+  // scoreFiabilite (mélange probabilité de marché + taux de réussite réel
+  // par championnat/marché, voir annoterPoolAvecFiabilite) — peut
+  // parfaitement retenir une cote de 1.20 si son championnat+marché a un
+  // vrai historique de réussite, jamais un choix arbitraire haut ou bas.
+  // b.scoreFiabilite absent (pas encore annoté, ex. appel direct sans
+  // passer par le handler) → repli sur 1/cote, jamais une erreur.
   function meilleurParMatch(liste) {
     const meilleur = {};
+    const score = b => (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
     liste.forEach(b => {
-      if (!meilleur[b.fixtureId] || b.odd > meilleur[b.fixtureId].odd) meilleur[b.fixtureId] = b;
+      if (!meilleur[b.fixtureId] || score(b) > score(meilleur[b.fixtureId])) meilleur[b.fixtureId] = b;
     });
     return Object.values(meilleur).sort((a, b) => {
       if (a.prioritaire !== b.prioritaire) return a.prioritaire ? -1 : 1;
-      return b.odd - a.odd;
+      return score(b) - score(a);
     });
   }
   const safe = meilleurParMatch(pool.filter(b => b.tier === 'SAFE'));
@@ -832,6 +900,10 @@ function construireFiche(pool, plan, options) {
 
   function tenterAjout(bet) {
     if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match
+    // Match déjà utilisé dans une AUTRE fiche publiée aujourd'hui (28/08) —
+    // vérifié AVANT selectionsExclues, plus large : bloque même un marché
+    // différent sur ce même match (voir commentaire plus haut).
+    if (fixturesExclues.has(bet.fixtureId)) return false;
     // Partie 1/2 : jamais une sélection déjà publiée ailleurs aujourd'hui.
     if (selectionsExclues.has(`${bet.fixtureId}|${bet.market}|${bet.pick}`)) return false;
     // Partie 3 : une équipe (domicile OU extérieur) ne peut pas dépasser
@@ -978,7 +1050,12 @@ function construireFicheScoreExact(pool, plan, options) {
   }
 
   const parFixture = {};
-  pool.filter(b => b.tier === 'EXACT_SCORE').forEach(b => {
+  // Match déjà utilisé dans une AUTRE fiche publiée aujourd'hui (28/08,
+  // même règle que construireFiche) — un score exact sur un match déjà
+  // "V1" ou "X2" ailleurs serait tout aussi contradictoire aux yeux d'un
+  // abonné. Filtré ici, avant même le calcul du profil BTTS/totaux.
+  const fixturesExclues = options.fixturesExclues || new Set();
+  pool.filter(b => b.tier === 'EXACT_SCORE' && !fixturesExclues.has(b.fixtureId)).forEach(b => {
     (parFixture[b.fixtureId] = parFixture[b.fixtureId] || []).push(b);
   });
   const meilleur = {};
@@ -1676,6 +1753,16 @@ async function handler(event) {
     annoterPoolAvecBSD(poolFoot, noms, evenementsBSD);
   }
 
+  // --- Fiabilité réelle par championnat+marché (28/08) : voir
+  // annoterPoolAvecFiabilite plus haut. Toujours tenté, jamais bloquant —
+  // sans historique suffisant, retombe simplement sur la probabilité de
+  // marché seule (comportement précédent).
+  if (poolFoot.length) {
+    const carteFiabilite = await recupererFiabiliteMarches();
+    stats.fiabilite = { championnatsMarchesConnus: carteFiabilite.size };
+    annoterPoolAvecFiabilite(poolFoot, carteFiabilite);
+  }
+
   // --- Diagnostic : taille réelle du pool de sélections après tous les filtres ---
   const parTierCompte = t => poolFoot.filter(b => b.tier === t).length;
   stats.poolFinal = {
@@ -1708,10 +1795,15 @@ async function handler(event) {
   // même sélection exacte.
   const cleSelection = s => `${s.fixture_id}|${s.market}|${s.pick}`;
   const selectionsExclues = new Set();
+  // Exclusion au niveau du MATCH ENTIER (28/08, demande explicite de James :
+  // jamais un match dans 2 fiches différentes, même avec des marchés
+  // différents — "V1 dans une fiche, X2 dans une autre" crée de la
+  // confusion). Alimenté depuis la MÊME lecture DB que selectionsExclues.
+  const fixturesExclues = new Set();
   try {
     const legsExistants = await sbSelect('ticket_legs',
       `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${dateCible}&tickets.sport=eq.foot`);
-    legsExistants.forEach(l => selectionsExclues.add(cleSelection(l)));
+    legsExistants.forEach(l => { selectionsExclues.add(cleSelection(l)); fixturesExclues.add(l.fixture_id); });
   } catch (e) {
     // Non bloquant : au pire on revient au comportement d'avant (pas de
     // protection cross-run), jamais une raison d'empêcher la génération.
@@ -1740,11 +1832,11 @@ async function handler(event) {
     const buteursTmp = new Set(buteursUtilises);
     const equipesTmp = new Map(equipesUtilisees);
     let fiche = construireFiche(poolFoot, plan, {
-      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, nbMatchsDisponibles
+      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, fixturesExclues, nbMatchsDisponibles
     });
     if (!fiche.valide && avecRepli) {
       fiche = construireFiche(poolFoot, plan, {
-        buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues,
+        buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, fixturesExclues,
         nbMatchsDisponibles, cibleMinOverride: 1.5
       });
     }
@@ -1752,7 +1844,7 @@ async function handler(event) {
     if (!fiche.valide) return false;
     buteursTmp.forEach(p => buteursUtilises.add(p));
     equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
-    fiche.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
+    fiche.selections.forEach(s => { selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`); fixturesExclues.add(s.fixtureId); });
     await publierFiche(plan, fiche, dateCible, 'foot', noms);
     return true;
   }
@@ -1794,15 +1886,15 @@ async function handler(event) {
   // essai à la vraie cible, 2ᵉ essai à plancher très bas (1.5) si invalide.
   for (const plan of plans) {
     if (!plan.includes_exact_score) continue;
-    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues });
+    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues });
     if (!ficheExacte.valide) {
-      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, cibleMinOverride: 1.5 });
+      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues, cibleMinOverride: 1.5 });
     }
     stats.fichesGenerees++;
     if (!ficheExacte.valide) {
       console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
     } else {
-      ficheExacte.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
+      ficheExacte.selections.forEach(s => { selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`); fixturesExclues.add(s.fixtureId); });
       await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
     }
   }
@@ -1846,3 +1938,5 @@ module.exports.ALLOWED_LEAGUES_FOOT = ALLOWED_LEAGUES_FOOT;
 module.exports.TOP_LEAGUES_FOOT = TOP_LEAGUES_FOOT;
 module.exports.TZ_HAITI = TZ_HAITI;
 module.exports.API_SPORTS_KEY = API_SPORTS_KEY;
+module.exports.recupererFiabiliteMarches = recupererFiabiliteMarches;
+module.exports.annoterPoolAvecFiabilite = annoterPoolAvecFiabilite;

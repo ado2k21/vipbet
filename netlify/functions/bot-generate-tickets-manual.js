@@ -28,7 +28,8 @@ const {
   verifierConfigSupabase, sbSelect, partsHaiti, heureHaitiDuMatch,
   resetStats, stats, recupererFixturesJour, recupererCoteParFixture,
   extraireMarchesFoot, construireFiche, construireFicheScoreExact,
-  publierFiche, ALLOWED_LEAGUES_FOOT, TOP_LEAGUES_FOOT
+  publierFiche, ALLOWED_LEAGUES_FOOT, TOP_LEAGUES_FOOT,
+  recupererFiabiliteMarches, annoterPoolAvecFiabilite
 } = bot;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -234,6 +235,11 @@ async function handler(event) {
     });
   }
 
+  // Fiabilité réelle par championnat+marché (28/08) — même mécanisme que
+  // le bot automatique, voir bot-generate-tickets.js. Jamais bloquant.
+  const carteFiabilite = await recupererFiabiliteMarches();
+  annoterPoolAvecFiabilite(poolFoot, carteFiabilite);
+
   const nbMatchsDisponibles = new Set(poolFoot.map(b => b.fixtureId)).size;
   const buteursUtilises = new Set();
   // Partie 1/2/3/4/9 (27/08, spec anti-doublon de James — même mécanisme
@@ -250,10 +256,16 @@ async function handler(event) {
   // d'accès (minPlan<=rang abonné).
   const cleSelection = s => `${s.fixture_id || s.fixtureId}|${s.market}|${s.pick}`;
   const selectionsExclues = new Set();
+  // Exclusion au niveau du MATCH ENTIER (28/08, demande explicite de James
+  // — voir bot-generate-tickets.js/construireFiche pour le détail) : jamais
+  // un même match dans 2 fiches différentes, même avec des marchés
+  // différents ("V1" dans une fiche, "X2" dans une autre créerait de la
+  // confusion pour l'abonné).
+  const fixturesExclues = new Set();
   try {
     const legsExistants = await sbSelect('ticket_legs',
       `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${playDate}&tickets.sport=eq.${sport}`);
-    legsExistants.forEach(l => selectionsExclues.add(cleSelection(l)));
+    legsExistants.forEach(l => { selectionsExclues.add(cleSelection(l)); fixturesExclues.add(l.fixture_id); });
   } catch (e) {
     // Non bloquant : au pire on revient au comportement sans protection
     // cross-run, jamais une raison de bloquer une génération manuelle.
@@ -266,95 +278,108 @@ async function handler(event) {
   const horodatage = partsHaiti(new Date()).heure.replace(':', '') + String(new Date().getSeconds()).padStart(2, '0');
   const codePrefix = `ADM${horodatage}`;
 
+  // UNE SEULE fiche par génération manuelle (28/08, demande explicite de
+  // James : "toujours une seule à chaque génération manuelle, même si on a
+  // choisi [des plans dont le] min dépasse les petits plans") — même
+  // principe que la Partie 7 du cahier des charges anti-doublon (27/08) :
+  // "une fiche peut être partagée entre plusieurs plans, jamais 4 copies
+  // physiques inutiles". Avant ce correctif, chaque plan coché recevait sa
+  // PROPRE fiche construite séparément (jusqu'à 4 lignes en base pour un
+  // seul clic) ; maintenant, UNE seule fiche est construite, ancrée sur le
+  // plan de rang le PLUS BAS parmi ceux cochés — min_plan_rank la rend
+  // automatiquement visible à tous les plans cochés via la cascade d'accès
+  // (minPlan<=rang abonné), sans jamais créer de doublon physique.
+  const publierOptions = {
+    source: 'admin', published: !programmee,
+    scheduledPublishAt: programmee ? scheduledPublishAtIso : null,
+    forcerExemption: true, codePrefix
+  };
   const resultats = [];
-  for (const plan of plansChoisis) {
-    // Mode "GÉNÉRER SCORE EXACT" (27/08) : uniquement des fiches score
-    // exact, nombre de matchs choisi par l'admin au lieu d'une cote —
-    // remplace ENTIÈREMENT la génération normale pour ce mode (pas de
-    // fiche classique en plus, contrairement au mode normal qui ajoute
-    // toujours le score exact EN COMPLÉMENT).
-    if (modeScoreExact) {
-      const publierOptionsExact = {
-        source: 'admin', published: !programmee,
-        scheduledPublishAt: programmee ? scheduledPublishAtIso : null,
-        forcerExemption: true, codePrefix
-      };
-      if (!plan.includes_exact_score) {
-        resultats.push({ rank: plan.rank, exact: true, publie: false, raison: 'Ce plan n\'inclut pas les scores exacts.' });
-        continue;
-      }
-      const ficheExacte = construireFicheScoreExact(poolFoot, plan, {
-        selectionsExclues, nombreMatchsOverride: nombreMatchsDemande,
-        // cibleMax reste un plafond de sécurité (jamais le critère
-        // d'arrêt en mode nombre-de-matchs, voir construireFicheScoreExact) —
-        // celui du plan lui-même, jamais une valeur inventée ici.
-        cibleMaxOverride: plan.max_total_odd != null ? Number(plan.max_total_odd) : undefined
-      });
-      if (!ficheExacte.valide) {
-        resultats.push({ rank: plan.rank, exact: true, publie: false, raison: `Aucune combinaison possible (${ficheExacte.selections.length} sélection(s) trouvée(s), minimum 3 requis) — contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre.` });
-        continue;
-      }
-      ficheExacte.selections.forEach(s => selectionsExclues.add(cleSelection(s)));
-      const okExact = await publierFiche(plan, ficheExacte, playDate, 'foot', noms, '-EXACT', publierOptionsExact);
+
+  if (modeScoreExact) {
+    // Seuls les plans cochés qui autorisent réellement le score exact
+    // peuvent ancrer la fiche partagée — signalé explicitement pour les
+    // autres plans cochés, jamais silencieux.
+    const plansEligibles = plansChoisis.filter(p => p.includes_exact_score);
+    const plansInexigibles = plansChoisis.filter(p => !p.includes_exact_score);
+    plansInexigibles.forEach(p => resultats.push({ rank: p.rank, exact: true, publie: false, raison: 'Ce plan n\'inclut pas les scores exacts — non concerné par cette fiche partagée.' }));
+
+    if (!plansEligibles.length) {
+      return jsonResponse(200, { resultats });
+    }
+    const planPartage = plansEligibles.reduce((a, b) => (a.rank < b.rank ? a : b));
+    const ficheExacte = construireFicheScoreExact(poolFoot, planPartage, {
+      selectionsExclues, fixturesExclues, nombreMatchsOverride: nombreMatchsDemande,
+      // cibleMax reste un plafond de sécurité (jamais le critère d'arrêt en
+      // mode nombre-de-matchs) — celui du plan de rang le plus bas cochés
+      // (le plus restrictif), pour rester valide pour tous les plans
+      // cochés une fois partagée via la cascade d'accès.
+      cibleMaxOverride: planPartage.max_total_odd != null ? Number(planPartage.max_total_odd) : undefined
+    });
+    if (!ficheExacte.valide) {
+      resultats.push({ rank: planPartage.rank, exact: true, publie: false, plansConcernes: plansEligibles.map(p => p.rank), raison: `Aucune combinaison possible (${ficheExacte.selections.length} sélection(s) trouvée(s), minimum 3 requis) — contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre.` });
+      return jsonResponse(200, { resultats });
+    }
+    ficheExacte.selections.forEach(s => { selectionsExclues.add(cleSelection(s)); fixturesExclues.add(s.fixtureId); });
+    const okExact = await publierFiche(planPartage, ficheExacte, playDate, 'foot', noms, '-EXACT', publierOptions);
+    resultats.push({
+      rank: planPartage.rank, exact: true, publie: okExact, coteTotale: ficheExacte.coteTotale,
+      selections: ficheExacte.selections.length, nombreMatchsDemande,
+      plansConcernes: plansEligibles.map(p => p.rank),
+      programmee, scheduledPublishAt: scheduledPublishAtIso,
+      raison: okExact ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
+    });
+    return jsonResponse(200, { resultats });
+  }
+
+  // Mode normal : ancré sur le plan de rang le plus bas parmi ceux cochés
+  // (le plus restrictif) — sa propre cote max borne la fiche partagée,
+  // jamais celle d'un plan plus haut, pour rester appropriée aux abonnés
+  // du rang le plus bas qui la verront aussi via la cascade d'accès.
+  const planPartage = plansChoisis.reduce((a, b) => (a.rank < b.rank ? a : b));
+  const planMax = planPartage.max_total_odd != null ? Number(planPartage.max_total_odd) : null;
+  const coteMaxEffective = planMax != null ? Math.min(coteMaxDemandee, planMax) : coteMaxDemandee;
+  const clamped = planMax != null && coteMaxDemandee > planMax;
+
+  const fiche = construireFiche(poolFoot, planPartage, {
+    buteursUtilises, equipesUtilisees, selectionsExclues, fixturesExclues, nbMatchsDisponibles,
+    cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
+  });
+
+  if (!fiche.valide) {
+    resultats.push({ rank: planPartage.rank, publie: false, plansConcernes: plansChoisis.map(p => p.rank), raison: `Aucune combinaison NOUVELLE possible (${fiche.selections.length} sélection(s) trouvée(s), minimum 2 requis) — le contenu disponible est déjà utilisé ailleurs aujourd'hui, ou le pool est trop pauvre.` });
+    return jsonResponse(200, { resultats });
+  }
+  fiche.selections.forEach(s => { selectionsExclues.add(cleSelection(s)); fixturesExclues.add(s.fixtureId); });
+  const ok = await publierFiche(planPartage, fiche, playDate, 'foot', noms, '', publierOptions);
+  resultats.push({
+    rank: planPartage.rank, publie: ok, coteTotale: fiche.coteTotale, selections: fiche.selections.length,
+    coteMaxDemandee: coteMaxDemandee, coteMaxAppliquee: coteMaxEffective, clampeAuMaxDuPlan: clamped,
+    plansConcernes: plansChoisis.map(p => p.rank),
+    programmee, scheduledPublishAt: scheduledPublishAtIso,
+    raison: ok ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
+  });
+
+  // Fiche score exact dédiée, EN COMPLÉMENT — même principe que le bot
+  // quotidien, ancrée sur le même planPartage (si celui-ci n'autorise pas
+  // le score exact, aucun complément n'est créé pour cette génération ;
+  // utiliser le bouton dédié "GÉNÉRER SCORE EXACT" séparément si voulu).
+  if (planPartage.includes_exact_score) {
+    const ficheExacte = construireFicheScoreExact(poolFoot, planPartage, {
+      selectionsExclues, fixturesExclues, cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
+    });
+    if (ficheExacte.valide) {
+      ficheExacte.selections.forEach(s => { selectionsExclues.add(cleSelection(s)); fixturesExclues.add(s.fixtureId); });
+      const okExact = await publierFiche(planPartage, ficheExacte, playDate, 'foot', noms, '-EXACT', publierOptions);
       resultats.push({
-        rank: plan.rank, exact: true, publie: okExact, coteTotale: ficheExacte.coteTotale,
-        selections: ficheExacte.selections.length, nombreMatchsDemande,
+        rank: planPartage.rank, exact: true, publie: okExact, coteTotale: ficheExacte.coteTotale,
+        selections: ficheExacte.selections.length, plansConcernes: plansChoisis.map(p => p.rank),
         programmee, scheduledPublishAt: scheduledPublishAtIso,
         raison: okExact ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
       });
-      continue;
     }
-
-    // Cote max : celle choisie par l'admin, jamais au-delà du max RÉEL du
-    // plan (le trigger base le refuserait de toute façon — on le signale
-    // proprement plutôt que de laisser échouer l'insertion en silence).
-    const planMax = plan.max_total_odd != null ? Number(plan.max_total_odd) : null;
-    const coteMaxEffective = planMax != null ? Math.min(coteMaxDemandee, planMax) : coteMaxDemandee;
-    const clamped = planMax != null && coteMaxDemandee > planMax;
-
-    const fiche = construireFiche(poolFoot, plan, {
-      buteursUtilises, equipesUtilisees, selectionsExclues, nbMatchsDisponibles,
-      cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
-    });
-    if (fiche.valide) fiche.selections.forEach(s => selectionsExclues.add(cleSelection(s)));
-
-    const publierOptions = {
-      source: 'admin', published: !programmee,
-      scheduledPublishAt: programmee ? scheduledPublishAtIso : null,
-      forcerExemption: true, codePrefix
-    };
-
-    if (!fiche.valide) {
-      resultats.push({ rank: plan.rank, publie: false, raison: `Aucune combinaison NOUVELLE possible (${fiche.selections.length} sélection(s) trouvée(s), minimum 2 requis) — le contenu disponible est déjà utilisé ailleurs aujourd'hui, ou le pool est trop pauvre. Les abonnés de ce plan restent couverts par le rang inférieur (accès en cascade).` });
-    } else {
-      const ok = await publierFiche(plan, fiche, playDate, 'foot', noms, '', publierOptions);
-      resultats.push({
-        rank: plan.rank, publie: ok, coteTotale: fiche.coteTotale, selections: fiche.selections.length,
-        coteMaxDemandee: coteMaxDemandee, coteMaxAppliquee: coteMaxEffective, clampeAuMaxDuPlan: clamped,
-        programmee, scheduledPublishAt: scheduledPublishAtIso,
-        raison: ok ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
-      });
-    }
-
-    // Fiche score exact dédiée, même principe que le bot quotidien.
-    // Exemptée de la limite d'apparition par équipe (Partie 4), mais PAS
-    // de l'anti-doublon de sélection exacte (toujours actif).
-    if (plan.includes_exact_score) {
-      const ficheExacte = construireFicheScoreExact(poolFoot, plan, {
-        selectionsExclues, cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
-      });
-      if (ficheExacte.valide) {
-        ficheExacte.selections.forEach(s => selectionsExclues.add(cleSelection(s)));
-        const okExact = await publierFiche(plan, ficheExacte, playDate, 'foot', noms, '-EXACT', publierOptions);
-        resultats.push({
-          rank: plan.rank, exact: true, publie: okExact, coteTotale: ficheExacte.coteTotale,
-          selections: ficheExacte.selections.length, programmee, scheduledPublishAt: scheduledPublishAtIso,
-          raison: okExact ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
-        });
-      }
-      // Pas de "raison" loguée si score exact invalide : c'est un simple
-      // complément optionnel, jamais bloquant pour la fiche normale.
-    }
+    // Pas de "raison" loguée si score exact invalide : c'est un simple
+    // complément optionnel, jamais bloquant pour la fiche normale.
   }
 
   return jsonResponse(200, { resultats });
