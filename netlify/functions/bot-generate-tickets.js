@@ -1559,6 +1559,35 @@ async function handler(event) {
     }
   }
 
+  // MODE DIAGNOSTIC COUVERTURE DES COTES (28/08) : ?token=...&diag=oddscoverage[&date=AAAA-MM-JJ]
+  // Répond à la question "pourquoi Premier League/Ligue 1 sont absentes
+  // alors que des matchs existent" — SANS toucher à la génération réelle.
+  // Compte, par championnat TOP, combien de matchs sont trouvés sur
+  // /fixtures vs combien renvoient une cote exploitable via le bookmaker
+  // UNIQUE actuellement utilisé (BOOKMAKER_ID=8, Bet365). Si l'écart est
+  // important sur un grand championnat, ça confirme qu'il faut un
+  // bookmaker de repli — jamais deviné sans ce diagnostic (même principe
+  // que diag=leagues/teams : rien n'est ajouté sans une vraie donnée).
+  // ATTENTION QUOTA : 1 appel /odds par match TOP trouvé — à lancer une
+  // seule fois par jour, pas en boucle (quota partagé 100/jour).
+  if (modeTest && event.queryStringParameters.diag === 'oddscoverage') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const dateC = event.queryStringParameters.date || dateCibleDemainHaiti();
+    const fixturesJourD = await recupererFixturesJour(dateC);
+    const parLigue = {};
+    for (const f of fixturesJourD) {
+      const league = f.league, fixture = f.fixture;
+      if (!league || !fixture || !TOP_LEAGUES_FOOT.includes(league.id)) continue;
+      const clef = `${league.id} — ${league.name}`;
+      if (!parLigue[clef]) parLigue[clef] = { matchsTrouves: 0, avecCoteBet365: 0, exemplesSansCote: [] };
+      parLigue[clef].matchsTrouves++;
+      const oddsItem = await recupererCoteParFixture(fixture.id);
+      if (oddsItem) parLigue[clef].avecCoteBet365++;
+      else if (parLigue[clef].exemplesSansCote.length < 3) parLigue[clef].exemplesSansCote.push(`${f.teams.home.name} — ${f.teams.away.name} (fixture ${fixture.id})`);
+    }
+    return { statusCode: 200, body: JSON.stringify({ date: dateC, parLigue }, null, 2) };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'leagues') {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
     const termes = (event.queryStringParameters.q || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1679,6 +1708,15 @@ async function handler(event) {
   try {
     plans = await sbSelect('plans', 'select=rank,min_total_odd,max_total_odd,max_leg_odd,includes_exact_score');
     if (!plans || !plans.length) throw new Error('table plans vide');
+    // Tri explicite par rang croissant (28/08, correctif "petites cotes
+    // Plan 1") : la requête PostgREST ne garantit AUCUN ordre. Sans ce
+    // tri, un plan VIP/Lifetime pouvait passer avant le Plan 1 au Tour 1
+    // et consommer des matchs (jusqu'à 10 par fiche) dont le Plan 1 avait
+    // besoin pour sa propre fiche à petite cote — laissant une sélection
+    // fiable et à cote basse totalement inutilisée ce jour-là. Plan 1
+    // (rang le plus bas, besoin le plus faible en matchs) choisit
+    // désormais toujours en premier à chaque tour.
+    plans.sort((a, b) => a.rank - b.rank);
   } catch (e) {
     stats.erreurs.push('lecture table plans: ' + e.message);
     logFinal();

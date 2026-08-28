@@ -259,9 +259,18 @@ function evaluerLeg(leg, golHome, golAway, buteurs) {
       return resultat1x2(golHome, golAway) === camp ? 'won' : 'lost';
     }
     case 'mk_double_chance': {
-      const paire = pick.replace('Double chance : ', '').trim(); // "Home/Draw", "Home/Away", "Draw/Away"
-      const res = resultat1x2(golHome, golAway);
-      return paire.split('/').includes(res) ? 'won' : 'lost';
+      // Corrigé (28/08) : le générateur écrit "X1"/"12"/"X2" (voir
+      // LIBELLE_DOUBLE_CHANCE dans bot-generate-tickets.js), jamais
+      // "Home/Draw" comme l'ancien code le supposait ici — ce qui
+      // faisait échouer TOUTE sélection double chance (toujours 'lost',
+      // quel que soit le résultat réel du match). resultat1x2() n'est
+      // pas modifiée (reste 'Home'/'Away'/'Draw') — la correspondance
+      // se fait ici, localement, jamais un format deviné.
+      const CORRESPONDANCE_DOUBLE_CHANCE = { X1: ['Home', 'Draw'], '12': ['Home', 'Away'], X2: ['Draw', 'Away'] };
+      const val = pick.replace('Double chance : ', '').trim(); // "X1", "12", "X2"
+      const camp = CORRESPONDANCE_DOUBLE_CHANCE[val];
+      if (!camp) return null; // format non reconnu (ex. ancien format historique) : jamais deviner, laissé en attente
+      return camp.includes(resultat1x2(golHome, golAway)) ? 'won' : 'lost';
     }
     case 'mk_btts':
       return (golHome > 0 && golAway > 0) ? 'won' : 'lost';
