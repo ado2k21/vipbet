@@ -169,6 +169,14 @@
   --mono:'JetBrains Mono',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+/* 27/08, retour de James (captures) : toute la page decalee
+   horizontalement sur iOS Safari, espace vide visible a droite. Sur
+   Safari iOS, c'est souvent html (documentElement) qui defile reellement,
+   pas body -- body{overflow-x:hidden} seul ne suffit pas si un element
+   quelconque depasse la largeur de l'ecran ailleurs sur la page. Regle
+   universelle, sans risque, qui bloque le defilement horizontal fantome
+   quelle que soit sa cause exacte. */
+html{overflow-x:hidden;max-width:100%}
 html{scroll-behavior:smooth;background-color:#030617}
 body{
   background-color:#030617;
@@ -179,6 +187,7 @@ body{
   letter-spacing:.004em;
   text-rendering:optimizeLegibility;
   overflow-x:hidden;
+  max-width:100%;
   -webkit-font-smoothing:antialiased;
   min-height:100vh;
   min-height:100dvh;
@@ -1488,6 +1497,16 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .field select:focus{outline:none;border-color:var(--vert-vif);background-color:#0C1729;box-shadow:0 0 0 3px rgba(46,212,127,.13)}
 .field input::placeholder,.field textarea::placeholder{color:#5C6B7A}
 .field input:focus,.field textarea:focus{outline:none;border-color:var(--vert-vif);background:#0C1729;box-shadow:0 0 0 3px rgba(46,212,127,.13)}
+/* Champs date (27/08, retour de James : "la date déborde trop" sur iOS
+   Safari) — le contrôle natif type="date" gonfle sa propre hauteur/
+   alignement au-delà du padding demandé, indépendamment des autres champs
+   texte. Règle ciblée uniquement sur type="date", jamais sur .field input
+   en général (ça affecterait tous les autres champs du site). */
+.field input[type="date"]{
+  padding:9px 12px;font-size:13.5px;
+  text-align:left;
+}
+.field input[type="date"]::-webkit-date-and-time-value{text-align:left}
 .field.invalid input{border-color:#E2634F}
 .field-err{display:none;color:#E2634F;font-size:12px;font-weight:600}
 .field.invalid .field-err{display:block}
@@ -4352,14 +4371,16 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       </div>
       <label class="field"><span class="field-lbl" data-i18n="adm_fiches_date_lbl">Dat</span>
         <input type="date" id="admFichesDate"></label>
-      <div class="admf-filters" id="admFichesFilters" hidden>
+      <div class="admf-filters" id="admFichesFilters">
         <button type="button" class="admf-chip is-on" data-fstatus="all" data-i18n="adm_fiches_f_all">Tout</button>
+        <button type="button" class="admf-chip" data-fstatus="pending" data-i18n="adm_fiches_f_pending">An kou</button>
         <button type="button" class="admf-chip" data-fstatus="won" data-i18n="adm_fiches_f_won">Genyen</button>
         <button type="button" class="admf-chip" data-fstatus="lost" data-i18n="adm_fiches_f_lost">Pèdi</button>
       </div>
       <div id="admFichesSync" class="admf-sync"></div>
       <button type="button" class="btn btn-or" id="admFichesNew" style="width:100%;margin:12px 0 8px" data-i18n="adm_fiches_new">+ Nouvelle fiche</button>
-      <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
+      <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
+      <button type="button" class="btn btn-or-soft" id="admFicheGenererExactBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_exact_btn">🎯 GÉNÉRER SCORE EXACT</button>
       <div id="admFichesBody"></div>
     </div>
 
@@ -4379,8 +4400,8 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <span data-i18n="dash_back">Retounen</span>
       </button>
       <div class="dash-hi">
-        <h2 data-i18n="adm_fiche_gen_h">Générer une fiche</h2>
-        <p data-i18n="adm_fiche_gen_p">Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.</p>
+        <h2 id="admGenTitre" data-i18n="adm_fiche_gen_h">Générer une fiche</h2>
+        <p id="admGenSousTitre" data-i18n="adm_fiche_gen_p">Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.</p>
       </div>
       <div id="admFicheGenererForm">
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_date">Date des matchs</span>
@@ -4399,8 +4420,19 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <div id="admGenSportNote" class="admf-note-x2" style="display:none;margin:-4px 0 10px" data-i18n="adm_fiche_gen_nba_note">Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.</div>
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_plans">Plans concernés</span></label>
         <div id="admGenPlans" class="admf-filters" style="flex-wrap:wrap"></div>
-        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_cotemax">Cote max souhaitée</span>
+        <!-- Mode normal (26/08) : cote max souhaitée. -->
+        <label class="field" id="admGenCoteMaxWrap"><span class="field-lbl" data-i18n="adm_fiche_gen_cotemax">Cote max souhaitée</span>
           <input type="number" id="admGenCoteMax" min="1.1" step="0.1" value="20"></label>
+        <!-- Mode score exact (27/08, demande explicite de James) : nombre de
+             matchs au lieu d'une cote — même principe de génération sinon,
+             voir construireFicheScoreExact/nombreMatchsOverride. Masqué par
+             défaut, affiché uniquement via le bouton GÉNÉRER SCORE EXACT. -->
+        <label class="field" id="admGenNombreMatchsWrap" style="display:none">
+          <span class="field-lbl" data-i18n="adm_fiche_gen_nbmatchs">Nombre de matchs</span>
+          <select id="admGenNombreMatchs">
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option>
+          </select></label>
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_publish">Publication</span>
           <select id="admGenPublishMode">
             <option value="now" data-i18n="adm_fiche_gen_now">Immédiate</option>
@@ -4652,6 +4684,8 @@ dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
 fiche_note_x2:"Conseil : à jouer en 2 tickets séparés",
 adm_fiche_gen_btn:"⚡ GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
+adm_fiche_gen_exact_btn:"🎯 GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
+adm_fiche_gen_nbmatchs:"Nombre de matchs",
 adm_fiche_gen_date:"Date des matchs", adm_fiche_gen_hdebut:"Heure début (PAP)", adm_fiche_gen_hfin:"Heure fin (PAP)", adm_fiche_gen_sport:"Sport",
 adm_fiche_gen_nba_note:"Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.",
 adm_fiche_gen_plans:"Plans concernés", adm_fiche_gen_cotemax:"Cote max souhaitée", adm_fiche_gen_publish:"Publication",
@@ -4787,6 +4821,7 @@ adm_fiche_src_bot:"BOT", adm_fiche_src_admin:"ADMIN",
 adm_fiches_tab_day:"Du jour", adm_fiches_tab_hist:"Historique",
 adm_fiches_f_all:"Tous", adm_fiches_f_pending:"En cours", adm_fiches_f_won:"Gagnés", adm_fiches_f_lost:"Perdus",
 adm_fiches_hist_empty:"Aucune fiche dans l'historique pour ce filtre.",
+adm_fiches_load_more:"Charger plus",
 adm_fiches_sync_last:"Dernière synchronisation : {d}", adm_fiches_sync_never:"Aucune synchronisation enregistrée",
 adm_fiches_sync_next:"Prochaine génération automatique : {d}",
 adm_fiche_leg_locked:"Match terminé — résultat réglé, modification protégée",
@@ -5074,6 +5109,8 @@ dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
 fiche_note_x2:"Tip: play as 2 separate tickets",
 adm_fiche_gen_btn:"⚡ GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
+adm_fiche_gen_exact_btn:"🎯 GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
+adm_fiche_gen_nbmatchs:"Number of matches",
 adm_fiche_gen_date:"Match date", adm_fiche_gen_hdebut:"Start time (PAP)", adm_fiche_gen_hfin:"End time (PAP)", adm_fiche_gen_sport:"Sport",
 adm_fiche_gen_nba_note:"Not available yet — no reliable odds source wired for basketball/NBA.",
 adm_fiche_gen_plans:"Plans concerned", adm_fiche_gen_cotemax:"Desired max odds", adm_fiche_gen_publish:"Publishing",
@@ -5209,6 +5246,7 @@ adm_fiche_src_bot:"BOT", adm_fiche_src_admin:"ADMIN",
 adm_fiches_tab_day:"Today", adm_fiches_tab_hist:"History",
 adm_fiches_f_all:"All", adm_fiches_f_pending:"In progress", adm_fiches_f_won:"Won", adm_fiches_f_lost:"Lost",
 adm_fiches_hist_empty:"No slips in history for this filter.",
+adm_fiches_load_more:"Load more",
 adm_fiches_sync_last:"Last sync: {d}", adm_fiches_sync_never:"No sync recorded yet",
 adm_fiches_sync_next:"Next automatic generation: {d}",
 adm_fiche_leg_locked:"Match finished — result settled, editing protected",
@@ -5496,6 +5534,8 @@ dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
 fiche_note_x2:"Konsèy : jwe l an 2 tikè separe",
 adm_fiche_gen_btn:"⚡ JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
+adm_fiche_gen_exact_btn:"🎯 JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
+adm_fiche_gen_nbmatchs:"Konbyen match",
 adm_fiche_gen_date:"Dat match yo", adm_fiche_gen_hdebut:"Lè kòmanse (PAP)", adm_fiche_gen_hfin:"Lè fini (PAP)", adm_fiche_gen_sport:"Espò",
 adm_fiche_gen_nba_note:"Pa disponib pou kounye a — pa gen sous kòt serye konekte pou basketball/NBA.",
 adm_fiche_gen_plans:"Plan konsène", adm_fiche_gen_cotemax:"Kòt maksimòm ou vle a", adm_fiche_gen_publish:"Piblikasyon",
@@ -5631,6 +5671,7 @@ adm_fiche_src_bot:"BOT", adm_fiche_src_admin:"ADMIN",
 adm_fiches_tab_day:"Jodi a", adm_fiches_tab_hist:"Istorik",
 adm_fiches_f_all:"Tout", adm_fiches_f_pending:"An kou", adm_fiches_f_won:"Genyen", adm_fiches_f_lost:"Pèdi",
 adm_fiches_hist_empty:"Pa gen fich nan istorik la pou filt sa a.",
+adm_fiches_load_more:"Chaje plis",
 adm_fiches_sync_last:"Dènye senkronizasyon : {d}", adm_fiches_sync_never:"Pa gen senkronizasyon anrejistre",
 adm_fiches_sync_next:"Pwochen jenerasyon otomatik : {d}",
 adm_fiche_leg_locked:"Match fini — rezilta regle, modifikasyon pwoteje",
@@ -9475,12 +9516,44 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // l'ouverture, meme si l'action admin a eu lieu depuis un autre appareil.
     chargerNotifsReelles().then(changed=>{ if(changed)renderNotifs(); });
     demarrerResyncPeriodique();
+    demarrerRealtime();
   }
   /* Re-synchronisation automatique en arriere-plan, tant que le Dashboard
      reste ouvert : sans ca, une confirmation admin ne serait visible
      qu'apres avoir ferme puis rouvert le Dashboard (ou rafraichi la
      page). Toutes les 45 secondes suffit largement — jamais agressif,
      jamais bloquant, s'arrete des que le Dashboard se ferme. */
+  /* ---- Phase 4 roadmap (27/08, section 17) : synchronisation temps reel ----
+     Complement du polling 45s ci-dessous (jamais un remplacement — un
+     canal Realtime peut se deconnecter silencieusement en arriere-plan
+     mobile ; le polling reste le filet de securite qui garantit qu'on ne
+     reste jamais desynchronise plus de 45s meme si Realtime tombe). Des
+     qu'une fiche est inseree ou son statut change (nouvelle publication,
+     reglement won/lost), rafraichirFiches(true) est appele immediatement
+     au lieu d'attendre le prochain cycle de polling. */
+  let rtChannel=null;
+  function demarrerRealtime(){
+    arreterRealtime();
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!sb.channel)return; // navigateur hors-ligne ou client non pret : le polling 45s prend deja le relais
+    try{
+      rtChannel=sb.channel('dash-tickets-'+Date.now())
+        .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},()=>{
+          // On ne lit jamais le payload directement (RLS deja filtre ce
+          // que ce canal recoit, mais on relit quand meme via la voie
+          // normale chargerFichesReelles — jamais de contenu construit a
+          // partir d'un evenement brut, meme methode que le reste du site).
+          rafraichirFiches(true);
+        })
+        .subscribe();
+    }catch(e){} // jamais bloquant : le polling 45s suffit si Realtime echoue
+  }
+  function arreterRealtime(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(rtChannel&&sb&&sb.removeChannel){try{sb.removeChannel(rtChannel);}catch(e){}}
+    rtChannel=null;
+  }
+
   let resyncTimer=null;
   function demarrerResyncPeriodique(){
     arreterResyncPeriodique();
@@ -9505,6 +9578,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('dashMenuBtn').setAttribute('aria-expanded','false');
     document.body.style.overflow='';
     arreterResyncPeriodique();
+    arreterRealtime();
   }
   document.addEventListener('keydown',ev=>{
     if(ev.key==='Escape'&&dash.classList.contains('open')){
@@ -11122,7 +11196,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        - origine BOT/ADMIN et derniere synchronisation du bot
      ============================================================ */
   let admFichesTab='day';          // 'day' | 'hist'
-  let admFichesStatut='all';       // 'all' | 'won' | 'lost' (Historique uniquement, fiches reglees)
+  let admFichesStatut='all';       // 'all' | 'pending' | 'won' | 'lost' (les 2 onglets, 27/08)
+  // Pagination "Charger plus" (Phase 3 roadmap, 27/08) — Historique
+  // uniquement (le jour courant reste petit par nature, jamais paginé).
+  // Repart à 30 à chaque changement d'onglet/filtre, jamais conservée
+  // entre deux contextes différents (éviterait un "Charger plus" fantôme
+  // qui semble ne rien faire après un changement de filtre).
+  let admFichesHistLimit=30;
+  const ADMF_HIST_PAGE=30;
   let admFicheLegCible=null;       // index du match a ouvrir a l'ouverture du detail
 
   /* Une fiche "score exact" est identifiee par son contenu reel (toutes ses
@@ -11268,8 +11349,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const dateInput=document.getElementById('admFichesDate');
     if(!dateInput.value)dateInput.value=dateAujourdhui();
     const body=document.getElementById('admFichesBody');
-    const filtres=document.getElementById('admFichesFilters');
-    if(filtres)filtres.hidden=(admFichesTab!=='hist');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){body.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
     body.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
@@ -11278,9 +11357,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       let req=sb.from('tickets')
         .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,created_at,legs_count,total_odd,score_legs_count,source,settled_at');
       if(admFichesTab==='day'){
-        // Vue du jour : les fiches de la date choisie, tous statuts.
+        // Vue du jour : les fiches de la date choisie. Filtre de statut
+        // (Partie 3 roadmap, 27/08 : zones "En cours/Gagné/Perdu") — mêmes
+        // chips que l'Historique, appliqués ici aussi désormais.
         req=req.eq('play_date',dateInput.value)
                .order('min_plan_rank',{ascending:true}).order('created_at',{ascending:true});
+        if(admFichesStatut!=='all')req=req.eq('status',admFichesStatut);
       }else{
         /* Historique (25/08, redefinit sur demande explicite de James) :
            TOUTE fiche REGLEE (Genyen/Pedi), des qu'elle l'est — plus
@@ -11296,7 +11378,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         req=req.neq('status','pending')
                .order('settled_at',{ascending:false,nullsFirst:false})
                .order('play_date',{ascending:false}).order('min_plan_rank',{ascending:true})
-               .limit(60);
+               .limit(admFichesHistLimit);
         if(admFichesStatut!=='all')req=req.eq('status',admFichesStatut);
       }
       const {data:tickets,error}=await req;
@@ -11334,6 +11416,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           return '<div class="admdash-section-h">'+stripTags(dateLongue(j))+' — '+items.length+'</div>'+
             items.map(tk=>ficheCardHtml(tk,parFiche[tk.id]||[])).join('');
         }).join('');
+        // "Charger plus" (Phase 3 roadmap, 27/08) : on a demandé exactement
+        // admFichesHistLimit lignes — en recevoir exactement ce nombre est
+        // le seul signal fiable qu'il en reste peut-être d'autres (une
+        // réponse plus courte que la limite demandée signifie sans
+        // ambiguïté qu'on a tout reçu).
+        if(tickets.length>=admFichesHistLimit){
+          body.innerHTML+='<button type="button" class="btn btn-outline" id="admFichesLoadMore" '+
+            'style="width:100%;margin:14px 0 4px">'+stripTags(t('adm_fiches_load_more'))+'</button>';
+          const btnPlus=document.getElementById('admFichesLoadMore');
+          if(btnPlus)btnPlus.addEventListener('click',()=>{
+            admFichesHistLimit+=ADMF_HIST_PAGE;
+            renderFiches();
+          });
+        }
       }
 
       // Clic sur un match : ouvre l'editeur existant, positionne sur ce match.
@@ -11361,14 +11457,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   document.querySelectorAll('#admFichesTabs [data-ftab]').forEach(b=>{
     b.addEventListener('click',()=>{
       admFichesTab=b.dataset.ftab;
+      admFichesHistLimit=ADMF_HIST_PAGE; // Phase 3 (27/08) : jamais garder une pagination gonflée d'un contexte à l'autre
       document.querySelectorAll('#admFichesTabs [data-ftab]').forEach(x=>x.classList.toggle('is-on',x===b));
       renderFiches();
     });
   });
-  // Filtres de statut (historique uniquement)
+  // Filtres de statut (les 2 onglets depuis le 27/08 — Phase 3 roadmap)
   document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(b=>{
     b.addEventListener('click',()=>{
       admFichesStatut=b.dataset.fstatus;
+      admFichesHistLimit=ADMF_HIST_PAGE;
       document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>x.classList.toggle('is-on',x===b));
       renderFiches();
     });
@@ -11388,6 +11486,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      serveur). Réservé aux administrateurs : le jeton de session est
      transmis, revérifié côté serveur avant toute génération. */
   let admGenPlansCache=null;
+  // Mode de génération (27/08) : 'normal' (cote max) ou 'exact' (nombre de
+  // matchs, score exact uniquement) — determine le titre affiché et le
+  // corps envoyé à bot-generate-tickets-manual.js.
+  let admGenMode='normal';
   async function renderAdmGenPlans(){
     const box=document.getElementById('admGenPlans');
     box.innerHTML='<span class="admdash-empty" style="padding:6px 0">'+t('adm_k_loading')+'</span>';
@@ -11408,12 +11510,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       box.innerHTML='<span class="admdash-empty">'+t('adm_k_error')+'</span>';
     }
   }
-  document.getElementById('admFicheGenererBtn').addEventListener('click',()=>{
+  function ouvrirVueGeneration(mode){
+    admGenMode=mode;
     document.getElementById('admGenDate').value=partsHaiti(new Date(Date.now()+24*3600*1000)).iso;
     document.getElementById('admGenResult').innerHTML='';
+    document.getElementById('admGenCoteMaxWrap').style.display=(mode==='exact')?'none':'';
+    document.getElementById('admGenNombreMatchsWrap').style.display=(mode==='exact')?'':'none';
+    document.getElementById('admGenTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_h':'adm_fiche_gen_h');
+    document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':'adm_fiche_gen_p');
     setView('fichegenerer');
     renderAdmGenPlans();
-  });
+  }
+  document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
+  document.getElementById('admFicheGenererExactBtn').addEventListener('click',()=>ouvrirVueGeneration('exact'));
   document.getElementById('admGenSport').addEventListener('change',e=>{
     document.getElementById('admGenSportNote').style.display=(e.target.value==='nba')?'block':'none';
   });
@@ -11432,6 +11541,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sport=document.getElementById('admGenSport').value;
     const plansChoisis=Array.from(document.querySelectorAll('.admGenPlanChk:checked')).map(c=>Number(c.value));
     const coteMax=Number(document.getElementById('admGenCoteMax').value);
+    const nombreMatchs=Number(document.getElementById('admGenNombreMatchs').value);
     const publishMode=document.getElementById('admGenPublishMode').value;
     const scheduledAt=document.getElementById('admGenScheduledAt').value;
 
@@ -11452,10 +11562,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const token=sessionData&&sessionData.session&&sessionData.session.access_token;
       if(!token)throw new Error(t('adm_fiche_gen_err_session'));
 
+      // corps de requete : mode 'exact' envoie nombreMatchs au lieu de
+      // coteMax (27/08, voir bot-generate-tickets-manual.js).
+      const corps=admGenMode==='exact'
+        ? {playDate,heureDebut,heureFin,sport,plans:plansChoisis,mode:'exact',nombreMatchs,publishMode,scheduledAt}
+        : {playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt};
       const resp=await fetch('/.netlify/functions/bot-generate-tickets-manual',{
         method:'POST',
         headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-        body:JSON.stringify({playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt})
+        body:JSON.stringify(corps)
       });
       const out=await resp.json().catch(()=>({}));
       if(!resp.ok){
