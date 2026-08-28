@@ -1107,7 +1107,7 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   padding:11px 13px;border-bottom:1px solid rgba(244,243,237,.06);
   background:rgba(244,243,237,.022);
 }
-.admf-card-title{flex:1;min-width:150px;font-size:13.5px;font-weight:700;color:#F4F3ED}
+.admf-card-title{flex:1;min-width:0;font-size:13.5px;font-weight:700;color:#F4F3ED}
 .admf-card-sub{
   display:block;font-family:var(--mono);font-size:10px;font-weight:500;
   color:var(--gris);letter-spacing:.03em;margin-top:3px;text-transform:uppercase;
@@ -1957,9 +1957,10 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 /* ================= DASHBOARD ================= */
 .dash{
   position:fixed;inset:0;z-index:140;background:var(--noir);
-  overflow-y:auto;overscroll-behavior:contain;
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
   opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s;
   padding-bottom:env(safe-area-inset-bottom);
+  max-width:100vw;
 }
 .dash.open{opacity:1;visibility:visible}
 
@@ -9656,7 +9657,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='users')renderUsers();
     if(view==='payments')renderPayments();
     if(view==='plans')renderPlans();
-    if(view==='fiches')renderFiches();
+    if(view==='fiches'){majFiltresJodiA();renderFiches();}
     if(view==='faq')renderFaqList();
     if(view==='testimonials')renderTestiList();
     if(view==='settings')renderSettings();
@@ -11221,6 +11222,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      ============================================================ */
   let admFichesTab='day';          // 'day' | 'hist'
   let admFichesStatut='all';       // 'all' | 'pending' | 'won' | 'lost' (les 2 onglets, 27/08)
+  // Filtre "Tout" retiré de l'onglet "Jodi a" (28/08, demande explicite de
+  // James) : sur le jour courant, seuls "An kou"/"Genyen"/"Pèdi" ont un
+  // sens ; "Tout" reste utile UNIQUEMENT sur l'Historique. Si "all" etait
+  // le filtre actif au moment de passer sur "Jodi a", on retombe sur
+  // "An kou" (pending) plutot que de laisser un filtre invisible actif.
+  function majFiltresJodiA(){
+    const chipTout=document.querySelector('#admFichesFilters [data-fstatus="all"]');
+    if(!chipTout)return;
+    const estJodiA=admFichesTab==='day';
+    chipTout.style.display=estJodiA?'none':'';
+    if(estJodiA && admFichesStatut==='all'){
+      admFichesStatut='pending';
+      document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>
+        x.classList.toggle('is-on',x.dataset.fstatus==='pending'));
+    }
+  }
   // Pagination "Charger plus" (Phase 3 roadmap, 27/08) — Historique
   // uniquement (le jour courant reste petit par nature, jamais paginé).
   // Repart à 30 à chaque changement d'onglet/filtre, jamais conservée
@@ -11485,6 +11502,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       admFichesTab=b.dataset.ftab;
       admFichesHistLimit=ADMF_HIST_PAGE; // Phase 3 (27/08) : jamais garder une pagination gonflée d'un contexte à l'autre
       document.querySelectorAll('#admFichesTabs [data-ftab]').forEach(x=>x.classList.toggle('is-on',x===b));
+      majFiltresJodiA();
       renderFiches();
     });
   });
