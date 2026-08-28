@@ -4579,7 +4579,10 @@ rating_label:"Excellent sur Trustpilot",
 stat_garanti:"GARANTI", stat_garanti_lab:"REMBOURSEMENT SI VOUS NE GAGNEZ PAS UNE FOIS",
 stat_pronostiqueurs:"UTILISATEURS ACTIFS", stat_pronostics_jour:"PRONOSTICS RÉUSSIS", stat_gratuits:"PRONOSTICS GAGNANTS",
 ticket_title:"TICKETS GAGNANTS",
-mk_btts:"BTTS : OUI", mk_over:"Plus de 225.5",
+mk_btts:"Les deux équipes marquent", mk_over:"Plus de 225.5",
+mk_1x2:"Victoire directe", mk_double_chance:"Double chance", mk_total_buts:"Total buts",
+mk_total_domicile:"Total buts domicile", mk_total_exterieur:"Total buts extérieur",
+mk_score_exact:"Score exact", mk_buteur:"Buteur",
 lbl_cote:"Cote", lbl_cote_totale:"COTE TOTALE", badge_valide:"VALIDÉ",
 sim_title:"ESSAYEZ CETTE DÉMO ET VOYEZ CE QUE VOTRE ARGENT RAPPORTE",
 sim_sub:"Choisissez un montant et choisissez un PLAN pour voir ce que vous gagnez sur ParyajPam.",
@@ -5004,7 +5007,10 @@ rating_label:"Excellent on Trustpilot",
 stat_garanti:"GUARANTEED", stat_garanti_lab:"REFUND IF YOU DO NOT WIN ONCE",
 stat_pronostiqueurs:"ACTIVE USERS", stat_pronostics_jour:"SUCCESSFUL PICKS", stat_gratuits:"WINNING PICKS",
 ticket_title:"WINNING TICKETS",
-mk_btts:"BTTS : YES", mk_over:"Over 225.5",
+mk_btts:"Both teams to score", mk_over:"Over 225.5",
+mk_1x2:"Match winner", mk_double_chance:"Double chance", mk_total_buts:"Total goals",
+mk_total_domicile:"Home team total goals", mk_total_exterieur:"Away team total goals",
+mk_score_exact:"Correct score", mk_buteur:"Goalscorer",
 lbl_cote:"Odds", lbl_cote_totale:"TOTAL ODDS", badge_valide:"VERIFIED",
 sim_title:"TRY THIS DEMO AND SEE WHAT YOUR MONEY MAKES",
 sim_sub:"Pick an amount and pick a PLAN to see what you make on ParyajPam.",
@@ -5429,7 +5435,10 @@ rating_label:"Excellent sur Trustpilot",
 stat_garanti:"GARANTI", stat_garanti_lab:"RANBOUSMAN SIW PA GENYEN 1 FWA",
 stat_pronostiqueurs:"ITILIZATÈ AKTIF", stat_pronostics_jour:"PRONOSTIK REYISI", stat_gratuits:"PRONOSTIC KI GENYEN",
 ticket_title:"TIKÈ KI GENYEN YO",
-mk_btts:"DE EKIP MAKE : WI", mk_over:"Plis pase 225.5",
+mk_btts:"De ekip yo make", mk_over:"Plis pase 225.5",
+mk_1x2:"Viktwa dirèk", mk_double_chance:"Doub chans", mk_total_buts:"Total gòl",
+mk_total_domicile:"Total gòl lakay", mk_total_exterieur:"Total gòl deyò",
+mk_score_exact:"Eskò egzak", mk_buteur:"Moun ki make",
 lbl_cote:"Cote", lbl_cote_totale:"COTE TOTAL", badge_valide:"VALIDE",
 sim_title:"ESEYE DEMO SA GAD VALÈ KOB OU K FÈ",
 sim_sub:"Chwazi yon montan epi chwazi yon PLAN pou wè kòb wap fè sou ParyajPam.",
@@ -8870,7 +8879,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // Le bot et l'admin peuvent ecrire soit une CLE i18n (mk_btts_l,
         // pick_oui...), soit du texte libre : on ne traduit que ce qui est
         // reconnu comme une cle, le reste s'affiche tel quel.
-        const pick=(lg.pick.indexOf(' — ')>-1||!translations.fr[lg.pick])?lg.pick:t(lg.pick);
+        // Notation 1/2 (28/08, demande explicite de James) : "Victoire :
+        // Home/Away" -> "Victoire : 1/2" -- affichage uniquement, ne
+        // touche jamais aux donnees stockees ni au reglement du bot.
+        const pickRaw=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
+        const pick=(pickRaw.indexOf(' — ')>-1||!translations.fr[pickRaw])?pickRaw:t(pickRaw);
         const marketTxt=translations.fr[lg.market]?t(lg.market):(lg.market||'');
         // Heure d'Haiti ; la date n'apparait que si le match tombe un
         // autre jour que celui de la fiche (voir heureAffichee).
@@ -11284,7 +11297,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const legsHtml=(legs||[]).map((l,i)=>{
       const heure=heureHaitiDeLeg(l,tk.play_date)||'--:--';
       const marche=(translations.fr||{})[l.market]?t(l.market):(l.market||'');
-      const pick=(String(l.pick||'').indexOf(' — ')>-1||!(translations.fr||{})[l.pick])?l.pick:t(l.pick);
+      // Notation 1/2 (28/08) : affichage uniquement, voir commentaire du premier site.
+      const pickRaw2=String(l.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
+      const pick=(pickRaw2.indexOf(' — ')>-1||!(translations.fr||{})[pickRaw2])?pickRaw2:t(pickRaw2);
       const cote=Number(l.odd);
       const regle=ficheTerminee||!!l.result;
       const corps=marqueLeg(l.result)+
@@ -12053,8 +12068,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const html=gagnantes.map(l=>{
         // Meme regle d'affichage que le Dashboard : une cle i18n connue est
         // traduite, un score exact ("2 — 1") s'affiche tel quel.
-        const pick=(String(l.pick||'').indexOf(' — ')>-1||!(translations.fr||{})[l.pick])
-          ? l.pick : trad(l.pick);
+        // Notation 1/2 (28/08) : affichage uniquement, voir commentaire du premier site.
+        const pickRaw3=String(l.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
+        const pick=(pickRaw3.indexOf(' — ')>-1||!(translations.fr||{})[pickRaw3])
+          ? pickRaw3 : trad(pickRaw3);
         const marche=(translations.fr||{})[l.market]?trad(l.market):(l.market||'');
         const cote=Number(l.odd);
         return '<span><i class="lg">'+echapper(String(l.league||'').toUpperCase())+(l.league_country?' ('+echapper(l.league_country)+')':'')+'</i> &nbsp;'+
