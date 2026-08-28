@@ -11588,7 +11588,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         resBox.innerHTML='<div class="admdash-empty">'+stripTags(out.erreur||('HTTP '+resp.status))+'</div>';
       }else{
         const lignes=(out.resultats||[]).map(r=>{
-          const titre='Rang '+r.rank+(r.exact?' (score exact)':'');
+          // 28/08 : une seule fiche partagée entre plusieurs plans (Partie 7
+          // anti-doublon) — le titre liste maintenant tous les plans
+          // concernés (via plansConcernes) plutôt qu'un seul "Rang X".
+          const plansTxt=Array.isArray(r.plansConcernes)&&r.plansConcernes.length
+            ? r.plansConcernes.join(', ') : r.rank;
+          const titre='Plan(s) '+plansTxt+(r.exact?' (score exact)':'');
           if(!r.publie){
             return '<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+titre+'</b>'+
               '<span>'+stripTags(r.raison||t('adm_fiche_gen_echec'))+'</span></span></div>';
