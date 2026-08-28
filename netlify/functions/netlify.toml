@@ -1,0 +1,61 @@
+[build]
+  publish = "."
+  # Site statique : aucune etape de build, les HTML sont deja prets.
+  command = ""
+
+[build.environment]
+  # index.html et admin.html contiennent l'URL Supabase et la cle "anon"
+  # (publiques par nature, protegees par RLS). Sans cette exclusion, le
+  # scanner de secrets de Netlify fait echouer le build en detectant la
+  # valeur de SUPABASE_URL dans le HTML publie.
+  #
+  # SECRETS_SCAN_OMIT_KEYS doit S'INCLURE ELLE-MEME dans sa propre liste.
+  # Sinon le scanner cherche aussi la VALEUR de cette variable partout
+  # dans le depot -- et comme sa valeur contient le texte "SUPABASE_URL",
+  # il retrouve ce texte (un simple nom de variable, jamais une donnee
+  # sensible) dans chaque fonction Netlify qui ecrit legitimement
+  # process.env.SUPABASE_URL, et fait echouer le build sur un faux
+  # positif en cascade. Cette entree ne cache aucun vrai secret : elle ne
+  # contient que des NOMS de variables, jamais leur contenu.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SECRETS_SCAN_OMIT_KEYS"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions."subscription-reminders"]
+  schedule = "0 14 * * *"
+
+[functions."database-backup"]
+  schedule = "0 6 * * *"
+
+# ============================================================================
+# 27/08/2026 — CAUSE RACINE DU BUG "aucune fiche generee, aucun reglement" :
+# ces 3 fonctions exportent bien un config.schedule dans leur propre fichier
+# JS, mais Netlify sur ce site ne le prend PAS en compte sans declaration
+# explicite ICI (contrairement a database-backup/subscription-reminders,
+# qui elles fonctionnent car deja declarees ci-dessus). Sans cette section,
+# les 3 bots existent comme fonctions normales mais ne sont JAMAIS
+# declenchees automatiquement -- confirme par l'absence du badge
+# "Scheduled" dans l'onglet Functions de Netlify avant ce correctif.
+#
+# bot-diagnostics N'EST VOLONTAIREMENT PAS DECLAREE ICI : elle doit rester
+# une fonction HTTP normale, invocable directement par URL (voir son
+# en-tete) -- toute declaration de schedule ici la rendrait injoignable
+# par ?token=... comme bot-generate-tickets l'est devenue.
+# ============================================================================
+[functions."bot-generate-tickets"]
+  schedule = "*/15 20-22 * * *"
+
+# bot-settle-results (28/08, demande explicite de James : "le calcul des
+# resultats doit se faire a n'importe quelle heure") — passe de
+# "0 10-23 * * *" (fenetre 10h-23h UTC, trouee) a toutes les heures, 24h/24.
+# Cause du signalement initial : un match ayant debute a 23h10 UTC (apres
+# le dernier passage de 23h00, avant celui du lendemain 10h00) restait sans
+# resultat pendant plusieurs heures -- aucun lien avec le code du bot
+# lui-meme, uniquement une fenetre de planification trop etroite.
+[functions."bot-settle-results"]
+  schedule = "0 * * * *"
+
+[functions."bot-publish-scheduled"]
+  schedule = "*/5 * * * *"

@@ -985,11 +985,22 @@ function construireFicheScoreExact(pool, plan, options) {
   Object.entries(parFixture).forEach(([fixtureId, candidats]) => {
     candidats.sort((a, b) => a.odd - b.odd); // du moins cher au plus cher
     const prof = profil(Number(fixtureId));
+    // CORRECTIF (28/08, retour explicite de James : "je ne veux pas du
+    // hasard et toujours des répétitions si ce n'est pas choisi avec des
+    // données réelles") — SANS profil réel (aucun BTTS/totaux déjà validé
+    // pour CE match précis), il n'existe AUCUNE corroboration indépendante
+    // du score choisi : ce n'est alors qu'"le moins cher par défaut", pas
+    // un pronostic fiable. Avant ce correctif, ce cas revenait quand même
+    // au moins cher (correspondants[0]||candidats[0] — et correspond()
+    // retourne toujours vrai quand prof est null, donc ce repli était en
+    // réalité systématique dès qu'aucun signal n'existait), d'où les
+    // scores répétés (2:0, 1:1...) sur des matchs sans lien entre eux.
+    // Le match est maintenant EXCLU plutôt que deviné sans corroboration —
+    // conforme à "jamais forcer, qualité > quantité" déjà établi ailleurs.
+    if (!prof) return;
     const correspondants = candidats.filter(c => correspond(parseScore(c.pick), prof));
-    // Si aucun candidat ne correspond au profil (rare), on garde quand même
-    // le moins cher plutôt que d'abandonner le match — mieux vaut un score
-    // publié avec un profil non confirmé qu'aucun score du tout.
-    meilleur[fixtureId] = (correspondants[0] || candidats[0]);
+    if (!correspondants.length) return; // profil réel mais aucun score ne colle : pareil, on exclut plutôt que de forcer
+    meilleur[fixtureId] = correspondants[0];
   });
   // Les scores les plus probables (cote la plus basse, DANS le profil retenu
   // ci-dessus) d'abord — construction INCRÉMENTALE respectant
@@ -1707,64 +1718,92 @@ async function handler(event) {
     stats.erreurs.push(`lecture legsExistants (anti-doublon): ${e.message}`);
   }
 
-  for (const plan of plans) {
-    // Repli "au mieux" (25/08) : 1ᵉʳ essai à la vraie cible du plan, 2ᵉ essai
-    // avec un plancher très bas (1.5) si invalide — jamais le MAXIMUM du
-    // plan, qui reste strict dans les deux essais. Les Sets/Map temporaires
-    // ne sont "consommés" dans les partagés qu'une fois la fiche RÉELLEMENT
-    // publiée, pour ne jamais priver un essai suivant à cause d'une
-    // tentative avortée.
-    // Partie 6/7 (27/08, spec anti-doublon) : cette règle n'oblige PLUS à
-    // publier à tout prix — si tout le contenu disponible est déjà utilisé
-    // ailleurs aujourd'hui (selectionsExclues), le plan reste simplement
-    // sans fiche PROPRE : ses abonnés voient quand même la fiche du rang
-    // inférieur grâce à l'accès en cascade (minPlan<=rang abonné), donc
-    // personne ne se retrouve sans contenu — jamais de doublon créé pour
-    // combler artificiellement ce rang.
-    function essayer(cibleMinOverride) {
-      const buteursTmp = new Set(buteursUtilises);
-      const equipesTmp = new Map(equipesUtilisees);
-      const f = construireFiche(poolFoot, plan, {
+  // Nombre MAXIMUM de fiches classiques par plan (28/08, demande explicite
+  // de James) — jamais un objectif forcé, seulement un plafond : un jour
+  // pauvre en matchs, un plan peut très bien n'en recevoir qu'une seule
+  // (ou aucune), comme avant. Le score exact, lui, reste 1 par plan par
+  // jour, inchangé (non concerné par cette demande).
+  const MAX_FICHES_PAR_PLAN = 3;
+  const fichesPublieesParPlan = {}; // rank -> nb de fiches classiques publiées ce passage
+  const planEncoreActif = {};       // rank -> false dès qu'un tour échoue (inutile de retenter, le pool ne peut que s'appauvrir davantage)
+  plans.forEach(p => { fichesPublieesParPlan[p.rank] = 0; planEncoreActif[p.rank] = true; });
+
+  // avecRepli=true : 1ᵉʳ essai à la vraie cible, 2ᵉ essai à plancher très
+  // bas (1.5) si invalide — réservé à la fiche GARANTIE (tour 1) de chaque
+  // plan. avecRepli=false (fiches bonus, tours 2-3) : uniquement la vraie
+  // cible du plan, jamais de repli — une fiche bonus n'existe QUE si elle
+  // atteint vraiment la cote visée par ce plan, jamais une fiche de moindre
+  // qualité juste pour remplir un quota (qualité > quantité, principe déjà
+  // établi ailleurs). Le MAXIMUM du plan, lui, reste toujours strict, dans
+  // les deux cas.
+  async function tenterEtPublier(plan, avecRepli) {
+    const buteursTmp = new Set(buteursUtilises);
+    const equipesTmp = new Map(equipesUtilisees);
+    let fiche = construireFiche(poolFoot, plan, {
+      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, nbMatchsDisponibles
+    });
+    if (!fiche.valide && avecRepli) {
+      fiche = construireFiche(poolFoot, plan, {
         buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues,
-        nbMatchsDisponibles, cibleMinOverride
+        nbMatchsDisponibles, cibleMinOverride: 1.5
       });
-      return { f, buteursTmp, equipesTmp };
-    }
-    let { f: fiche, buteursTmp, equipesTmp } = essayer(undefined);
-    if (!fiche.valide) {
-      ({ f: fiche, buteursTmp, equipesTmp } = essayer(1.5));
     }
     stats.fichesGenerees++;
-    if (!fiche.valide) {
-      console.log(`[BOT] Rang ${plan.rank} : aucune fiche propre publiable (contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre) — ${fiche.selections.length} sélection(s), cote atteinte ${fiche.coteTotale}, cible [${plan.min_total_odd}–${plan.max_total_odd}]. Abonnés couverts via cascade par le rang inférieur.`);
-    } else {
-      buteursTmp.forEach(p => buteursUtilises.add(p));
-      equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
-      fiche.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
-      await publierFiche(plan, fiche, dateCible, 'foot', noms);
-    }
+    if (!fiche.valide) return false;
+    buteursTmp.forEach(p => buteursUtilises.add(p));
+    equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
+    fiche.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
+    await publierFiche(plan, fiche, dateCible, 'foot', noms);
+    return true;
+  }
 
-    // Fiche score exact dédiée (3-6 sélections, jamais mélangée) — s'ajoute
-    // à la fiche normale, ne la remplace pas (confirmé par James). Exemptée
-    // de la limite d'apparition par équipe (Partie 4), mais PAS de
-    // l'anti-doublon de sélection exacte (Partie 4 : "même fiche exacte
-    // répétée → toujours interdit").
-    // Repli jour pauvre (26/08) : même principe que la fiche normale —
-    // 1ᵉʳ essai à la vraie cible du plan, 2ᵉ essai à plancher très bas
-    // (1.5) si invalide. Le minimum de 3 sélections reste strict dans les
-    // deux essais (règle structurelle, pas une cote-cible qu'on assouplit).
-    if (plan.includes_exact_score) {
-      let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues });
-      if (!ficheExacte.valide) {
-        ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, cibleMinOverride: 1.5 });
-      }
-      stats.fichesGenerees++;
-      if (!ficheExacte.valide) {
-        console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
-      } else {
-        ficheExacte.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
-        await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
-      }
+  // TOUR 1 — fiche GARANTIE "au mieux" pour chaque plan (repli 1.5
+  // autorisé). Partie 6/7 (27/08) toujours valable : si même ça échoue, ce
+  // plan reste simplement sans fiche PROPRE ce passage, ses abonnés restent
+  // couverts par le rang inférieur via la cascade d'accès — jamais de
+  // doublon créé pour combler artificiellement ce rang.
+  for (const plan of plans) {
+    const ok = await tenterEtPublier(plan, true);
+    if (ok) { fichesPublieesParPlan[plan.rank] = 1; }
+    else {
+      planEncoreActif[plan.rank] = false;
+      console.log(`[BOT] Rang ${plan.rank} : aucune fiche propre publiable au tour 1 (contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre) — cible [${plan.min_total_odd}–${plan.max_total_odd}]. Abonnés couverts via cascade par le rang inférieur.`);
+    }
+  }
+
+  // TOURS 2 et 3 — fiches BONUS, jusqu'à 3 au total par plan (28/08,
+  // demande explicite de James). Traitement PAR TOUR (une tentative pour
+  // CHAQUE plan, puis une autre) plutôt que "le Plan 1 prend tout avant que
+  // les autres jouent" — protège les gros plans (VIP/Lifetime) d'un pool
+  // déjà épuisé par les petits plans avant même d'avoir eu leur propre
+  // chance à leur vraie cote cible, un jour riche en matchs. Aucun log
+  // d'échec ici : ne pas atteindre 3 fiches est le cas normal, pas une
+  // anomalie à signaler comme le tour 1.
+  for (let tour = 2; tour <= MAX_FICHES_PAR_PLAN; tour++) {
+    for (const plan of plans) {
+      if (!planEncoreActif[plan.rank]) continue; // déjà échoué à un tour précédent : le pool ne peut que s'être appauvri davantage
+      const ok = await tenterEtPublier(plan, false);
+      if (ok) fichesPublieesParPlan[plan.rank]++;
+      else planEncoreActif[plan.rank] = false;
+    }
+  }
+
+  // Score exact — inchangé, 1 fiche dédiée par plan éligible (rang 3/4 en
+  // pratique, piloté par plans.includes_exact_score), jamais mélangée aux
+  // fiches classiques ci-dessus. Repli jour pauvre (26/08) identique : 1ᵉʳ
+  // essai à la vraie cible, 2ᵉ essai à plancher très bas (1.5) si invalide.
+  for (const plan of plans) {
+    if (!plan.includes_exact_score) continue;
+    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues });
+    if (!ficheExacte.valide) {
+      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, cibleMinOverride: 1.5 });
+    }
+    stats.fichesGenerees++;
+    if (!ficheExacte.valide) {
+      console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
+    } else {
+      ficheExacte.selections.forEach(s => selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`));
+      await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
     }
   }
 
