@@ -1498,13 +1498,16 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .field input::placeholder,.field textarea::placeholder{color:#5C6B7A}
 .field input:focus,.field textarea:focus{outline:none;border-color:var(--vert-vif);background:#0C1729;box-shadow:0 0 0 3px rgba(46,212,127,.13)}
 /* Champs date (27/08, retour de James : "la date déborde trop" sur iOS
-   Safari) — le contrôle natif type="date" gonfle sa propre hauteur/
-   alignement au-delà du padding demandé, indépendamment des autres champs
-   texte. Règle ciblée uniquement sur type="date", jamais sur .field input
-   en général (ça affecterait tous les autres champs du site). */
+   Safari). CORRECTIF COMPLÉTÉ (28/08, capture montrant le débordement
+   toujours présent) — la vraie cause : .field est un conteneur flex
+   (colonne), et un enfant flex garde par défaut min-width:auto, qui laisse
+   la largeur INTRINSÈQUE native du champ date (large sur iOS Safari)
+   l'emporter sur width:100% demandé. min-width:0 est le correctif standard
+   pour ce bug flexbox classique. Règle ciblée uniquement sur type="date",
+   jamais sur .field input en général (affecterait tous les autres champs). */
 .field input[type="date"]{
   padding:9px 12px;font-size:13.5px;
-  text-align:left;
+  text-align:left;width:100%;min-width:0;max-width:100%;
 }
 .field input[type="date"]::-webkit-date-and-time-value{text-align:left}
 .field.invalid input{border-color:#E2634F}
@@ -4855,7 +4858,7 @@ adm_refresh:"Rafraîchir", adm_updated_at:"Mis à jour à {t}",
 adm_k_loading:"Chargement...", adm_k_offline:"Connexion indisponible", adm_k_error:"Erreur de lecture",
 adm_activity_h:"Activité récente", adm_activity_empty:"Aucun paiement en attente pour l'instant.",
 adm_activity_pending_pay:"Paiement en attente — {name}",
-adm_k_users:"Utilisateurs", adm_k_subs_active:"Abonnements actifs", adm_k_pay_pending:"Paiements en attente", adm_k_tickets:"Fiches",
+adm_k_users:"Utilisateurs", adm_k_subs_active:"Abonnements actifs", adm_k_pay_pending:"Paiements en attente", adm_k_tickets:"Fiches en cours",
 adm_users_h:"Utilisateurs", adm_users_p:"Recherche et détail de chaque compte, directement depuis la base de données.",
 adm_users_search_ph:"Chercher par e-mail...", adm_users_count:"{n} compte(s)", adm_users_empty:"Aucun compte trouvé.",
 adm_badge_none:"Aucun plan", adm_badge_expired:"expiré", adm_no_name:"Sans nom", adm_badge_suspended:"Suspendu",
@@ -5280,7 +5283,7 @@ adm_refresh:"Refresh", adm_updated_at:"Updated at {t}",
 adm_k_loading:"Loading...", adm_k_offline:"Connection unavailable", adm_k_error:"Read error",
 adm_activity_h:"Recent activity", adm_activity_empty:"No pending payments right now.",
 adm_activity_pending_pay:"Pending payment — {name}",
-adm_k_users:"Users", adm_k_subs_active:"Active subscriptions", adm_k_pay_pending:"Pending payments", adm_k_tickets:"Slips",
+adm_k_users:"Users", adm_k_subs_active:"Active subscriptions", adm_k_pay_pending:"Pending payments", adm_k_tickets:"Slips in progress",
 adm_users_h:"Users", adm_users_p:"Search and detail for each account, straight from the database.",
 adm_users_search_ph:"Search by email...", adm_users_count:"{n} account(s)", adm_users_empty:"No accounts found.",
 adm_badge_none:"No plan", adm_badge_expired:"expired", adm_no_name:"No name", adm_badge_suspended:"Suspended",
@@ -5705,7 +5708,7 @@ adm_refresh:"Rafrechi", adm_updated_at:"Mizajou a {t}",
 adm_k_loading:"Chajman...", adm_k_offline:"Koneksyon pa disponib", adm_k_error:"Erè lekti",
 adm_activity_h:"Aktivite resan", adm_activity_empty:"Pa gen peman ki ap tann kounye a.",
 adm_activity_pending_pay:"Peman ap tann — {name}",
-adm_k_users:"Itilizatè", adm_k_subs_active:"Abònman aktif", adm_k_pay_pending:"Peman ki ap tann", adm_k_tickets:"Fich",
+adm_k_users:"Itilizatè", adm_k_subs_active:"Abònman aktif", adm_k_pay_pending:"Peman ki ap tann", adm_k_tickets:"Fich an kou",
 adm_users_h:"Itilizatè", adm_users_p:"Rechèch ak detay chak kont, dirèkteman soti nan baz done a.",
 adm_users_search_ph:"Chèche pa imèl...", adm_users_count:"{n} kont", adm_users_empty:"Pa gen okenn kont.",
 adm_badge_none:"Pa gen plan", adm_badge_expired:"ekspire", adm_no_name:"San non", adm_badge_suspended:"Sispann",
@@ -9740,11 +9743,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!sb){box.innerHTML=kpi('—',t('adm_k_offline'));return;}
     box.innerHTML=kpi('—',t('adm_k_loading'));
     try{
+      // Compteur "Fich" (28/08, demande explicite de James) : uniquement
+      // les fiches EN COURS (status='pending'), pas le total historique
+      // toutes-confondues -- une fiche reglee (won/lost/void) doit sortir
+      // du compte des qu'elle bascule dans l'Historique, une fiche
+      // supprimee sort naturellement du compte (simple COUNT sur l'etat
+      // actuel de la base). Synchronise automatiquement quelle que soit
+      // l'origine (bot automatique ou generation manuelle admin) -- le
+      // filtre porte sur status, jamais sur la colonne source.
       const [{count:users},{count:subsActives},{count:paysPending},{count:tickets}]=await Promise.all([
         sb.from('profiles').select('id',{count:'exact',head:true}),
         sb.from('subscriptions').select('id',{count:'exact',head:true}).eq('status','active'),
         sb.from('payments').select('id',{count:'exact',head:true}).eq('status','pending'),
-        sb.from('tickets').select('id',{count:'exact',head:true})
+        sb.from('tickets').select('id',{count:'exact',head:true}).eq('status','pending')
       ]);
       box.innerHTML=
         kpi(users!=null?users:'—',t('adm_k_users'),null,'users') +
