@@ -240,6 +240,53 @@ async function sbDelete(table, query) {
   return true;
 }
 
+// Appel d'une fonction RPC Postgres (29/08, suivi de quota) — renvoie le
+// premier élément du tableau (les RPC "returns table(...)" renvoient
+// toujours un tableau via PostgREST, même avec une seule ligne).
+async function sbRpc(name, params) {
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/${name}`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: sbHeaders(),
+    body: JSON.stringify(params || {})
+  });
+  if (!resp.ok) throw new Error(`Supabase RPC ${name} → HTTP ${resp.status} : ${await resp.text()}`);
+  const data = await resp.json();
+  return Array.isArray(data) ? data[0] : data;
+}
+
+// ============================================================================
+// SUIVI DE QUOTA API-SPORTS (29/08, demande explicite de James) — table
+// api_quota_usage + RPC increment_api_quota (migration Supabase du 29/08).
+// Appelée AVANT chaque appel réel à API-Sports (foot) : incrémente le
+// compteur interne et dit si on a encore de la marge. QUOTA_MAX_JOUR fixé
+// à 95 plutôt que 100 (marge de sécurité — le vrai plafond API-Sports est
+// 100/jour, mais notre compteur interne peut légèrement dériver si un
+// appel échoue avant d'atteindre l'incrémentation, ou si un autre outil
+// hors de ce code appelle l'API directement).
+// ============================================================================
+const QUOTA_MAX_JOUR = 95;
+let quotaInterneEpuise = false; // drapeau local au run : une fois vrai, plus aucun appel tenté
+
+async function verifierEtIncrementerQuota(contexte) {
+  if (quotaInterneEpuise) return false;
+  try {
+    const r = await sbRpc('increment_api_quota', { p_provider: 'api-sports-football', p_max: QUOTA_MAX_JOUR });
+    if (r && r.quota_restant <= 0) {
+      quotaInterneEpuise = true;
+      stats.erreurs.push(`[QUOTA INTERNE ÉPUISÉ] ${contexte || ''} — ${r.call_count}/${r.quota_max} appels aujourd'hui, arrêt propre avant de cogner le vrai quota API-Sports.`);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    // Non bloquant : si le suivi lui-même échoue (Supabase indisponible),
+    // on laisse passer l'appel API-Sports plutôt que de tout bloquer sur
+    // un problème de suivi — jamais une raison d'empêcher la génération.
+    stats.erreurs.push(`suivi_quota: ${e.message}`);
+    return true;
+  }
+}
+
 // ============================================================================
 // 2. OUTILS FUSEAU HORAIRE HAÏTI (même logique que admin.html : Intl natif)
 // ============================================================================
@@ -335,6 +382,13 @@ function logFinal() {
 // ============================================================================
 
 async function apiSportsGetRaw(host, path, params) {
+  // Suivi de quota (29/08) : vérifié AVANT l'appel réel. Si le quota
+  // interne est épuisé, on ne tente même pas l'appel — évite de cogner le
+  // vrai mur API-Sports (429/erreur silencieuse) pour rien.
+  const ok = await verifierEtIncrementerQuota(`${host}${path}`);
+  if (!ok) {
+    return { response: [], errors: { quota: 'Quota interne épuisé, appel évité.' } };
+  }
   const url = new URL(`https://${host}${path}`);
   Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
   const resp = await fetch(url.toString(), {
@@ -394,6 +448,14 @@ function attendre(ms) {
 
 async function recupererCoteParFixture(fixtureId, essai) {
   essai = essai || 1;
+  // Suivi de quota (29/08) : vérifié avant CHAQUE appel /odds — c'est ici
+  // que se joue l'essentiel de la consommation (jusqu'à 60/passage). Ne
+  // décompte jamais deux fois un même essai (le réessai après 429 plus bas
+  // n'incrémente pas une seconde fois, il réutilise la même tentative).
+  if (essai === 1) {
+    const ok = await verifierEtIncrementerQuota(`foot/odds(fixture=${fixtureId})`);
+    if (!ok) return null;
+  }
   try {
     const url = new URL(`https://${FOOT_HOST}/odds`);
     url.searchParams.set('fixture', fixtureId);
@@ -1767,10 +1829,18 @@ async function handler(event) {
   // candidats (~6-7 minutes au total).
   const DELAI_ENTRE_APPELS_MS = 6500;
   for (let i = 0; i < candidats.length; i++) {
+    if (quotaInterneEpuise) {
+      // Quota atteint en cours de boucle (29/08) : inutile de continuer à
+      // attendre 6.5s entre des appels qui échoueraient tous — on arrête
+      // net avec ce qu'on a déjà, et le pool final reflète honnêtement ce
+      // qui a pu être examiné aujourd'hui.
+      console.log(`[BOT] Arrêt anticipé (quota interne épuisé) après ${i}/${candidats.length} candidats examinés.`);
+      break;
+    }
     const c = candidats[i];
     const oddsItem = await recupererCoteParFixture(c.fixtureId);
     if (oddsItem) poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, dateCible, noms[c.fixtureId]));
-    if (i < candidats.length - 1) await attendre(DELAI_ENTRE_APPELS_MS);
+    if (i < candidats.length - 1 && !quotaInterneEpuise) await attendre(DELAI_ENTRE_APPELS_MS);
   }
 
   if (!poolFoot.length) {
@@ -2070,3 +2140,10 @@ module.exports.BBS_API_KEY = BBS_API_KEY;
 module.exports.BOOKMAKER_ID = BOOKMAKER_ID;
 module.exports.dateCibleDemainHaiti = dateCibleDemainHaiti;
 module.exports.attendre = attendre;
+module.exports.sbRpc = sbRpc;
+module.exports.verifierEtIncrementerQuota = verifierEtIncrementerQuota;
+// Getter, pas la valeur brute (29/08) : un export direct de la variable
+// capturerait sa valeur au moment du require() (toujours false), jamais
+// mise à jour ensuite — le getter, lui, lit la valeur réelle à chaque appel.
+module.exports.getQuotaInterneEpuise = () => quotaInterneEpuise;
+module.exports.QUOTA_MAX_JOUR = QUOTA_MAX_JOUR;

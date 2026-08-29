@@ -46,7 +46,8 @@ const {
   resetStats, stats, recupererFixturesJour, recupererCoteParFixture,
   extraireMarchesFoot, construireFiche, construireFicheScoreExact,
   publierFiche, ALLOWED_LEAGUES_FOOT, TOP_LEAGUES_FOOT,
-  recupererFiabiliteMarches, annoterPoolAvecFiabilite, attendre
+  recupererFiabiliteMarches, annoterPoolAvecFiabilite, attendre,
+  getQuotaInterneEpuise
 } = bot;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -248,10 +249,14 @@ async function handler(event) {
   // tourne désormais en Background (15 minutes disponibles).
   const DELAI_ENTRE_APPELS_MS = 6500;
   for (let i = 0; i < candidats.length; i++) {
+    if (getQuotaInterneEpuise()) {
+      console.log(`[MANUEL] Arrêt anticipé (quota interne épuisé) après ${i}/${candidats.length} candidats.`);
+      break;
+    }
     const c = candidats[i];
     const oddsItem = await recupererCoteParFixture(c.fixtureId);
     if (oddsItem) poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, playDate, noms[c.fixtureId]));
-    if (i < candidats.length - 1) await attendre(DELAI_ENTRE_APPELS_MS);
+    if (i < candidats.length - 1 && !getQuotaInterneEpuise()) await attendre(DELAI_ENTRE_APPELS_MS);
   }
 
   if (!poolFoot.length) {

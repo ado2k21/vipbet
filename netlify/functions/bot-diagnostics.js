@@ -200,35 +200,6 @@ async function handler(event) {
   }
 
   // MODE DIAGNOSTIC APERÇU DU POOL (28/08 v3) : ?token=...&diag=poolpreview[&date=AAAA-MM-JJ]
-  // MODE DIAGNOSTIC RÉPONSE BRUTE /fixtures (29/08 v6) : ?token=...&diag=rawfixtures[&date=AAAA-MM-JJ]
-  // Créé après un cas où /fixtures a renvoyé une liste vide SANS aucun
-  // champ "errors" rempli (donc ni notre détection de quota via
-  // apiSportsGetRaw, ni un throw HTTP, ne s'est déclenchée) — sur une date
-  // dont on savait avec certitude qu'elle avait de vrais matchs quelques
-  // heures plus tôt. Montre l'enveloppe COMPLÈTE de la réponse API-Sports
-  // (results, paging, parameters, errors — pas seulement le tableau
-  // "response" que le reste du code garde d'habitude), pour voir ce qui se
-  // passe réellement sans deviner davantage. Isolé, lecture seule, 1 SEUL
-  // appel API.
-  if (modeTest && event.queryStringParameters.diag === 'rawfixtures') {
-    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
-    const dateR = event.queryStringParameters.date || dateCibleDemainHaiti();
-    try {
-      const data = await apiSportsGetRaw(FOOT_HOST, '/fixtures', { date: dateR, timezone: TZ_HAITI });
-      return { statusCode: 200, body: JSON.stringify({
-        date: dateR,
-        enveloppeComplete: {
-          get: data.get, parameters: data.parameters, errors: data.errors,
-          results: data.results, paging: data.paging,
-          nbDansResponse: Array.isArray(data.response) ? data.response.length : null,
-          echantillonResponse: Array.isArray(data.response) ? data.response.slice(0, 2) : data.response
-        }
-      }, null, 2) };
-    } catch (e) {
-      return { statusCode: 200, body: JSON.stringify({ date: dateR, erreurLevee: e.message }, null, 2) };
-    }
-  }
-
   // Reproduit EXACTEMENT le pipeline de la vraie génération (mêmes appels
   // API, mêmes filtres, même construction de fiche via construireFiche/
   // construireFicheScoreExact — aucune logique dupliquée) mais NE PUBLIE
@@ -308,9 +279,6 @@ async function handler(event) {
         // Erreurs brutes API-Sports rencontrées pendant ce run (ex. quota
         // dépassé) — jusque-là silencieusement absorbées par
         // recupererCoteParFixture, jamais visibles dans ce diagnostic.
-        // Drapeau visible en un coup d'œil (29/08 v6) — plus besoin de lire
-        // toute la liste erreursRencontrees pour repérer un quota dépassé.
-        quotaJournalierDepasse: stats.erreurs.some(e => e.includes('QUOTA JOURNALIER DÉPASSÉ')),
         erreursRencontrees: stats.erreurs,
         simulationParPlan: simulation,
         detailSelections: poolFootP.map(b => ({
@@ -378,6 +346,30 @@ async function handler(event) {
   // (25/08) Vérifie que BSD_API_KEY fonctionne et que des matchs sont bien
   // reçus pour la date visée, AVANT de lancer une vraie génération. Isolé,
   // lecture seule, n'écrit rien en base, n'affecte aucune fiche.
+  // MODE DIAGNOSTIC MARCHÉS BSD (29/08) : ?token=...&diag=bsd-markets[&date=AAAA-MM-JJ]
+  // diag=bsd (ci-dessus) ne montre QUE odds_home/odds_draw/odds_away —
+  // conçu à l'origine pour la vérification croisée 1X2 uniquement (25/08).
+  // Celui-ci montre TOUS les champs bruts d'un vrai événement BSD, sans
+  // rien filtrer ni supposer — pour savoir si BSD expose d'autres marchés
+  // (double chance, totaux, BTTS, prédictions ML) avant d'envisager un
+  // vrai repli complet quand API-Sports est à sec. Jamais deviné : soit
+  // les champs existent et on les voit ici, soit non. N'entame PAS le
+  // quota API-Sports (fournisseur totalement séparé).
+  if (modeTest && event.queryStringParameters.diag === 'bsd-markets') {
+    if (!BSD_API_KEY) return { statusCode: 500, body: 'BSD_API_KEY manquante (variable Netlify).' };
+    const dateBsd = event.queryStringParameters.date || partsHaiti(new Date()).iso;
+    const evenements = await recupererEvenementsBSD(dateBsd);
+    return { statusCode: 200, body: JSON.stringify({
+      date: dateBsd,
+      nombreMatchs: evenements.length,
+      erreur: stats.bsd.erreur,
+      // 3 événements bruts, TOUS leurs champs, aucun filtrage — révèle
+      // exactement ce que l'API renvoie, y compris d'éventuels champs de
+      // prédiction ou d'autres marchés jamais exploités jusqu'ici.
+      echantillonBrutComplet: evenements.slice(0, 3)
+    }, null, 2) };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'bsd') {
     if (!BSD_API_KEY) return { statusCode: 500, body: 'BSD_API_KEY manquante (variable Netlify).' };
     const dateBsd = event.queryStringParameters.date || partsHaiti(new Date()).iso;
