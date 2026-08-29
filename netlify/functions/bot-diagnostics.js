@@ -355,6 +355,53 @@ async function handler(event) {
   // vrai repli complet quand API-Sports est à sec. Jamais deviné : soit
   // les champs existent et on les voit ici, soit non. N'entame PAS le
   // quota API-Sports (fournisseur totalement séparé).
+  // MODE DIAGNOSTIC VRAI QUOTA API-SPORTS (29/08) : ?token=...&diag=quota-status
+  // Créé après un bug réel : le compteur interne (table api_quota_usage,
+  // 29/08) invente son propre chiffre à partir de zéro, complètement
+  // déconnecté du vrai compteur côté API-Sports — un dépassement déjà en
+  // cours (111% constaté sur leur tableau de bord) restait invisible pour
+  // nous. Teste DEUX pistes pour lire le VRAI quota, sans deviner :
+  //  1. Un éventuel endpoint /status (pattern courant chez ce type d'API,
+  //     retourne souvent l'abonnement + les requêtes déjà utilisées
+  //     aujourd'hui, généralement exempté du quota lui-même).
+  //  2. Les en-têtes de la réponse elle-même (beaucoup d'API renvoient un
+  //     x-ratelimit-*/x-requests-remaining sur CHAQUE appel normal).
+  // Isolé, lecture seule. Le test /status peut échouer sans que ce soit
+  // grave (l'endpoint n'existe peut-être simplement pas sur ce plan) —
+  // dans ce cas on se rabat sur les en-têtes du test n°2.
+  if (modeTest && event.queryStringParameters.diag === 'quota-status') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const rapport = { test1_endpoint_status: null, test2_entetes_reponse_normale: null };
+
+    try {
+      const resp = await fetch(`https://${FOOT_HOST}/status`, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+      const corps = await resp.json().catch(() => ({}));
+      rapport.test1_endpoint_status = { httpStatus: resp.status, corps };
+    } catch (e) {
+      rapport.test1_endpoint_status = { erreur: e.message };
+    }
+
+    try {
+      // Un appel minime et peu coûteux en information (timezone : liste
+      // statique, généralement gratuite même sur les plans limités) —
+      // juste pour inspecter les en-têtes de la réponse.
+      const resp2 = await fetch(`https://${FOOT_HOST}/timezone`, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+      const entetesPertinents = {};
+      resp2.headers.forEach((v, k) => { if (/rate|limit|quota|request/i.test(k)) entetesPertinents[k] = v; });
+      const entetesTous = {};
+      resp2.headers.forEach((v, k) => { entetesTous[k] = v; });
+      rapport.test2_entetes_reponse_normale = {
+        httpStatus: resp2.status,
+        entetesPertinentsTrouves: entetesPertinents,
+        entetesCompletsSiRienTrouve: Object.keys(entetesPertinents).length ? undefined : entetesTous
+      };
+    } catch (e) {
+      rapport.test2_entetes_reponse_normale = { erreur: e.message };
+    }
+
+    return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'bsd-markets') {
     if (!BSD_API_KEY) return { statusCode: 500, body: 'BSD_API_KEY manquante (variable Netlify).' };
     const dateBsd = event.queryStringParameters.date || partsHaiti(new Date()).iso;
