@@ -1682,6 +1682,26 @@ async function handler(event) {
     }
   }
 
+  // MODE DIAGNOSTIC BOOKMAKERS FOOT (28/08 v4) : ?token=...&diag=bookmakers-foot
+  // Liste tous les bookmakers connus d'API-Sports pour le football — jamais
+  // interrogé jusqu'ici (seul BOOKMAKER_ID=8/Bet365 est utilisé en dur).
+  // Isolé, lecture seule, 1 SEUL appel API. Sert uniquement à confirmer un
+  // vrai ID de bookmaker de repli avant de l'ajouter au code — jamais
+  // deviné, même principe que diag=leagues/teams/bets.
+  if (modeTest && event.queryStringParameters.diag === 'bookmakers-foot') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    try {
+      const data = await apiSportsGetRaw(FOOT_HOST, '/odds/bookmakers', {});
+      const erreurs = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
+      return { statusCode: 200, body: JSON.stringify({
+        resultats: (data.response || []).map(b => ({ id: b.id, nom: b.name })),
+        erreurApi: (erreurs && erreurs.length) ? erreurs : null
+      }, null, 2) };
+    } catch (e) {
+      return { statusCode: 200, body: JSON.stringify({ erreur: e.message }, null, 2) };
+    }
+  }
+
   // MODE DIAGNOSTIC COUVERTURE DES COTES (28/08) : ?token=...&diag=oddscoverage[&date=AAAA-MM-JJ]
   // Répond à la question "pourquoi Premier League/Ligue 1 sont absentes
   // alors que des matchs existent" — SANS toucher à la génération réelle.
@@ -1788,9 +1808,16 @@ async function handler(event) {
     const { noms: nomsP, candidats: candidatsP } = filtrerCandidatsJour(fixturesJourP, dateP);
 
     let poolFootP = [];
+    // Suivi explicite réussite/échec des appels /odds (28/08 v4, suite à
+    // un taux d'échec suspect de 51/60 matchs) — sans ça, impossible de
+    // distinguer "pas de cote Bet365 pour ce match" d'un quota API épuisé
+    // en cours de boucle (recupererCoteParFixture absorbe l'erreur et
+    // renvoie null dans les deux cas, silencieusement).
+    let candidatsAvecCote = 0, candidatsSansCote = 0;
     for (const c of candidatsP) {
       const oddsItem = await recupererCoteParFixture(c.fixtureId);
-      if (!oddsItem) continue;
+      if (!oddsItem) { candidatsSansCote++; continue; }
+      candidatsAvecCote++;
       poolFootP = poolFootP.concat(extraireMarchesFoot(oddsItem, dateP, nomsP[c.fixtureId]));
     }
     const carteFiabiliteP = await recupererFiabiliteMarches();
@@ -1828,8 +1855,16 @@ async function handler(event) {
         date: dateP,
         matchsTrouvesTotal: fixturesJourP.length,
         matchsCandidatsApresFiltres: candidatsP.length,
+        // Nouveau (28/08 v4) : distingue "cote reçue mais filtrée" de
+        // "aucune cote reçue" (souvent = quota API épuisé en cours de run).
+        candidatsAvecCoteRecuperee: candidatsAvecCote,
+        candidatsSansCoteRecuperee: candidatsSansCote,
         nbMatchsAvecAuMoinsUneSelection: nbMatchsDisponiblesP,
         poolFinal: { total: poolFootP.length, SAFE: parTier('SAFE'), PREMIUM: parTier('PREMIUM'), EXACT_SCORE: parTier('EXACT_SCORE') },
+        // Erreurs brutes API-Sports rencontrées pendant ce run (ex. quota
+        // dépassé) — jusque-là silencieusement absorbées par
+        // recupererCoteParFixture, jamais visibles dans ce diagnostic.
+        erreursRencontrees: stats.erreurs,
         simulationParPlan: simulation,
         detailSelections: poolFootP.map(b => ({
           match: (nomsP[b.fixtureId] && nomsP[b.fixtureId].label) || b.fixtureId,
