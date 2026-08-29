@@ -192,7 +192,7 @@ const GRANDS_CLUBS_BUTEUR = [
 ];
 
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
-const FOOT_MIN_HOUR = 8;   // 08:00 accepté
+const FOOT_MIN_HOUR = 7;   // 07:00 accepté (28/08 v3, demande explicite de James — était 08:00)
 const FOOT_MAX_MINUTES = 22 * 60; // 22:00 accepté, 22:01 refusé
 // Le basketball n'a AUCUNE limite horaire haute.
 
@@ -386,6 +386,50 @@ async function recupererCoteParFixture(fixtureId) {
     stats.erreurs.push(`foot/odds(fixture=${fixtureId}): ${e.message}`);
     return null;
   }
+}
+
+// Filtrage local des fixtures du jour : championnat autorisé, fenêtre
+// horaire Haïti, statut programmé, puis priorisation + plafond de quota.
+// FACTORISÉ (28/08 v3) depuis le handler principal, pour être réutilisé
+// tel quel par le nouveau diagnostic diag=poolpreview (voir plus bas) —
+// jamais deux copies qui pourraient diverger silencieusement.
+function filtrerCandidatsJour(fixturesJour, dateCible) {
+  const noms = {};
+  let candidats = [];
+  fixturesJour.forEach(f => {
+    const league = f.league;
+    const fixture = f.fixture;
+    if (!league || !fixture) return;
+    if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) {
+      const clef = `${league.id} — ${league.name} (${league.country || '?'})`;
+      stats.championnatsVus[clef] = (stats.championnatsVus[clef] || 0) + 1;
+      return;
+    }
+    const h = heureHaitiDuMatch(fixture.date);
+    if (!h || h.iso !== dateCible) return;
+    const minutesJour = h.heureNum * 60 + h.minuteNum;
+    if (minutesJour < FOOT_MIN_HOUR * 60 || minutesJour > FOOT_MAX_MINUTES) return;
+    if (!['NS', 'TBD'].includes(fixture.status.short)) return;
+
+    noms[fixture.id] = {
+      label: `${f.teams.home.name} — ${f.teams.away.name}`,
+      statut: fixture.status.short,
+      kickoffUtc: fixture.date,
+      equipeDomicileId: f.teams.home.id,
+      equipeExterieurId: f.teams.away.id
+    };
+    candidats.push({
+      fixtureId: fixture.id,
+      prioritaire: TOP_LEAGUES_FOOT.includes(league.id)
+    });
+  });
+
+  // Garde-fou quota : priorité aux grands championnats si trop de matchs
+  // candidats un même jour (1 appel /odds par match candidat).
+  const PLAFOND_APPELS_COTES = 60;
+  candidats.sort((a, b) => (b.prioritaire ? 1 : 0) - (a.prioritaire ? 1 : 0));
+  if (candidats.length > PLAFOND_APPELS_COTES) candidats = candidats.slice(0, PLAFOND_APPELS_COTES);
+  return { noms, candidats };
 }
 
 // DIAGNOSTIC (25/08) : retrouve les vrais id/nom/pays d'un championnat via
@@ -1726,6 +1770,75 @@ async function handler(event) {
     return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
   }
 
+  // MODE DIAGNOSTIC APERÇU DU POOL (28/08 v3) : ?token=...&diag=poolpreview[&date=AAAA-MM-JJ]
+  // Reproduit EXACTEMENT le pipeline de la vraie génération (mêmes appels
+  // API, mêmes filtres, même construction de fiche via construireFiche/
+  // construireFicheScoreExact — aucune logique dupliquée) mais NE PUBLIE
+  // RIEN en base : purement une simulation à blanc, renvoyée directement
+  // dans la réponse HTTP. Créé suite à la panne des logs Netlify
+  // ("Function logs are currently unavailable") pour pouvoir diagnostiquer
+  // sans dépendre d'eux — répond à la place à stats.poolFinal du run réel.
+  // ATTENTION QUOTA : mêmes appels /odds qu'une vraie génération (jusqu'à
+  // 60), à lancer une seule fois, pas en boucle.
+  if (modeTest && event.queryStringParameters.diag === 'poolpreview') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    try { verifierConfigSupabase(); } catch (e) { return { statusCode: 500, body: e.message }; }
+    const dateP = event.queryStringParameters.date || dateCibleDemainHaiti();
+    const fixturesJourP = await recupererFixturesJour(dateP);
+    const { noms: nomsP, candidats: candidatsP } = filtrerCandidatsJour(fixturesJourP, dateP);
+
+    let poolFootP = [];
+    for (const c of candidatsP) {
+      const oddsItem = await recupererCoteParFixture(c.fixtureId);
+      if (!oddsItem) continue;
+      poolFootP = poolFootP.concat(extraireMarchesFoot(oddsItem, dateP, nomsP[c.fixtureId]));
+    }
+    const carteFiabiliteP = await recupererFiabiliteMarches();
+    annoterPoolAvecFiabilite(poolFootP, carteFiabiliteP);
+
+    let plansP = [];
+    try {
+      plansP = await sbSelect('plans', 'select=rank,min_total_odd,max_total_odd,max_leg_odd,includes_exact_score');
+      plansP.sort((a, b) => a.rank - b.rank);
+    } catch (e) { /* non bloquant pour ce diagnostic */ }
+
+    const nbMatchsDisponiblesP = new Set(poolFootP.map(b => b.fixtureId)).size;
+    // Simulation SANS aucune exclusion (Set/Map vides) : montre ce que
+    // CHAQUE plan pourrait obtenir individuellement à partir du même pool,
+    // pas ce qui resterait après que les plans précédents aient consommé
+    // des sélections — donc optimiste par rapport à un vrai passage
+    // séquentiel, mais suffisant pour voir si la cible est même atteignable.
+    const simulation = plansP.map(plan => {
+      const fiche = construireFiche(poolFootP, plan, { nbMatchsDisponibles: nbMatchsDisponiblesP });
+      const resultat = {
+        rang: plan.rank, cible: [Number(plan.min_total_odd), plan.max_total_odd == null ? null : Number(plan.max_total_odd)],
+        valide: fiche.valide, coteObtenue: fiche.coteTotale, nbSelections: fiche.selections.length
+      };
+      if (plan.includes_exact_score) {
+        const fe = construireFicheScoreExact(poolFootP, plan, {});
+        resultat.scoreExact = { valide: fe.valide, coteObtenue: fe.coteTotale, nbSelections: fe.selections.length };
+      }
+      return resultat;
+    });
+
+    const parTier = t => poolFootP.filter(b => b.tier === t).length;
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        date: dateP,
+        matchsTrouvesTotal: fixturesJourP.length,
+        matchsCandidatsApresFiltres: candidatsP.length,
+        nbMatchsAvecAuMoinsUneSelection: nbMatchsDisponiblesP,
+        poolFinal: { total: poolFootP.length, SAFE: parTier('SAFE'), PREMIUM: parTier('PREMIUM'), EXACT_SCORE: parTier('EXACT_SCORE') },
+        simulationParPlan: simulation,
+        detailSelections: poolFootP.map(b => ({
+          match: (nomsP[b.fixtureId] && nomsP[b.fixtureId].label) || b.fixtureId,
+          league: b.league, market: b.market, pick: b.pick, odd: b.odd, tier: b.tier
+        }))
+      }, null, 2)
+    };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'leagues') {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
     const termes = (event.queryStringParameters.q || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1872,43 +1985,9 @@ async function handler(event) {
   }
 
   // Filtrage local : championnat autorisé, fenêtre horaire Haïti, statut
-  // programmé. On construit `noms` directement ici (label, statut, heure
-  // de coup d'envoi) — plus besoin d'un appel séparé pour les noms d'équipes.
-  const noms = {};
-  let candidats = [];
-  fixturesJour.forEach(f => {
-    const league = f.league;
-    const fixture = f.fixture;
-    if (!league || !fixture) return;
-    if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) {
-      const clef = `${league.id} — ${league.name} (${league.country || '?'})`;
-      stats.championnatsVus[clef] = (stats.championnatsVus[clef] || 0) + 1;
-      return;
-    }
-    const h = heureHaitiDuMatch(fixture.date);
-    if (!h || h.iso !== dateCible) return;
-    const minutesJour = h.heureNum * 60 + h.minuteNum;
-    if (minutesJour < FOOT_MIN_HOUR * 60 || minutesJour > FOOT_MAX_MINUTES) return;
-    if (!['NS', 'TBD'].includes(fixture.status.short)) return;
-
-    noms[fixture.id] = {
-      label: `${f.teams.home.name} — ${f.teams.away.name}`,
-      statut: fixture.status.short,
-      kickoffUtc: fixture.date,
-      equipeDomicileId: f.teams.home.id,
-      equipeExterieurId: f.teams.away.id
-    };
-    candidats.push({
-      fixtureId: fixture.id,
-      prioritaire: TOP_LEAGUES_FOOT.includes(league.id)
-    });
-  });
-
-  // Garde-fou quota : priorité aux grands championnats si trop de matchs
-  // candidats un même jour (1 appel /odds par match candidat).
-  const PLAFOND_APPELS_COTES = 60;
-  candidats.sort((a, b) => (b.prioritaire ? 1 : 0) - (a.prioritaire ? 1 : 0));
-  if (candidats.length > PLAFOND_APPELS_COTES) candidats = candidats.slice(0, PLAFOND_APPELS_COTES);
+  // programmé (voir filtrerCandidatsJour, factorisée pour être réutilisée
+  // telle quelle par le diagnostic diag=poolpreview).
+  const { noms, candidats } = filtrerCandidatsJour(fixturesJour, dateCible);
 
   let poolFoot = [];
   for (const c of candidats) {
