@@ -31,20 +31,31 @@
 
 # ============================================================================
 # 27/08/2026 — CAUSE RACINE DU BUG "aucune fiche generee, aucun reglement" :
-# ces 3 fonctions exportent bien un config.schedule dans leur propre fichier
+# ces fonctions exportent bien un config.schedule dans leur propre fichier
 # JS, mais Netlify sur ce site ne le prend PAS en compte sans declaration
 # explicite ICI (contrairement a database-backup/subscription-reminders,
 # qui elles fonctionnent car deja declarees ci-dessus). Sans cette section,
-# les 3 bots existent comme fonctions normales mais ne sont JAMAIS
-# declenchees automatiquement -- confirme par l'absence du badge
+# les bots existent comme fonctions normales mais ne sont JAMAIS
+# declenches automatiquement -- confirme par l'absence du badge
 # "Scheduled" dans l'onglet Functions de Netlify avant ce correctif.
 #
-# bot-diagnostics N'EST VOLONTAIREMENT PAS DECLAREE ICI : elle doit rester
-# une fonction HTTP normale, invocable directement par URL (voir son
-# en-tete) -- toute declaration de schedule ici la rendrait injoignable
-# par ?token=... comme bot-generate-tickets l'est devenue.
+# bot-diagnostics et bot-generate-tickets-manual-background NE SONT VOLONTAIREMENT PAS
+# DECLAREES ICI : elles doivent rester des fonctions HTTP normales,
+# invocables directement par URL (bot-diagnostics via ?token=..., voir son
+# en-tete ; bot-generate-tickets-manual-background depuis le panneau admin) -- toute
+# declaration de schedule ici les rendrait injoignables directement.
+#
+# 28/08 v5 — bot-generate-tickets renommee bot-generate-tickets-background :
+# convertie en fonction "Background" Netlify (jusqu'a 15 minutes
+# d'execution, au lieu des ~10-26s d'une fonction normale). Necessaire pour
+# espacer ses appels /odds (~6.5s entre chaque, voir le fichier) et rester
+# sous la limite de 10 requetes/minute d'API-Sports (plan gratuit) sans se
+# faire rejeter en HTTP 429 -- cause racine du bug "seulement 9 matchs sur
+# 60 candidats produisent une selection" observe le 28/08. Le suffixe
+# "-background" dans le nom de fichier ET dans la section ci-dessous est
+# ce qui declenche ce comportement special cote Netlify.
 # ============================================================================
-[functions."bot-generate-tickets"]
+[functions."bot-generate-tickets-background"]
   schedule = "*/15 20-22 * * *"
 
 # bot-settle-results (28/08, demande explicite de James : "le calcul des

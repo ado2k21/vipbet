@@ -4751,6 +4751,7 @@ adm_fiche_gen_nba_note:"Non disponible pour l'instant — aucune source de cotes
 adm_fiche_gen_plans:"Plans concernés", adm_fiche_gen_cotemax:"Cote max souhaitée", adm_fiche_gen_publish:"Publication",
 adm_fiche_gen_now:"Immédiate", adm_fiche_gen_scheduled:"Programmée", adm_fiche_gen_scheduled_at:"Date/heure de publication (PAP)",
 adm_fiche_gen_submit:"Générer", adm_fiche_gen_wait:"Génération…",
+adm_fiche_gen_bg_lance:"Génération lancée", adm_fiche_gen_bg_attente:"Ça peut prendre jusqu'à 6-7 minutes (le système vérifie les cotes progressivement pour rester fiable). Reviens dans quelques minutes.", adm_fiche_gen_bg_verifier:"Vérifier maintenant",
 adm_fiche_gen_err_champs:"Remplissez la date et la fenêtre horaire.", adm_fiche_gen_err_plans:"Choisissez au moins un plan.",
 adm_fiche_gen_err_prog:"Choisissez une date/heure de publication.", adm_fiche_gen_err_session:"Session admin introuvable — reconnectez-vous.",
 adm_fiche_gen_echec:"Aucune fiche générée pour ce plan.", adm_fiche_gen_ok_now:"publiée immédiatement",
@@ -5149,6 +5150,7 @@ adm_fiche_gen_nba_note:"Not available yet — no reliable odds source wired for 
 adm_fiche_gen_plans:"Plans concerned", adm_fiche_gen_cotemax:"Desired max odds", adm_fiche_gen_publish:"Publishing",
 adm_fiche_gen_now:"Immediate", adm_fiche_gen_scheduled:"Scheduled", adm_fiche_gen_scheduled_at:"Publish date/time (PAP)",
 adm_fiche_gen_submit:"Generate", adm_fiche_gen_wait:"Generating…",
+adm_fiche_gen_bg_lance:"Generation started", adm_fiche_gen_bg_attente:"This can take up to 6-7 minutes (the system checks odds gradually to stay reliable). Check back in a few minutes.", adm_fiche_gen_bg_verifier:"Check now",
 adm_fiche_gen_err_champs:"Fill in the date and time window.", adm_fiche_gen_err_plans:"Choose at least one plan.",
 adm_fiche_gen_err_prog:"Choose a publish date/time.", adm_fiche_gen_err_session:"Admin session not found — please log in again.",
 adm_fiche_gen_echec:"No slip generated for this plan.", adm_fiche_gen_ok_now:"published immediately",
@@ -5547,6 +5549,7 @@ adm_fiche_gen_nba_note:"Pa disponib pou kounye a — pa gen sous kòt serye kone
 adm_fiche_gen_plans:"Plan konsène", adm_fiche_gen_cotemax:"Kòt maksimòm ou vle a", adm_fiche_gen_publish:"Piblikasyon",
 adm_fiche_gen_now:"Imedya", adm_fiche_gen_scheduled:"Pwograme", adm_fiche_gen_scheduled_at:"Dat/lè piblikasyon (PAP)",
 adm_fiche_gen_submit:"Jenere", adm_fiche_gen_wait:"L ap jenere…",
+adm_fiche_gen_bg_lance:"Jenerasyon lanse", adm_fiche_gen_bg_attente:"Sa ka pran jiska 6-7 minit (sistèm nan verifye kòt yo piti piti pou l rete fyab). Tounen vin gade nan kèk minit.", adm_fiche_gen_bg_verifier:"Verifye kounye a",
 adm_fiche_gen_err_champs:"Ranpli dat la ak fenèt orè a.", adm_fiche_gen_err_plans:"Chwazi omwen yon plan.",
 adm_fiche_gen_err_prog:"Chwazi yon dat/lè piblikasyon.", adm_fiche_gen_err_session:"Pa jwenn sesyon admin — konekte ankò.",
 adm_fiche_gen_echec:"Pa gen fich ki jenere pou plan sa a.", adm_fiche_gen_ok_now:"pibliye imedyatman",
@@ -10635,30 +10638,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const token=sessionData&&sessionData.session&&sessionData.session.access_token;
       if(!token)throw new Error(t('adm_fiche_gen_err_session'));
 
-      const resp=await fetch('/.netlify/functions/bot-generate-tickets-manual',{
+      // 28/08 v5 : fonction Background — aucune réponse utilisable, voir
+      // index.html pour le détail. Message d'attente + bouton "Vérifier".
+      fetch('/.netlify/functions/bot-generate-tickets-manual-background',{
         method:'POST',
         headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
         body:JSON.stringify({playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt})
+      }).catch(()=>{});
+      resBox.innerHTML='<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+
+        stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(t('adm_fiche_gen_bg_attente'))+'</span></span></div>'+
+        '<button type="button" class="btn btn-outline" id="admGenVerifier" style="width:100%;margin-top:10px">'+
+        stripTags(t('adm_fiche_gen_bg_verifier'))+'</button>';
+      document.getElementById('admGenVerifier').addEventListener('click',()=>{
+        setView('fiches');renderFiches();
       });
-      const out=await resp.json().catch(()=>({}));
-      if(!resp.ok){
-        resBox.innerHTML='<div class="admdash-empty">'+stripTags(out.erreur||('HTTP '+resp.status))+'</div>';
-      }else{
-        const lignes=(out.resultats||[]).map(r=>{
-          const titre='Rang '+r.rank+(r.exact?' (score exact)':'');
-          if(!r.publie){
-            return '<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+titre+'</b>'+
-              '<span>'+stripTags(r.raison||t('adm_fiche_gen_echec'))+'</span></span></div>';
-          }
-          const etat=r.programmee?t('adm_fiche_gen_ok_prog').replace('{h}',new Date(r.scheduledPublishAt).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})):t('adm_fiche_gen_ok_now');
-          return '<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+titre+'</b>'+
-            '<span>Cote '+Number(r.coteTotale).toFixed(2)+' · '+r.selections+' sélection(s) · '+etat+
-            (r.clampeAuMaxDuPlan?' · '+t('adm_fiche_gen_clamped'):'')+'</span></span>'+
-            '<span class="admdash-row-badge won">OK</span></div>';
-        }).join('');
-        resBox.innerHTML=lignes||'<div class="admdash-empty">'+t('adm_fiche_gen_echec')+'</div>';
-        renderFiches();
-      }
     }catch(e){
       resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
     }finally{
