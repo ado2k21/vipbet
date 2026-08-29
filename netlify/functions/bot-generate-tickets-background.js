@@ -1854,6 +1854,14 @@ async function handler(event) {
     stats.erreurs.push(`lecture legsExistants (anti-doublon): ${e.message}`);
   }
 
+  // Score exact construit AVANT les fiches normales dans ce run (28/08 v6,
+  // voir le bloc dédié plus bas) — initialisé avec les matchs déjà
+  // utilisés en fiche normale AUJOURD'HUI depuis une exécution précédente
+  // (ex. une fiche manuelle ajoutée plus tôt dans la journée) : le score
+  // exact continue de les éviter, même s'il passe désormais en premier au
+  // sein de CE run.
+  const fixturesUtiliseesScoreExact = new Set(fixturesUtiliseesNormales);
+
   // Nombre MAXIMUM de fiches classiques par plan (28/08, demande explicite
   // de James) — jamais un objectif forcé, seulement un plafond : un jour
   // pauvre en matchs, un plan peut très bien n'en recevoir qu'une seule
@@ -1885,12 +1893,13 @@ async function handler(event) {
     const buteursTmp = new Set(buteursUtilises);
     const equipesTmp = new Map(equipesUtilisees);
     let fiche = construireFiche(poolFoot, plan, {
-      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount, nbMatchsDisponibles
+      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
+      fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles
     });
     if (!fiche.valide && avecRepli && nbMatchsDisponibles < 4) {
       fiche = construireFiche(poolFoot, plan, {
         buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
-        nbMatchsDisponibles, cibleMinOverride: 1.5
+        fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles, cibleMinOverride: 1.5
       });
     }
     stats.fichesGenerees++;
@@ -1916,6 +1925,42 @@ async function handler(event) {
     });
     await publierFiche(plan, fiche, dateCible, 'foot', noms);
     return true;
+  }
+
+  // SCORE EXACT D'ABORD (28/08 v6, retour explicite de James après le test
+  // du 28/08 : la fiche normale du plan 3 avait utilisé jusqu'à 10 matchs
+  // avant que son propre score exact ne soit tenté, ne laissant que des
+  // miettes — aucune fiche score exact publiable). Construit et publié
+  // AVANT les fiches classiques, pour que les matchs les mieux corroborés
+  // (BTTS/totaux déjà validés, seul signal accepté par
+  // construireFicheScoreExact) soient réservés au score exact avant que
+  // les fiches normales (tours 1-3) ne les utilisent pour un autre marché.
+  // fixturesUtiliseesScoreExact alimente ensuite fixturesExclues des
+  // fiches normales (voir tenterEtPublier ci-dessus) — même principe
+  // d'exclusivité qu'avant, juste dans l'autre sens. Repli jour pauvre
+  // (26/08), même conditionnement que les fiches normales : uniquement si
+  // nbMatchsDisponibles<4, jamais un jour riche.
+  for (const plan of plans) {
+    if (!plan.includes_exact_score) continue;
+    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact });
+    if (!ficheExacte.valide && nbMatchsDisponibles < 4) {
+      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact, cibleMinOverride: 1.5 });
+    }
+    stats.fichesGenerees++;
+    if (!ficheExacte.valide) {
+      console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
+    } else {
+      // Score exact ne compte JAMAIS dans le plafond des 2 fiches
+      // normales par match ni dans selectionsParFixture — seulement
+      // selectionsExclues (empêche exactement le même score exact d'être
+      // republié tel quel) et fixturesUtiliseesScoreExact (réserve ces
+      // matchs, exclus des fiches normales ci-dessous).
+      ficheExacte.selections.forEach(s => {
+        selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`);
+        fixturesUtiliseesScoreExact.add(s.fixtureId);
+      });
+      await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
+    }
   }
 
   // TOUR 1 — fiche GARANTIE "au mieux" pour chaque plan (repli 1.5
@@ -1946,30 +1991,6 @@ async function handler(event) {
       const ok = await tenterEtPublier(plan, false);
       if (ok) fichesPublieesParPlan[plan.rank]++;
       else planEncoreActif[plan.rank] = false;
-    }
-  }
-
-  // Score exact — inchangé, 1 fiche dédiée par plan éligible (rang 3/4 en
-  // pratique, piloté par plans.includes_exact_score), jamais mélangée aux
-  // fiches classiques ci-dessus. Repli jour pauvre (26/08), même
-  // conditionnement que tenterEtPublier (28/08) : uniquement si
-  // nbMatchsDisponibles<4, jamais un jour riche.
-  for (const plan of plans) {
-    if (!plan.includes_exact_score) continue;
-    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesNormales });
-    if (!ficheExacte.valide && nbMatchsDisponibles < 4) {
-      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesNormales, cibleMinOverride: 1.5 });
-    }
-    stats.fichesGenerees++;
-    if (!ficheExacte.valide) {
-      console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
-    } else {
-      // Score exact ne compte JAMAIS dans le plafond des 2 fiches
-      // normales par match ni dans selectionsParFixture (voir en-tête du
-      // seeding plus haut) — seulement selectionsExclues, pour empêcher
-      // exactement le même score exact d'être republié tel quel.
-      ficheExacte.selections.forEach(s => { selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`); });
-      await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
     }
   }
 
