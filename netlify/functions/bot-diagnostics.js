@@ -308,6 +308,9 @@ async function handler(event) {
         // Erreurs brutes API-Sports rencontrées pendant ce run (ex. quota
         // dépassé) — jusque-là silencieusement absorbées par
         // recupererCoteParFixture, jamais visibles dans ce diagnostic.
+        // Drapeau visible en un coup d'œil (29/08 v6) — plus besoin de lire
+        // toute la liste erreursRencontrees pour repérer un quota dépassé.
+        quotaJournalierDepasse: stats.erreurs.some(e => e.includes('QUOTA JOURNALIER DÉPASSÉ')),
         erreursRencontrees: stats.erreurs,
         simulationParPlan: simulation,
         detailSelections: poolFootP.map(b => ({

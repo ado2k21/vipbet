@@ -344,10 +344,18 @@ async function apiSportsGetRaw(host, path, params) {
     throw new Error(`API-Sports ${host}${path} → HTTP ${resp.status}`);
   }
   const data = await resp.json();
-  if (data.errors && Array.isArray(data.errors) ? data.errors.length : Object.keys(data.errors || {}).length) {
-    // L'API-Sports renvoie errors:{} ou errors:[] même en cas de succès partiel —
-    // on logue sans bloquer, la donnée utile (response) reste exploitable.
-    console.warn('[BOT] avertissement API', host, path, JSON.stringify(data.errors));
+  const messagesErreur = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
+  if (messagesErreur && messagesErreur.length) {
+    // CORRIGÉ (29/08) : l'API-Sports répond souvent HTTP 200 même en cas de
+    // quota journalier dépassé — seul data.errors le révèle (ex. "You have
+    // reached the maximum number of requests..."), avec response=[]
+    // silencieux (c'est exactement ce qui a produit "0 match trouvé" le
+    // 29/08 sur une date où on savait qu'il y avait de vrais matchs).
+    // Avant ce correctif, seulement loggé en console.warn — perdu vu la
+    // panne des logs Netlify ("Function logs are currently unavailable").
+    // Maintenant aussi remonté dans stats.erreurs, donc visible dans tous
+    // les diagnostics ET dans le corps de réponse final du bot.
+    stats.erreurs.push(`API-Sports ${host}${path}${/request limit|reached the.*limit/i.test(messagesErreur.join(' ')) ? ' [QUOTA JOURNALIER DÉPASSÉ]' : ''}: ${messagesErreur.join(' | ')}`);
   }
   return data;
 }
@@ -406,6 +414,13 @@ async function recupererCoteParFixture(fixtureId, essai) {
       return null;
     }
     const data = await resp.json();
+    const messagesErreur = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
+    if (messagesErreur && messagesErreur.length) {
+      // CORRIGÉ (29/08) : même piège que /fixtures (voir apiSportsGetRaw) —
+      // HTTP 200 mais quota dépassé, response vide, seul data.errors le
+      // révèle. Absorbé silencieusement avant ce correctif.
+      stats.erreurs.push(`foot/odds(fixture=${fixtureId})${/request limit|reached the.*limit/i.test(messagesErreur.join(' ')) ? ' [QUOTA JOURNALIER DÉPASSÉ]' : ''}: ${messagesErreur.join(' | ')}`);
+    }
     return (data.response && data.response[0]) || null;
   } catch (e) {
     stats.erreurs.push(`foot/odds(fixture=${fixtureId}): ${e.message}`);
