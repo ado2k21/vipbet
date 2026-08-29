@@ -744,7 +744,11 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       const label = betType.id === 16 ? 'Domicile' : 'Extérieur';
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.10 && c <= 1.30) {
+        // Plancher remonté de 1.10 à 1.19 (28/08, règle stricte : aucune
+        // sélection individuelle sous 1.19, quel que soit le marché — une
+        // cote plus basse n'ajoute pas de fiabilité réelle, seulement une
+        // fausse sécurité, et dilue la cote totale sans justification).
+        if (c >= 1.19 && c <= 1.30) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: cote,
             pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'SAFE',
@@ -790,6 +794,62 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
  * fiche le même jour (passé via options.buteursUtilises, partagé entre tous
  * les appels de la génération du jour).
  */
+/**
+ * Détection de contradiction réelle entre deux sélections du MÊME match,
+ * publiées dans deux fiches normales différentes le même jour (28/08 v2,
+ * demande explicite de James : "même match dans jusqu'à 2 fiches
+ * normales, c'est normal, mais pas contradictoire — par exemple Plus de
+ * 1.5 buts dans une fiche et Moins de 1.5 buts dans une autre sur le même
+ * match, ÇA c'est contradictoire"). Ne bloque QUE les cas où les deux
+ * sélections ne peuvent JAMAIS être vraies en même temps — jamais des cas
+ * simplement différents ou redondants (ex. "Plus de 1.5" et "Plus de 2.5"
+ * sur le même match restent autorisés ensemble, ils peuvent coexister).
+ */
+function extrairePlusMoins(pick) {
+  const m = /(Plus|Moins) de ([\d.]+) buts/i.exec(String(pick || '').trim());
+  if (!m) return null;
+  return { sens: m[1].toLowerCase() === 'plus' ? 'plus' : 'moins', seuil: parseFloat(m[2]) };
+}
+function contredictionPlusMoins(pickA, pickB) {
+  const a = extrairePlusMoins(pickA), b = extrairePlusMoins(pickB);
+  if (!a || !b || a.sens === b.sens) return false; // même sens (2x Plus ou 2x Moins) : jamais contradictoire ici
+  const plus = a.sens === 'plus' ? a : b;
+  const moins = a.sens === 'moins' ? a : b;
+  // Aucun total entier ne peut satisfaire "Plus de X" ET "Moins de Y" à
+  // la fois si Y <= X (ex. Plus de 1.5 [total>=2] et Moins de 1.5
+  // [total<=1] : aucun total commun -> contradiction). Si Y > X (ex.
+  // Plus de 1.5 et Moins de 2.5 -> total=2 satisfait les deux), les deux
+  // peuvent être vraies ensemble : pas une contradiction.
+  return moins.seuil <= plus.seuil;
+}
+function estContradictoire(marketA, pickA, marketB, pickB) {
+  // Victoire directe : Home et Away sur le même match sont mutuellement exclusifs.
+  if (marketA === 'mk_1x2' && marketB === 'mk_1x2') {
+    return String(pickA).replace('Victoire : ', '').trim() !== String(pickB).replace('Victoire : ', '').trim();
+  }
+  // Double chance vs Victoire directe : X1 exclut une victoire extérieure,
+  // X2 exclut une victoire à domicile (12 n'exclut que le nul, jamais
+  // publié seul par ce bot, donc rien à vérifier ici pour 12).
+  const contreDoubleChance = (dc, victoire) => {
+    const val = String(dc).replace('Double chance : ', '').trim();
+    const camp = String(victoire).replace('Victoire : ', '').trim();
+    return (val === 'X1' && camp === 'Away') || (val === 'X2' && camp === 'Home');
+  };
+  if (marketA === 'mk_double_chance' && marketB === 'mk_1x2') return contreDoubleChance(pickA, pickB);
+  if (marketB === 'mk_double_chance' && marketA === 'mk_1x2') return contreDoubleChance(pickB, pickA);
+  // Total de buts du match entier : voir contredictionPlusMoins ci-dessus.
+  if (marketA === 'mk_total_buts' && marketB === 'mk_total_buts') return contredictionPlusMoins(pickA, pickB);
+  // Total de buts d'une même équipe (domicile ou extérieur) : même
+  // logique Plus/Moins, mais uniquement comparé au sein du MÊME marché
+  // (domicile avec domicile, extérieur avec extérieur — jamais l'un
+  // contre l'autre, ce sont deux équipes différentes).
+  if (marketA === marketB && (marketA === 'mk_total_domicile' || marketA === 'mk_total_exterieur')) {
+    const nettoie = p => String(p).replace(/^(Domicile|Extérieur)\s*:\s*/, '');
+    return contredictionPlusMoins(nettoie(pickA), nettoie(pickB));
+  }
+  return false;
+}
+
 function construireFiche(pool, plan, options) {
   options = options || {};
   const buteursUtilises = options.buteursUtilises || new Set();
@@ -802,16 +862,25 @@ function construireFiche(pool, plan, options) {
   // qu'un doublon exact devienne structurellement impossible plutôt que
   // simplement découragé.
   const selectionsExclues = options.selectionsExclues || new Set();
-  // Exclusion au niveau du MATCH ENTIER (28/08, retour explicite de James :
-  // "une fiche avec V1 et une autre X2 sur le même match crée de la
-  // confusion"). Sans ceci, deux fiches DIFFÉRENTES pouvaient utiliser le
-  // même match avec des marchés différents (ex. Victoire domicile dans une
-  // fiche, Double chance extérieur dans une autre) — logiquement
-  // contradictoire aux yeux d'un abonné qui verrait les deux. Un match déjà
-  // utilisé dans une fiche publiée aujourd'hui (n'importe quel marché) est
-  // désormais DÉFINITIVEMENT écarté de toute autre fiche ce jour-là, y
-  // compris score exact (voir construireFicheScoreExact).
+  // Legacy (26/08, génération manuelle admin uniquement — un seul appel à
+  // la fois, la notion de "jusqu'à 2 fiches par match" n'a pas de sens
+  // pour une fiche unique) : exclusion totale du match si fourni,
+  // comportement inchangé pour bot-generate-tickets-manual.js.
   const fixturesExclues = options.fixturesExclues || new Set();
+  // REMPLACE l'ancienne exclusion totale du match pour le bot automatique
+  // (28/08 v2, retour explicite de James : "même match dans jusqu'à 2
+  // fiches normales, c'est normal, tant que ce n'est pas contradictoire —
+  // par exemple Plus de 1.5 buts dans une fiche et Moins de 1.5 buts dans
+  // une autre sur le même match, ÇA c'est contradictoire"). Deux
+  // mécanismes distincts :
+  //  - matchUsageCount : nombre de fiches NORMALES distinctes ayant déjà
+  //    utilisé ce match aujourd'hui, plafonné à MAX_FICHES_PAR_MATCH.
+  //  - selectionsParFixture : toutes les sélections déjà publiées
+  //    aujourd'hui pour ce match, comparées via estContradictoire() avant
+  //    d'accepter une nouvelle sélection sur ce même match ailleurs.
+  const selectionsParFixture = options.selectionsParFixture || new Map();
+  const matchUsageCount = options.matchUsageCount || new Map();
+  const MAX_FICHES_PAR_MATCH = 2;
   // Partie 3/4 : compteur d'apparitions par équipe, PARTAGÉ sur toute la
   // génération du jour (comme buteursUtilises) — jamais appliqué aux
   // fiches score exact (elles passent par construireFicheScoreExact, qui
@@ -899,11 +968,21 @@ function construireFiche(pool, plan, options) {
   const MAX_PREMIUM_PLAN1 = 1;
 
   function tenterAjout(bet) {
-    if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match
-    // Match déjà utilisé dans une AUTRE fiche publiée aujourd'hui (28/08) —
-    // vérifié AVANT selectionsExclues, plus large : bloque même un marché
-    // différent sur ce même match (voir commentaire plus haut).
+    if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match dans LA MÊME fiche
+    // Legacy (génération manuelle uniquement, voir plus haut) : exclusion totale si fournie.
     if (fixturesExclues.has(bet.fixtureId)) return false;
+    // Plafond de 2 fiches normales par match (28/08 v2) — à ce stade,
+    // bet.fixtureId n'est PAS encore dans matchsUtilises (sinon la ligne
+    // ci-dessus aurait déjà bloqué), donc l'accepter compterait comme une
+    // NOUVELLE fiche pour ce match.
+    if ((matchUsageCount.get(bet.fixtureId) || 0) >= MAX_FICHES_PAR_MATCH) return false;
+    // Contradiction logique réelle avec une sélection déjà publiée
+    // ailleurs aujourd'hui sur ce même match (28/08 v2, ex. donné par
+    // James : "Plus de 1.5 buts" dans une fiche et "Moins de 1.5 buts"
+    // dans une autre, même match — ça, c'est contradictoire ; deux
+    // marchés différents mais compatibles restent autorisés).
+    const dejaPubliees = selectionsParFixture.get(bet.fixtureId);
+    if (dejaPubliees && dejaPubliees.some(p => estContradictoire(p.market, p.pick, bet.market, bet.pick))) return false;
     // Partie 1/2 : jamais une sélection déjà publiée ailleurs aujourd'hui.
     if (selectionsExclues.has(`${bet.fixtureId}|${bet.market}|${bet.pick}`)) return false;
     // Partie 3 : une équipe (domicile OU extérieur) ne peut pas dépasser
@@ -1588,6 +1667,65 @@ async function handler(event) {
     return { statusCode: 200, body: JSON.stringify({ date: dateC, parLigue }, null, 2) };
   }
 
+  // MODE DIAGNOSTIC DONNÉES STATISTIQUES (28/08, point 3 du cahier des
+  // charges "règles strictes") : ?token=...&diag=stats[&date=AAAA-MM-JJ]
+  // AVANT de construire toute logique d'analyse par match (forme, blessures,
+  // historique face-à-face — règles 7/8/15/16), on vérifie ce que le plan
+  // API-Sports gratuit expose RÉELLEMENT sur ces endpoints. Jamais deviner
+  // (même principe que diag=leagues/teams/bets) — un plan gratuit a souvent
+  // des restrictions non documentées, découvertes uniquement par un vrai
+  // test. Isolé à 100% : lecture seule, aucun impact sur la génération
+  // réelle, aucune écriture en base.
+  // Teste sur le premier match TOP trouvé pour la date visée (par défaut,
+  // demain — même date que la vraie génération).
+  if (modeTest && event.queryStringParameters.diag === 'stats') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const dateS = event.queryStringParameters.date || dateCibleDemainHaiti();
+    const fixturesJourS = await recupererFixturesJour(dateS);
+    const candidat = fixturesJourS.find(f => f.league && TOP_LEAGUES_FOOT.includes(f.league.id) && f.fixture);
+    if (!candidat) {
+      return { statusCode: 200, body: JSON.stringify({ date: dateS, note: 'Aucun match TOP trouvé pour cette date — retester avec &date=AAAA-MM-JJ sur un jour avec des matchs des grands championnats.' }, null, 2) };
+    }
+    const fixtureId = candidat.fixture.id;
+    const leagueId = candidat.league.id;
+    const season = candidat.league.season;
+    const equipeDomId = candidat.teams.home.id;
+    const equipeExtId = candidat.teams.away.id;
+    const rapport = {
+      date: dateS,
+      matchTeste: `${candidat.teams.home.name} — ${candidat.teams.away.name} (${candidat.league.name}, fixture ${fixtureId})`,
+      endpoints: {}
+    };
+
+    async function tester(nom, path, params) {
+      try {
+        const data = await apiSportsGetRaw(FOOT_HOST, path, params);
+        const erreurs = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
+        rapport.endpoints[nom] = {
+          nbResultats: Array.isArray(data.response) ? data.response.length : 0,
+          erreurApi: (erreurs && erreurs.length) ? erreurs : null,
+          echantillon: Array.isArray(data.response) ? data.response.slice(0, 2) : data.response
+        };
+      } catch (e) {
+        rapport.endpoints[nom] = { erreur: e.message };
+      }
+    }
+
+    // 1. Blessures/suspensions — pertinent pour les règles 7/8/15 (jamais
+    // choisir un buteur ou une victoire sans vérifier les absences).
+    await tester('injuries_par_fixture', '/injuries', { fixture: fixtureId });
+    // 2. Statistiques d'équipe sur la saison — forme, buts marqués/encaissés
+    // domicile/extérieur (règle 7).
+    await tester('team_stats_domicile', '/teams/statistics', { team: equipeDomId, league: leagueId, season });
+    await tester('team_stats_exterieur', '/teams/statistics', { team: equipeExtId, league: leagueId, season });
+    // 3. Historique des confrontations directes — utile pour score exact
+    // (règle 16) et BTTS (règle 10).
+    await tester('head_to_head', '/fixtures/headtohead', { h2h: `${equipeDomId}-${equipeExtId}`, last: 10 });
+
+    rapport.conclusion = 'Vérifier nbResultats et erreurApi pour chaque endpoint — nbResultats=0 avec erreurApi rempli signifie souvent une restriction de plan (ex. "This endpoint is not available with your subscription").';
+    return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'leagues') {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
     const termes = (event.queryStringParameters.q || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -1833,15 +1971,42 @@ async function handler(event) {
   // même sélection exacte.
   const cleSelection = s => `${s.fixture_id}|${s.market}|${s.pick}`;
   const selectionsExclues = new Set();
-  // Exclusion au niveau du MATCH ENTIER (28/08, demande explicite de James :
-  // jamais un match dans 2 fiches différentes, même avec des marchés
-  // différents — "V1 dans une fiche, X2 dans une autre" crée de la
-  // confusion). Alimenté depuis la MÊME lecture DB que selectionsExclues.
-  const fixturesExclues = new Set();
+  // REMPLACE l'ancienne exclusion totale du match (28/08 v2, demande
+  // explicite de James : "même match dans jusqu'à 2 fiches normales,
+  // c'est normal, tant que ce n'est pas contradictoire"). Trois
+  // structures alimentées depuis la MÊME lecture DB que selectionsExclues :
+  //  - selectionsParFixture : sélections déjà publiées aujourd'hui par
+  //    match (fiches NORMALES uniquement), pour la détection de
+  //    contradiction réelle (voir estContradictoire).
+  //  - matchUsageCount : nombre de fiches normales distinctes par match,
+  //    plafonné à 2 dans construireFiche.
+  //  - fixturesUtiliseesNormales : simple Set des matchs utilisés dans au
+  //    moins une fiche normale — passé comme fixturesExclues à
+  //    construireFicheScoreExact, qui reste EXCLUE de tout match déjà
+  //    utilisé ailleurs (prudence inchangée : un score exact fait une
+  //    affirmation forte sur le score final, jamais mélangé aux fiches
+  //    normales du même match).
+  const selectionsParFixture = new Map();
+  const matchUsageCount = new Map();
+  const fixturesUtiliseesNormales = new Set();
   try {
     const legsExistants = await sbSelect('ticket_legs',
-      `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${dateCible}&tickets.sport=eq.foot`);
-    legsExistants.forEach(l => { selectionsExclues.add(cleSelection(l)); fixturesExclues.add(l.fixture_id); });
+      `select=fixture_id,market,pick,ticket_id,tickets!inner(play_date,sport,code)&tickets.play_date=eq.${dateCible}&tickets.sport=eq.foot`);
+    const fichesParFixture = new Map(); // fixtureId -> Set(ticket_id), fiches normales uniquement
+    legsExistants.forEach(l => {
+      selectionsExclues.add(cleSelection(l));
+      // Une fiche "-EXACT" ne compte jamais dans le plafond des 2 fiches
+      // normales par match, et n'alimente jamais la détection de
+      // contradiction entre fiches normales (marché différent par nature).
+      const estScoreExacte = String((l.tickets && l.tickets.code) || '').endsWith('-EXACT');
+      if (estScoreExacte) return;
+      fixturesUtiliseesNormales.add(l.fixture_id);
+      if (!selectionsParFixture.has(l.fixture_id)) selectionsParFixture.set(l.fixture_id, []);
+      selectionsParFixture.get(l.fixture_id).push({ market: l.market, pick: l.pick });
+      if (!fichesParFixture.has(l.fixture_id)) fichesParFixture.set(l.fixture_id, new Set());
+      fichesParFixture.get(l.fixture_id).add(l.ticket_id);
+    });
+    fichesParFixture.forEach((tickets, fixtureId) => matchUsageCount.set(fixtureId, tickets.size));
   } catch (e) {
     // Non bloquant : au pire on revient au comportement d'avant (pas de
     // protection cross-run), jamais une raison d'empêcher la génération.
@@ -1859,8 +2024,17 @@ async function handler(event) {
   plans.forEach(p => { fichesPublieesParPlan[p.rank] = 0; planEncoreActif[p.rank] = true; });
 
   // avecRepli=true : 1ᵉʳ essai à la vraie cible, 2ᵉ essai à plancher très
-  // bas (1.5) si invalide — réservé à la fiche GARANTIE (tour 1) de chaque
-  // plan. avecRepli=false (fiches bonus, tours 2-3) : uniquement la vraie
+  // bas (1.5) UNIQUEMENT si le jour est réellement pauvre en matchs
+  // (nbMatchsDisponibles<4, même seuil que l'exception rank>=3 plus haut) —
+  // réservé à la fiche GARANTIE (tour 1) de chaque plan. CORRIGÉ (28/08,
+  // retour explicite de James après un jour riche en matchs où toutes les
+  // fiches sont quand même sorties à cote 2-3-4) : avant ce correctif, le
+  // repli se déclenchait dès que construireFiche échouait à la vraie cible
+  // pour N'IMPORTE QUELLE raison (ex. plafonds de diversification par
+  // marché/championnat) — y compris un jour riche en matchs, ce qui
+  // produisait des fiches à cote artificiellement basse au lieu de
+  // laisser le plan sans fiche propre, couvert par la cascade d'accès.
+  // avecRepli=false (fiches bonus, tours 2-3) : uniquement la vraie
   // cible du plan, jamais de repli — une fiche bonus n'existe QUE si elle
   // atteint vraiment la cote visée par ce plan, jamais une fiche de moindre
   // qualité juste pour remplir un quota (qualité > quantité, principe déjà
@@ -1870,11 +2044,11 @@ async function handler(event) {
     const buteursTmp = new Set(buteursUtilises);
     const equipesTmp = new Map(equipesUtilisees);
     let fiche = construireFiche(poolFoot, plan, {
-      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, fixturesExclues, nbMatchsDisponibles
+      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount, nbMatchsDisponibles
     });
-    if (!fiche.valide && avecRepli) {
+    if (!fiche.valide && avecRepli && nbMatchsDisponibles < 4) {
       fiche = construireFiche(poolFoot, plan, {
-        buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, fixturesExclues,
+        buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
         nbMatchsDisponibles, cibleMinOverride: 1.5
       });
     }
@@ -1882,7 +2056,23 @@ async function handler(event) {
     if (!fiche.valide) return false;
     buteursTmp.forEach(p => buteursUtilises.add(p));
     equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
-    fiche.selections.forEach(s => { selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`); fixturesExclues.add(s.fixtureId); });
+    // Met à jour les 3 structures avec les sélections de CETTE fiche
+    // (28/08 v2) : selectionsExclues (doublon exact), selectionsParFixture
+    // (pour la détection de contradiction des prochaines fiches) et
+    // matchUsageCount (+1 par match distinct utilisé dans cette fiche,
+    // jamais par leg — un match ne compte qu'une fois par fiche, déjà
+    // garanti par matchsUtilises à l'intérieur de construireFiche).
+    const fixturesDeCetteFiche = new Set();
+    fiche.selections.forEach(s => {
+      selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`);
+      if (!selectionsParFixture.has(s.fixtureId)) selectionsParFixture.set(s.fixtureId, []);
+      selectionsParFixture.get(s.fixtureId).push({ market: s.market, pick: s.pick });
+      fixturesDeCetteFiche.add(s.fixtureId);
+    });
+    fixturesDeCetteFiche.forEach(fid => {
+      matchUsageCount.set(fid, (matchUsageCount.get(fid) || 0) + 1);
+      fixturesUtiliseesNormales.add(fid);
+    });
     await publierFiche(plan, fiche, dateCible, 'foot', noms);
     return true;
   }
@@ -1920,19 +2110,24 @@ async function handler(event) {
 
   // Score exact — inchangé, 1 fiche dédiée par plan éligible (rang 3/4 en
   // pratique, piloté par plans.includes_exact_score), jamais mélangée aux
-  // fiches classiques ci-dessus. Repli jour pauvre (26/08) identique : 1ᵉʳ
-  // essai à la vraie cible, 2ᵉ essai à plancher très bas (1.5) si invalide.
+  // fiches classiques ci-dessus. Repli jour pauvre (26/08), même
+  // conditionnement que tenterEtPublier (28/08) : uniquement si
+  // nbMatchsDisponibles<4, jamais un jour riche.
   for (const plan of plans) {
     if (!plan.includes_exact_score) continue;
-    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues });
-    if (!ficheExacte.valide) {
-      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues, cibleMinOverride: 1.5 });
+    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesNormales });
+    if (!ficheExacte.valide && nbMatchsDisponibles < 4) {
+      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesNormales, cibleMinOverride: 1.5 });
     }
     stats.fichesGenerees++;
     if (!ficheExacte.valide) {
       console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
     } else {
-      ficheExacte.selections.forEach(s => { selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`); fixturesExclues.add(s.fixtureId); });
+      // Score exact ne compte JAMAIS dans le plafond des 2 fiches
+      // normales par match ni dans selectionsParFixture (voir en-tête du
+      // seeding plus haut) — seulement selectionsExclues, pour empêcher
+      // exactement le même score exact d'être republié tel quel.
+      ficheExacte.selections.forEach(s => { selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`); });
       await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
     }
   }
