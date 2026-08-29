@@ -2281,6 +2281,27 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .dtk-conf-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--vert),var(--vert-vif));transition:width .6s cubic-bezier(.4,0,.2,1)}
 .dtk-conf-fill.mid{background:linear-gradient(90deg,#C9A44C,#E8CE8A)}
 .dtk-conf-fill.low{background:linear-gradient(90deg,#B4553F,#E2634F)}
+/* Badge quota API (29/08) — vert/or/rouge selon le pourcentage utilisé. */
+.adm-quota-badge{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:0 0 14px;border-radius:var(--r-sm);font-size:12px}
+.adm-quota-badge-pct{font-family:var(--mono);font-weight:800;font-size:15px;padding:3px 9px;border-radius:20px}
+.adm-quota-badge.vert{background:rgba(46,212,127,.08)}
+.adm-quota-badge.vert .adm-quota-badge-pct{background:rgba(46,212,127,.18);color:var(--vert-vif)}
+.adm-quota-badge.or{background:rgba(201,164,76,.08)}
+.adm-quota-badge.or .adm-quota-badge-pct{background:rgba(201,164,76,.18);color:#E8CE8A}
+.adm-quota-badge.rouge{background:rgba(226,99,79,.1)}
+.adm-quota-badge.rouge .adm-quota-badge-pct{background:rgba(226,99,79,.2);color:#E2634F}
+.adm-quota-badge-txt{color:var(--gris)}
+/* Bouton de partage WhatsApp (29/08) — sur tickets gagnants uniquement. */
+.dtk-share-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:0 14px 14px;padding:11px;border:none;border-radius:var(--r-sm);background:#25D366;color:#04150C;font-size:13px;font-weight:800;cursor:pointer}
+.dtk-share-btn:active{opacity:.85}
+/* Compte à rebours (29/08) — bandeau discret juste sous l'en-tête. */
+.dtk-countdown{padding:6px 14px;font-size:11px;font-weight:700;color:var(--or);background:rgba(212,175,55,.08);border-top:1px solid var(--ligne);text-align:center;letter-spacing:.02em}
+/* Badge de fiabilité coloré (29/08) — plus visible qu'un simple pourcentage,
+   lisible en un coup d'œil. Même seuils que la barre existante (75/65). */
+.dtk-badge-niveau{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+.dtk-badge-niveau.haut{background:rgba(46,212,127,.16);color:var(--vert-vif)}
+.dtk-badge-niveau.moyen{background:rgba(201,164,76,.16);color:#E8CE8A}
+.dtk-badge-niveau.bas{background:rgba(226,99,79,.16);color:#E2634F}
 
 .dtk-foot{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -4266,6 +4287,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       <div class="dash-kpis" id="admKpisHome">
         <div class="dash-kpi"><b>—</b><span data-i18n="adm_k_loading">Chajman...</span></div>
       </div>
+      <div id="admQuotaBadgeWrap"></div>
       <div class="admdash-refresh-row">
         <span class="admdash-updated" id="admHomeUpdated"></span>
         <button type="button" class="wiz-change" id="admHomeRefresh">
@@ -4407,6 +4429,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <h2 id="admGenTitre" data-i18n="adm_fiche_gen_h">Générer une fiche</h2>
         <p id="admGenSousTitre" data-i18n="adm_fiche_gen_p">Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.</p>
       </div>
+      <div id="admGenQuotaWrap"></div>
       <div id="admFicheGenererForm">
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_date">Date des matchs</span>
           <input type="date" id="admGenDate"></label>
@@ -4704,6 +4727,11 @@ adm_fiche_gen_err_prog:"Choisissez une date/heure de publication.", adm_fiche_ge
 adm_fiche_gen_echec:"Aucune fiche générée pour ce plan.", adm_fiche_gen_ok_now:"publiée immédiatement",
 adm_fiche_gen_ok_prog:"programmée pour le {h}", adm_fiche_gen_clamped:"cote max ramenée au plafond du plan",
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
+adm_quota_lbl:"Quota API-Sports · {used}/{max} utilisés · {left} restants aujourd'hui",
+adm_quota_gen_epuise:"⛔ Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"⚠️ Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
+dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
+dtk_cd_min:"⏱ Premier match dans {n} min", dtk_cd_h:"⏱ Premier match dans {h}h{m}", dtk_cd_j:"⏱ Premier match dans {j} j", dtk_cd_bientot:"⏱ Premier match imminent", dtk_cd_encours:"⏱ Premier match en cours",
+dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez de façon responsable", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
 dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
@@ -5133,6 +5161,11 @@ adm_fiche_gen_err_prog:"Choose a publish date/time.", adm_fiche_gen_err_session:
 adm_fiche_gen_echec:"No slip generated for this plan.", adm_fiche_gen_ok_now:"published immediately",
 adm_fiche_gen_ok_prog:"scheduled for {h}", adm_fiche_gen_clamped:"max odds capped to the plan's ceiling",
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
+adm_quota_lbl:"API-Sports quota · {used}/{max} used · {left} left today",
+adm_quota_gen_epuise:"⛔ Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"⚠️ Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
+dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
+dtk_cd_min:"⏱ First match in {n} min", dtk_cd_h:"⏱ First match in {h}h{m}", dtk_cd_j:"⏱ First match in {j} d", dtk_cd_bientot:"⏱ First match starting soon", dtk_cd_encours:"⏱ First match underway",
+dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play responsibly", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
 dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
@@ -5562,6 +5595,11 @@ adm_fiche_gen_err_prog:"Chwazi yon dat/lè piblikasyon.", adm_fiche_gen_err_sess
 adm_fiche_gen_echec:"Pa gen fich ki jenere pou plan sa a.", adm_fiche_gen_ok_now:"pibliye imedyatman",
 adm_fiche_gen_ok_prog:"pwograme pou {h}", adm_fiche_gen_clamped:"kòt max redwi jiska plafon plan an",
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
+adm_quota_lbl:"Quota API-Sports · {used}/{max} itilize · {left} rete jodi a",
+adm_quota_gen_epuise:"⛔ Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"⚠️ Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
+dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
+dtk_cd_min:"⏱ Premye match nan {n} min", dtk_cd_h:"⏱ Premye match nan {h}è{m}", dtk_cd_j:"⏱ Premye match nan {j} jou", dtk_cd_bientot:"⏱ Premye match pral kòmanse", dtk_cd_encours:"⏱ Premye match ap jwe",
+dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe yon fason responsab", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
 dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
@@ -8454,6 +8492,129 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     d=new Date(String(v).replace(' ','T').replace(/([+-]\d{2})$/,'$1:00'));
     return isNaN(d.getTime())?null:d;
   }
+  // Compte à rebours (29/08) : texte court avant le coup d'envoi du
+  // prochain match d'une fiche. jamais de precision a la seconde (inutile,
+  // ne fait que forcer des re-rendus frequents) -- granularite en minutes,
+  // puis en heures au-dela d'1h, puis en jours au-dela de 24h.
+  function texteCompteARebours(iso){
+    const d=instantDeLeg(iso);
+    if(!d)return '';
+    const ms=d.getTime()-Date.now();
+    if(ms<=0)return t('dtk_cd_encours');
+    const minutes=Math.round(ms/60000);
+    if(minutes<1)return t('dtk_cd_bientot');
+    if(minutes<60)return t('dtk_cd_min').replace('{n}',minutes);
+    const heures=Math.floor(minutes/60);
+    if(heures<24)return t('dtk_cd_h').replace('{h}',heures).replace('{m}',minutes%60);
+    const jours=Math.floor(heures/24);
+    return t('dtk_cd_j').replace('{j}',jours);
+  }
+
+  // ============================================================
+  // PARTAGE WHATSAPP D'UN TICKET GAGNANT (29/08)
+  // ------------------------------------------------------------
+  // Genere une image (canvas 2D, aucune librairie externe) puis ouvre le
+  // partage natif du telephone (Web Share API, niveau 2 -- fichiers) : la
+  // liste d'apps proposee par le systeme inclut WhatsApp sans qu'on ait a
+  // le cibler nous-memes. Repli propre si le navigateur ne sait pas
+  // partager de fichier (rare sur mobile recent, plus frequent sur
+  // desktop) : telechargement direct de l'image a la place.
+  // ============================================================
+  async function genererImageTicketGagnant(tk){
+    const W=1080,H=1350;
+    const cv=document.createElement('canvas');
+    cv.width=W;cv.height=H;
+    const ctx=cv.getContext('2d');
+
+    // Fond degrade sombre, meme esprit que la charte (noir/vert/or).
+    const grad=ctx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'#030617');grad.addColorStop(1,'#0A1224');
+    ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+
+    // Bandeau superieur.
+    ctx.fillStyle='#C9A44C';
+    ctx.font='700 30px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('VIP BETCOTE',W/2,90);
+    ctx.fillStyle='#2ED47F';
+    ctx.font='800 54px sans-serif';
+    ctx.fillText('✅ '+t('dtk_share_titre'),W/2,160);
+
+    // Liste des selections (jusqu'a 8 lignes, puis "+N autres" pour ne
+    // jamais deborder du cadre quel que soit le nombre de legs).
+    const legs=(tk.legs||[]).filter(l=>l.result!=='void');
+    const MAX=8;
+    let y=250;
+    ctx.textAlign='left';
+    legs.slice(0,MAX).forEach(lg=>{
+      ctx.fillStyle='rgba(255,255,255,.05)';
+      ctx.fillRect(60,y-38,W-120,74);
+      ctx.fillStyle='#F4F3ED';
+      ctx.font='700 26px sans-serif';
+      ctx.fillText(tronqueTexte(lg.match||'',44),85,y-4);
+      ctx.fillStyle='#9AA7BD';
+      ctx.font='400 22px sans-serif';
+      const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
+      ctx.fillText(tronqueTexte(pickTxt,40),85,y+26);
+      ctx.fillStyle='#E8CE8A';
+      ctx.font='800 26px sans-serif';
+      ctx.textAlign='right';
+      ctx.fillText(Number(lg.odd).toFixed(2),W-85,y+2);
+      ctx.textAlign='left';
+      y+=92;
+    });
+    if(legs.length>MAX){
+      ctx.fillStyle='#9AA7BD';
+      ctx.font='400 22px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText(t('dtk_share_plus').replace('{n}',legs.length-MAX),W/2,y+10);
+      ctx.textAlign='left';
+      y+=50;
+    }
+
+    // Cote totale, en grand.
+    y+=40;
+    ctx.textAlign='center';
+    ctx.fillStyle='#9AA7BD';
+    ctx.font='700 24px sans-serif';
+    ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y);
+    ctx.fillStyle='#2ED47F';
+    ctx.font='800 96px sans-serif';
+    ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+110);
+
+    // Pied : mention responsable, jamais omise meme sur une image de partage.
+    ctx.fillStyle='#7C8CA0';
+    ctx.font='400 20px sans-serif';
+    ctx.fillText(t('dtk_share_mention'),W/2,H-60);
+
+    return new Promise(resolve=>cv.toBlob(resolve,'image/png',0.95));
+  }
+  function tronqueTexte(s,max){
+    return s.length>max?s.slice(0,max-1)+'…':s;
+  }
+  async function partagerTicketGagnant(tk){
+    try{
+      const blob=await genererImageTicketGagnant(tk);
+      if(!blob)throw new Error('image');
+      const fichier=new File([blob],'vip-betcote-ticket.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[fichier]})){
+        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t('dtk_share_texte')});
+      }else{
+        // Repli (29/08) : navigateur sans partage de fichier (surtout
+        // desktop) -- telechargement direct plutot que rien.
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download='vip-betcote-ticket.png';
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),4000);
+      }
+    }catch(e){
+      // L'utilisateur a simplement annule le partage (AbortError) --
+      // jamais une erreur a signaler. Toute autre erreur reste silencieuse
+      // ici (generation d'image cote client, rien de critique en jeu).
+    }
+  }
+
   /* Heure d'un match, toujours a l'heure d'Haiti. 'jour' reste vide quand
      le match tombe bien le jour de la fiche, et porte la date (JJ/MM)
      quand l'heure haitienne tombe la veille ou le lendemain — sans ca,
@@ -8602,7 +8763,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
             // fiches generees avant ce correctif, gere silencieusement a
             // l'affichage (pas de "(undefined)" ni de valeur inventee).
             return {time:h.heure,jour:h.jour,league:l.league||'',leagueCountry:l.league_country||'',match:l.match_label||'',
-                    market:l.market||'',pick:l.pick||'',odd:Number(l.odd)||0,result:l.result||null};
+                    market:l.market||'',pick:l.pick||'',odd:Number(l.odd)||0,result:l.result||null,kickoffAt:l.kickoff_at||null};
           })
         };
       });
@@ -8857,6 +9018,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<span class="dtk-res '+tk.status+'">'+t(statusKey)+'</span>';
     el.appendChild(head);
 
+    // Compte à rebours avant le prochain coup d'envoi (29/08) : uniquement
+    // sur une fiche encore en cours (won/lost = tous les matchs déjà
+    // joués, un compte à rebours n'a plus de sens). data-kickoff porte le
+    // timestamp ISO brut ; un seul setInterval global (voir plus bas,
+    // majComptesARebours) met à jour tous les badges de la page ensemble
+    // plutôt qu'un timer par carte.
+    if(!locked&&tk.status==='pending'){
+      const prochainISO=(tk.legs||[]).map(l=>l.kickoffAt).filter(Boolean).sort()[0];
+      if(prochainISO){
+        const cd=document.createElement('div');
+        cd.className='dtk-countdown';
+        cd.dataset.kickoff=prochainISO;
+        cd.textContent=texteCompteARebours(prochainISO);
+        el.appendChild(cd);
+      }
+    }
+
     // Note "a jouer en 2 tickets separes" (25/08) : meme detection que
     // titreFicheDash pour le genre "Score exact" — jamais sur une fiche
     // a marches melanges.
@@ -8922,8 +9100,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const conf=document.createElement('div');
     conf.className='dtk-conf';
     const lvl=tk.conf>=75?'':(tk.conf>=65?' mid':' low');
+    // Badge de fiabilité coloré (29/08) : même seuils que la barre
+    // (75/65), mot-clé traduit + couleur, lisible sans avoir à interpréter
+    // un pourcentage.
+    const niveauCle=tk.conf>=75?'haut':(tk.conf>=65?'moyen':'bas');
+    const niveauEmoji=tk.conf>=75?'🟢':(tk.conf>=65?'🟡':'🔴');
     conf.innerHTML='<div class="dtk-conf-top"><span class="dtk-conf-lbl">'+t('dash_conf')+'</span>'+
-      '<span class="dtk-conf-val">'+tk.conf+'%</span></div>'+
+      '<span style="display:flex;align-items:center;gap:6px"><span class="dtk-conf-val">'+tk.conf+'%</span>'+
+      '<span class="dtk-badge-niveau '+niveauCle+'">'+niveauEmoji+' '+t('dtk_niveau_'+niveauCle)+'</span></span></div>'+
       '<div class="dtk-conf-bar"><span class="dtk-conf-fill'+lvl+'" style="width:'+tk.conf+'%"></span></div>';
     el.appendChild(conf);
 
@@ -8932,6 +9116,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     foot.innerHTML='<span class="dtk-foot-lbl">'+t('dash_totalodd')+'</span>'+
       '<span class="dtk-foot-odd">'+totalOdd(tk).toFixed(2)+'</span>';
     el.appendChild(foot);
+
+    // Partage WhatsApp (29/08) — uniquement sur un ticket GAGNÉ, jamais sur
+    // pending/lost/verrouillé (rien à célébrer, et une fiche verrouillée
+    // n'a pas ses vraies sélections chargées côté client de toute façon).
+    if(!locked&&tk.status==='won'){
+      const btnPartage=document.createElement('button');
+      btnPartage.type='button';
+      btnPartage.className='dtk-share-btn';
+      btnPartage.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.41-1.42a9.9 9.9 0 0 0 4.63 1.18h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2m0 18.1h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.37c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.55-3.7 8.24-8.24 8.24m4.52-6.17c-.25-.12-1.47-.72-1.69-.81-.23-.08-.4-.12-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.23.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.17 1.73 2.64 4.2 3.7.59.25 1.04.4 1.4.52.59.19 1.12.16 1.54.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28"/></svg>'+
+        '<span>'+t('dtk_share_btn')+'</span>';
+      btnPartage.addEventListener('click',()=>partagerTicketGagnant(tk));
+      el.appendChild(btnPartage);
+    }
 
     if(locked){
       const ov=document.createElement('div');
@@ -9574,6 +9771,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     rtChannel=null;
   }
 
+  // Un seul timer pour TOUS les badges compte à rebours de la page (29/08) —
+  // jamais un setInterval par carte, inutilement coûteux si plusieurs
+  // fiches sont affichées en même temps. Se contente de retexter chaque
+  // badge deja present dans le DOM ; ne re-rend jamais les cartes elles-
+  // memes (rafraichirFiches/le polling existant s'en charge deja).
+  setInterval(()=>{
+    document.querySelectorAll('.dtk-countdown[data-kickoff]').forEach(elCd=>{
+      elCd.textContent=texteCompteARebours(elCd.dataset.kickoff);
+    });
+  },30000);
+
   let resyncTimer=null;
   function demarrerResyncPeriodique(){
     arreterResyncPeriodique();
@@ -9786,11 +9994,74 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         card.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();aller();}});
       });
       renderActiviteRecente();
+      renderQuotaBadge();
     }catch(e){
       box.innerHTML=kpi('—',t('adm_k_error'));
     }
   }
   document.getElementById('admHomeRefresh').addEventListener('click',renderHome);
+
+  // ============================================================
+  // BADGE DE QUOTA API-SPORTS (29/08)
+  // ------------------------------------------------------------
+  // Lit get_api_quota_today (RPC Supabase, lecture seule, jamais
+  // d'incrementation ici) -- synchronise avec le vrai compteur alimente
+  // par le bot a chaque appel reel. Couleur : vert <60%, or 60-85%,
+  // rouge >85% (zone ou le bot risque de s'arreter en cours de route).
+  // Reutilisee aussi par la page de generation manuelle (voir plus bas).
+  // ============================================================
+  async function chargerQuotaApi(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{
+      const {data,error}=await sb.rpc('get_api_quota_today',{p_provider:'api-sports-football',p_max:95});
+      if(error)throw error;
+      return Array.isArray(data)?data[0]:data;
+    }catch(e){return null;}
+  }
+  function classeQuota(pct){
+    if(pct>=85)return 'rouge';
+    if(pct>=60)return 'or';
+    return 'vert';
+  }
+  async function renderQuotaBadge(){
+    const wrap=document.getElementById('admQuotaBadgeWrap');
+    if(!wrap)return;
+    const q=await chargerQuotaApi();
+    if(!q){wrap.innerHTML='';return;}
+    const cls=classeQuota(q.quota_pourcentage);
+    wrap.innerHTML='<div class="adm-quota-badge '+cls+'">'+
+      '<span class="adm-quota-badge-pct">'+q.quota_pourcentage+'%</span>'+
+      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl').replace('{used}',q.call_count).replace('{max}',q.quota_max).replace('{left}',q.quota_restant)+'</span></div>';
+  }
+  // Version "page de génération manuelle" (29/08) : même badge, plus un
+  // avertissement clair si le quota restant est trop bas pour générer
+  // correctement (voire désactive carrément le bouton si épuisé). Un
+  // appel manuel consomme jusqu'à 60 requêtes (1 fixtures + jusqu'à 59
+  // odds) — sous PLAFOND_MANUEL_ALERTE, la génération reste possible mais
+  // avec un pool forcément plus pauvre que d'habitude.
+  const PLAFOND_MANUEL_ALERTE=15;
+  async function renderQuotaBadgeGen(){
+    const wrap=document.getElementById('admGenQuotaWrap');
+    const btn=document.getElementById('admGenSubmit');
+    if(!wrap)return;
+    const q=await chargerQuotaApi();
+    if(!q){wrap.innerHTML='';return;}
+    const cls=classeQuota(q.quota_pourcentage);
+    let avertissement='';
+    if(q.quota_restant<=0){
+      avertissement='<div class="adm-quota-badge rouge" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_epuise')+'</span></div>';
+      if(btn)btn.disabled=true;
+    }else if(q.quota_restant<PLAFOND_MANUEL_ALERTE){
+      avertissement='<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_bas').replace('{left}',q.quota_restant)+'</span></div>';
+      if(btn)btn.disabled=false;
+    }else if(btn){
+      btn.disabled=false;
+    }
+    wrap.innerHTML='<div class="adm-quota-badge '+cls+'">'+
+      '<span class="adm-quota-badge-pct">'+q.quota_pourcentage+'%</span>'+
+      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl').replace('{used}',q.call_count).replace('{max}',q.quota_max).replace('{left}',q.quota_restant)+'</span></div>'+avertissement;
+  }
 
   /* Fil d'activite recente : montre les paiements en attente d'action.
      Aucune liste separee a maintenir — une fois un paiement valide ou
@@ -11567,6 +11838,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':'adm_fiche_gen_p');
     setView('fichegenerer');
     renderAdmGenPlans();
+    renderQuotaBadgeGen();
   }
   document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
   document.getElementById('admFicheGenererExactBtn').addEventListener('click',()=>ouvrirVueGeneration('exact'));
