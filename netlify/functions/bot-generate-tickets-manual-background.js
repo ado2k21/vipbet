@@ -1,24 +1,41 @@
 /**
  * ============================================================================
- * VIP BETCOTE — GÉNÉRATION MANUELLE DE FICHE (Netlify Function, HTTP, admin)
- * Fichier : netlify/functions/bot-generate-tickets-manual.js
+ * VIP BETCOTE — GÉNÉRATION MANUELLE DE FICHE (Netlify Function, Background)
+ * Fichier : netlify/functions/bot-generate-tickets-manual-background.js
  * ----------------------------------------------------------------------------
+ * RENOMMÉE le 28/08 v5 (était bot-generate-tickets-manual.js, fonction HTTP
+ * normale) : convertie en fonction "Background" (jusqu'à 15 minutes
+ * d'exécution) pour pouvoir espacer ses appels /odds (~6.5s entre chaque,
+ * comme bot-generate-tickets-background.js) et examiner jusqu'à 60
+ * candidats sans se faire rejeter par la limite de 10 requêtes/minute
+ * d'API-Sports (HTTP 429, cause racine identifiée le 28/08).
+ *
+ * CONSÉQUENCE IMPORTANTE POUR admin.html/index.html : une fonction
+ * Background ne renvoie JAMAIS de réponse utilisable à l'appelant (Netlify
+ * répond 202 immédiatement, l'exécution continue après, invisible pour le
+ * navigateur). Le bouton "GÉNÉRER FICHE" ne peut donc plus afficher le
+ * résultat dans la foulée — il doit avertir l'admin que la génération est
+ * en cours (~6-7 minutes) et proposer un bouton "Vérifier maintenant" qui
+ * rafraîchit simplement la liste des Fiches (renderFiches()).
+ *
  * Déclenchée à la demande depuis le bouton "GÉNÉRER FICHE" du panneau admin
  * (admin.html) — PAS une tâche planifiée (pas de `config.schedule` exporté
- * ici, contrairement à bot-generate-tickets-background.js).
+ * ici, contrairement à bot-generate-tickets-background.js). NE PAS déclarer
+ * dans netlify.toml (même raison que bot-diagnostics.js : le schedule
+ * bloquerait l'invocation directe).
  *
- * Réutilise directement les briques de bot-generate-tickets-background.js (extraction
- * des marchés, construction de fiche, publication en base) via require() —
- * volontairement PAS une copie séparée : la logique de marché est ajustée
- * régulièrement, une seconde copie divergerait silencieusement au fil du
- * temps. Seul le point d'entrée (paramètres choisis par l'admin, fenêtre
- * horaire personnalisée, pas d'anti-doublon, cote max personnalisée,
- * publication immédiate ou programmée) est spécifique à ce fichier.
+ * Réutilise directement les briques de bot-generate-tickets-background.js
+ * (extraction des marchés, construction de fiche, publication en base) via
+ * require() — volontairement PAS une copie séparée.
  *
  * SÉCURITÉ : accessible uniquement à un compte avec profiles.role='admin'.
- * Le jeton d'accès Supabase de la session admin (déjà connectée dans
- * admin.html) est transmis en en-tête Authorization et vérifié ici auprès
- * de Supabase Auth avant toute génération.
+ * Le jeton d'accès Supabase de la session admin est transmis en en-tête
+ * Authorization et vérifié ici auprès de Supabase Auth avant toute
+ * génération — la vérification a toujours lieu même en Background, mais
+ * un rejet (401/403) n'est plus visible par l'admin dans l'immédiat
+ * (aucune réponse ne lui parvient) : seule l'absence de nouvelle fiche
+ * dans la liste le révèle. Le bouton reste de toute façon caché derrière
+ * l'authentification admin déjà en place côté panneau.
  * ============================================================================
  */
 
@@ -29,7 +46,7 @@ const {
   resetStats, stats, recupererFixturesJour, recupererCoteParFixture,
   extraireMarchesFoot, construireFiche, construireFicheScoreExact,
   publierFiche, ALLOWED_LEAGUES_FOOT, TOP_LEAGUES_FOOT,
-  recupererFiabiliteMarches, annoterPoolAvecFiabilite
+  recupererFiabiliteMarches, annoterPoolAvecFiabilite, attendre
 } = bot;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -212,15 +229,10 @@ async function handler(event) {
     candidats.push({ fixtureId: fixture.id, prioritaire: TOP_LEAGUES_FOOT.includes(league.id) });
   });
 
-  // Plafond réduit de 60 à 9 (28/08 v5) : cette fonction reste SYNCHRONE
-  // (l'admin attend la réponse en direct dans le panneau) — au-delà de 9
-  // appels /odds sans pause, API-Sports rejette avec HTTP 429 (limite de
-  // 10 requêtes/minute du plan gratuit, découverte le 28/08). La vraie
-  // génération automatique (bot-generate-tickets-background.js) peut
-  // examiner jusqu'à 60 candidats car elle tourne en fonction Background
-  // (15 minutes, espace ses appels) — la génération manuelle admin reste
-  // volontairement plus modeste en échange d'une réponse immédiate.
-  const PLAFOND_APPELS_COTES = 9;
+  // Plafond 60 (28/08 v5, restauré) : cette fonction tourne désormais en
+  // Background (15 minutes) — peut examiner autant de candidats que le bot
+  // automatique, avec le même espacement entre appels /odds ci-dessous.
+  const PLAFOND_APPELS_COTES = 60;
   candidats.sort((a, b) => (b.prioritaire ? 1 : 0) - (a.prioritaire ? 1 : 0));
   if (candidats.length > PLAFOND_APPELS_COTES) candidats = candidats.slice(0, PLAFOND_APPELS_COTES);
 
@@ -231,10 +243,15 @@ async function handler(event) {
   }
 
   let poolFoot = [];
-  for (const c of candidats) {
+  // Même rythme que bot-generate-tickets-background.js (28/08 v5) : 6.5s
+  // entre chaque appel /odds, possible uniquement parce que cette fonction
+  // tourne désormais en Background (15 minutes disponibles).
+  const DELAI_ENTRE_APPELS_MS = 6500;
+  for (let i = 0; i < candidats.length; i++) {
+    const c = candidats[i];
     const oddsItem = await recupererCoteParFixture(c.fixtureId);
-    if (!oddsItem) continue;
-    poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, playDate, noms[c.fixtureId]));
+    if (oddsItem) poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, playDate, noms[c.fixtureId]));
+    if (i < candidats.length - 1) await attendre(DELAI_ENTRE_APPELS_MS);
   }
 
   if (!poolFoot.length) {
