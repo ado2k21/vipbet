@@ -9994,7 +9994,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         card.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();aller();}});
       });
       renderActiviteRecente();
-      renderQuotaBadge();
+      // renderQuotaBadge(); // DÉSACTIVÉ (29/08) : compteur interne non synchronisé avec le vrai quota API-Sports — voir diag=quota-status avant de réactiver.
     }catch(e){
       box.innerHTML=kpi('—',t('adm_k_error'));
     }
@@ -11838,7 +11838,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':'adm_fiche_gen_p');
     setView('fichegenerer');
     renderAdmGenPlans();
-    renderQuotaBadgeGen();
+    // renderQuotaBadgeGen(); // DÉSACTIVÉ (29/08) : compteur interne non synchronisé avec le vrai quota API-Sports — voir diag=quota-status avant de réactiver.
   }
   document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
   document.getElementById('admFicheGenererExactBtn').addEventListener('click',()=>ouvrirVueGeneration('exact'));
