@@ -200,6 +200,35 @@ async function handler(event) {
   }
 
   // MODE DIAGNOSTIC APERÇU DU POOL (28/08 v3) : ?token=...&diag=poolpreview[&date=AAAA-MM-JJ]
+  // MODE DIAGNOSTIC RÉPONSE BRUTE /fixtures (29/08 v6) : ?token=...&diag=rawfixtures[&date=AAAA-MM-JJ]
+  // Créé après un cas où /fixtures a renvoyé une liste vide SANS aucun
+  // champ "errors" rempli (donc ni notre détection de quota via
+  // apiSportsGetRaw, ni un throw HTTP, ne s'est déclenchée) — sur une date
+  // dont on savait avec certitude qu'elle avait de vrais matchs quelques
+  // heures plus tôt. Montre l'enveloppe COMPLÈTE de la réponse API-Sports
+  // (results, paging, parameters, errors — pas seulement le tableau
+  // "response" que le reste du code garde d'habitude), pour voir ce qui se
+  // passe réellement sans deviner davantage. Isolé, lecture seule, 1 SEUL
+  // appel API.
+  if (modeTest && event.queryStringParameters.diag === 'rawfixtures') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const dateR = event.queryStringParameters.date || dateCibleDemainHaiti();
+    try {
+      const data = await apiSportsGetRaw(FOOT_HOST, '/fixtures', { date: dateR, timezone: TZ_HAITI });
+      return { statusCode: 200, body: JSON.stringify({
+        date: dateR,
+        enveloppeComplete: {
+          get: data.get, parameters: data.parameters, errors: data.errors,
+          results: data.results, paging: data.paging,
+          nbDansResponse: Array.isArray(data.response) ? data.response.length : null,
+          echantillonResponse: Array.isArray(data.response) ? data.response.slice(0, 2) : data.response
+        }
+      }, null, 2) };
+    } catch (e) {
+      return { statusCode: 200, body: JSON.stringify({ date: dateR, erreurLevee: e.message }, null, 2) };
+    }
+  }
+
   // Reproduit EXACTEMENT le pipeline de la vraie génération (mêmes appels
   // API, mêmes filtres, même construction de fiche via construireFiche/
   // construireFicheScoreExact — aucune logique dupliquée) mais NE PUBLIE
