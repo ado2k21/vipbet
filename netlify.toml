@@ -54,9 +54,14 @@
 # 60 candidats produisent une selection" observe le 28/08. Le suffixe
 # "-background" dans le nom de fichier ET dans la section ci-dessous est
 # ce qui declenche ce comportement special cote Netlify.
+#
+# Session suivante — fenetre decalee de 20-22 a 21-23 UTC (17h00 -> 18h30
+# Haiti, demande explicite de James). dateCible reste toujours "demain" :
+# ce decalage n'exclut aucun match, contrairement a un decalage qui aurait
+# touche le jour meme.
 # ============================================================================
 [functions."bot-generate-tickets-background"]
-  schedule = "*/15 20-22 * * *"
+  schedule = "*/15 21-23 * * *"
 
 # bot-settle-results (28/08, demande explicite de James : "le calcul des
 # resultats doit se faire a n'importe quelle heure") — passe de

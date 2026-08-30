@@ -4288,6 +4288,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <div class="dash-kpi"><b>—</b><span data-i18n="adm_k_loading">Chajman...</span></div>
       </div>
       <div id="admQuotaBadgeWrap"></div>
+      <div id="admApprentissageWrap" style="margin-top:10px">
+        <button type="button" class="wiz-change" id="admApprentissageBtn" data-i18n="adm_apprentissage_btn">Rapport apprentissage</button>
+        <div id="admApprentissageResultat" style="margin-top:8px"></div>
+      </div>
       <div class="admdash-refresh-row">
         <span class="admdash-updated" id="admHomeUpdated"></span>
         <button type="button" class="wiz-change" id="admHomeRefresh">
@@ -4712,7 +4716,7 @@ dash_f_all:"Tout", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues",
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
-fiche_note_x2:"Conseil : à jouer en 2 tickets séparés",
+fiche_note_x2:"Jouer par deux matchs",
 adm_fiche_gen_btn:"⚡ GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
 adm_fiche_gen_exact_btn:"🎯 GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
 adm_fiche_gen_nbmatchs:"Nombre de matchs",
@@ -4729,6 +4733,14 @@ adm_fiche_gen_ok_prog:"programmée pour le {h}", adm_fiche_gen_clamped:"cote max
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} utilisés · {left} restants aujourd'hui",
 adm_quota_gen_epuise:"⛔ Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"⚠️ Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
+adm_quota_lbl_reel:"Quota réel API-Sports · {remaining}/{max} restants (vérifié à {time})",
+adm_quota_inconnu:"⚠️ Quota réel inconnu depuis minuit UTC — aucun appel API-Sports effectué aujourd'hui.",
+adm_quota_gen_inconnu:"⚠️ Quota inconnu depuis minuit UTC. Lance un diagnostic (?diag=quota-status) avant de générer pour être sûr.",
+adm_apprentissage_btn:"Rapport apprentissage",
+adm_apprentissage_indispo:"Rapport indisponible pour le moment.",
+adm_apprentissage_vide:"Pas encore assez de résultats réglés pour un rapport.",
+adm_apprentissage_labels:"Par label de confiance (A-E)",
+adm_apprentissage_marches:"Par championnat + marché",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
 dtk_cd_min:"⏱ Premier match dans {n} min", dtk_cd_h:"⏱ Premier match dans {h}h{m}", dtk_cd_j:"⏱ Premier match dans {j} j", dtk_cd_bientot:"⏱ Premier match imminent", dtk_cd_encours:"⏱ Premier match en cours",
 dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez de façon responsable", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
@@ -5146,7 +5158,7 @@ dash_f_all:"All", dash_f_foot:"Football", dash_f_nba:"NBA",
 dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
-fiche_note_x2:"Tip: play as 2 separate tickets",
+fiche_note_x2:"Play two matches at a time",
 adm_fiche_gen_btn:"⚡ GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
 adm_fiche_gen_exact_btn:"🎯 GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
 adm_fiche_gen_nbmatchs:"Number of matches",
@@ -5163,6 +5175,14 @@ adm_fiche_gen_ok_prog:"scheduled for {h}", adm_fiche_gen_clamped:"max odds cappe
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 adm_quota_lbl:"API-Sports quota · {used}/{max} used · {left} left today",
 adm_quota_gen_epuise:"⛔ Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"⚠️ Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
+adm_quota_lbl_reel:"Real API-Sports quota · {remaining}/{max} left (checked at {time})",
+adm_quota_inconnu:"⚠️ Real quota unknown since midnight UTC — no API-Sports call made today.",
+adm_quota_gen_inconnu:"⚠️ Quota unknown since midnight UTC. Run a diagnostic (?diag=quota-status) before generating to be sure.",
+adm_apprentissage_btn:"Learning report",
+adm_apprentissage_indispo:"Report unavailable right now.",
+adm_apprentissage_vide:"Not enough settled results yet for a report.",
+adm_apprentissage_labels:"By confidence label (A-E)",
+adm_apprentissage_marches:"By league + market",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
 dtk_cd_min:"⏱ First match in {n} min", dtk_cd_h:"⏱ First match in {h}h{m}", dtk_cd_j:"⏱ First match in {j} d", dtk_cd_bientot:"⏱ First match starting soon", dtk_cd_encours:"⏱ First match underway",
 dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play responsibly", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
@@ -5580,7 +5600,7 @@ dash_f_all:"Tout", dash_f_foot:"Foutbòl", dash_f_nba:"NBA",
 dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
-fiche_note_x2:"Konsèy : jwe l an 2 tikè separe",
+fiche_note_x2:"Jwe pa de match",
 adm_fiche_gen_btn:"⚡ JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
 adm_fiche_gen_exact_btn:"🎯 JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
 adm_fiche_gen_nbmatchs:"Konbyen match",
@@ -5597,6 +5617,14 @@ adm_fiche_gen_ok_prog:"pwograme pou {h}", adm_fiche_gen_clamped:"kòt max redwi 
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} itilize · {left} rete jodi a",
 adm_quota_gen_epuise:"⛔ Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"⚠️ Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
+adm_quota_lbl_reel:"Vrè quota API-Sports · {remaining}/{max} rete (verifye a {time})",
+adm_quota_inconnu:"⚠️ Vrè quota pa konnen depi minwi UTC — pa gen okenn apèl API-Sports jodi a.",
+adm_quota_gen_inconnu:"⚠️ Quota pa konnen depi minwi UTC. Lanse yon dyagnostik (?diag=quota-status) anvan ou jenere pou w sèten.",
+adm_apprentissage_btn:"Rapò aprantisaj",
+adm_apprentissage_indispo:"Rapò a pa disponib kounye a.",
+adm_apprentissage_vide:"Poko gen ase rezilta regle pou yon rapò.",
+adm_apprentissage_labels:"Pa etikèt konfyans (A-E)",
+adm_apprentissage_marches:"Pa chanpyona + mache",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
 dtk_cd_min:"⏱ Premye match nan {n} min", dtk_cd_h:"⏱ Premye match nan {h}è{m}", dtk_cd_j:"⏱ Premye match nan {j} jou", dtk_cd_bientot:"⏱ Premye match pral kòmanse", dtk_cd_encours:"⏱ Premye match ap jwe",
 dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe yon fason responsab", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
@@ -8667,6 +8695,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return new Intl.DateTimeFormat(loc,{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(d);
     }catch(e){return iso;}
   }
+  /* Deux valeurs de marché coexistent reellement en base (meme constat que
+     MARCHES_SCORE_EXACT cote Admin, verifie le 25/08) : 'mk_score_l' ecrit
+     par le panneau admin, et 'mk_score_exact' ecrit par le bot. */
+  const MARCHES_SCORE_EXACT_DASH=['mk_score_l','mk_score_exact'];
   /* Trois genres possibles, meme logique que titreFiche() cote Admin :
      Basketball prime, sinon Score exact si toutes les selections en sont
      (scoreCount===legsCount), sinon Cote normal. */
@@ -8754,7 +8786,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           conf:tk.confidence!=null?tk.confidence:0,
           // Agregats publics — servent aux cartes verrouillees.
           legsCount:tk.legs_count!=null?tk.legs_count:brut.length,
-          scoreCount:tk.score_legs_count||0,
+          // CORRIGÉ (session suivante) : score_legs_count peut être resté à
+          // 0 en base sur d'anciennes fiches pourtant 100% score exact
+          // (bug identifié le 30/08 sur au moins 3 fiches déjà publiées,
+          // corrigé ponctuellement en base mais ne doit plus jamais
+          // ré-afficher "Cote normal" à tort même si ça se reproduit) —
+          // repli sur les vrais marchés des légs, même principe défensif
+          // que estFicheScoreExact() côté Admin (MARCHES_SCORE_EXACT_DASH).
+          scoreCount:tk.score_legs_count>0?tk.score_legs_count
+            :(brut.length&&brut.every(l=>MARCHES_SCORE_EXACT_DASH.indexOf(String(l.market||''))>-1)?brut.length:0),
           totalOdd:Number(tk.total_odd)||0,
           legs:brut.map(l=>{
             const h=heureAffichee(l,tk.play_date);
@@ -9994,7 +10034,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         card.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();aller();}});
       });
       renderActiviteRecente();
-      // renderQuotaBadge(); // DÉSACTIVÉ (29/08) : compteur interne non synchronisé avec le vrai quota API-Sports — voir diag=quota-status avant de réactiver.
+      renderQuotaBadge(); // RÉACTIVÉ (session suivante) : rebranché sur le vrai quota (get_real_api_quota_today), plus le compteur interne du 29/08.
     }catch(e){
       box.innerHTML=kpi('—',t('adm_k_error'));
     }
@@ -10019,6 +10059,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return Array.isArray(data)?data[0]:data;
     }catch(e){return null;}
   }
+  // VRAI quota (session suivante) : lit get_real_api_quota_today, alimenté
+  // par les en-têtes x-ratelimit-* d'API-Sports sur chaque appel réel des
+  // bots (bot-generate-tickets-background.js, -manual-background.js,
+  // bot-diagnostics.js) — remplace le compteur interne ci-dessus comme
+  // seule source affichée. est_du_jour=false = aucun appel réel depuis
+  // minuit UTC : on ne devine jamais, on l'affiche clairement.
+  async function chargerQuotaReelApi(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{
+      const {data,error}=await sb.rpc('get_real_api_quota_today',{p_provider:'api-sports-football'});
+      if(error)throw error;
+      return Array.isArray(data)?data[0]:data;
+    }catch(e){return null;}
+  }
   function classeQuota(pct){
     if(pct>=85)return 'rouge';
     if(pct>=60)return 'or';
@@ -10027,41 +10082,98 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   async function renderQuotaBadge(){
     const wrap=document.getElementById('admQuotaBadgeWrap');
     if(!wrap)return;
-    const q=await chargerQuotaApi();
-    if(!q){wrap.innerHTML='';return;}
-    const cls=classeQuota(q.quota_pourcentage);
+    const q=await chargerQuotaReelApi();
+    if(!q || !q.est_du_jour){
+      wrap.innerHTML='<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+t('adm_quota_inconnu')+'</span></div>';
+      return;
+    }
+    const pct=q.real_limit?Math.round((q.real_limit-q.real_remaining)/q.real_limit*100):0;
+    const cls=classeQuota(pct);
+    const heure=new Date(q.real_captured_at).toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'});
     wrap.innerHTML='<div class="adm-quota-badge '+cls+'">'+
-      '<span class="adm-quota-badge-pct">'+q.quota_pourcentage+'%</span>'+
-      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl').replace('{used}',q.call_count).replace('{max}',q.quota_max).replace('{left}',q.quota_restant)+'</span></div>';
+      '<span class="adm-quota-badge-pct">'+pct+'%</span>'+
+      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl_reel').replace('{remaining}',q.real_remaining).replace('{max}',q.real_limit).replace('{time}',heure)+'</span></div>';
   }
-  // Version "page de génération manuelle" (29/08) : même badge, plus un
-  // avertissement clair si le quota restant est trop bas pour générer
-  // correctement (voire désactive carrément le bouton si épuisé). Un
-  // appel manuel consomme jusqu'à 60 requêtes (1 fixtures + jusqu'à 59
-  // odds) — sous PLAFOND_MANUEL_ALERTE, la génération reste possible mais
-  // avec un pool forcément plus pauvre que d'habitude.
+  // Version "page de génération manuelle" (29/08, rebranchée sur le vrai
+  // quota session suivante) : même badge, plus un avertissement clair si
+  // le quota restant est trop bas pour générer correctement (voire
+  // désactive carrément le bouton si réellement épuisé). Un appel manuel
+  // consomme jusqu'à 60 requêtes (1 fixtures + jusqu'à 59 odds) — sous
+  // PLAFOND_MANUEL_ALERTE, la génération reste possible mais avec un pool
+  // forcément plus pauvre. Si aucune vraie donnée du jour n'existe encore,
+  // le bouton reste actif (on ne bloque jamais sur une inconnue) mais un
+  // avertissement invite à lancer ?diag=quota-status d'abord.
   const PLAFOND_MANUEL_ALERTE=15;
   async function renderQuotaBadgeGen(){
     const wrap=document.getElementById('admGenQuotaWrap');
     const btn=document.getElementById('admGenSubmit');
     if(!wrap)return;
-    const q=await chargerQuotaApi();
-    if(!q){wrap.innerHTML='';return;}
-    const cls=classeQuota(q.quota_pourcentage);
+    const q=await chargerQuotaReelApi();
+    if(btn)btn.disabled=false;
+    if(!q || !q.est_du_jour){
+      wrap.innerHTML='<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+t('adm_quota_inconnu')+'</span></div>'+
+        '<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_inconnu')+'</span></div>';
+      return;
+    }
+    const pct=q.real_limit?Math.round((q.real_limit-q.real_remaining)/q.real_limit*100):0;
+    const cls=classeQuota(pct);
+    const heure=new Date(q.real_captured_at).toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'});
     let avertissement='';
-    if(q.quota_restant<=0){
+    if(q.real_remaining<=0){
       avertissement='<div class="adm-quota-badge rouge" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_epuise')+'</span></div>';
       if(btn)btn.disabled=true;
-    }else if(q.quota_restant<PLAFOND_MANUEL_ALERTE){
-      avertissement='<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_bas').replace('{left}',q.quota_restant)+'</span></div>';
-      if(btn)btn.disabled=false;
-    }else if(btn){
-      btn.disabled=false;
+    }else if(q.real_remaining<PLAFOND_MANUEL_ALERTE){
+      avertissement='<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_bas').replace('{left}',q.real_remaining)+'</span></div>';
     }
     wrap.innerHTML='<div class="adm-quota-badge '+cls+'">'+
-      '<span class="adm-quota-badge-pct">'+q.quota_pourcentage+'%</span>'+
-      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl').replace('{used}',q.call_count).replace('{max}',q.quota_max).replace('{left}',q.quota_restant)+'</span></div>'+avertissement;
+      '<span class="adm-quota-badge-pct">'+pct+'%</span>'+
+      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl_reel').replace('{remaining}',q.real_remaining).replace('{max}',q.real_limit).replace('{time}',heure)+'</span></div>'+avertissement;
   }
+
+  // ============================================================================
+  // RAPPORT APPRENTISSAGE CONTINU (session suivante, roadmap "amélioration
+  // continue") — lecture seule, réservée admin (get_rapport_apprentissage,
+  // migration du même jour). Deux sections : (1) taux de réussite réel par
+  // championnat+marché (identique à market_reliability) ; (2) taux de
+  // réussite réel par label de confiance A-E — permet de vérifier dans le
+  // temps si les seuils de classerConfiance (bot) sont bien calibrés,
+  // jamais supposés corrects définitivement. N'affecte AUCUNE génération —
+  // purement informatif pour l'admin.
+  // ============================================================================
+  async function chargerRapportApprentissage(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{
+      const {data,error}=await sb.rpc('get_rapport_apprentissage');
+      if(error)throw error;
+      return data||[];
+    }catch(e){return null;}
+  }
+  function formaterLigneApprentissage(l){
+    const pct=(l.taux_reussite!=null)?Math.round(l.taux_reussite*100)+'%':'—';
+    return '<div class="admdash-updated" style="display:flex;justify-content:space-between;gap:8px;padding:3px 0">'+
+      '<span>'+l.cle+'</span><span>'+l.gagnes+'/'+l.echantillon+' · '+pct+'</span></div>';
+  }
+  async function afficherRapportApprentissage(){
+    const zone=document.getElementById('admApprentissageResultat');
+    if(!zone)return;
+    zone.innerHTML='<span class="admdash-updated">'+t('adm_k_loading')+'</span>';
+    const lignes=await chargerRapportApprentissage();
+    if(!lignes){zone.innerHTML='<span class="admdash-updated">'+t('adm_apprentissage_indispo')+'</span>';return;}
+    if(!lignes.length){zone.innerHTML='<span class="admdash-updated">'+t('adm_apprentissage_vide')+'</span>';return;}
+    const parMarche=lignes.filter(l=>l.section==='championnat_marche');
+    const parLabel=lignes.filter(l=>l.section==='label_confiance');
+    let html='';
+    if(parLabel.length){
+      html+='<b class="admdash-updated">'+t('adm_apprentissage_labels')+'</b>'+parLabel.map(formaterLigneApprentissage).join('');
+    }
+    if(parMarche.length){
+      html+='<b class="admdash-updated" style="display:block;margin-top:8px">'+t('adm_apprentissage_marches')+'</b>'+parMarche.map(formaterLigneApprentissage).join('');
+    }
+    zone.innerHTML=html;
+  }
+  const admApprentissageBtn=document.getElementById('admApprentissageBtn');
+  if(admApprentissageBtn) admApprentissageBtn.addEventListener('click', afficherRapportApprentissage);
 
   /* Fil d'activite recente : montre les paiements en attente d'action.
      Aucune liste separee a maintenir — une fois un paiement valide ou
@@ -11838,7 +11950,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':'adm_fiche_gen_p');
     setView('fichegenerer');
     renderAdmGenPlans();
-    // renderQuotaBadgeGen(); // DÉSACTIVÉ (29/08) : compteur interne non synchronisé avec le vrai quota API-Sports — voir diag=quota-status avant de réactiver.
+    renderQuotaBadgeGen(); // RÉACTIVÉ (session suivante) : rebranché sur le vrai quota (get_real_api_quota_today), plus le compteur interne du 29/08.
   }
   document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
   document.getElementById('admFicheGenererExactBtn').addEventListener('click',()=>ouvrirVueGeneration('exact'));
