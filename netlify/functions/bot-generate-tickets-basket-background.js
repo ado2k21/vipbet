@@ -111,6 +111,78 @@ async function apiSportsGetBasketRaw(path, params) {
 }
 
 // ============================================================================
+// PROFILS RÉELS DE SCORING PAR ÉQUIPE (session suivante, demande explicite
+// de James : "vraies statistiques pour une rentabilité réelle") — CE QUI
+// EST RÉELLEMENT POSSIBLE, confirmé par ?diag=basket-stats du 30/08 :
+// /statistics et /standings sont REFUSÉS sur le plan gratuit pour la
+// saison en cours ("Free plans do not have access to this season, try
+// from 2022 to 2024") — donc AUCUNE projection pace/efficacité n'est
+// constructible. En revanche /games?date= (déjà utilisé partout ailleurs,
+// confirmé SANS restriction de saison) contient déjà le score final
+// complet (scores.home.total/away.total) de chaque match terminé — on
+// peut donc calculer NOUS-MÊMES une vraie moyenne de points marqués/
+// encaissés par équipe, à domicile et à l'extérieur, uniquement à partir
+// de résultats réels déjà joués. Ce n'est PAS du pace/efficacité avancé
+// (impossible aujourd'hui), mais c'est une vraie statistique, jamais
+// inventée — utilisée plus bas comme signal supplémentaire, jamais un
+// filtre qui bloque à lui seul.
+// ============================================================================
+const HISTORIQUE_JOURS_BASKET = 10; // 10 appels /games?date=, coût modéré sur le quota basketball du jour
+const HISTORIQUE_MIN_MATCHS_BASKET = 3; // en dessous, échantillon jugé trop faible — jamais utilisé
+
+async function recupererProfilsEquipesBasket(dateCible) {
+  const profils = new Map(); // teamId -> { n, ptsPour, ptsContre, nDom, ptsPourDom, ptsContreDom, nExt, ptsPourExt, ptsContreExt }
+  function ajouter(teamId, pour, contre, domicile) {
+    if (!profils.has(teamId)) profils.set(teamId, { n: 0, ptsPour: 0, ptsContre: 0, nDom: 0, ptsPourDom: 0, ptsContreDom: 0, nExt: 0, ptsPourExt: 0, ptsContreExt: 0 });
+    const p = profils.get(teamId);
+    p.n++; p.ptsPour += pour; p.ptsContre += contre;
+    if (domicile) { p.nDom++; p.ptsPourDom += pour; p.ptsContreDom += contre; }
+    else { p.nExt++; p.ptsPourExt += pour; p.ptsContreExt += contre; }
+  }
+
+  const base = new Date(dateCible + 'T00:00:00Z');
+  for (let i = 1; i <= HISTORIQUE_JOURS_BASKET; i++) {
+    const d = new Date(base.getTime() - i * 86400000);
+    const iso = d.toISOString().slice(0, 10);
+    let matchs;
+    try {
+      const data = await apiSportsGetBasketRaw('/games', { date: iso });
+      matchs = data.response || [];
+    } catch (e) {
+      stats.erreurs.push(`historique_basket(${iso}): ${e.message}`);
+      continue;
+    }
+    matchs.forEach(g => {
+      if (!g || !g.status || g.status.short !== 'FT') return; // uniquement matchs réellement terminés, jamais un score partiel
+      const ptsHome = g.scores && g.scores.home && g.scores.home.total;
+      const ptsAway = g.scores && g.scores.away && g.scores.away.total;
+      if (typeof ptsHome !== 'number' || typeof ptsAway !== 'number') return; // jamais une moyenne calculée sur une donnée absente
+      const homeId = g.teams && g.teams.home && g.teams.home.id;
+      const awayId = g.teams && g.teams.away && g.teams.away.id;
+      if (homeId != null) ajouter(homeId, ptsHome, ptsAway, true);
+      if (awayId != null) ajouter(awayId, ptsAway, ptsHome, false);
+    });
+  }
+  return profils;
+}
+
+// Projection simple à partir des profils réels : moyenne de (attaque
+// domicile de l'équipe A + défense extérieur de l'équipe B) et l'inverse,
+// jamais un modèle avancé — juste une moyenne de vrais résultats passés.
+// Retourne null si l'échantillon est insuffisant pour l'une des deux
+// équipes (jamais une projection sur une base trop faible).
+function projeterTotalBasket(profils, homeId, awayId) {
+  const ph = profils.get(homeId), pa = profils.get(awayId);
+  if (!ph || !pa || ph.n < HISTORIQUE_MIN_MATCHS_BASKET || pa.n < HISTORIQUE_MIN_MATCHS_BASKET) return null;
+  // Repli sur la moyenne globale si moins de 2 matchs dans le sous-échantillon domicile/extérieur.
+  const attHome = ph.nDom >= 2 ? ph.ptsPourDom / ph.nDom : ph.ptsPour / ph.n;
+  const defHome = ph.nDom >= 2 ? ph.ptsContreDom / ph.nDom : ph.ptsContre / ph.n;
+  const attAway = pa.nExt >= 2 ? pa.ptsPourExt / pa.nExt : pa.ptsPour / pa.n;
+  const defAway = pa.nExt >= 2 ? pa.ptsContreExt / pa.nExt : pa.ptsContre / pa.n;
+  return Math.round(((attHome + defAway) / 2 + (attAway + defHome) / 2));
+}
+
+// ============================================================================
 // LOG STRUCTURÉ — indépendant de celui du foot (fichier/process séparé).
 // ============================================================================
 const stats = {
@@ -190,13 +262,23 @@ function traduirePointsBasket(value) {
 // sport. Handicap asiatique (vu dans le diagnostic) volontairement laissé
 // de côté pour l'instant — extension possible plus tard si James le
 // demande, jamais imposée d'avance.
+// CORRIGÉ (session suivante) : `profils` (recupererProfilsEquipesBasket)
+// optionnel — quand fourni et l'échantillon suffisant pour les deux
+// équipes, chaque candidat mk_basket_total est comparé à la projection
+// réelle maison (projeterTotalBasket). `projectionConfirmee` est un
+// signal ADDITIF, jamais un filtre : un candidat sans confirmation reste
+// pleinement valide, juste sans le bonus de tri (voir construireFicheBasket).
 // ============================================================================
-function extraireMarchesBasket(oddsItem, dateCible, infosMatch) {
+function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
   const trouvees = [];
   const h = heureHaitiDuMatch(infosMatch.kickoffUtc);
   if (!h || h.iso !== dateCible) return [];
   const minutesJour = h.heureNum * 60 + h.minuteNum;
   if (minutesJour < BASKET_MIN_HOUR * 60 || minutesJour > BASKET_MAX_MINUTES) return [];
+
+  const projectionTotal = (profils && infosMatch.equipeDomicileId != null && infosMatch.equipeExterieurId != null)
+    ? projeterTotalBasket(profils, infosMatch.equipeDomicileId, infosMatch.equipeExterieurId)
+    : null;
 
   const bookmakers = oddsItem.bookmakers || [];
   const bk = bookmakers.find(b => Number(b.id) === 8) || bookmakers[0];
@@ -228,18 +310,30 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
         const estOver = /^Over/i.test(String(v.value));
+        const seuil = parseFloat(String(v.value).replace(/^(Over|Under)\s+/i, ''));
+        // Vraie statistique (session suivante) : accord entre la
+        // projection maison (vrais scores finaux des 10 derniers jours,
+        // voir recupererProfilsEquipesBasket) et le sens du pari — jamais
+        // calculé si l'échantillon est insuffisant (projectionTotal reste
+        // null dans ce cas, projectionConfirmee retombe à false partout,
+        // comportement identique à avant ce correctif).
+        const projectionConfirmee = (projectionTotal != null && isFinite(seuil))
+          ? (estOver ? projectionTotal > seuil : projectionTotal < seuil)
+          : false;
         if (estOver && c >= 1.19 && c <= 1.70) {
           trouvees.push({
             gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
             market: 'mk_basket_total', pick: traduirePointsBasket(v.value), odd: c, tier: 'SAFE',
-            kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure
+            kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure,
+            projectionTotal, projectionConfirmee
           });
         }
         if (estOver && c >= 1.95 && c <= 2.40) {
           trouvees.push({
             gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
             market: 'mk_basket_total', pick: traduirePointsBasket(v.value), odd: c, tier: 'PREMIUM',
-            kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure
+            kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure,
+            projectionTotal, projectionConfirmee
           });
         }
       });
@@ -271,10 +365,18 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch) {
 const CIBLE_MAX_BASKET = 25;
 const MAX_SELECTIONS_BASKET = 10;
 
-function construireFicheBasket(pool) {
+function construireFicheBasket(pool, cibleMaxOverride) {
+  // Plafond personnalisable (session suivante, génération manuelle avec
+  // les mêmes options que le foot) — 25 par défaut (passage automatique
+  // 19h00), ou la cote max choisie par l'admin en génération manuelle.
+  const cibleMax = (cibleMaxOverride != null && isFinite(cibleMaxOverride)) ? cibleMaxOverride : CIBLE_MAX_BASKET;
   // Au plus 1 candidat par match (le meilleur, même principe que
   // meilleurParMatch côté foot) — jamais 2 legs corrélés du même match.
-  const score = b => (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
+  // Bonus léger (session suivante) : +0.05 quand la vraie projection
+  // maison (scores réels des 10 derniers jours) confirme le sens du pari
+  // total de points — jamais assez pour renverser une grosse différence
+  // de cote, juste un départage entre candidats sinon équivalents.
+  const score = b => (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd) + (b.projectionConfirmee ? 0.05 : 0);
   const parMatch = {};
   pool.forEach(b => {
     if (!parMatch[b.gameId] || score(b) > score(parMatch[b.gameId])) parMatch[b.gameId] = b;
@@ -289,7 +391,7 @@ function construireFicheBasket(pool) {
     // plafond, mais on continue d'essayer les candidats suivants (plus
     // chers) plutôt que de tout arrêter net : un petit candidat plus loin
     // dans la liste peut encore tenir sous le plafond.
-    if (coteTotale * b.odd > CIBLE_MAX_BASKET * 1.05) continue;
+    if (coteTotale * b.odd > cibleMax * 1.05) continue;
     selections.push(b);
     coteTotale *= b.odd;
   }
@@ -304,7 +406,7 @@ function construireFicheBasket(pool) {
     confiance,
     // Pas de plancher (règle 3) — seul le nombre minimum de sélections
     // (2, pour que ce soit réellement un combiné) et le plafond comptent.
-    valide: selections.length >= 2 && coteTotale <= CIBLE_MAX_BASKET * 1.05
+    valide: selections.length >= 2 && coteTotale <= cibleMax * 1.05
   };
 }
 
@@ -375,7 +477,12 @@ async function handler(event) {
       label: g.teams ? `${(g.teams.home && g.teams.home.name) || '?'} — ${(g.teams.away && g.teams.away.name) || '?'}` : `Match ${g.id}`,
       kickoffUtc: g.date,
       league: (g.league && g.league.name) || 'Basketball',
-      leagueCountry: (g.country && g.country.name) || null
+      leagueCountry: (g.country && g.country.name) || null,
+      // Session suivante (vraies statistiques) : nécessaires à
+      // projeterTotalBasket, jamais disponibles autrement pour ce match
+      // précis une fois qu'on n'a plus la réponse /games brute sous la main.
+      equipeDomicileId: g.teams && g.teams.home && g.teams.home.id,
+      equipeExterieurId: g.teams && g.teams.away && g.teams.away.id
     };
     candidats.push(g.id);
   });
@@ -388,6 +495,11 @@ async function handler(event) {
   if (candidats.length > PLAFOND_CANDIDATS) candidats = candidats.slice(0, PLAFOND_CANDIDATS);
 
   let poolBasket = [];
+  // Vraies statistiques (session suivante) : récupérées UNE SEULE fois
+  // avant la boucle (10 appels /games?date=, coût fixe indépendant du
+  // nombre de candidats). Jamais bloquant si ça échoue — repli silencieux
+  // sur le comportement d'avant (projectionConfirmee toujours false).
+  const profilsEquipes = await recupererProfilsEquipesBasket(dateCible);
   const DELAI_ENTRE_APPELS_MS = 6500; // même rythme que le foot, même contrainte API-Sports
   for (let i = 0; i < candidats.length; i++) {
     if (quotaInterneEpuiseBasket) {
@@ -397,7 +509,7 @@ async function handler(event) {
     stats.candidatsExamines++;
     const gameId = candidats[i];
     const oddsItem = await recupererCoteParMatchBasket(gameId);
-    if (oddsItem) poolBasket = poolBasket.concat(extraireMarchesBasket(oddsItem, dateCible, noms[gameId]));
+    if (oddsItem) poolBasket = poolBasket.concat(extraireMarchesBasket(oddsItem, dateCible, noms[gameId], profilsEquipes));
     if (i < candidats.length - 1 && !quotaInterneEpuiseBasket) await attendre(DELAI_ENTRE_APPELS_MS);
   }
   stats.poolFinal = poolBasket.length;
@@ -413,13 +525,32 @@ async function handler(event) {
   const carteFiabilite = await recupererFiabiliteMarches();
   annoterPoolAvecFiabilite(poolBasket, carteFiabilite);
 
+  // ANTI-DOUBLON RÉEL (session suivante, demande explicite de James : "pas
+  // de doublons") — CORRIGÉ : l'ancienne vérification d'idempotence
+  // (quelques lignes plus haut) ne regardait que "le BOT a-t-il déjà
+  // généré aujourd'hui", jamais "cette sélection précise existe-t-elle
+  // déjà" — un match+marché+pronostic déjà publié par une génération
+  // MANUELLE admin plus tôt le même jour aurait pu être repris tel quel
+  // ici. Exclut maintenant toute sélection basketball déjà publiée
+  // aujourd'hui, peu importe la source (bot ou admin).
+  const cleSelectionBasket = s => `${s.gameId}|${s.market}|${s.pick}`;
+  const selectionsExcluesBasket = new Set();
+  try {
+    const legsExistants = await sbSelect('ticket_legs',
+      `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${dateCible}&tickets.sport=eq.basket`);
+    legsExistants.forEach(l => selectionsExcluesBasket.add(`${l.fixture_id}|${l.market}|${l.pick}`));
+  } catch (e) {
+    stats.erreurs.push('vérif anti-doublon basket: ' + e.message);
+  }
+  const poolBasketFiltre = poolBasket.filter(b => !selectionsExcluesBasket.has(cleSelectionBasket(b)));
+
   // UNE SEULE fiche combinée (règle 2 en en-tête), publiée à
   // min_plan_rank=1 (règle 5) — jamais plusieurs fiches, contrairement à
   // la première version de ce moteur.
-  const fiche = construireFicheBasket(poolBasket);
+  const fiche = construireFicheBasket(poolBasketFiltre);
   if (!fiche.valide) {
     logFinal();
-    return { statusCode: 200, body: 'Pas assez de sélections distinctes pour un combiné (minimum 2) — aucune fiche publiée.' };
+    return { statusCode: 200, body: 'Pas assez de sélections NOUVELLES pour un combiné (minimum 2) — contenu déjà publié aujourd\'hui, ou pool trop pauvre.' };
   }
   // publierFiche attend fixtureId sur chaque selection (champ générique,
   // partagé avec le foot) — gameId basketball y est placé directement.
@@ -449,6 +580,8 @@ module.exports.config = config;
 // séparée de la logique d'extraction/construction.
 // ============================================================================
 module.exports.recupererMatchsBasketJour = recupererMatchsBasketJour;
+module.exports.recupererProfilsEquipesBasket = recupererProfilsEquipesBasket;
+module.exports.projeterTotalBasket = projeterTotalBasket;
 module.exports.recupererCoteParMatchBasket = recupererCoteParMatchBasket;
 module.exports.extraireMarchesBasket = extraireMarchesBasket;
 module.exports.construireFicheBasket = construireFicheBasket;

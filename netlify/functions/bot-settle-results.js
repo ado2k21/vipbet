@@ -376,6 +376,66 @@ function evaluerLeg(leg, golHome, golAway, buteurs) {
 // donc le statut de la fiche est directement celui de son unique leg,
 // jamais de logique AND/OR à trancher entre plusieurs marchés.
 // ============================================================================
+// ============================================================================
+// HISTORIQUE MAISON BASKETBALL (session suivante, "chantier" décidé après
+// diag=basket-stats du 30/08 — /statistics et /standings bloqués sur le
+// plan gratuit pour la saison en cours). /games/statistics/teams (box-
+// score d'un match DÉJÀ JOUÉ) fonctionne, lui — accumulé match après
+// match dans basket_team_game_stats, UNIQUEMENT pour les matchs sur
+// lesquels on a réellement misé (jamais tous les matchs de la journée,
+// pour ne jamais mettre en danger le quota basketball déjà limité à
+// 100/jour, partagé entre génération et règlement). Vérifie d'abord si
+// déjà capturé (évite de dépenser un appel API pour rien sur les passages
+// suivants du même jour — le règlement tourne toutes les heures).
+// ============================================================================
+async function capturerStatsEquipesBasket(gameId, dateIso, teamHomeId, teamAwayId, ptsHome, ptsAway) {
+  if (teamHomeId == null || teamAwayId == null) return;
+  try {
+    const dejaCapture = await sbSelect('basket_team_game_stats', `select=game_id&game_id=eq.${gameId}&limit=1`);
+    if (dejaCapture.length) return; // déjà fait un jour précédent — jamais redépenser un appel API
+  } catch (e) {
+    stats.erreurs.push(`verif stats basket déjà capturées(${gameId}): ${e.message}`);
+    return; // prudence : en cas de doute, ne pas dépenser l'appel
+  }
+
+  let equipes;
+  try {
+    equipes = await apiSportsGetBasket('/games/statistics/teams', { id: gameId });
+  } catch (e) {
+    stats.erreurs.push(`basket/games/statistics/teams(${gameId}): ${e.message}`);
+    return;
+  }
+  if (!Array.isArray(equipes) || !equipes.length) return;
+
+  const lignes = equipes.map(e => {
+    const tid = e.team && e.team.id;
+    if (tid == null) return null;
+    const estHome = tid === teamHomeId;
+    return {
+      game_id: gameId, team_id: tid, opponent_id: estHome ? teamAwayId : teamHomeId, is_home: estHome,
+      points_for: estHome ? ptsHome : ptsAway, points_against: estHome ? ptsAway : ptsHome,
+      field_goals_pct: e.field_goals && e.field_goals.percentage != null ? Number(e.field_goals.percentage) : null,
+      threept_pct: e.threepoint_goals && e.threepoint_goals.percentage != null ? Number(e.threepoint_goals.percentage) : null,
+      freethrows_pct: e.freethrows_goals && e.freethrows_goals.percentage != null ? Number(e.freethrows_goals.percentage) : null,
+      rebounds: e.rebounds && e.rebounds.total != null ? Number(e.rebounds.total) : null,
+      assists: e.assists != null ? Number(e.assists) : null,
+      steals: e.steals != null ? Number(e.steals) : null,
+      blocks: e.blocks != null ? Number(e.blocks) : null,
+      turnovers: e.turnovers != null ? Number(e.turnovers) : null,
+      game_date: dateIso
+    };
+  }).filter(Boolean);
+
+  if (!lignes.length) return;
+  try {
+    await sbInsert('basket_team_game_stats', lignes);
+  } catch (e) {
+    // Non bloquant : l'historique est un bonus, jamais une raison de faire
+    // échouer le règlement réel des fiches.
+    stats.erreurs.push(`ecriture basket_team_game_stats(${gameId}): ${e.message}`);
+  }
+}
+
 async function reglerTicketsBasket(dateIso, ticketsBasket) {
   const matchsJour = await recupererMatchsBasketDate(dateIso);
   // Index gameId → {statut, ptsHome, ptsAway}. ⚠️ Chemin des scores
@@ -393,11 +453,34 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
     parGame[g.id] = {
       statut,
       ptsHome: (typeof ptsHome === 'number') ? ptsHome : null,
-      ptsAway: (typeof ptsAway === 'number') ? ptsAway : null
+      ptsAway: (typeof ptsAway === 'number') ? ptsAway : null,
+      // Session suivante (historique maison, voir capturerStatsEquipesBasket).
+      teamHomeId: g.teams && g.teams.home && g.teams.home.id,
+      teamAwayId: g.teams && g.teams.away && g.teams.away.id
     };
   });
 
   const ecouler = joursEcoules(dateIso);
+
+  // Historique maison (session suivante) : capture les box-scores des
+  // matchs basketball réellement terminés PARMI CEUX SUR LESQUELS ON A
+  // PARIÉ (jamais tous les matchs de la journée) — un seul passage par
+  // match grâce à la vérification "déjà capturé" à l'intérieur de la
+  // fonction, peu importe combien de fois le règlement repasse dessus.
+  let gameIdsAvecPari = [];
+  try {
+    const legsParies = await sbSelect('ticket_legs',
+      `select=fixture_id,tickets!inner(play_date,sport)&tickets.play_date=eq.${dateIso}&tickets.sport=eq.basket`);
+    gameIdsAvecPari = [...new Set(legsParies.map(l => l.fixture_id))];
+  } catch (e) {
+    stats.erreurs.push(`lecture fixture_id paries basket(${dateIso}): ${e.message}`);
+  }
+  for (const gid of gameIdsAvecPari) {
+    const info = parGame[gid];
+    if (info && STATUTS_TERMINES_BASKET.includes(info.statut) && info.ptsHome != null && info.ptsAway != null) {
+      await capturerStatsEquipesBasket(gid, dateIso, info.teamHomeId, info.teamAwayId, info.ptsHome, info.ptsAway);
+    }
+  }
 
   for (const ticket of ticketsBasket) {
     stats.ticketsExamines++;
