@@ -231,7 +231,16 @@ async function recupererCoteParMatchBasket(gameId) {
   try {
     const url = new URL(`https://${BASKET_HOST}/odds`);
     url.searchParams.set('game', gameId);
-    url.searchParams.set('bookmaker', 8); // Bet365 — même référence que le foot
+    // CORRIGÉ (session suivante, après un test réel resté sans aucune
+    // fiche malgré 27+ appels /odds réussis) : le filtre bookmaker=8
+    // (Bet365) avait été copié du foot SANS jamais être vérifié pour le
+    // basketball. Le diagnostic ?diag=basket du 29/08, qui a confirmé les
+    // marchés, n'utilisait PAS ce filtre — si Bet365 ne couvre pas ces
+    // championnats côté basketball (LNBP, VBA, etc.), chaque appel
+    // renvoyait une liste de bookmakers VIDE, donc zéro sélection extraite
+    // malgré des appels API réussis. Retiré : on prend le premier
+    // bookmaker disponible (voir extraireMarchesBasket), jamais un
+    // bookmaker précis supposé sans preuve.
     const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
     if (!resp.ok) {
       stats.erreurs.push(`basket/odds(game=${gameId}): HTTP ${resp.status}`);

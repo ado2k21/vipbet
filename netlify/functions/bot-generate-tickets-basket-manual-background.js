@@ -38,7 +38,7 @@ const bot = require('./bot-generate-tickets-background.js');
 
 const {
   recupererMatchsBasketJour, recupererCoteParMatchBasket, extraireMarchesBasket,
-  construireFicheBasket, stats, resetStatsBasket, logFinal
+  construireFicheBasket, recupererProfilsEquipesBasket, stats, resetStatsBasket, logFinal
 } = botBasket;
 const {
   verifierConfigSupabase, sbSelect, partsHaiti, heureHaitiDuMatch,
@@ -167,6 +167,7 @@ async function handler(event) {
   const matchsJour = await recupererMatchsBasketJour(playDate);
   stats.matchsTrouves = matchsJour.length;
   if (!matchsJour.length) {
+    logFinal();
     return jsonResponse(200, {
       resultats: plansChoisis.map(p => ({ rank: p.rank, publie: false, raison: 'Aucun match basketball reçu pour cette date depuis API-Sports.' }))
     });
@@ -191,7 +192,9 @@ async function handler(event) {
       label: g.teams ? `${(g.teams.home && g.teams.home.name) || '?'} — ${(g.teams.away && g.teams.away.name) || '?'}` : `Match ${g.id}`,
       kickoffUtc: g.date,
       league: (g.league && g.league.name) || 'Basketball',
-      leagueCountry: (g.country && g.country.name) || null
+      leagueCountry: (g.country && g.country.name) || null,
+      equipeDomicileId: g.teams && g.teams.home && g.teams.home.id,
+      equipeExterieurId: g.teams && g.teams.away && g.teams.away.id
     };
     candidats.push(g.id);
   });
@@ -200,21 +203,26 @@ async function handler(event) {
   if (candidats.length > PLAFOND_CANDIDATS) candidats = candidats.slice(0, PLAFOND_CANDIDATS);
 
   if (!candidats.length) {
+    logFinal();
     return jsonResponse(200, {
       resultats: plansChoisis.map(p => ({ rank: p.rank, publie: false, raison: 'Aucun match dans la fenêtre horaire choisie pour cette date.' }))
     });
   }
 
   let poolBasket = [];
+  // Vraies statistiques (session suivante) — même principe que le passage
+  // automatique, voir bot-generate-tickets-basket-background.js.
+  const profilsEquipes = await recupererProfilsEquipesBasket(playDate);
   const DELAI_ENTRE_APPELS_MS = 6500;
   for (let i = 0; i < candidats.length; i++) {
     const gameId = candidats[i];
     const oddsItem = await recupererCoteParMatchBasket(gameId);
-    if (oddsItem) poolBasket = poolBasket.concat(extraireMarchesBasket(oddsItem, playDate, noms[gameId]));
+    if (oddsItem) poolBasket = poolBasket.concat(extraireMarchesBasket(oddsItem, playDate, noms[gameId], profilsEquipes));
     if (i < candidats.length - 1) await attendre(DELAI_ENTRE_APPELS_MS);
   }
 
   if (!poolBasket.length) {
+    logFinal();
     return jsonResponse(200, {
       resultats: plansChoisis.map(p => ({ rank: p.rank, publie: false, raison: 'Aucune sélection basketball ne passe les filtres pour cette date/fenêtre.' }))
     });
@@ -240,6 +248,7 @@ async function handler(event) {
   const poolBasketFiltre = poolBasket.filter(b => !selectionsExclues.has(cleSelection({ fixtureId: b.gameId, market: b.market, pick: b.pick })));
 
   if (!poolBasketFiltre.length) {
+    logFinal();
     return jsonResponse(200, {
       resultats: plansChoisis.map(p => ({ rank: p.rank, publie: false, raison: 'Tout le contenu disponible est déjà publié aujourd\'hui pour cette date — rien de nouveau à proposer.' }))
     });
@@ -255,6 +264,7 @@ async function handler(event) {
   const fiche = construireFicheBasket(poolBasketFiltre, coteMaxDemandee);
 
   if (!fiche.valide) {
+    logFinal();
     return jsonResponse(200, {
       resultats: [{ rank: planPartage.rank, publie: false, plansConcernes: plansChoisis.map(p => p.rank),
         raison: `Pas assez de sélections distinctes pour un combiné (${fiche.selections.length} trouvée(s), minimum 2 requis) sous la cote max choisie.` }]
