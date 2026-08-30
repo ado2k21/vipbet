@@ -4475,6 +4475,11 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <button type="button" class="btn btn-or" id="admGenSubmit" style="width:100%;margin-top:8px" data-i18n="adm_fiche_gen_submit">Générer</button>
         <div id="admGenResult" style="margin-top:14px"></div>
       </div>
+      <div id="admGenBasketBlock" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)">
+        <p class="field-lbl" style="margin-bottom:8px" data-i18n="adm_fiche_gen_basket_p">Fiche basketball combinée, partagée à tous les plans (cote max 25) — pour la date de demain, sans attendre le passage automatique de 19h00.</p>
+        <button type="button" class="btn btn-outline" id="admGenBasketSubmit" style="width:100%" data-i18n="adm_fiche_gen_basket_submit">Générer fiche basketball</button>
+        <div id="admGenBasketResult" style="margin-top:14px"></div>
+      </div>
     </div>
 
     <!-- VUE : FAQ -->
@@ -4741,6 +4746,9 @@ adm_apprentissage_indispo:"Rapport indisponible pour le moment.",
 adm_apprentissage_vide:"Pas encore assez de résultats réglés pour un rapport.",
 adm_apprentissage_labels:"Par label de confiance (A-E)",
 adm_apprentissage_marches:"Par championnat + marché",
+adm_fiche_gen_basket_p:"Fiche basketball combinée, partagée à tous les plans (cote max 25) — pour la date de demain, sans attendre le passage automatique de 19h00.",
+adm_fiche_gen_basket_submit:"Générer fiche basketball",
+adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
 dtk_cd_min:"⏱ Premier match dans {n} min", dtk_cd_h:"⏱ Premier match dans {h}h{m}", dtk_cd_j:"⏱ Premier match dans {j} j", dtk_cd_bientot:"⏱ Premier match imminent", dtk_cd_encours:"⏱ Premier match en cours",
 dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez de façon responsable", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
@@ -5183,6 +5191,9 @@ adm_apprentissage_indispo:"Report unavailable right now.",
 adm_apprentissage_vide:"Not enough settled results yet for a report.",
 adm_apprentissage_labels:"By confidence label (A-E)",
 adm_apprentissage_marches:"By league + market",
+adm_fiche_gen_basket_p:"Combined basketball ticket, shared with every plan (max odd 25) — for tomorrow's date, without waiting for the automatic 7pm run.",
+adm_fiche_gen_basket_submit:"Generate basketball ticket",
+adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
 dtk_cd_min:"⏱ First match in {n} min", dtk_cd_h:"⏱ First match in {h}h{m}", dtk_cd_j:"⏱ First match in {j} d", dtk_cd_bientot:"⏱ First match starting soon", dtk_cd_encours:"⏱ First match underway",
 dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play responsibly", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
@@ -5625,6 +5636,9 @@ adm_apprentissage_indispo:"Rapò a pa disponib kounye a.",
 adm_apprentissage_vide:"Poko gen ase rezilta regle pou yon rapò.",
 adm_apprentissage_labels:"Pa etikèt konfyans (A-E)",
 adm_apprentissage_marches:"Pa chanpyona + mache",
+adm_fiche_gen_basket_p:"Fich basketball konbine, pataje ak tout plan yo (kòt maks 25) — pou dat demen, san w pa tann pasaj otomatik 7è diswa a.",
+adm_fiche_gen_basket_submit:"Jenere fich basketball",
+adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
 dtk_cd_min:"⏱ Premye match nan {n} min", dtk_cd_h:"⏱ Premye match nan {h}è{m}", dtk_cd_j:"⏱ Premye match nan {j} jou", dtk_cd_bientot:"⏱ Premye match pral kòmanse", dtk_cd_encours:"⏱ Premye match ap jwe",
 dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe yon fason responsab", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
@@ -12020,6 +12034,43 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
     }finally{
       btn.disabled=false;btn.textContent=t('adm_fiche_gen_submit');
+    }
+  });
+
+  // Bouton basketball (session suivante) — aucun champ à remplir : la
+  // fiche combinée basketball est toujours "demain", partagée à tous les
+  // plans, plafonnée à 25, jamais de plan/cote à choisir contrairement au
+  // foot. Même schéma fire-and-forget qu'au-dessus (fonction Background,
+  // aucune réponse immédiate utilisable).
+  document.getElementById('admGenBasketSubmit').addEventListener('click',async()=>{
+    const btn=document.getElementById('admGenBasketSubmit');
+    const resBox=document.getElementById('admGenBasketResult');
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){resBox.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+
+    btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
+    resBox.innerHTML='';
+    try{
+      const {data:sessionData}=await sb.auth.getSession();
+      const token=sessionData&&sessionData.session&&sessionData.session.access_token;
+      if(!token)throw new Error(t('adm_fiche_gen_err_session'));
+
+      fetch('/.netlify/functions/bot-generate-tickets-basket-manual-background',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+        body:'{}'
+      }).catch(()=>{});
+      resBox.innerHTML='<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+
+        stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(t('adm_fiche_gen_basket_bg_attente'))+'</span></span></div>'+
+        '<button type="button" class="btn btn-outline" id="admGenBasketVerifier" style="width:100%;margin-top:10px">'+
+        stripTags(t('adm_fiche_gen_bg_verifier'))+'</button>';
+      document.getElementById('admGenBasketVerifier').addEventListener('click',()=>{
+        setView('fiches');renderFiches();
+      });
+    }catch(e){
+      resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
+    }finally{
+      btn.disabled=false;btn.textContent=t('adm_fiche_gen_basket_submit');
     }
   });
 
