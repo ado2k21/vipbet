@@ -369,34 +369,58 @@ async function handler(event) {
   // Isolé, lecture seule. Le test /status peut échouer sans que ce soit
   // grave (l'endpoint n'existe peut-être simplement pas sur ce plan) —
   // dans ce cas on se rabat sur les en-têtes du test n°2.
+  // MIS À JOUR (session suivante) : /status (test1) s'est révélé peu fiable
+  // sur le plan gratuit (a renvoyé "limite atteinte" alors que les en-têtes
+  // du test2, au même instant, montraient 99/100 restant) — gardé ici
+  // uniquement à titre indicatif, jamais comme source de vérité. Les
+  // en-têtes (test2) restent la seule piste fiable : ce diagnostic écrit
+  // maintenant leur valeur en base (record_real_api_quota) — exactement ce
+  // que font déjà tous les appels réels des bots depuis ce correctif — puis
+  // relit get_real_api_quota_today pour confirmer ce que l'admin voit.
   if (modeTest && event.queryStringParameters.diag === 'quota-status') {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
-    const rapport = { test1_endpoint_status: null, test2_entetes_reponse_normale: null };
+    const rapport = {
+      test1_endpoint_status_NON_FIABLE: null,
+      test2_entetes_reponse_normale: null,
+      valeurEcriteEnBase: null,
+      relectureAdmin: null
+    };
 
     try {
       const resp = await fetch(`https://${FOOT_HOST}/status`, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
       const corps = await resp.json().catch(() => ({}));
-      rapport.test1_endpoint_status = { httpStatus: resp.status, corps };
+      rapport.test1_endpoint_status_NON_FIABLE = { httpStatus: resp.status, corps };
     } catch (e) {
-      rapport.test1_endpoint_status = { erreur: e.message };
+      rapport.test1_endpoint_status_NON_FIABLE = { erreur: e.message };
     }
 
     try {
-      // Un appel minime et peu coûteux en information (timezone : liste
-      // statique, généralement gratuite même sur les plans limités) —
-      // juste pour inspecter les en-têtes de la réponse.
+      // Un appel minime (timezone : liste statique, généralement gratuite
+      // même sur les plans limités) — sert à rafraîchir/inspecter les
+      // en-têtes sans dépendre d'une génération complète.
       const resp2 = await fetch(`https://${FOOT_HOST}/timezone`, { headers: { 'x-apisports-key': API_SPORTS_KEY } });
       const entetesPertinents = {};
       resp2.headers.forEach((v, k) => { if (/rate|limit|quota|request/i.test(k)) entetesPertinents[k] = v; });
-      const entetesTous = {};
-      resp2.headers.forEach((v, k) => { entetesTous[k] = v; });
-      rapport.test2_entetes_reponse_normale = {
-        httpStatus: resp2.status,
-        entetesPertinentsTrouves: entetesPertinents,
-        entetesCompletsSiRienTrouve: Object.keys(entetesPertinents).length ? undefined : entetesTous
-      };
+      rapport.test2_entetes_reponse_normale = { httpStatus: resp2.status, entetesPertinentsTrouves: entetesPertinents };
+
+      const remaining = resp2.headers.get('x-ratelimit-requests-remaining');
+      const limite = resp2.headers.get('x-ratelimit-requests-limit');
+      if (remaining !== null && limite !== null) {
+        await bot.sbRpc('record_real_api_quota', {
+          p_provider: 'api-sports-football',
+          p_remaining: parseInt(remaining, 10),
+          p_limit: parseInt(limite, 10)
+        });
+        rapport.valeurEcriteEnBase = { real_remaining: parseInt(remaining, 10), real_limit: parseInt(limite, 10) };
+      }
     } catch (e) {
       rapport.test2_entetes_reponse_normale = { erreur: e.message };
+    }
+
+    try {
+      rapport.relectureAdmin = await bot.sbRpc('get_real_api_quota_today', { p_provider: 'api-sports-football' });
+    } catch (e) {
+      rapport.relectureAdmin = { erreur: e.message + ' (get_real_api_quota_today exige une session admin — normal si testé avec un simple jeton bot)' };
     }
 
     return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };

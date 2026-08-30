@@ -47,7 +47,11 @@ const {
   extraireMarchesFoot, construireFiche, construireFicheScoreExact,
   publierFiche, ALLOWED_LEAGUES_FOOT, TOP_LEAGUES_FOOT,
   recupererFiabiliteMarches, annoterPoolAvecFiabilite, attendre,
-  getQuotaInterneEpuise
+  getQuotaInterneEpuise,
+  // Repli BSD (session suivante) : mêmes briques que
+  // bot-generate-tickets-background.js, réutilisées telles quelles.
+  recupererEvenementsBSD, trouverEvenementBSD, extraireMarchesBSD,
+  annoterPoolAvecBSD, BSD_API_KEY
 } = bot;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -225,7 +229,9 @@ async function handler(event) {
       statut: fixture.status.short,
       kickoffUtc: fixture.date,
       equipeDomicileId: f.teams.home.id,
-      equipeExterieurId: f.teams.away.id
+      equipeExterieurId: f.teams.away.id,
+      // Ajouté (session suivante, repli BSD) : voir bot-generate-tickets-background.js.
+      league: { id: league.id, name: league.name, country: league.country || null }
     };
     candidats.push({ fixtureId: fixture.id, prioritaire: TOP_LEAGUES_FOOT.includes(league.id) });
   });
@@ -244,25 +250,55 @@ async function handler(event) {
   }
 
   let poolFoot = [];
+  // Repli BSD (session suivante) — même mécanisme que
+  // bot-generate-tickets-background.js : récupéré une seule fois (aucun
+  // coût de quota API-Sports), utilisé dès qu'un match n'a aucune cote
+  // Bet365, et pour tous les candidats restants si le quota interne
+  // s'épuise en cours de route. Repli PARTIEL (mk_1x2/mk_total_buts/
+  // mk_btts uniquement) — voir extraireMarchesBSD.
+  let evenementsBSD = [];
+  if (BSD_API_KEY) evenementsBSD = await recupererEvenementsBSD(playDate);
+  function tenterRepliBSD(c) {
+    if (!BSD_API_KEY || !evenementsBSD.length) return;
+    const infos = noms[c.fixtureId];
+    if (!infos) return;
+    const evt = trouverEvenementBSD(infos.label, evenementsBSD);
+    if (!evt) return;
+    const picks = extraireMarchesBSD(evt, playDate, infos, c.prioritaire);
+    if (picks.length) poolFoot = poolFoot.concat(picks);
+  }
   // Même rythme que bot-generate-tickets-background.js (28/08 v5) : 6.5s
   // entre chaque appel /odds, possible uniquement parce que cette fonction
   // tourne désormais en Background (15 minutes disponibles).
   const DELAI_ENTRE_APPELS_MS = 6500;
-  for (let i = 0; i < candidats.length; i++) {
+  let indexTraite = 0;
+  for (; indexTraite < candidats.length; indexTraite++) {
     if (getQuotaInterneEpuise()) {
-      console.log(`[MANUEL] Arrêt anticipé (quota interne épuisé) après ${i}/${candidats.length} candidats.`);
+      console.log(`[MANUEL] Arrêt anticipé (quota interne épuisé) après ${indexTraite}/${candidats.length} candidats.`);
       break;
     }
-    const c = candidats[i];
+    const c = candidats[indexTraite];
     const oddsItem = await recupererCoteParFixture(c.fixtureId);
-    if (oddsItem) poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, playDate, noms[c.fixtureId]));
-    if (i < candidats.length - 1 && !getQuotaInterneEpuise()) await attendre(DELAI_ENTRE_APPELS_MS);
+    if (oddsItem) {
+      poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, playDate, noms[c.fixtureId]));
+    } else {
+      tenterRepliBSD(c);
+    }
+    if (indexTraite < candidats.length - 1 && !getQuotaInterneEpuise()) await attendre(DELAI_ENTRE_APPELS_MS);
+  }
+  if (getQuotaInterneEpuise() && indexTraite < candidats.length) {
+    console.log(`[MANUEL] Quota API-Sports épuisé — repli BSD pour les ${candidats.length - indexTraite} candidat(s) restant(s).`);
+    for (let i = indexTraite; i < candidats.length; i++) tenterRepliBSD(candidats[i]);
   }
 
   if (!poolFoot.length) {
     return jsonResponse(200, {
       resultats: plansChoisis.map(p => ({ rank: p.rank, publie: false, raison: 'Aucune sélection ne passe les filtres de marché pour les matchs disponibles.' }))
     });
+  }
+
+  if (evenementsBSD.length) {
+    annoterPoolAvecBSD(poolFoot.filter(b => !b.viaBSD), noms, evenementsBSD);
   }
 
   // Fiabilité réelle par championnat+marché (28/08) — même mécanisme que

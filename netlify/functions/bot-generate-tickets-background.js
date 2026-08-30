@@ -11,9 +11,12 @@
  * L'heure d'Haïti change de décalage UTC selon la saison (heure d'été/hiver,
  * comme aux USA). Plutôt que de figer un cron UTC qui se déréglerait deux
  * fois par an, cette fonction se réveille toutes les 15 min dans une large
- * fenêtre (20h00–22h59 UTC, qui couvre 17h00 Haïti quel que soit le
- * décalage) et ne génère RÉELLEMENT qu'au quart d'heure où il est
- * effectivement 17h00 en Haïti. Une vérification en base empêche toute
+ * fenêtre (21h00–23h59 UTC, qui couvre 18h30 Haïti quel que soit le
+ * décalage — session suivante, changé de 17h00 à 18h30 sur demande
+ * explicite de James : la cible (dateCible) est déjà le lendemain, donc ce
+ * décalage n'exclut aucun match, contrairement à un décalage qui aurait
+ * touché le jour même) et ne génère RÉELLEMENT qu'au quart d'heure où il
+ * est effectivement 18h30 en Haïti. Une vérification en base empêche toute
  * double génération si le cron se déclenche plusieurs fois dans la fenêtre.
  * ============================================================================
  */
@@ -24,9 +27,9 @@
 // tout échec de build lié à une dépendance manquante.
 
 const config = {
-  // Toutes les 15 min entre 20h00 et 22h59 UTC — couvre 17h00 Haïti
-  // (UTC-4 en heure d'été → 21h00 UTC ; UTC-5 en heure standard → 22h00 UTC)
-  schedule: '*/15 20-22 * * *'
+  // Toutes les 15 min entre 21h00 et 23h59 UTC — couvre 18h30 Haïti
+  // (UTC-4 en heure d'été → 22h30 UTC ; UTC-5 en heure standard → 23h30 UTC)
+  schedule: '*/15 21-23 * * *'
 };
 
 // ============================================================================
@@ -288,6 +291,34 @@ async function verifierEtIncrementerQuota(contexte) {
 }
 
 // ============================================================================
+// SUIVI DU VRAI QUOTA API-SPORTS (session suivante, complète le compteur
+// interne ci-dessus) — capture les en-têtes x-ratelimit-requests-remaining/
+// -limit renvoyées par API-Sports sur CHAQUE appel réel réussi ou échoué,
+// et les écrit via record_real_api_quota (migration Supabase du même jour).
+// Remplace la piste /status (diag=quota-status du 29/08), qui s'est révélée
+// peu fiable sur le plan gratuit — les en-têtes, elles, sont documentées
+// comme présentes sur toute réponse. Non-bloquant : un échec ici (Supabase
+// indisponible, etc.) ne doit jamais faire échouer l'appel API-Sports réel
+// qui vient d'avoir lieu.
+// ============================================================================
+async function enregistrerQuotaReel(resp) {
+  try {
+    const remaining = resp.headers.get('x-ratelimit-requests-remaining');
+    const limite = resp.headers.get('x-ratelimit-requests-limit');
+    if (remaining === null || limite === null) return;
+    await sbRpc('record_real_api_quota', {
+      p_provider: 'api-sports-football',
+      p_remaining: parseInt(remaining, 10),
+      p_limit: parseInt(limite, 10)
+    });
+  } catch (e) {
+    // Jamais remonté comme une erreur de génération — c'est un suivi
+    // annexe, pas une condition d'arrêt.
+    stats.erreurs.push(`suivi_quota_reel: ${e.message}`);
+  }
+}
+
+// ============================================================================
 // 2. OUTILS FUSEAU HORAIRE HAÏTI (même logique que admin.html : Intl natif)
 // ============================================================================
 
@@ -343,7 +374,7 @@ const stats = {
   fichesPubliees: 0,
   doublonsDetectes: false,
   poolFinal: null,
-  bsd: { actif: false, evenementsRecuperes: 0, correspondances: 0, erreur: null },
+  bsd: { actif: false, evenementsRecuperes: 0, correspondances: 0, repliTente: 0, repliReussi: 0, erreur: null },
   erreurs: []
 };
 // BUG CORRIGÉ : sur un conteneur Netlify "chaud" (réutilisé entre deux
@@ -366,7 +397,7 @@ function resetStats() {
   stats.fichesPubliees = 0;
   stats.doublonsDetectes = false;
   stats.poolFinal = null;
-  stats.bsd = { actif: false, evenementsRecuperes: 0, correspondances: 0, erreur: null };
+  stats.bsd = { actif: false, evenementsRecuperes: 0, correspondances: 0, repliTente: 0, repliReussi: 0, erreur: null };
   stats.erreurs = [];
 }
 function rejeter(raison) {
@@ -394,6 +425,7 @@ async function apiSportsGetRaw(host, path, params) {
   const resp = await fetch(url.toString(), {
     headers: { 'x-apisports-key': API_SPORTS_KEY }
   });
+  await enregistrerQuotaReel(resp);
   if (!resp.ok) {
     throw new Error(`API-Sports ${host}${path} → HTTP ${resp.status}`);
   }
@@ -461,6 +493,7 @@ async function recupererCoteParFixture(fixtureId, essai) {
     url.searchParams.set('fixture', fixtureId);
     url.searchParams.set('bookmaker', BOOKMAKER_ID);
     const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+    await enregistrerQuotaReel(resp);
     // Filet de sécurité (28/08 v5) : même avec le rythme normal
     // (attendre() dans la boucle appelante), un 429 isolé peut survenir
     // (horloge légèrement décalée, autre invocation concurrente...). Un
@@ -518,7 +551,15 @@ function filtrerCandidatsJour(fixturesJour, dateCible) {
       statut: fixture.status.short,
       kickoffUtc: fixture.date,
       equipeDomicileId: f.teams.home.id,
-      equipeExterieurId: f.teams.away.id
+      equipeExterieurId: f.teams.away.id,
+      // Ajouté (session suivante, repli BSD) : /fixtures a déjà league.id/
+      // name/country, mais candidats[]/noms[] les jetaient jusqu'ici (plus
+      // besoin une fois filtré). Le repli BSD n'a AUCUN autre moyen de
+      // connaître le vrai championnat (BSD n'a pas d'ID commun avec
+      // API-Sports) — sans ce champ, une sélection BSD n'aurait aucun
+      // championnat réel à afficher, jamais acceptable (règle : jamais
+      // inventer une donnée).
+      league: { id: league.id, name: league.name, country: league.country || null }
     };
     candidats.push({
       fixtureId: fixture.id,
@@ -660,6 +701,69 @@ function annoterPoolAvecBSD(poolFoot, noms, evenementsBSD) {
 }
 
 // ============================================================================
+// REPLI BSD (session suivante) — repli PARTIEL déclenché UNIQUEMENT quand
+// Bet365/API-Sports n'a renvoyé AUCUNE cote pour un match candidat
+// (recupererCoteParFixture → null). Ne couvre QUE ce que BSD expose
+// réellement (confirmé par diag=bsd-markets, 29/08) : 1X2 (Home/Away),
+// total de buts du match (Over 1.5 et Over 2.5 seulement — BSD n'a pas
+// d'équivalent "Under 4.5"), BTTS. JAMAIS double chance, total par équipe,
+// buteur, score exact — ces marchés restent simplement absents pour ce
+// match si Bet365 est vide, jamais inventés ni déduits d'un autre marché
+// BSD. Mêmes seuils de cote et mêmes tiers que extraireMarchesFoot (id
+// 1/5/8), pour que la qualité d'une sélection ne dépende jamais de sa
+// source. `infosFixture` doit venir de noms[fixtureId] (contient déjà
+// league.id/name/country depuis /fixtures — BSD n'a aucun ID commun avec
+// API-Sports, jamais de championnat deviné).
+// ============================================================================
+function extraireMarchesBSD(evenementBSD, dateCible, infosFixture, prioritaire) {
+  if (!infosFixture || !infosFixture.league) return [];
+  const h = heureHaitiDuMatch(infosFixture.kickoffUtc);
+  if (!h || h.iso !== dateCible) return [];
+  const minutesJour = h.heureNum * 60 + h.minuteNum;
+  if (minutesJour < FOOT_MIN_HOUR * 60 || minutesJour > FOOT_MAX_MINUTES) return [];
+
+  const league = infosFixture.league;
+  const trouvees = [];
+  const base = {
+    fixtureId: infosFixture.fixtureId, league: league.name, leagueCountry: league.country || null,
+    equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId,
+    kickoffUtc: infosFixture.kickoffUtc, matchTimeHaiti: h.heure, prioritaire: !!prioritaire,
+    viaBSD: true
+  };
+
+  // Victoire directe (PREMIUM) — mêmes bornes que extraireMarchesFoot (id 1).
+  const cHome = parseFloat(evenementBSD.odds_home), cAway = parseFloat(evenementBSD.odds_away);
+  if (isFinite(cHome) && cHome >= 1.95 && cHome <= 2.50) {
+    trouvees.push(Object.assign({}, base, { market: 'mk_1x2', pick: 'Victoire : Home', odd: cHome, tier: 'PREMIUM' }));
+  }
+  if (isFinite(cAway) && cAway >= 1.95 && cAway <= 2.50) {
+    trouvees.push(Object.assign({}, base, { market: 'mk_1x2', pick: 'Victoire : Away', odd: cAway, tier: 'PREMIUM' }));
+  }
+
+  // Total buts — SAFE (Over 1.5) et PREMIUM (Over 2.5), mêmes bornes que
+  // extraireMarchesFoot (id 5). Pas d'équivalent BSD pour "Under 4.5".
+  const cOver15 = parseFloat(evenementBSD.odds_over_15);
+  if (isFinite(cOver15) && cOver15 >= 1.19 && cOver15 <= 1.70) {
+    trouvees.push(Object.assign({}, base, { market: 'mk_total_buts', pick: traduireButs('Over 1.5'), odd: cOver15, tier: 'SAFE' }));
+  }
+  const cOver25 = parseFloat(evenementBSD.odds_over_25);
+  if (isFinite(cOver25) && cOver25 >= 1.95 && cOver25 <= 2.40) {
+    trouvees.push(Object.assign({}, base, { market: 'mk_total_buts', pick: 'Plus de 2.5 buts', odd: cOver25, tier: 'PREMIUM' }));
+  }
+
+  // BTTS — mêmes bornes que extraireMarchesFoot (id 8).
+  const cBttsOui = parseFloat(evenementBSD.odds_btts_yes);
+  if (isFinite(cBttsOui) && cBttsOui >= 1.19 && cBttsOui <= 2.20) {
+    trouvees.push(Object.assign({}, base, {
+      market: 'mk_btts', pick: 'Les deux équipes marquent : Oui', odd: cBttsOui,
+      tier: cBttsOui <= 1.70 ? 'SAFE' : 'PREMIUM'
+    }));
+  }
+
+  return trouvees;
+}
+
+// ============================================================================
 // FIABILITÉ RÉELLE PAR CHAMPIONNAT+MARCHÉ (28/08, demande explicite de
 // James : "l'algorithme doit privilégier les résultats réels pour
 // augmenter chaque jour les gains, pas choisir les cotes au hasard").
@@ -674,12 +778,12 @@ function annoterPoolAvecBSD(poolFoot, noms, evenementsBSD) {
 const SEUIL_MIN_FIABILITE = 8;
 
 async function recupererFiabiliteMarches() {
-  const carte = new Map(); // clé "league|market" -> taux_reussite (0-1)
+  const carte = new Map(); // clé "league|market" -> { taux, echantillon }
   try {
     const lignes = await sbSelect('market_reliability', 'select=league,market,echantillon,taux_reussite');
     lignes.forEach(l => {
       if (l.echantillon >= SEUIL_MIN_FIABILITE && l.taux_reussite != null) {
-        carte.set(`${l.league}|${l.market}`, Number(l.taux_reussite));
+        carte.set(`${l.league}|${l.market}`, { taux: Number(l.taux_reussite), echantillon: l.echantillon });
       }
     });
   } catch (e) {
@@ -701,9 +805,44 @@ async function recupererFiabiliteMarches() {
 function annoterPoolAvecFiabilite(poolFoot, carteFiabilite) {
   poolFoot.forEach(bet => {
     const probMarche = 1 / bet.odd;
-    const tauxReel = carteFiabilite.get(`${bet.league}|${bet.market}`);
+    const info = carteFiabilite.get(`${bet.league}|${bet.market}`);
+    const tauxReel = info ? info.taux : null;
     bet.scoreFiabilite = (tauxReel != null) ? (probMarche * 0.5 + tauxReel * 0.5) : probMarche;
+    bet.tauxReel = tauxReel;
+    bet.echantillonReel = info ? info.echantillon : null;
+    // VALUE BET (session suivante, roadmap "amélioration continue") :
+    // probabilité RÉELLE observée × cote proposée — jamais calculée sur la
+    // seule cote (qui donnerait toujours ~1.0 par construction, aucune
+    // information). Reste null tant qu'aucun historique suffisant n'existe
+    // pour ce championnat+marché (voir SEUIL_MIN_FIABILITE) — jamais une
+    // value inventée à partir d'une probabilité non fiable. Purement
+    // informatif : n'entre dans AUCUN filtre de sélection pour l'instant.
+    bet.valueScore = (tauxReel != null) ? Math.round(tauxReel * bet.odd * 100) / 100 : null;
   });
+}
+
+// ============================================================================
+// SCORE DE CONFIANCE A-E (session suivante, roadmap "amélioration
+// continue") — étiquette purement informative de bet.scoreFiabilite (déjà
+// utilisé pour la SÉLECTION des légs, inchangé). Ne décide rien ici,
+// n'existe que pour l'affichage admin et pour se valider soi-même dans le
+// temps (voir get_rapport_apprentissage : si "A" ne gagne pas vraiment
+// plus souvent que "E" une fois assez de fiches réglées, ces seuils
+// devront être resserrés — jamais supposés corrects définitivement).
+// A/B réservés aux cas où un VRAI historique (échantillon ≥
+// SEUIL_MIN_FIABILITE) soutient le score ; sans historique réel, plafonné
+// à C au mieux, quelle que soit la cote — une cote basse seule ne prouve
+// jamais une vraie fiabilité.
+// ============================================================================
+const SEUILS_CONFIANCE = { A: 0.68, B: 0.55, C: 0.45, D: 0.35 };
+function classerConfiance(bet) {
+  const s = bet.scoreFiabilite != null ? bet.scoreFiabilite : (1 / bet.odd);
+  const aHistorique = bet.echantillonReel != null && bet.echantillonReel >= SEUIL_MIN_FIABILITE;
+  if (aHistorique && s >= SEUILS_CONFIANCE.A) return 'A';
+  if (aHistorique && s >= SEUILS_CONFIANCE.B) return 'B';
+  if (s >= SEUILS_CONFIANCE.C) return 'C';
+  if (s >= SEUILS_CONFIANCE.D) return 'D';
+  return 'E';
 }
 
 
@@ -1188,21 +1327,21 @@ function construireFiche(pool, plan, options) {
     tenterAjout(b);
   }
 
-  // Score de confiance = moyenne des probabilités implicites des cotes (1/cote),
-  // heuristique basée sur les cotes du marché — PAS une vraie analyse statistique
-  // indépendante. Complété le 25/08 : pour les seules sélections 1X2 pour
-  // lesquelles BSD (2e source indépendante) a confirmé le même match, on
-  // mélange légèrement (25%) sa probabilité implicite à celle du marché —
-  // convergence entre les 2 sources fait monter la confiance, divergence la
-  // fait baisser. Poids volontairement faible : BSD reste une confirmation,
-  // jamais la source principale. Aucun effet sur les sélections non-1X2 ou
-  // non appariées (bsdProbImplicite absent → comportement identique à avant).
+  // Score de confiance = moyenne des scoreFiabilite des légs retenus.
+  // AMÉLIORÉ (session suivante) : utilisait avant uniquement 1/cote (+
+  // léger mélange BSD pour le 1X2) — ignorait complètement le vrai taux de
+  // réussite historique déjà calculé pour la SÉLECTION des légs
+  // (scoreFiabilite, voir annoterPoolAvecFiabilite). Le chiffre affiché à
+  // l'abonné reflète maintenant la même donnée que celle qui a guidé le
+  // choix des légs — jamais deux confiances différentes pour une même
+  // fiche. bet.scoreFiabilite absent (repli 1/cote) → comportement
+  // identique à avant pour ce leg précis.
   const confiance = selections.length
     ? Math.round(100 * selections.reduce((s, b) => {
-        const probMarche = 1 / b.odd;
+        const base = (b.scoreFiabilite != null) ? b.scoreFiabilite : (1 / b.odd);
         const prob = (b.bsdProbImplicite != null)
-          ? (probMarche * 0.75 + b.bsdProbImplicite * 0.25)
-          : probMarche;
+          ? (base * 0.75 + b.bsdProbImplicite * 0.25)
+          : base;
         return s + prob;
       }, 0) / selections.length)
     : 0;
@@ -1211,7 +1350,18 @@ function construireFiche(pool, plan, options) {
     selections,
     coteTotale: Math.round(coteTotale * 100) / 100,
     confiance,
-    valide: selections.length >= 2 && coteTotale >= cibleMin && coteTotale <= cibleMax
+    // CHANGÉ (session suivante, décision explicite de James — inverse la
+    // règle du 28/08) : cibleMin reste utilisé PLUS HAUT pour VISER la
+    // vraie cote cible pendant la construction (boucle "compléter avec du
+    // safe jusqu'à cibleMin" ci-dessus, inchangée) — un jour riche en
+    // matchs, le résultat atteint donc toujours sa vraie plage
+    // normalement. Mais cibleMin ne REJETTE plus le résultat s'il n'est
+    // pas atteint : seul le plafond du plan (cibleMax) reste une limite
+    // stricte. La seule vraie raison qu'un plan reste sans fiche devient
+    // "moins de 2 sélections utilisables dans tout le pool", jamais "la
+    // cote atteinte est jugée trop basse". min_odd_exempted (publierFiche)
+    // continue de signaler honnêtement quand ce cas se produit.
+    valide: selections.length >= 2 && coteTotale <= cibleMax
   };
 }
 
@@ -1346,12 +1496,15 @@ function construireFicheScoreExact(pool, plan, options) {
   // structurelle jamais assouplie), même si moins que demandé faute de
   // matchs disponibles — best-effort, jamais de fiche inventée pour
   // atteindre pile le nombre choisi (même philosophie que le reste du site).
-  const valide = nombreCible
-    ? selections.length >= 3 && coteTotale <= cibleMax * 1.05
-    : selections.length >= 3 && coteTotale >= cibleMin && coteTotale <= cibleMax * 1.05;
+  // CHANGÉ (session suivante, même règle que construireFiche) : cibleMin
+  // ne bloque plus dans les deux modes — seul le plafond compte.
+  const valide = selections.length >= 3 && coteTotale <= cibleMax * 1.05;
 
+  // AMÉLIORÉ (session suivante) : même principe que construireFiche —
+  // utilise scoreFiabilite (vrai historique quand disponible) plutôt que
+  // la seule cote.
   const confiance = selections.length
-    ? Math.round(100 * selections.reduce((s, b) => s + 1 / b.odd, 0) / selections.length)
+    ? Math.round(100 * selections.reduce((s, b) => s + (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd), 0) / selections.length)
     : 0;
 
   return {
@@ -1393,7 +1546,13 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode, op
   // score_legs_count : nombre de sélections "score exact" dans la fiche —
   // nécessaire au filtrage RLS côté Dashboard client (colonne NOT NULL,
   // default 0, mais doit refléter la réalité dès qu'une fiche en contient).
-  const scoreLegsCount = fiche.selections.filter(s => s.tier === 'EXACT_SCORE').length;
+  // CORRIGÉ (session suivante) : au moins 3 fiches déjà publiées (08/26,
+  // 08/28, 08/29) se sont retrouvées avec score_legs_count=0 alors que
+  // 100% de leurs légs étaient bien mk_score_exact (cause exacte non
+  // confirmée avec certitude) — filet de sécurité en plus de tier, jamais
+  // à la place : compte aussi via s.market, qui est ce qui finit
+  // réellement écrit en base pour chaque leg.
+  const scoreLegsCount = fiche.selections.filter(s => s.tier === 'EXACT_SCORE' || s.market === 'mk_score_exact').length;
 
   // min_odd_exempted (26/08) : reflète un FAIT, pas un chemin de code —
   // vrai dès que la cote réellement publiée est sous le vrai plancher du
@@ -1459,7 +1618,14 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode, op
       odd: s.odd,
       position: i + 1,
       fixture_id: s.fixtureId, // bigint en base — jamais convertir en texte
-      result: null
+      result: null,
+      // Session suivante (roadmap "amélioration continue") : purement
+      // informatif pour l'admin, jamais lu par le règlement
+      // (bot-settle-results.js). classerConfiance(s) tolère un
+      // scoreFiabilite absent (repli 1/cote), jamais une erreur ici.
+      confidence_label: classerConfiance(s),
+      value_score: s.valueScore != null ? s.valueScore : null,
+      real_sample_size: s.echantillonReel != null ? s.echantillonReel : null
     };
   });
 
@@ -1752,12 +1918,17 @@ async function handler(event) {
   const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';
   const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
 
-  // Ne générer que si on est effectivement à 17h00 (± 14 min) en Haïti —
-  // le cron se déclenche plus souvent que nécessaire par sécurité DST.
+  // Ne générer que si on est effectivement à 18h30 (ou après, jusqu'à la
+  // fin de la fenêtre) en Haïti — le cron se déclenche plus souvent que
+  // nécessaire par sécurité DST. CHANGÉ (session suivante, 17h00→18h30) :
+  // vérifie maintenant heure ET minute, pas seulement l'heure — sinon un
+  // décalage vers une cible à la demie (18h30) se déclencherait dès 18h00
+  // (premier passage de l'heure 18), pas à l'heure demandée. dateCible
+  // reste "demain" quoi qu'il arrive : ce décalage n'exclut aucun match.
   // (ignoré en mode test)
   const maintenant = partsHaiti(new Date());
-  if (!modeTest && maintenant.heureNum !== 17) {
-    return { statusCode: 200, body: 'Hors fenêtre 17h00 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
+  if (!modeTest && !(maintenant.heureNum === 18 && maintenant.minuteNum >= 30)) {
+    return { statusCode: 200, body: 'Hors fenêtre 18h30 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
   }
   if (modeTest) console.log('[BOT] === MODE TEST déclenché manuellement ===');
 
@@ -1818,6 +1989,33 @@ async function handler(event) {
   const { noms, candidats } = filtrerCandidatsJour(fixturesJour, dateCible);
 
   let poolFoot = [];
+  // Repli BSD (session suivante, roadmap du 29/08 : "conception à faire
+  // une fois le quota réglé") — récupéré UNE SEULE FOIS avant la boucle
+  // (aucun coût de quota API-Sports, fournisseur totalement séparé),
+  // réutilisé à deux endroits : (1) dès qu'un match précis n'a AUCUNE cote
+  // Bet365, (2) pour tous les candidats restants si le quota interne
+  // s'épuise en cours de route — BSD ne coûtant rien, aucune raison de les
+  // abandonner silencieusement. Repli PARTIEL seulement : mk_1x2, mk_total_
+  // buts, mk_btts — voir extraireMarchesBSD pour ce qui n'est jamais couvert.
+  let evenementsBSD = [];
+  stats.bsd.actif = !!BSD_API_KEY;
+  if (BSD_API_KEY) {
+    evenementsBSD = await recupererEvenementsBSD(dateCible);
+    stats.bsd.evenementsRecuperes = evenementsBSD.length;
+  }
+  function tenterRepliBSD(c) {
+    if (!BSD_API_KEY || !evenementsBSD.length) return;
+    const infos = noms[c.fixtureId];
+    if (!infos) return;
+    stats.bsd.repliTente++;
+    const evt = trouverEvenementBSD(infos.label, evenementsBSD);
+    if (!evt) return;
+    const picks = extraireMarchesBSD(evt, dateCible, infos, c.prioritaire);
+    if (picks.length) {
+      poolFoot = poolFoot.concat(picks);
+      stats.bsd.repliReussi++;
+    }
+  }
   // Rythme entre chaque appel /odds (28/08 v5, cause racine du 429 massif
   // du 28/08 : le plan gratuit API-Sports limite à ~10 requêtes/minute,
   // et la boucle envoyait ses 60 appels d'affilée sans pause — seuls les
@@ -1828,31 +2026,45 @@ async function handler(event) {
   // fonction normale (10-26s) ne pourrait jamais tenir ce rythme sur 60
   // candidats (~6-7 minutes au total).
   const DELAI_ENTRE_APPELS_MS = 6500;
-  for (let i = 0; i < candidats.length; i++) {
+  let indexTraite = 0;
+  for (; indexTraite < candidats.length; indexTraite++) {
     if (quotaInterneEpuise) {
       // Quota atteint en cours de boucle (29/08) : inutile de continuer à
       // attendre 6.5s entre des appels qui échoueraient tous — on arrête
-      // net avec ce qu'on a déjà, et le pool final reflète honnêtement ce
-      // qui a pu être examiné aujourd'hui.
-      console.log(`[BOT] Arrêt anticipé (quota interne épuisé) après ${i}/${candidats.length} candidats examinés.`);
+      // net avec ce qu'on a déjà. Les candidats restants passent quand
+      // même par le repli BSD juste après (voir plus bas), plutôt que
+      // d'être abandonnés.
+      console.log(`[BOT] Arrêt anticipé (quota interne épuisé) après ${indexTraite}/${candidats.length} candidats examinés.`);
       break;
     }
-    const c = candidats[i];
+    const c = candidats[indexTraite];
     const oddsItem = await recupererCoteParFixture(c.fixtureId);
-    if (oddsItem) poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, dateCible, noms[c.fixtureId]));
-    if (i < candidats.length - 1 && !quotaInterneEpuise) await attendre(DELAI_ENTRE_APPELS_MS);
+    if (oddsItem) {
+      poolFoot = poolFoot.concat(extraireMarchesFoot(oddsItem, dateCible, noms[c.fixtureId]));
+    } else {
+      // Repli BSD (session suivante) : Bet365 n'a rien renvoyé pour CE
+      // match précis — jamais un abandon total tant que BSD peut couvrir
+      // au moins une partie du profil du match.
+      tenterRepliBSD(c);
+    }
+    if (indexTraite < candidats.length - 1 && !quotaInterneEpuise) await attendre(DELAI_ENTRE_APPELS_MS);
+  }
+  if (quotaInterneEpuise && indexTraite < candidats.length) {
+    console.log(`[BOT] Quota API-Sports épuisé — repli BSD (sans coût de quota) pour les ${candidats.length - indexTraite} candidat(s) restant(s).`);
+    for (let i = indexTraite; i < candidats.length; i++) tenterRepliBSD(candidats[i]);
   }
 
   if (!poolFoot.length) {
-    console.log('[BOT] Aucune sélection foot ne passe les filtres (0 cote disponible parmi les matchs candidats).');
+    console.log('[BOT] Aucune sélection foot ne passe les filtres (0 cote disponible parmi les matchs candidats, y compris après repli BSD).');
   }
 
-  // --- BSD (25/08) : vérification croisée 1X2, 1 seul appel, jamais bloquant ---
-  stats.bsd.actif = !!BSD_API_KEY;
-  if (BSD_API_KEY && poolFoot.length) {
-    const evenementsBSD = await recupererEvenementsBSD(dateCible);
-    stats.bsd.evenementsRecuperes = evenementsBSD.length;
-    annoterPoolAvecBSD(poolFoot, noms, evenementsBSD);
+  // --- BSD (25/08) : vérification croisée 1X2 pour les sélections VENANT
+  // D'API-SPORTS uniquement — jamais sur une sélection déjà sourcée depuis
+  // BSD elle-même (voir viaBSD ci-dessus), ce serait une comparaison de la
+  // cote à elle-même, sans aucune valeur. evenementsBSD déjà récupéré plus
+  // haut (session suivante) — plus de second appel ici.
+  if (evenementsBSD.length && poolFoot.length) {
+    annoterPoolAvecBSD(poolFoot.filter(b => !b.viaBSD), noms, evenementsBSD);
   }
 
   // --- Fiabilité réelle par championnat+marché (28/08) : voir
@@ -1957,38 +2169,29 @@ async function handler(event) {
   const planEncoreActif = {};       // rank -> false dès qu'un tour échoue (inutile de retenter, le pool ne peut que s'appauvrir davantage)
   plans.forEach(p => { fichesPublieesParPlan[p.rank] = 0; planEncoreActif[p.rank] = true; });
 
-  // avecRepli=true : 1ᵉʳ essai à la vraie cible, 2ᵉ essai à plancher très
-  // bas (1.5) UNIQUEMENT si le jour est réellement pauvre en matchs
-  // (nbMatchsDisponibles<4, même seuil que l'exception rank>=3 plus haut) —
-  // réservé à la fiche GARANTIE (tour 1) de chaque plan. CORRIGÉ (28/08,
-  // retour explicite de James après un jour riche en matchs où toutes les
-  // fiches sont quand même sorties à cote 2-3-4) : avant ce correctif, le
-  // repli se déclenchait dès que construireFiche échouait à la vraie cible
-  // pour N'IMPORTE QUELLE raison (ex. plafonds de diversification par
-  // marché/championnat) — y compris un jour riche en matchs, ce qui
-  // produisait des fiches à cote artificiellement basse au lieu de
-  // laisser le plan sans fiche propre, couvert par la cascade d'accès.
-  // avecRepli=false (fiches bonus, tours 2-3) : uniquement la vraie
-  // cible du plan, jamais de repli — une fiche bonus n'existe QUE si elle
-  // atteint vraiment la cote visée par ce plan, jamais une fiche de moindre
-  // qualité juste pour remplir un quota (qualité > quantité, principe déjà
-  // établi ailleurs). Le MAXIMUM du plan, lui, reste toujours strict, dans
-  // les deux cas.
+  // avecRepli=true (tour 1, fiche GARANTIE) : publie dès que possible sous
+  // le plafond du plan, quelle que soit la cote atteinte — CHANGÉ (session
+  // suivante, décision explicite de James, inverse le 28/08) : la vraie
+  // cible (cibleMin) continue de GUIDER la construction à l'intérieur de
+  // construireFiche (un jour riche en matchs, le résultat l'atteint donc
+  // normalement quand même), mais ne bloque plus la publication si elle
+  // n'est pas atteinte. Plus de relance à 1.5 nécessaire : construireFiche
+  // ne rejette déjà plus sur le plancher, un seul essai suffit.
+  // avecRepli=false (fiches BONUS, tours 2-3) : règle du 28/08 TOUJOURS
+  // valable ici, volontairement pas concernée par le changement ci-dessus
+  // (confirmé par James) — une fiche bonus n'existe QUE si elle atteint
+  // vraiment la cote visée par ce plan, jamais un supplément à cote
+  // artificiellement basse juste pour remplir un quota.
   async function tenterEtPublier(plan, avecRepli) {
     const buteursTmp = new Set(buteursUtilises);
     const equipesTmp = new Map(equipesUtilisees);
-    let fiche = construireFiche(poolFoot, plan, {
+    const fiche = construireFiche(poolFoot, plan, {
       buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
       fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles
     });
-    if (!fiche.valide && avecRepli && nbMatchsDisponibles < 4) {
-      fiche = construireFiche(poolFoot, plan, {
-        buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
-        fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles, cibleMinOverride: 1.5
-      });
-    }
     stats.fichesGenerees++;
     if (!fiche.valide) return false;
+    if (!avecRepli && fiche.coteTotale < Number(plan.min_total_odd || 0)) return false;
     buteursTmp.forEach(p => buteursUtilises.add(p));
     equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
     // Met à jour les 3 structures avec les sélections de CETTE fiche
@@ -2022,15 +2225,13 @@ async function handler(event) {
   // les fiches normales (tours 1-3) ne les utilisent pour un autre marché.
   // fixturesUtiliseesScoreExact alimente ensuite fixturesExclues des
   // fiches normales (voir tenterEtPublier ci-dessus) — même principe
-  // d'exclusivité qu'avant, juste dans l'autre sens. Repli jour pauvre
-  // (26/08), même conditionnement que les fiches normales : uniquement si
-  // nbMatchsDisponibles<4, jamais un jour riche.
+  // d'exclusivité qu'avant, juste dans l'autre sens. CHANGÉ (session
+  // suivante) : plus de relance à 1.5, construireFicheScoreExact ne
+  // rejette déjà plus sur le plancher (même principe que construireFiche)
+  // — un seul essai suffit, "1 par plan par jour" reste inchangé.
   for (const plan of plans) {
     if (!plan.includes_exact_score) continue;
-    let ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact });
-    if (!ficheExacte.valide && nbMatchsDisponibles < 4) {
-      ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact, cibleMinOverride: 1.5 });
-    }
+    const ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact });
     stats.fichesGenerees++;
     if (!ficheExacte.valide) {
       console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
@@ -2048,17 +2249,19 @@ async function handler(event) {
     }
   }
 
-  // TOUR 1 — fiche GARANTIE "au mieux" pour chaque plan (repli 1.5
-  // autorisé). Partie 6/7 (27/08) toujours valable : si même ça échoue, ce
-  // plan reste simplement sans fiche PROPRE ce passage, ses abonnés restent
-  // couverts par le rang inférieur via la cascade d'accès — jamais de
-  // doublon créé pour combler artificiellement ce rang.
+  // TOUR 1 — fiche GARANTIE pour chaque plan (session suivante : publie
+  // désormais dès que possible sous le plafond du plan, quelle que soit la
+  // cote atteinte — voir tenterEtPublier). Ne reste sans fiche QUE si le
+  // pool entier n'a plus 2 sélections utilisables pour ce plan (contenu
+  // déjà épuisé par le score exact/d'autres plans aujourd'hui, ou
+  // vraiment trop peu de matchs) — dans ce seul cas, ses abonnés restent
+  // couverts par le rang inférieur via la cascade d'accès.
   for (const plan of plans) {
     const ok = await tenterEtPublier(plan, true);
     if (ok) { fichesPublieesParPlan[plan.rank] = 1; }
     else {
       planEncoreActif[plan.rank] = false;
-      console.log(`[BOT] Rang ${plan.rank} : aucune fiche propre publiable au tour 1 (contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre) — cible [${plan.min_total_odd}–${plan.max_total_odd}]. Abonnés couverts via cascade par le rang inférieur.`);
+      console.log(`[BOT] Rang ${plan.rank} : aucune fiche publiable au tour 1 (pool épuisé — moins de 2 sélections restantes pour ce plan) — cible [${plan.min_total_odd}–${plan.max_total_odd}]. Abonnés couverts via cascade par le rang inférieur.`);
     }
   }
 
@@ -2111,6 +2314,7 @@ module.exports.apiSportsGet = apiSportsGet;
 module.exports.recupererFixturesJour = recupererFixturesJour;
 module.exports.recupererCoteParFixture = recupererCoteParFixture;
 module.exports.extraireMarchesFoot = extraireMarchesFoot;
+module.exports.extraireMarchesBSD = extraireMarchesBSD;
 module.exports.construireFiche = construireFiche;
 module.exports.construireFicheScoreExact = construireFicheScoreExact;
 module.exports.publierFiche = publierFiche;
@@ -2120,6 +2324,7 @@ module.exports.TZ_HAITI = TZ_HAITI;
 module.exports.API_SPORTS_KEY = API_SPORTS_KEY;
 module.exports.recupererFiabiliteMarches = recupererFiabiliteMarches;
 module.exports.annoterPoolAvecFiabilite = annoterPoolAvecFiabilite;
+module.exports.annoterPoolAvecBSD = annoterPoolAvecBSD;
 // Exports ajoutés (28/08 v5, conversion en fonction Background) — pour que
 // bot-diagnostics.js (fonction normale, synchrone, séparée) puisse
 // reconstruire tous les modes ?diag=... sans dupliquer une seule ligne de
@@ -2129,6 +2334,7 @@ module.exports.filtrerCandidatsJour = filtrerCandidatsJour;
 module.exports.recupererLigues = recupererLigues;
 module.exports.recupererEquipes = recupererEquipes;
 module.exports.recupererEvenementsBSD = recupererEvenementsBSD;
+module.exports.trouverEvenementBSD = trouverEvenementBSD;
 module.exports.diagnostiquerBBSD = diagnostiquerBBSD;
 module.exports.diagnostiquerNBA = diagnostiquerNBA;
 module.exports.diagnostiquerBasket = diagnostiquerBasket;
@@ -2142,6 +2348,7 @@ module.exports.dateCibleDemainHaiti = dateCibleDemainHaiti;
 module.exports.attendre = attendre;
 module.exports.sbRpc = sbRpc;
 module.exports.verifierEtIncrementerQuota = verifierEtIncrementerQuota;
+module.exports.enregistrerQuotaReel = enregistrerQuotaReel;
 // Getter, pas la valeur brute (29/08) : un export direct de la variable
 // capturerait sa valeur au moment du require() (toujours false), jamais
 // mise à jour ensuite — le getter, lui, lit la valeur réelle à chaque appel.
