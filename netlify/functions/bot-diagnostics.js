@@ -42,7 +42,7 @@ const {
   ALLOWED_LEAGUES_FOOT, TOP_LEAGUES_FOOT, TZ_HAITI, API_SPORTS_KEY,
   recupererFiabiliteMarches, annoterPoolAvecFiabilite,
   recupererLigues, recupererEquipes, recupererEvenementsBSD,
-  diagnostiquerBBSD, diagnostiquerNBA, diagnostiquerBasket,
+  diagnostiquerBBSD, diagnostiquerNBA, diagnostiquerBasket, diagnostiquerBasketStats,
   FOOT_HOST, NBA_HOST, BASKET_HOST, BSD_API_KEY, BBS_API_KEY,
   BOOKMAKER_ID, dateCibleDemainHaiti
 } = bot;
@@ -466,6 +466,18 @@ async function handler(event) {
     if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
     const dateB = event.queryStringParameters.date || partsHaiti(new Date()).iso;
     const rapport = await diagnostiquerBasket(dateB);
+    return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
+  }
+
+  // MODE DIAGNOSTIC STATISTIQUES BASKETBALL (session suivante) :
+  // ?token=...&diag=basket-stats[&date=AAAA-MM-JJ] — vérifie UNIQUEMENT si
+  // v1.basketball.api-sports.io expose de vraies statistiques d'équipe
+  // (jamais supposé, voir diagnostiquerBasketStats). N'écrit rien en base,
+  // ne publie aucune fiche.
+  if (modeTest && event.queryStringParameters.diag === 'basket-stats') {
+    if (!API_SPORTS_KEY) return { statusCode: 500, body: 'API_SPORTS_KEY manquante.' };
+    const dateBS = event.queryStringParameters.date || partsHaiti(new Date()).iso;
+    const rapport = await diagnostiquerBasketStats(dateBS);
     return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
   }
 

@@ -1907,6 +1907,95 @@ async function diagnostiquerBasket(dateIso) {
   return rapport;
 }
 
+// ============================================================================
+// DIAGNOSTIC STATISTIQUES BASKETBALL (session suivante, demande explicite
+// de James : "vraies statistiques pour une rentabilité réelle") — objectif
+// UNIQUEMENT vérifier si v1.basketball.api-sports.io expose de vraies
+// statistiques d'équipe (buts/points marqués-encaissés domicile/extérieur,
+// forme) exploitables sur le plan gratuit, AVANT d'écrire une seule ligne
+// de moteur dessus. Rien n'est supposé : chaque endpoint candidat est
+// testé isolément, avec le message d'erreur brut de l'API si échec.
+// N'écrit RIEN en base, ne publie aucune fiche — lecture seule.
+// ============================================================================
+async function diagnostiquerBasketStats(dateIso) {
+  const rapport = {
+    host: BASKET_HOST, dateTestee: dateIso,
+    matchExemple: null, champsBrutsMatch: null,
+    endpoints: {}, conclusion: ''
+  };
+
+  async function essayer(nom, path, params) {
+    try {
+      const url = new URL('https://' + BASKET_HOST + path);
+      Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+      const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+      const brut = await resp.json().catch(() => ({}));
+      const erreurs = brut.errors && (Array.isArray(brut.errors) ? brut.errors : Object.values(brut.errors));
+      rapport.endpoints[nom] = {
+        http: resp.status,
+        nbResultats: Array.isArray(brut.response) ? brut.response.length : (brut.response ? 1 : 0),
+        erreursApi: (erreurs && erreurs.length) ? erreurs : null,
+        // Échantillon brut (tronqué) — pour voir la VRAIE forme de la
+        // réponse si elle existe, jamais supposée d'avance.
+        echantillonBrut: Array.isArray(brut.response) ? brut.response.slice(0, 1) : (brut.response || null)
+      };
+      return (resp.ok && brut.response) ? brut.response : null;
+    } catch (e) {
+      rapport.endpoints[nom] = { erreur: e.message };
+      return null;
+    }
+  }
+
+  // 1. Un match réel du jour pour en extraire league.id, season (si le
+  // champ existe — pas garanti) et les IDs d'équipe.
+  const games = (await essayer('games?date', '/games', { date: dateIso })) || [];
+  if (!games.length) {
+    rapport.conclusion = 'Aucun match ce jour-là — impossible de tester les endpoints de statistiques (ils ont besoin d\'un vrai id d\'équipe/championnat).';
+    return rapport;
+  }
+  const g = games[0];
+  // Dump BRUT complet du premier match (pas de champ présélectionné) —
+  // c'est justement ce qu'on ne connaît pas encore (season existe-t-il ?).
+  rapport.champsBrutsMatch = g;
+  rapport.matchExemple = {
+    gameId: g.id, leagueId: g.league && g.league.id, season: g.league && g.league.season,
+    teamHomeId: g.teams && g.teams.home && g.teams.home.id,
+    teamAwayId: g.teams && g.teams.away && g.teams.away.id
+  };
+
+  const { leagueId, season, teamHomeId, gameId } = {
+    leagueId: rapport.matchExemple.leagueId, season: rapport.matchExemple.season,
+    teamHomeId: rapport.matchExemple.teamHomeId, gameId: rapport.matchExemple.gameId
+  };
+
+  // 2. Candidats plausibles pour des statistiques d'équipe — AUCUN n'est
+  // supposé exister, chacun est testé isolément. Noms de paramètres
+  // alignés sur la convention déjà confirmée côté football
+  // (/teams/statistics?team=&league=&season=), jamais garantis identiques
+  // côté basketball.
+  if (teamHomeId != null) {
+    await essayer('statistics?team+league+season', '/statistics', { team: teamHomeId, league: leagueId, season: season });
+    if (season == null) {
+      // Repli sans season (si le champ n'existait pas sur le match) —
+      // certains plans API-Sports acceptent une saison déduite côté serveur.
+      await essayer('statistics?team+league (sans season)', '/statistics', { team: teamHomeId, league: leagueId });
+    }
+  }
+  if (leagueId != null && season != null) {
+    await essayer('standings?league+season', '/standings', { league: leagueId, season: season });
+  }
+  if (gameId != null) {
+    await essayer('games/statistics/teams?id', '/games/statistics/teams', { id: gameId });
+  }
+
+  const auMoinsUnDisponible = Object.values(rapport.endpoints).some(e => e.nbResultats > 0);
+  rapport.conclusion = auMoinsUnDisponible
+    ? 'Au moins un endpoint de statistiques a renvoyé de vraies données — voir echantillonBrut pour la forme exacte avant de construire quoi que ce soit dessus.'
+    : 'Aucun endpoint testé n\'a renvoyé de statistiques exploitables sur ce plan — voir erreursApi de chaque endpoint pour le motif exact (inexistant, restriction de plan, ou données absentes pour ce match précis).';
+
+  return rapport;
+}
+
 async function handler(event) {
   resetStats(); // corrige le bug de compteurs cumulatifs entre invocations à chaud
 
@@ -2338,6 +2427,7 @@ module.exports.trouverEvenementBSD = trouverEvenementBSD;
 module.exports.diagnostiquerBBSD = diagnostiquerBBSD;
 module.exports.diagnostiquerNBA = diagnostiquerNBA;
 module.exports.diagnostiquerBasket = diagnostiquerBasket;
+module.exports.diagnostiquerBasketStats = diagnostiquerBasketStats;
 module.exports.FOOT_HOST = FOOT_HOST;
 module.exports.NBA_HOST = NBA_HOST;
 module.exports.BASKET_HOST = BASKET_HOST;
