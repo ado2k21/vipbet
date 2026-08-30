@@ -429,3 +429,19 @@ async function handler(event) {
 
 module.exports.handler = handler;
 module.exports.config = config;
+
+// ============================================================================
+// EXPORTS RÉUTILISABLES (session suivante, pour la génération manuelle
+// bot-generate-tickets-basket-manual-background.js) — jamais une copie
+// séparée de la logique d'extraction/construction.
+// ============================================================================
+module.exports.recupererMatchsBasketJour = recupererMatchsBasketJour;
+module.exports.recupererCoteParMatchBasket = recupererCoteParMatchBasket;
+module.exports.extraireMarchesBasket = extraireMarchesBasket;
+module.exports.construireFicheBasket = construireFicheBasket;
+module.exports.BASKET_MIN_HOUR = BASKET_MIN_HOUR;
+module.exports.BASKET_MAX_MINUTES = BASKET_MAX_MINUTES;
+module.exports.CIBLE_MAX_BASKET = CIBLE_MAX_BASKET;
+module.exports.stats = stats;
+module.exports.resetStatsBasket = resetStatsBasket;
+module.exports.logFinal = logFinal;
