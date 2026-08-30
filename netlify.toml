@@ -63,6 +63,18 @@
 [functions."bot-generate-tickets-background"]
   schedule = "*/15 21-23 * * *"
 
+# Session suivante — moteur basketball, fonction et quota API-Sports
+# COMPLETEMENT separes du foot (v1.basketball.api-sports.io, 100/jour
+# independant). CIBLE 19h00 Haiti, VOLONTAIREMENT DECALEE de celle du
+# foot (18h30) -- demande explicite de James : eviter que les deux
+# moteurs tournent en meme temps et surchargent le site. 19h00 Haiti
+# franchit minuit UTC selon la saison (23h00 UTC en heure d'ete UTC-4,
+# 00h00 UTC le jour suivant en heure standard UTC-5) -- deux heures
+# separees par une virgule, jamais une plage unique (23-0 n'est pas une
+# plage cron valide).
+[functions."bot-generate-tickets-basket-background"]
+  schedule = "*/15 23,0 * * *"
+
 # bot-settle-results (28/08, demande explicite de James : "le calcul des
 # resultats doit se faire a n'importe quelle heure") — passe de
 # "0 10-23 * * *" (fenetre 10h-23h UTC, trouee) a toutes les heures, 24h/24.
