@@ -4436,7 +4436,6 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       </div>
       <div id="admGenQuotaWrap"></div>
       <div id="admFicheGenererForm">
-        <div id="admGenFootFieldsWrap">
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_date">Date des matchs</span>
           <input type="date" id="admGenDate"></label>
         <div style="display:flex;gap:10px">
@@ -4445,7 +4444,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
           <label class="field" style="flex:1"><span class="field-lbl" data-i18n="adm_fiche_gen_hfin">Heure fin (PAP)</span>
             <input type="time" id="admGenHeureFin" value="20:00"></label>
         </div>
-        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_sport">Sport</span>
+        <label class="field" id="admGenSportWrap"><span class="field-lbl" data-i18n="adm_fiche_gen_sport">Sport</span>
           <select id="admGenSport">
             <option value="foot" data-i18n="adm_fiche_sport_foot">Football</option>
             <option value="nba" data-i18n="adm_fiche_kind_basket">Basketball / NBA</option>
@@ -4453,7 +4452,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <div id="admGenSportNote" class="admf-note-x2" style="display:none;margin:-4px 0 10px" data-i18n="adm_fiche_gen_nba_note">Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.</div>
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_plans">Plans concernés</span></label>
         <div id="admGenPlans" class="admf-filters" style="flex-wrap:wrap"></div>
-        <!-- Mode normal (26/08) : cote max souhaitée. -->
+        <!-- Mode normal (26/08) : cote max souhaitée. Réutilisée telle
+             quelle en mode basketball (session suivante) — même champ,
+             même sens (plafond de la fiche), 25 pré-rempli par défaut
+             via ouvrirVueGeneration. -->
         <label class="field" id="admGenCoteMaxWrap"><span class="field-lbl" data-i18n="adm_fiche_gen_cotemax">Cote max souhaitée</span>
           <input type="number" id="admGenCoteMax" min="1.1" step="0.1" value="20"></label>
         <!-- Mode score exact (27/08, demande explicite de James) : nombre de
@@ -4474,12 +4476,13 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <label class="field" id="admGenScheduledWrap" style="display:none">
           <span class="field-lbl" data-i18n="adm_fiche_gen_scheduled_at">Date/heure de publication (PAP)</span>
           <input type="datetime-local" id="admGenScheduledAt"></label>
-        </div>
-        <!-- Mode basketball (session suivante) : AUCUN champ à remplir —
-             toujours "demain", toujours partagée à tous les plans,
-             toujours plafonnée à 25. Masqué par défaut, affiché
-             uniquement en mode 'basket' (voir ouvrirVueGeneration). -->
-        <p id="admGenBasketNote" class="admf-note-x2" style="display:none;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_p">Fiche basketball combinée, partagée à tous les plans (cote max 25) — pour la date de demain, sans attendre le passage automatique de 19h00.</p>
+        <!-- Mode basketball (session suivante, CORRIGÉ — mêmes options que
+             le foot) : date/heure/plans/cote max tous modifiables, comme
+             les autres modes. Seule différence : jamais de "nombre de
+             matchs" (score exact) ni de sélecteur Sport (implicite). Ce
+             texte reste juste un rappel des règles propres au basketball
+             (pas de plancher, seul le plafond compte). -->
+        <p id="admGenBasketNote" class="admf-note-x2" style="display:none;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_p">Fiche basketball combinée — aucune cote minimale obligatoire, seule la cote max ci-dessus est un plafond strict. Visible par les plans cochés et tous les plans au-dessus (cascade d'accès).</p>
         <button type="button" class="btn btn-or" id="admGenSubmit" style="width:100%;margin-top:8px" data-i18n="adm_fiche_gen_submit">Générer</button>
         <div id="admGenResult" style="margin-top:14px"></div>
       </div>
@@ -4752,7 +4755,7 @@ adm_apprentissage_indispo:"Rapport indisponible pour le moment.",
 adm_apprentissage_vide:"Pas encore assez de résultats réglés pour un rapport.",
 adm_apprentissage_labels:"Par label de confiance (A-E)",
 adm_apprentissage_marches:"Par championnat + marché",
-adm_fiche_gen_basket_p:"Fiche basketball combinée, partagée à tous les plans (cote max 25) — pour la date de demain, sans attendre le passage automatique de 19h00.",
+adm_fiche_gen_basket_p:"Fiche basketball combinée — aucune cote minimale obligatoire, seule la cote max ci-dessus est un plafond strict. Visible par les plans cochés et tous les plans au-dessus (cascade d'accès).",
 adm_fiche_gen_basket_submit:"Générer fiche basketball",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
@@ -5200,7 +5203,7 @@ adm_apprentissage_indispo:"Report unavailable right now.",
 adm_apprentissage_vide:"Not enough settled results yet for a report.",
 adm_apprentissage_labels:"By confidence label (A-E)",
 adm_apprentissage_marches:"By league + market",
-adm_fiche_gen_basket_p:"Combined basketball ticket, shared with every plan (max odd 25) — for tomorrow's date, without waiting for the automatic 7pm run.",
+adm_fiche_gen_basket_p:"Combined basketball ticket — no mandatory minimum odd, only the max odd above is a strict cap. Visible to the checked plans and every plan above them (cascading access).",
 adm_fiche_gen_basket_submit:"Generate basketball ticket",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
@@ -5648,7 +5651,7 @@ adm_apprentissage_indispo:"Rapò a pa disponib kounye a.",
 adm_apprentissage_vide:"Poko gen ase rezilta regle pou yon rapò.",
 adm_apprentissage_labels:"Pa etikèt konfyans (A-E)",
 adm_apprentissage_marches:"Pa chanpyona + mache",
-adm_fiche_gen_basket_p:"Fich basketball konbine, pataje ak tout plan yo (kòt maks 25) — pou dat demen, san w pa tann pasaj otomatik 7è diswa a.",
+adm_fiche_gen_basket_p:"Fich basketball konbine — pa gen kòt minimòm obligatwa, se sèlman kòt maks anwo a ki yon plafon strik. Vizib pou plan yo ou koche ak tout plan ki pi wo (kaskad aksè).",
 adm_fiche_gen_basket_submit:"Jenere fich basketball",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
@@ -11970,18 +11973,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     admGenMode=mode;
     document.getElementById('admGenDate').value=partsHaiti(new Date(Date.now()+24*3600*1000)).iso;
     document.getElementById('admGenResult').innerHTML='';
-    // Mode basketball (session suivante) : AUCUN champ foot pertinent —
-    // toujours "demain", toujours partagée, toujours plafonnée à 25.
-    // Masque le bloc entier des champs foot d'un coup (admGenFootFieldsWrap)
-    // plutôt que de démasquer/masquer chaque champ un par un.
-    document.getElementById('admGenFootFieldsWrap').style.display=(mode==='basket')?'none':'';
+    // Mode basketball (session suivante, corrigé : mêmes options que le
+    // foot) — seuls le sélecteur Sport (implicite : basketball) et le
+    // nombre de matchs (spécifique score exact) sont masqués. Date,
+    // heure début/fin, plans, cote max et publication restent identiques
+    // au mode normal.
+    document.getElementById('admGenSportWrap').style.display=(mode==='basket')?'none':'';
     document.getElementById('admGenBasketNote').style.display=(mode==='basket')?'':'none';
-    document.getElementById('admGenCoteMaxWrap').style.display=(mode==='exact'||mode==='basket')?'none':'';
+    document.getElementById('admGenCoteMaxWrap').style.display=(mode==='exact')?'none':'';
     document.getElementById('admGenNombreMatchsWrap').style.display=(mode==='exact')?'':'none';
     document.getElementById('admGenTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_h':(mode==='basket'?'adm_fiche_gen_basket_h':'adm_fiche_gen_h'));
     document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':(mode==='basket'?'adm_fiche_gen_basket_p':'adm_fiche_gen_p'));
     setView('fichegenerer');
-    if(mode!=='basket')renderAdmGenPlans();
+    renderAdmGenPlans();
     renderQuotaBadgeGen(); // RÉACTIVÉ (session suivante) : rebranché sur le vrai quota (get_real_api_quota_today), plus le compteur interne du 29/08.
   }
   document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
@@ -11998,37 +12002,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const resBox=document.getElementById('admGenResult');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){resBox.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
-
-    // Mode basketball (session suivante) : aucun champ à valider, endpoint
-    // différent, jamais les mêmes règles que le foot — court-circuite tout
-    // le reste du handler.
-    if(admGenMode==='basket'){
-      if(!window.confirm(t('adm_fiche_gen_basket_confirm')))return;
-      btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
-      resBox.innerHTML='';
-      try{
-        const {data:sessionData}=await sb.auth.getSession();
-        const token=sessionData&&sessionData.session&&sessionData.session.access_token;
-        if(!token)throw new Error(t('adm_fiche_gen_err_session'));
-        fetch('/.netlify/functions/bot-generate-tickets-basket-manual-background',{
-          method:'POST',
-          headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-          body:'{}'
-        }).catch(()=>{});
-        resBox.innerHTML='<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+
-          stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(t('adm_fiche_gen_basket_bg_attente'))+'</span></span></div>'+
-          '<button type="button" class="btn btn-outline" id="admGenVerifier" style="width:100%;margin-top:10px">'+
-          stripTags(t('adm_fiche_gen_bg_verifier'))+'</button>';
-        document.getElementById('admGenVerifier').addEventListener('click',()=>{
-          setView('fiches');renderFiches();
-        });
-      }catch(e){
-        resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
-      }finally{
-        btn.disabled=false;btn.textContent=t('adm_fiche_gen_submit');
-      }
-      return;
-    }
 
     const playDate=document.getElementById('admGenDate').value;
     const heureDebut=document.getElementById('admGenHeureDebut').value;
@@ -12049,7 +12022,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(publishMode==='scheduled'&&!scheduledAt){
       resBox.innerHTML='<div class="admdash-empty">'+t('adm_fiche_gen_err_prog')+'</div>';return;
     }
-    if(!window.confirm(t('adm_fiche_gen_confirm')))return;
+    if(!window.confirm(admGenMode==='basket'?t('adm_fiche_gen_basket_confirm'):t('adm_fiche_gen_confirm')))return;
 
     btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
     resBox.innerHTML='';
@@ -12060,22 +12033,30 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
       // corps de requete : mode 'exact' envoie nombreMatchs au lieu de
       // coteMax (27/08, voir bot-generate-tickets-manual-background.js).
+      // Mode 'basket' (session suivante) : mêmes champs que le mode
+      // normal (playDate/heureDebut/heureFin/plans/coteMax/publishMode),
+      // sport implicite (pas envoyé), endpoint dédié.
       const corps=admGenMode==='exact'
         ? {playDate,heureDebut,heureFin,sport,plans:plansChoisis,mode:'exact',nombreMatchs,publishMode,scheduledAt}
-        : {playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt};
+        : (admGenMode==='basket'
+          ? {playDate,heureDebut,heureFin,plans:plansChoisis,coteMax,publishMode,scheduledAt}
+          : {playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt});
       // 28/08 v5 : fonction Background — aucune réponse utilisable
       // (Netlify répond 202 immédiatement, l'exécution continue après,
       // jusqu'à ~6-7 min pour espacer les appels /odds sous la limite de
       // 10 requêtes/minute d'API-Sports). On ne lit plus out.resultats ;
       // à la place, message d'attente + bouton "Vérifier maintenant" qui
       // rafraîchit simplement la liste des Fiches.
-      fetch('/.netlify/functions/bot-generate-tickets-manual-background',{
+      const endpoint=admGenMode==='basket'
+        ?'/.netlify/functions/bot-generate-tickets-basket-manual-background'
+        :'/.netlify/functions/bot-generate-tickets-manual-background';
+      fetch(endpoint,{
         method:'POST',
         headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
         body:JSON.stringify(corps)
       }).catch(()=>{}); // fire-and-forget : une erreur réseau ici n'a pas de retour utile à afficher
       resBox.innerHTML='<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+
-        stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(t('adm_fiche_gen_bg_attente'))+'</span></span></div>'+
+        stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(admGenMode==='basket'?t('adm_fiche_gen_basket_bg_attente'):t('adm_fiche_gen_bg_attente'))+'</span></span></div>'+
         '<button type="button" class="btn btn-outline" id="admGenVerifier" style="width:100%;margin-top:10px">'+
         stripTags(t('adm_fiche_gen_bg_verifier'))+'</button>';
       document.getElementById('admGenVerifier').addEventListener('click',()=>{
