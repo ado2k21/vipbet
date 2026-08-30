@@ -43,6 +43,11 @@ const config = {
 const TZ_HAITI = 'America/Port-au-Prince';
 const API_SPORTS_KEY = process.env.API_SPORTS_KEY || '';
 const FOOT_HOST = 'v3.football.api-sports.io';
+// Session suivante (règlement basketball) : hôte SÉPARÉ, jamais mélangé
+// avec FOOT_HOST — un fixture_id foot et un gameId basketball peuvent
+// coïncider numériquement par pur hasard (deux espaces d'ID totalement
+// indépendants), donc jamais une seule table de correspondance commune.
+const BASKET_HOST = 'v1.basketball.api-sports.io';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -183,6 +188,16 @@ async function apiSportsGet(path, params) {
   return data.response || [];
 }
 
+// Session suivante (règlement basketball) — même principe, hôte différent.
+async function apiSportsGetBasket(path, params) {
+  const url = new URL(`https://${BASKET_HOST}${path}`);
+  Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+  const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+  if (!resp.ok) throw new Error(`API-Sports basket ${path} → HTTP ${resp.status}`);
+  const data = await resp.json();
+  return data.response || [];
+}
+
 // Un seul appel par date à régler (comme bot-generate-tickets.js) : tous les
 // matchs du jour, avec statut final et score si terminé. Jamais un appel par
 // fixture — même logique de contournement du quota que la génération.
@@ -224,9 +239,56 @@ async function recupererButeurs(fixtureId) {
   }
 }
 
-// Statuts API-Sports considérés comme définitivement terminés / non-terminés
+// Session suivante (règlement basketball) — même principe qu'au-dessus
+// (un seul appel/date, tous les matchs), mais hôte et forme de réponse
+// différents (pas de fixture.status imbriqué, tout est à plat sur g.*).
+async function recupererMatchsBasketDate(dateIso) {
+  try {
+    return await apiSportsGetBasket('/games', { date: dateIso });
+  } catch (e) {
+    stats.erreurs.push(`basket/games(${dateIso}): ${e.message}`);
+    return [];
+  }
+}
+
+// Statuts API-Sports considérés comme définitivement terminés / non-terminés (foot)
 const STATUTS_TERMINES = ['FT', 'AET', 'PEN'];
 const STATUTS_ANNULES = ['PST', 'CANC', 'ABD', 'WO', 'AWD', 'SUSP'];
+
+// Statuts basketball — ⚠️ NON ENCORE VÉRIFIÉS SUR UN VRAI MATCH TERMINÉ
+// (aucun match n'était fini au moment du diagnostic ?diag=basket, saison
+// NBA en pause fin août). Cohérents avec la convention déjà confirmée
+// côté football sur cette même famille d'API, mais jamais vus
+// explicitement pour le basketball — à reconfirmer avec un vrai match
+// terminé avant de faire confiance à 100% à ce règlement automatique.
+// Effet si faux : SANS DANGER (leg reste "en attente", jamais un verdict
+// inventé) — jamais l'inverse.
+const STATUTS_TERMINES_BASKET = ['FT', 'AOT'];
+const STATUTS_ANNULES_BASKET = ['POST', 'CANC', 'SUSP', 'AWD', 'ABD'];
+
+// Retourne 'won' | 'lost' | null (null = marché non reconnu ou score
+// indisponible — jamais deviné, voir evaluerLeg() pour le même principe
+// côté foot).
+function evaluerLegBasket(leg, ptsHome, ptsAway) {
+  const pick = String(leg.pick || '');
+  switch (leg.market) {
+    case 'mk_basket_1x2': {
+      if (ptsHome == null || ptsAway == null || ptsHome === ptsAway) return null; // jamais de nul en basketball : égalité = données suspectes
+      const camp = pick.replace('Victoire : ', '').trim();
+      const gagnant = ptsHome > ptsAway ? 'Home' : 'Away';
+      return gagnant === camp ? 'won' : 'lost';
+    }
+    case 'mk_basket_total': {
+      const m = /(Plus|Moins) de ([\d.]+) points/i.exec(pick);
+      if (!m || ptsHome == null || ptsAway == null) return null;
+      const total = ptsHome + ptsAway;
+      const seuil = parseFloat(m[2]);
+      return (m[1].toLowerCase() === 'plus' ? total > seuil : total < seuil) ? 'won' : 'lost';
+    }
+    default:
+      return null;
+  }
+}
 
 // ============================================================================
 // 5. ÉVALUATION D'UN LEG (marché + pick + score final → won/lost)
@@ -308,18 +370,130 @@ function evaluerLeg(leg, golHome, golAway, buteurs) {
 // 6. RÈGLEMENT D'UNE DATE (tous les tickets pending dont play_date = dateIso)
 // ============================================================================
 
+// ============================================================================
+// 6bis. RÈGLEMENT BASKETBALL (session suivante) — plus simple que le foot :
+// chaque fiche n'a qu'UNE seule sélection (règle du générateur basketball),
+// donc le statut de la fiche est directement celui de son unique leg,
+// jamais de logique AND/OR à trancher entre plusieurs marchés.
+// ============================================================================
+async function reglerTicketsBasket(dateIso, ticketsBasket) {
+  const matchsJour = await recupererMatchsBasketDate(dateIso);
+  // Index gameId → {statut, ptsHome, ptsAway}. ⚠️ Chemin des scores
+  // (g.scores.home.total / g.scores.away.total) cohérent avec la
+  // convention habituelle de cette famille d'API, mais PAS ENCORE VÉRIFIÉ
+  // sur un vrai match terminé (voir avertissement plus haut) — si absent
+  // ou de forme différente, ptsFiable=false et le leg reste "en attente",
+  // jamais un score inventé.
+  const parGame = {};
+  matchsJour.forEach(g => {
+    if (!g || !g.id) return;
+    const statut = g.status && g.status.short;
+    const ptsHome = g.scores && g.scores.home && g.scores.home.total;
+    const ptsAway = g.scores && g.scores.away && g.scores.away.total;
+    parGame[g.id] = {
+      statut,
+      ptsHome: (typeof ptsHome === 'number') ? ptsHome : null,
+      ptsAway: (typeof ptsAway === 'number') ? ptsAway : null
+    };
+  });
+
+  const ecouler = joursEcoules(dateIso);
+
+  for (const ticket of ticketsBasket) {
+    stats.ticketsExamines++;
+    let legs;
+    try {
+      legs = await sbSelect('ticket_legs',
+        `select=id,fixture_id,market,pick,result&ticket_id=eq.${ticket.id}&order=position.asc`);
+    } catch (e) {
+      stats.erreurs.push(`lecture legs basket(ticket=${ticket.id}): ${e.message}`);
+      continue;
+    }
+    // Toujours 1 seule leg par construction (générateur basketball) — la
+    // boucle reste écrite pour tolérer plusieurs legs sans jamais en
+    // dépendre, au cas où ça évoluerait plus tard.
+    let toutesResolues = true;
+    for (const leg of legs) {
+      if (leg.result) continue;
+      const info = parGame[leg.fixture_id];
+      let nouveauResultat = null;
+
+      if (info && STATUTS_TERMINES_BASKET.includes(info.statut) && info.ptsHome != null && info.ptsAway != null) {
+        nouveauResultat = evaluerLegBasket(leg, info.ptsHome, info.ptsAway);
+      } else if (info && STATUTS_ANNULES_BASKET.includes(info.statut)) {
+        nouveauResultat = 'void';
+      } else if (ecouler >= 1) {
+        // Règle des 23h59 Haïti, même principe que le foot : jamais bloquer indéfiniment.
+        nouveauResultat = 'void';
+      }
+
+      if (nouveauResultat === null) { toutesResolues = false; continue; }
+
+      try {
+        await sbUpdate('ticket_legs', leg.id, { result: nouveauResultat, settled_at: new Date().toISOString() });
+        stats.legsMisAJour[nouveauResultat]++;
+        leg.result = nouveauResultat;
+        await enregistrerValidationLog({
+          scope: 'leg', fixture_id: leg.fixture_id, ticket_id: ticket.id, ticket_code: ticket.code,
+          leg_id: leg.id, market: leg.market, pick: leg.pick,
+          actual_result: info ? `Score final ${info.ptsHome}-${info.ptsAway} (statut ${info.statut})` : 'Statut indisponible — règle 23h59 appliquée',
+          statistic_used: info ? `statut=${info.statut}` : 'aucune donnée basketball pour cette date',
+          source: 'api-sports-basketball', status_before: null, status_after: nouveauResultat
+        });
+      } catch (e) {
+        stats.erreurs.push(`maj leg basket(${leg.id}): ${e.message}`);
+        toutesResolues = false;
+      }
+    }
+
+    if (!toutesResolues) { stats.ticketsEnAttente++; continue; }
+
+    const aPerdu = legs.some(l => l.result === 'lost');
+    const aGagne = legs.some(l => l.result === 'won');
+    if (!aPerdu && !aGagne) { stats.ticketsToutVoid++; continue; } // tout void : décision manuelle admin
+
+    const statutFinal = aPerdu ? 'lost' : 'won';
+    try {
+      await sbUpdate('tickets', ticket.id, { status: statutFinal, settled_at: new Date().toISOString() });
+      stats.ticketsRegles[statutFinal]++;
+      await enregistrerValidationLog({
+        scope: 'ticket', fixture_id: null, ticket_id: ticket.id, ticket_code: ticket.code,
+        leg_id: null, market: null, pick: null,
+        actual_result: `${legs.filter(l => l.result === 'won').length} won / ${legs.filter(l => l.result === 'lost').length} lost / ${legs.filter(l => l.result === 'void').length} void sur ${legs.length} sélection(s)`,
+        statistic_used: 'fiche basketball à sélection unique : le résultat du leg = le résultat de la fiche',
+        source: 'api-sports-basketball', status_before: 'pending', status_after: statutFinal
+      });
+    } catch (e) {
+      stats.erreurs.push(`maj ticket basket(${ticket.id}): ${e.message}`);
+    }
+  }
+}
+
 async function reglerDate(dateIso) {
   stats.datesTraitees.push(dateIso);
 
   let tickets;
   try {
     tickets = await sbSelect('tickets',
-      `select=id,code,play_date&status=eq.pending&play_date=eq.${dateIso}`);
+      `select=id,code,play_date,sport&status=eq.pending&play_date=eq.${dateIso}`);
   } catch (e) {
     stats.erreurs.push(`lecture tickets(${dateIso}): ${e.message}`);
     return;
   }
   if (!tickets.length) return;
+
+  // Session suivante (règlement basketball) : séparé dès la lecture — un
+  // fixture_id foot et un gameId basketball peuvent coïncider
+  // numériquement par pur hasard, jamais une seule table de
+  // correspondance commune entre les deux sports. sport absent/'foot' →
+  // traité comme foot (compatibilité avec les fiches déjà en base avant
+  // ce correctif, qui n'avaient pas encore ce distinguo).
+  const ticketsFoot = tickets.filter(t => t.sport !== 'basket');
+  const ticketsBasket = tickets.filter(t => t.sport === 'basket');
+
+  if (ticketsBasket.length) await reglerTicketsBasket(dateIso, ticketsBasket);
+  if (!ticketsFoot.length) return;
+  tickets = ticketsFoot;
 
   const fixturesJour = await recupererFixturesDate(dateIso);
   // Index rapide fixture_id → {statut, golHome, golAway, scoreFiable}
