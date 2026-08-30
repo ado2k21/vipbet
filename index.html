@@ -4411,8 +4411,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       <button type="button" class="btn btn-or" id="admFichesNew" style="width:100%;margin:12px 0 8px" data-i18n="adm_fiches_new">+ Nouvelle fiche</button>
       <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
       <button type="button" class="btn btn-or-soft" id="admFicheGenererExactBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_exact_btn">🎯 GÉNÉRER SCORE EXACT</button>
-      <button type="button" class="btn btn-or-soft" id="admGenBasketSubmit" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_basket_submit">🏀 Générer fiche basketball</button>
-      <div id="admGenBasketResult" style="margin:0 0 14px"></div>
+      <button type="button" class="btn btn-or-soft" id="admFicheGenererBasketBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_submit">🏀 Générer fiche basketball</button>
       <div id="admFichesBody"></div>
     </div>
 
@@ -4437,6 +4436,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       </div>
       <div id="admGenQuotaWrap"></div>
       <div id="admFicheGenererForm">
+        <div id="admGenFootFieldsWrap">
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_date">Date des matchs</span>
           <input type="date" id="admGenDate"></label>
         <div style="display:flex;gap:10px">
@@ -4474,6 +4474,12 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <label class="field" id="admGenScheduledWrap" style="display:none">
           <span class="field-lbl" data-i18n="adm_fiche_gen_scheduled_at">Date/heure de publication (PAP)</span>
           <input type="datetime-local" id="admGenScheduledAt"></label>
+        </div>
+        <!-- Mode basketball (session suivante) : AUCUN champ à remplir —
+             toujours "demain", toujours partagée à tous les plans,
+             toujours plafonnée à 25. Masqué par défaut, affiché
+             uniquement en mode 'basket' (voir ouvrirVueGeneration). -->
+        <p id="admGenBasketNote" class="admf-note-x2" style="display:none;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_p">Fiche basketball combinée, partagée à tous les plans (cote max 25) — pour la date de demain, sans attendre le passage automatique de 19h00.</p>
         <button type="button" class="btn btn-or" id="admGenSubmit" style="width:100%;margin-top:8px" data-i18n="adm_fiche_gen_submit">Générer</button>
         <div id="admGenResult" style="margin-top:14px"></div>
       </div>
@@ -4721,6 +4727,7 @@ dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kin
 fiche_note_x2:"Jouer par deux matchs",
 adm_fiche_gen_btn:"⚡ GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
 adm_fiche_gen_exact_btn:"🎯 GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
+adm_fiche_gen_basket_h:"Générer une fiche basketball",
 adm_fiche_gen_nbmatchs:"Nombre de matchs",
 adm_fiche_gen_date:"Date des matchs", adm_fiche_gen_hdebut:"Heure début (PAP)", adm_fiche_gen_hfin:"Heure fin (PAP)", adm_fiche_gen_sport:"Sport",
 adm_fiche_gen_nba_note:"Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.",
@@ -5168,6 +5175,7 @@ dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_nor
 fiche_note_x2:"Play two matches at a time",
 adm_fiche_gen_btn:"⚡ GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
 adm_fiche_gen_exact_btn:"🎯 GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
+adm_fiche_gen_basket_h:"Generate a basketball ticket",
 adm_fiche_gen_nbmatchs:"Number of matches",
 adm_fiche_gen_date:"Match date", adm_fiche_gen_hdebut:"Start time (PAP)", adm_fiche_gen_hfin:"End time (PAP)", adm_fiche_gen_sport:"Sport",
 adm_fiche_gen_nba_note:"Not available yet — no reliable odds source wired for basketball/NBA.",
@@ -5615,6 +5623,7 @@ dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kin
 fiche_note_x2:"Jwe pa de match",
 adm_fiche_gen_btn:"⚡ JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
 adm_fiche_gen_exact_btn:"🎯 JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
+adm_fiche_gen_basket_h:"Jenere yon fich basketball",
 adm_fiche_gen_nbmatchs:"Konbyen match",
 adm_fiche_gen_date:"Dat match yo", adm_fiche_gen_hdebut:"Lè kòmanse (PAP)", adm_fiche_gen_hfin:"Lè fini (PAP)", adm_fiche_gen_sport:"Espò",
 adm_fiche_gen_nba_note:"Pa disponib pou kounye a — pa gen sous kòt serye konekte pou basketball/NBA.",
@@ -11961,16 +11970,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     admGenMode=mode;
     document.getElementById('admGenDate').value=partsHaiti(new Date(Date.now()+24*3600*1000)).iso;
     document.getElementById('admGenResult').innerHTML='';
-    document.getElementById('admGenCoteMaxWrap').style.display=(mode==='exact')?'none':'';
+    // Mode basketball (session suivante) : AUCUN champ foot pertinent —
+    // toujours "demain", toujours partagée, toujours plafonnée à 25.
+    // Masque le bloc entier des champs foot d'un coup (admGenFootFieldsWrap)
+    // plutôt que de démasquer/masquer chaque champ un par un.
+    document.getElementById('admGenFootFieldsWrap').style.display=(mode==='basket')?'none':'';
+    document.getElementById('admGenBasketNote').style.display=(mode==='basket')?'':'none';
+    document.getElementById('admGenCoteMaxWrap').style.display=(mode==='exact'||mode==='basket')?'none':'';
     document.getElementById('admGenNombreMatchsWrap').style.display=(mode==='exact')?'':'none';
-    document.getElementById('admGenTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_h':'adm_fiche_gen_h');
-    document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':'adm_fiche_gen_p');
+    document.getElementById('admGenTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_h':(mode==='basket'?'adm_fiche_gen_basket_h':'adm_fiche_gen_h'));
+    document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':(mode==='basket'?'adm_fiche_gen_basket_p':'adm_fiche_gen_p'));
     setView('fichegenerer');
-    renderAdmGenPlans();
+    if(mode!=='basket')renderAdmGenPlans();
     renderQuotaBadgeGen(); // RÉACTIVÉ (session suivante) : rebranché sur le vrai quota (get_real_api_quota_today), plus le compteur interne du 29/08.
   }
   document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
   document.getElementById('admFicheGenererExactBtn').addEventListener('click',()=>ouvrirVueGeneration('exact'));
+  document.getElementById('admFicheGenererBasketBtn').addEventListener('click',()=>ouvrirVueGeneration('basket'));
   document.getElementById('admGenSport').addEventListener('change',e=>{
     document.getElementById('admGenSportNote').style.display=(e.target.value==='nba')?'block':'none';
   });
@@ -11982,6 +11998,37 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const resBox=document.getElementById('admGenResult');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){resBox.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+
+    // Mode basketball (session suivante) : aucun champ à valider, endpoint
+    // différent, jamais les mêmes règles que le foot — court-circuite tout
+    // le reste du handler.
+    if(admGenMode==='basket'){
+      if(!window.confirm(t('adm_fiche_gen_basket_confirm')))return;
+      btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
+      resBox.innerHTML='';
+      try{
+        const {data:sessionData}=await sb.auth.getSession();
+        const token=sessionData&&sessionData.session&&sessionData.session.access_token;
+        if(!token)throw new Error(t('adm_fiche_gen_err_session'));
+        fetch('/.netlify/functions/bot-generate-tickets-basket-manual-background',{
+          method:'POST',
+          headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+          body:'{}'
+        }).catch(()=>{});
+        resBox.innerHTML='<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+
+          stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(t('adm_fiche_gen_basket_bg_attente'))+'</span></span></div>'+
+          '<button type="button" class="btn btn-outline" id="admGenVerifier" style="width:100%;margin-top:10px">'+
+          stripTags(t('adm_fiche_gen_bg_verifier'))+'</button>';
+        document.getElementById('admGenVerifier').addEventListener('click',()=>{
+          setView('fiches');renderFiches();
+        });
+      }catch(e){
+        resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
+      }finally{
+        btn.disabled=false;btn.textContent=t('adm_fiche_gen_submit');
+      }
+      return;
+    }
 
     const playDate=document.getElementById('admGenDate').value;
     const heureDebut=document.getElementById('admGenHeureDebut').value;
@@ -12038,44 +12085,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
     }finally{
       btn.disabled=false;btn.textContent=t('adm_fiche_gen_submit');
-    }
-  });
-
-  // Bouton basketball (session suivante) — aucun champ à remplir : la
-  // fiche combinée basketball est toujours "demain", partagée à tous les
-  // plans, plafonnée à 25, jamais de plan/cote à choisir contrairement au
-  // foot. Même schéma fire-and-forget qu'au-dessus (fonction Background,
-  // aucune réponse immédiate utilisable).
-  document.getElementById('admGenBasketSubmit').addEventListener('click',async()=>{
-    const btn=document.getElementById('admGenBasketSubmit');
-    const resBox=document.getElementById('admGenBasketResult');
-    const sb=window.VB_getSupabase&&window.VB_getSupabase();
-    if(!sb){resBox.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
-    if(!window.confirm(t('adm_fiche_gen_basket_confirm')))return;
-
-    btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
-    resBox.innerHTML='';
-    try{
-      const {data:sessionData}=await sb.auth.getSession();
-      const token=sessionData&&sessionData.session&&sessionData.session.access_token;
-      if(!token)throw new Error(t('adm_fiche_gen_err_session'));
-
-      fetch('/.netlify/functions/bot-generate-tickets-basket-manual-background',{
-        method:'POST',
-        headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-        body:'{}'
-      }).catch(()=>{});
-      resBox.innerHTML='<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+
-        stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(t('adm_fiche_gen_basket_bg_attente'))+'</span></span></div>'+
-        '<button type="button" class="btn btn-outline" id="admGenBasketVerifier" style="width:100%;margin-top:10px">'+
-        stripTags(t('adm_fiche_gen_bg_verifier'))+'</button>';
-      document.getElementById('admGenBasketVerifier').addEventListener('click',()=>{
-        setView('fiches');renderFiches();
-      });
-    }catch(e){
-      resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
-    }finally{
-      btn.disabled=false;btn.textContent=t('adm_fiche_gen_basket_submit');
     }
   });
 
