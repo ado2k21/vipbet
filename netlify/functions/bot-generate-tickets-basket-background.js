@@ -127,7 +127,14 @@ async function apiSportsGetBasketRaw(path, params) {
 // inventée — utilisée plus bas comme signal supplémentaire, jamais un
 // filtre qui bloque à lui seul.
 // ============================================================================
-const HISTORIQUE_JOURS_BASKET = 10; // 10 appels /games?date=, coût modéré sur le quota basketball du jour
+// CORRIGÉ (session suivante, confirmé par un test réel le 30/08) : le plan
+// gratuit API-Sports basketball restreint /games?date= à une fenêtre
+// glissante de 3 jours autour d'aujourd'hui ("Free plans do not have
+// access to this date, try from 2026-08-29 to 2026-08-31" testé le
+// 2026-08-30) — jamais 10 jours en arrière comme supposé initialement.
+// Réduit à 1 jour (hier, la seule vraie donnée accessible) pour ne plus
+// gaspiller des appels voués à l'échec à coup sûr.
+const HISTORIQUE_JOURS_BASKET = 1;
 const HISTORIQUE_MIN_MATCHS_BASKET = 3; // en dessous, échantillon jugé trop faible — jamais utilisé
 
 async function recupererProfilsEquipesBasket(dateCible) {

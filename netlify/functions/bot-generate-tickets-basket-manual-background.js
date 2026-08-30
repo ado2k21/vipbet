@@ -165,6 +165,7 @@ async function handler(event) {
 
   // --- Matchs basketball du jour CHOISI par l'admin ---
   const matchsJour = await recupererMatchsBasketJour(playDate);
+  stats.dateCible = playDate;
   stats.matchsTrouves = matchsJour.length;
   if (!matchsJour.length) {
     logFinal();
@@ -215,11 +216,13 @@ async function handler(event) {
   const profilsEquipes = await recupererProfilsEquipesBasket(playDate);
   const DELAI_ENTRE_APPELS_MS = 6500;
   for (let i = 0; i < candidats.length; i++) {
+    stats.candidatsExamines++;
     const gameId = candidats[i];
     const oddsItem = await recupererCoteParMatchBasket(gameId);
     if (oddsItem) poolBasket = poolBasket.concat(extraireMarchesBasket(oddsItem, playDate, noms[gameId], profilsEquipes));
     if (i < candidats.length - 1) await attendre(DELAI_ENTRE_APPELS_MS);
   }
+  stats.poolFinal = poolBasket.length;
 
   if (!poolBasket.length) {
     logFinal();
