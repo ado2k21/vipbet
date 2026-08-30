@@ -44,7 +44,8 @@ const {
 } = botBasket;
 const {
   verifierConfigSupabase, sbSelect, partsHaiti, heureHaitiDuMatch,
-  dateCibleDemainHaiti, publierFiche, attendre, API_SPORTS_KEY
+  dateCibleDemainHaiti, publierFiche, attendre, API_SPORTS_KEY,
+  recupererFiabiliteMarches, annoterPoolAvecFiabilite
 } = bot;
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -148,6 +149,9 @@ async function handler(event) {
     logFinal();
     return jsonResponse(200, { publie: false, raison: 'Aucune sélection basketball ne passe les filtres pour cette date.' });
   }
+
+  const carteFiabilite = await recupererFiabiliteMarches();
+  annoterPoolAvecFiabilite(poolBasket, carteFiabilite);
 
   const planPartage = { rank: 1, min_total_odd: null, max_total_odd: null };
   const fiche = construireFicheBasket(poolBasket);

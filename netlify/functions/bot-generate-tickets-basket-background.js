@@ -66,7 +66,8 @@ const config = {
 const bot = require('./bot-generate-tickets-background.js');
 const {
   verifierConfigSupabase, sbSelect, sbInsert, sbRpc, partsHaiti, heureHaitiDuMatch,
-  dateCibleDemainHaiti, publierFiche, attendre, API_SPORTS_KEY, BASKET_HOST
+  dateCibleDemainHaiti, publierFiche, attendre, API_SPORTS_KEY, BASKET_HOST,
+  recupererFiabiliteMarches, annoterPoolAvecFiabilite
 } = bot;
 
 // ============================================================================
@@ -258,9 +259,14 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch) {
 //    construireFiche côté foot) ;
 //  - jamais moins de 2 sélections — sinon ce n'est plus un "combiné" mais
 //    un pick isolé, contraire à la demande explicite.
-// Choisit les meilleures probabilités d'abord (1/cote — pas encore
-// d'historique réel basketball pour affiner, contrairement au foot où
-// market_reliability a déjà des mois de données).
+// CORRIGÉ (session suivante, demande explicite de James : "vraies
+// statistiques pour une rentabilité réelle") : trie désormais par
+// scoreFiabilite (mélange 50/50 probabilité de marché + vrai taux de
+// réussite observé par championnat+marché — même mécanisme déjà en place
+// côté foot depuis le 28/08, market_reliability étant déjà générique par
+// championnat+marché, sport confondu) au lieu de la seule cote (1/cote).
+// Sans historique suffisant (marché tout neuf), retombe honnêtement sur
+// 1/cote, jamais une valeur inventée.
 // ============================================================================
 const CIBLE_MAX_BASKET = 25;
 const MAX_SELECTIONS_BASKET = 10;
@@ -268,11 +274,12 @@ const MAX_SELECTIONS_BASKET = 10;
 function construireFicheBasket(pool) {
   // Au plus 1 candidat par match (le meilleur, même principe que
   // meilleurParMatch côté foot) — jamais 2 legs corrélés du même match.
+  const score = b => (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
   const parMatch = {};
   pool.forEach(b => {
-    if (!parMatch[b.gameId] || (1 / b.odd) > (1 / parMatch[b.gameId].odd)) parMatch[b.gameId] = b;
+    if (!parMatch[b.gameId] || score(b) > score(parMatch[b.gameId])) parMatch[b.gameId] = b;
   });
-  const candidats = Object.values(parMatch).sort((a, b) => (1 / b.odd) - (1 / a.odd)); // meilleure probabilité d'abord
+  const candidats = Object.values(parMatch).sort((a, b) => score(b) - score(a)); // meilleure fiabilité d'abord
 
   const selections = [];
   let coteTotale = 1.0;
@@ -399,6 +406,12 @@ async function handler(event) {
     logFinal();
     return { statusCode: 200, body: 'Aucune sélection basketball ne passe les filtres — aucune fiche publiée.' };
   }
+
+  // Apprentissage réel (session suivante) : market_reliability est déjà
+  // générique par championnat+marché, sport confondu — jamais bloquant si
+  // pas encore assez d'historique (retombe sur 1/cote, voir construireFicheBasket).
+  const carteFiabilite = await recupererFiabiliteMarches();
+  annoterPoolAvecFiabilite(poolBasket, carteFiabilite);
 
   // UNE SEULE fiche combinée (règle 2 en en-tête), publiée à
   // min_plan_rank=1 (règle 5) — jamais plusieurs fiches, contrairement à
