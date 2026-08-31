@@ -1172,6 +1172,26 @@ function construireFiche(pool, plan, options) {
   // ne reçoit jamais cette option — exemption structurelle, Partie 4).
   const equipesUtilisees = options.equipesUtilisees || new Map();
   const MAX_APPARITIONS_EQUIPE = 2;
+  // Diversification des marchés ENTRE LES FICHES (session suivante, demande
+  // explicite de James, 31/08 v2 : "si dans un jour il y a 5 équipes
+  // choisies pour créer les fiches, même sur deux fiches différentes, il
+  // faut éviter de choisir le même marché pour la majorité des matchs — par
+  // exemple BTTS dans trois matchs différents"). DISTINCT de
+  // marchesUtilises (plus bas), qui ne plafonne l'usage d'un marché QUE
+  // dans LA fiche en cours de construction (MAX_PAR_MARCHE=2) —
+  // marchesUtiliseesJour, lui, est partagé et cumulé sur TOUTE la
+  // génération du jour (toutes fiches, tous plans confondus), passé par le
+  // code appelant selon le même principe "copie tentative, validée
+  // seulement si la fiche est retenue" déjà utilisé pour
+  // equipesUtilisees/buteursUtilises (voir tenterEtPublier).
+  const marchesUtiliseesJour = options.marchesUtiliseesJour || new Map();
+  // Plafond adaptatif : jamais un chiffre fixe qui casserait la génération
+  // un jour pauvre en matchs — au moins 3 matchs par marché autorisés dans
+  // la journée, ou 40% du nombre de matchs distincts disponibles ce jour-là
+  // si plus grand (40%, volontairement sous la "majorité" de 50% demandée
+  // par James, pour une vraie marge de sécurité plutôt que de coller pile
+  // à la limite).
+  const MAX_PAR_MARCHE_JOUR = Math.max(3, Math.ceil(nbMatchsDisponibles * 0.4));
 
   let cibleMin = options.cibleMinOverride != null
     ? Number(options.cibleMinOverride)
@@ -1282,12 +1302,17 @@ function construireFiche(pool, plan, options) {
     if (bet.odd > maxLeg && bet.tier !== 'EXACT_SCORE' && bet.tier !== 'PREMIUM') return false;
     const plafondMarche = PLAFOND_PAR_MARCHE[bet.market] || MAX_PAR_MARCHE;
     if ((marchesUtilises[bet.market] || 0) >= plafondMarche) return false;
+    // Plafond du JOUR (toutes fiches confondues, voir définition plus haut)
+    // — jamais appliqué au score exact (mk_score_exact ne passe pas par
+    // cette fonction) ni au buteur (déjà à 1 max via PLAFOND_PAR_MARCHE).
+    if ((marchesUtiliseesJour.get(bet.market) || 0) >= MAX_PAR_MARCHE_JOUR) return false;
     if ((championnatsUtilises[bet.league] || 0) >= MAX_PAR_CHAMPIONNAT) return false;
     if (selections.length >= MAX_SELECTIONS) return false;
     if (coteTotale * bet.odd > cibleMax * 1.05) return false; // petite marge, jamais dépasser franchement
     selections.push(bet);
     matchsUtilises.add(bet.fixtureId);
     marchesUtilises[bet.market] = (marchesUtilises[bet.market] || 0) + 1;
+    marchesUtiliseesJour.set(bet.market, (marchesUtiliseesJour.get(bet.market) || 0) + 1);
     championnatsUtilises[bet.league] = (championnatsUtilises[bet.league] || 0) + 1;
     if (bet.equipeDomicileId != null) equipesUtilisees.set(bet.equipeDomicileId, (equipesUtilisees.get(bet.equipeDomicileId) || 0) + 1);
     if (bet.equipeExterieurId != null) equipesUtilisees.set(bet.equipeExterieurId, (equipesUtilisees.get(bet.equipeExterieurId) || 0) + 1);
@@ -1316,6 +1341,30 @@ function construireFiche(pool, plan, options) {
     if (premCount >= maxPremium) break;
     if (tenterAjout(b)) premCount++;
   }
+  // Inclusion volontaire d'une petite cote fiable (session suivante,
+  // demande explicite de James, 31/08 v2 : "pour les petites cotes je vois
+  // moins de odds à 1,30 ; 1,60 etc, il faut les choisir aussi, mais
+  // toujours pas au hasard, avec des stats et pronostics fiables"). Le tri
+  // du bloc suivant se fait par scoreFiabilite décroissant : une petite
+  // cote, même fiable, peut ne jamais remonter un jour où d'autres
+  // sélections ont un scoreFiabilite légèrement supérieur. On cherche ici,
+  // AVANT de compléter dans l'ordre habituel, la MEILLEURE petite cote
+  // disponible (1.15-1.70, fourchette "petite cote" pour du foot) dont la
+  // fiabilité réelle (scoreFiabilite, jamais un choix arbitraire) dépasse
+  // un seuil minimum — jamais injectée au hasard, jamais si la fiche en a
+  // déjà une, jamais si aucune ne passe le seuil de fiabilité.
+  const PETITE_COTE_MIN = 1.15, PETITE_COTE_MAX = 1.70, SEUIL_FIABILITE_PETITE_COTE = 0.55;
+  const scoreDe = b => (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
+  const aDejaPetiteCote = selections.some(s => s.odd >= PETITE_COTE_MIN && s.odd <= PETITE_COTE_MAX);
+  if (!aDejaPetiteCote) {
+    const candidatsPetiteCote = safe
+      .filter(b => b.odd >= PETITE_COTE_MIN && b.odd <= PETITE_COTE_MAX && scoreDe(b) >= SEUIL_FIABILITE_PETITE_COTE)
+      .sort((a, b) => scoreDe(b) - scoreDe(a));
+    for (const b of candidatsPetiteCote) {
+      if (tenterAjout(b)) break;
+    }
+  }
+
   // Compléter avec du 🟢 (safe) jusqu'à atteindre la cible (jamais au-delà du max).
   // CORRECTIF (25/08) : une seule sélection premium peut déjà dépasser
   // cibleMin (ex. 2.50 pour un plan à 2.00 min) — sans le "selections.length<2"
@@ -2190,6 +2239,11 @@ async function handler(event) {
   // par équipe, partagé sur toute la génération du jour — max 2 fiches
   // par équipe, jamais appliqué au score exact (Partie 4).
   const equipesUtilisees = new Map();
+  // Diversification des marchés ENTRE LES FICHES (31/08 v2, voir la
+  // définition complète et la justification dans construireFiche) —
+  // partagé et cumulé sur toute la génération du jour, même principe de
+  // copie tentative que buteursUtilises/equipesUtilisees ci-dessus/dessous.
+  const marchesUtiliseesJour = new Map();
   // Partie 1/2/9 : sélections déjà utilisées AUJOURD'HUI, relues depuis la
   // base (pas seulement depuis ce lot en mémoire) — protège aussi contre
   // une double-exécution accidentelle du bot le même jour (idempotence,
@@ -2274,8 +2328,10 @@ async function handler(event) {
   async function tenterEtPublier(plan, avecRepli) {
     const buteursTmp = new Set(buteursUtilises);
     const equipesTmp = new Map(equipesUtilisees);
+    const marchesJourTmp = new Map(marchesUtiliseesJour);
     const fiche = construireFiche(poolFoot, plan, {
-      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
+      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, marchesUtiliseesJour: marchesJourTmp,
+      selectionsExclues, selectionsParFixture, matchUsageCount,
       fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles
     });
     stats.fichesGenerees++;
@@ -2283,6 +2339,7 @@ async function handler(event) {
     if (!avecRepli && fiche.coteTotale < Number(plan.min_total_odd || 0)) return false;
     buteursTmp.forEach(p => buteursUtilises.add(p));
     equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
+    marchesJourTmp.forEach((v, k) => marchesUtiliseesJour.set(k, v));
     // Met à jour les 3 structures avec les sélections de CETTE fiche
     // (28/08 v2) : selectionsExclues (doublon exact), selectionsParFixture
     // (pour la détection de contradiction des prochaines fiches) et

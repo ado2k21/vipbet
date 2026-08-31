@@ -328,10 +328,21 @@ async function handler(event) {
   // différents ("V1" dans une fiche, "X2" dans une autre créerait de la
   // confusion pour l'abonné).
   const fixturesExclues = new Set();
+  // Diversification des marchés ENTRE LES FICHES (31/08 v2, demande
+  // explicite de James — voir la définition complète dans construireFiche,
+  // bot-generate-tickets-background.js) : alimenté depuis la MÊME lecture
+  // legsExistants ci-dessous, comme selectionsExclues/fixturesExclues —
+  // couvre donc aussi bien les fiches déjà publiées par le bot automatique
+  // que par une génération manuelle précédente le même jour, pas seulement
+  // celle en cours.
+  const marchesUtiliseesJour = new Map();
   try {
     const legsExistants = await sbSelect('ticket_legs',
       `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${playDate}&tickets.sport=eq.${sport}`);
-    legsExistants.forEach(l => { selectionsExclues.add(cleSelection(l)); fixturesExclues.add(l.fixture_id); });
+    legsExistants.forEach(l => {
+      selectionsExclues.add(cleSelection(l)); fixturesExclues.add(l.fixture_id);
+      marchesUtiliseesJour.set(l.market, (marchesUtiliseesJour.get(l.market) || 0) + 1);
+    });
   } catch (e) {
     // Non bloquant : au pire on revient au comportement sans protection
     // cross-run, jamais une raison de bloquer une génération manuelle.
@@ -408,7 +419,7 @@ async function handler(event) {
   const clamped = planMax != null && coteMaxDemandee > planMax;
 
   const fiche = construireFiche(poolFoot, planPartage, {
-    buteursUtilises, equipesUtilisees, selectionsExclues, fixturesExclues, nbMatchsDisponibles,
+    buteursUtilises, equipesUtilisees, marchesUtiliseesJour, selectionsExclues, fixturesExclues, nbMatchsDisponibles,
     cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
   });
 

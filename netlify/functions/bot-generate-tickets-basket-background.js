@@ -95,12 +95,40 @@ async function verifierEtIncrementerQuotaBasket(contexte) {
   }
 }
 
+// ============================================================================
+// SUIVI DU VRAI QUOTA API-SPORTS BASKETBALL (session suivante, demande
+// explicite de James : "quota restant séparé foot/basket en temps réel") —
+// même principe et mêmes en-têtes que enregistrerQuotaReel côté foot (voir
+// bot-generate-tickets-background.js), mais écrit sous le provider
+// 'api-sports-basketball' — football et basketball sont deux abonnements
+// API-Sports RÉELLEMENT distincts (même clé d'API, mais deux produits
+// séparés chez API-Sports, chacun avec son propre plafond de 100/jour),
+// donc leurs en-têtes x-ratelimit-* ne reflètent JAMAIS le même compteur.
+// Non-bloquant, comme côté foot : un échec ici n'empêche jamais l'appel
+// API-Sports réel qui vient d'avoir lieu.
+// ============================================================================
+async function enregistrerQuotaReelBasket(resp) {
+  try {
+    const remaining = resp.headers.get('x-ratelimit-requests-remaining');
+    const limite = resp.headers.get('x-ratelimit-requests-limit');
+    if (remaining === null || limite === null) return;
+    await sbRpc('record_real_api_quota', {
+      p_provider: 'api-sports-basketball',
+      p_remaining: parseInt(remaining, 10),
+      p_limit: parseInt(limite, 10)
+    });
+  } catch (e) {
+    stats.erreurs.push(`suivi_quota_reel_basket: ${e.message}`);
+  }
+}
+
 async function apiSportsGetBasketRaw(path, params) {
   const ok = await verifierEtIncrementerQuotaBasket(`${path}`);
   if (!ok) return { response: [] };
   const url = new URL(`https://${BASKET_HOST}${path}`);
   Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
   const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+  await enregistrerQuotaReelBasket(resp);
   if (!resp.ok) throw new Error(`API-Sports basket ${path} → HTTP ${resp.status}`);
   const data = await resp.json();
   const messagesErreur = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
@@ -249,6 +277,7 @@ async function recupererCoteParMatchBasket(gameId) {
     // bookmaker disponible (voir extraireMarchesBasket), jamais un
     // bookmaker précis supposé sans preuve.
     const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
+    await enregistrerQuotaReelBasket(resp);
     if (!resp.ok) {
       stats.erreurs.push(`basket/odds(game=${gameId}): HTTP ${resp.status}`);
       return null;
