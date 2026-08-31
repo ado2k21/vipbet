@@ -331,20 +331,22 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
 
   bets.forEach(betType => {
     // Victoire directe (id 2, "Home/Away" — pas de nul en basketball).
+    // CHANGÉ (31/08 v4, demande explicite de James : "toujours même
+    // principe min 1,19 max 2,90 pour odd d'un match") — remplace les deux
+    // fourchettes SAFE/PREMIUM (qui avaient encore laissé passer une zone
+    // morte avant le correctif précédent) par UNE seule fourchette
+    // continue 1.19-2.90, sans aucun trou. 'tier' reste écrit à titre
+    // informatif seulement (repère SAFE/PREMIUM pour le diagnostic) —
+    // jamais lu par construireFicheBasket, qui ne filtre déjà que sur
+    // scoreFiabilite/projectionConfirmee, jamais sur tier.
+    const COTE_MIN_BASKET = 1.19, COTE_MAX_BASKET_LEG = 2.90;
     if (betType.id === 2) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.19 && c <= 1.70) {
+        if (c >= COTE_MIN_BASKET && c <= COTE_MAX_BASKET_LEG) {
           trouvees.push({
             gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
-            market: 'mk_basket_1x2', pick: `Victoire : ${v.value}`, odd: c, tier: 'SAFE',
-            kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure
-          });
-        }
-        if (c >= 1.95 && c <= 2.50) {
-          trouvees.push({
-            gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
-            market: 'mk_basket_1x2', pick: `Victoire : ${v.value}`, odd: c, tier: 'PREMIUM',
+            market: 'mk_basket_1x2', pick: `Victoire : ${v.value}`, odd: c, tier: c <= 1.95 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure
           });
         }
@@ -365,18 +367,12 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
         const projectionConfirmee = (projectionTotal != null && isFinite(seuil))
           ? (estOver ? projectionTotal > seuil : projectionTotal < seuil)
           : false;
-        if (estOver && c >= 1.19 && c <= 1.70) {
+        // Over ET Under acceptés à l'identique (correctif du même jour,
+        // avant : Under systématiquement ignoré), même fourchette continue.
+        if (c >= COTE_MIN_BASKET && c <= COTE_MAX_BASKET_LEG) {
           trouvees.push({
             gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
-            market: 'mk_basket_total', pick: traduirePointsBasket(v.value), odd: c, tier: 'SAFE',
-            kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure,
-            projectionTotal, projectionConfirmee
-          });
-        }
-        if (estOver && c >= 1.95 && c <= 2.40) {
-          trouvees.push({
-            gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
-            market: 'mk_basket_total', pick: traduirePointsBasket(v.value), odd: c, tier: 'PREMIUM',
+            market: 'mk_basket_total', pick: traduirePointsBasket(v.value), odd: c, tier: c <= 1.95 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure,
             projectionTotal, projectionConfirmee
           });
