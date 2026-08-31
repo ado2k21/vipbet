@@ -282,11 +282,20 @@ async function handler(event) {
     nomsPourPublication[s.gameId] = { label: noms[s.gameId] && noms[s.gameId].label };
   });
 
+  // CORRIGÉ (31/08, même bug que le passage automatique) : publierFiche()
+  // pousse ses erreurs dans bot.stats.erreurs (module foot), jamais dans
+  // le stats.erreurs de ce fichier basket — capturé explicitement ici pour
+  // que la vraie raison d'échec apparaisse dans la réponse JSON et le log.
+  const nbErreursFootAvant = bot.stats.erreurs.length;
   const horodatage = partsHaiti(new Date()).heure.replace(':', '') + String(new Date().getSeconds()).padStart(2, '0');
   const ok = await publierFiche(planPartage, fiche, playDate, 'basket', nomsPourPublication, '', {
     source: 'admin', published: !programmee, scheduledPublishAt: programmee ? scheduledPublishAtIso : null,
     forcerExemption: true, codePrefix: `ADM${horodatage}`
   });
+  if (!ok) {
+    const nouvelles = bot.stats.erreurs.slice(nbErreursFootAvant);
+    stats.erreurs.push(`publierFiche a échoué (basket) : ${nouvelles.length ? nouvelles.join(' | ') : 'raison inconnue, aucune erreur remontée par le module foot'}`);
+  }
 
   logFinal();
   return jsonResponse(200, {

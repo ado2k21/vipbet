@@ -583,8 +583,23 @@ async function handler(event) {
     s.fixtureId = s.gameId;
     nomsPourPublication[s.gameId] = { label: noms[s.gameId] && noms[s.gameId].label };
   });
+  // CORRIGÉ (31/08, bug identifié suite au signalement de James : "essayé
+  // deux fois, sans résultat") : publierFiche() est importée du module
+  // foot (bot-generate-tickets-background.js) et pousse SES erreurs dans
+  // SON PROPRE tableau bot.stats.erreurs — jamais dans le stats.erreurs
+  // du présent fichier basket. Résultat : un vrai échec d'insertion (ex.
+  // rejet par le trigger Postgres trg_valider_cote_plan) restait invisible
+  // dans le log basket ("erreurs": [] malgré fichesPubliees:0). On capture
+  // désormais explicitement la dernière erreur du module foot si publierFiche
+  // échoue, pour qu'elle apparaisse enfin dans CE log.
+  const nbErreursFootAvant = bot.stats.erreurs.length;
   const ok = await publierFiche(planPartage, fiche, dateCible, 'basket', nomsPourPublication, '');
-  if (ok) stats.fichesPubliees++;
+  if (ok) {
+    stats.fichesPubliees++;
+  } else {
+    const nouvelles = bot.stats.erreurs.slice(nbErreursFootAvant);
+    stats.erreurs.push(`publierFiche a échoué (basket) : ${nouvelles.length ? nouvelles.join(' | ') : 'raison inconnue, aucune erreur remontée par le module foot'}`);
+  }
 
   logFinal();
   return {
