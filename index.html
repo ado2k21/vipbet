@@ -4669,7 +4669,7 @@ foot_h_plateforme:"Plateforme",
 foot_plans:"Plan yo", foot_rezilta:"Rezilta", foot_accueil:"Retounen nan Akèy",
 foot_h_legal:"Légal", foot_cgu:"Conditions d'utilisation", foot_confid:"Confidentialité", foot_jeu_resp:"Jeu responsable",
 pl1_name:"VIP 7 JOURS", pl1_per:"7 jours d’accès",
-plan_per_days:"{n} jours d'accès",
+plan_per_days:"{n} jours d'accès", plan_name_days:"VIP {n} JOURS",
 pl2_name:"VIP 21 JOURS", pl2_per:"21 jours d’accès",
 pl3_name:"VIP 30 JOURS", pl3_per:"30 jours d’accès",
 pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"Tout cotes yo disponib pou tout tan",
@@ -5118,7 +5118,7 @@ foot_h_plateforme:"Platform",
 foot_plans:"Plans", foot_rezilta:"Results", foot_accueil:"Back to home",
 foot_h_legal:"Legal", foot_cgu:"Terms of use", foot_confid:"Privacy", foot_jeu_resp:"Responsible gambling",
 pl1_name:"VIP 7 DAYS", pl1_per:"7 days of access",
-plan_per_days:"{n} days of access",
+plan_per_days:"{n} days of access", plan_name_days:"VIP {n} DAYS",
 pl2_name:"VIP 21 DAYS", pl2_per:"21 days of access",
 pl3_name:"VIP 30 DAYS", pl3_per:"30 days of access",
 pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"Tout cotes yo disponib pou tout tan",
@@ -5567,7 +5567,7 @@ foot_h_plateforme:"Platfòm",
 foot_plans:"Plan yo", foot_rezilta:"Rezilta", foot_accueil:"Retounen nan Akèy",
 foot_h_legal:"Legal", foot_cgu:"Kondisyon itilizasyon", foot_confid:"Konfidansyalite", foot_jeu_resp:"Jwe responsab",
 pl1_name:"VIP 7 JOU", pl1_per:"7 jou aksè",
-plan_per_days:"{n} jou aksè",
+plan_per_days:"{n} jou aksè", plan_name_days:"VIP {n} JOU",
 pl2_name:"VIP 21 JOU", pl2_per:"21 jou aksè",
 pl3_name:"VIP 30 JOU", pl3_per:"30 jou aksè",
 pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"Tout cotes yo disponib pou tout tan",
@@ -6979,8 +6979,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        ACTIF (state.planId), qui ne change qu'a un paiement reellement reussi. */
     const pl=planById(state.pendingPlanId)||planById(state.planId)||PLANS[1];
     state.pendingPlanId=pl.id;save();
-    document.getElementById('wizRecapName').textContent=stripTags(t(pl.nameKey));
-    document.getElementById('wizRecapPer').textContent=stripTags(t(pl.perKey));
+    document.getElementById('wizRecapName').textContent=stripTags(window.VB_planLabel(pl));
+    document.getElementById('wizRecapPer').textContent=stripTags(pl.days!=null?t('plan_per_days').replace('{n}',pl.days):t(pl.perKey));
     document.getElementById('wizRecapPrix').innerHTML=money(pl.prix)+' <small>HTG</small>';
     document.getElementById('wizRecapTotal').textContent=money(pl.prix)+' HTG';
     const ul=document.getElementById('wizRecapFeats');
@@ -7000,7 +7000,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       b.type='button';
       b.className='wiz-planopt'+(pl.id===state.pendingPlanId?' on':'');
       b.innerHTML='<span class="wiz-planopt-rad"></span>'+
-        '<span class="wiz-planopt-txt"><b>'+stripTags(t(pl.nameKey))+'</b><span>'+stripTags(t(pl.perKey))+'</span></span>'+
+        '<span class="wiz-planopt-txt"><b>'+stripTags(window.VB_planLabel(pl))+'</b><span>'+stripTags(pl.days!=null?t('plan_per_days').replace('{n}',pl.days):t(pl.perKey))+'</span></span>'+
         (pl.popular?'<span class="wiz-planopt-tag">'+stripTags(t('ab_populaire')).toUpperCase()+'</span>':'')+
         '<span class="wiz-planopt-prix">'+money(pl.prix)+'</span>';
       b.addEventListener('click',()=>{
@@ -7397,7 +7397,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       :'<svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>';
     document.getElementById('wizDoneH').textContent=t(pend?'wiz_d_h_pending':'wiz_d_h');
     document.getElementById('wizDoneSub').textContent=t(pend?'wiz_d_sub_pending':'wiz_d_sub');
-    document.getElementById('wizDonePlan').textContent=pl?stripTags(t(pl.nameKey)):'—';
+    document.getElementById('wizDonePlan').textContent=pl?stripTags(window.VB_planLabel(pl)):'—';
     // Tant que ce n'est pas confirme, on ne peut pas encore montrer de
     // vraies dates (elles ne sont fixees qu'a la confirmation admin) —
     // on l'indique clairement plutot que d'afficher une date provisoire
@@ -8164,6 +8164,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   window.VB_getState=()=>state;
   window.VB_planById=planById;
+  // CORRIGÉ (31/08 v8, cause racine du "reste toujours 7 jours") : le nom
+  // affiché d'un plan ("VIP 7 JOU") était un texte de traduction STATIQUE
+  // (pl.nameKey), totalement déconnecté du vrai duration_days en base —
+  // changer le nombre de jours ne changeait donc JAMAIS ce texte, nulle
+  // part sur le site, même une fois la synchronisation prix/durée en place.
+  // Cette fonction devient l'UNIQUE source de vérité pour le nom affiché :
+  // calculée depuis la vraie valeur pl.days pour les plans à durée (jamais
+  // du texte fige), sauf le Lifetime (days=null), dont le nom reste fixe
+  // car il n'a pas de decompte de jours a refleter. Exposee globalement
+  // car utilisee par plusieurs IIFE distincts (wizard, dashboard, admin —
+  // chacun a son propre "t" local mais partage translations/currentLang).
+  window.VB_planLabel=pl=>{
+    if(!pl)return '';
+    if(pl.days==null)return t(pl.nameKey);        // Lifetime : nom fixe
+    return t('plan_name_days').replace('{n}',pl.days);
+  };
   window.VB_allPlans=()=>PLANS;
   // Utilise par le bootstrap de restauration au chargement de la page :
   // vrai uniquement si le parcours est reellement termine (email verifie,
@@ -8289,6 +8305,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const btn=document.querySelector('#abonnements [data-plan="'+pl.id+'"]');
       const carte=btn&&btn.closest('.plan');
       if(!carte)return;
+      // CORRIGÉ (31/08 v8) : le TITRE de la carte ("VIP 7 JOURS") n'était
+      // jamais mis à jour ici — seuls le prix et la ligne "X jours d'accès"
+      // l'étaient, laissant un titre figé en contradiction directe avec le
+      // reste de la carte des qu'un admin changeait la durée.
+      if(pl.days){
+        const titreEl=carte.querySelector('.plan-top h3');
+        if(titreEl){
+          titreEl.removeAttribute('data-i18n');
+          titreEl.textContent=window.VB_planLabel(pl);
+        }
+      }
       const prixEl=carte.querySelector('.prix');
       if(prixEl){
         const old=prixEl.querySelector('.prix-old');
@@ -9405,7 +9432,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const pend=isPending();
       // Nom du plan requis, lu depuis le catalogue existant (aucune duplication)
       const needPlan=(window.VB_planById?window.VB_planById('p'+tk.minPlan):null);
-      const needName=needPlan?String(t(needPlan.nameKey)).replace(/<[^>]*>/g,''):'';
+      const needName=needPlan?String(window.VB_planLabel(needPlan)).replace(/<[^>]*>/g,''):'';
       const icon=pend
         ?'<svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'
         :'<svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
@@ -9521,7 +9548,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const ov=document.createElement('div');
       ov.className='dtk-lockover';
       const needPlan=(window.VB_planById?window.VB_planById('p'+(besoin||4)):null);
-      const needName=needPlan?String(t(needPlan.nameKey)).replace(/<[^>]*>/g,''):'';
+      const needName=needPlan?String(window.VB_planLabel(needPlan)).replace(/<[^>]*>/g,''):'';
       const exp=isExpired();
       const pend=isPending();
       const rej=isRejected();
@@ -9793,7 +9820,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const aUnPlan=!!pl;
     document.querySelectorAll('.dash-sub-planblock').forEach(elB=>{elB.hidden=!aUnPlan;});
     document.getElementById('dashSubNoPlan').hidden=aUnPlan;
-    document.getElementById('dashSubName').textContent=pl?String(t(pl.nameKey)).replace(/<[^>]*>/g,''):'';
+    document.getElementById('dashSubName').textContent=pl?String(window.VB_planLabel(pl)).replace(/<[^>]*>/g,''):'';
     document.getElementById('dashSubPrix').textContent=pl?money(pl.prix)+' HTG':'';
 
     // Message unique, pilote par l'etat REEL de l'abonnement — un seul
@@ -9822,7 +9849,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // 'rejected', pend passe à false) — aucune action cote client requise.
     const nomPlanAttendu=(()=>{
       const p=window.VB_planById?window.VB_planById(st.pendingPlanId||st.planId):null;
-      return p?String(t(p.nameKey)).replace(/<[^>]*>/g,''):'—';
+      return p?String(window.VB_planLabel(p)).replace(/<[^>]*>/g,''):'—';
     })();
     if(changementEnAttente&&aUnPlan){
       msgTxt=t('dash_pending_change_banner').replace('{plan}',nomPlanAttendu);
@@ -9835,7 +9862,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }else if(bientotExpire){
       msgTxt=t('dash_sub_msg_renew_soon').replace('{date}',fmtLong(st.endDate));
     }else if(aUnPlan){
-      msgTxt=t('dash_sub_msg_active').replace('{plan}',pl?String(t(pl.nameKey)).replace(/<[^>]*>/g,''):'');
+      msgTxt=t('dash_sub_msg_active').replace('{plan}',pl?String(window.VB_planLabel(pl)).replace(/<[^>]*>/g,''):'');
     }
     document.getElementById('dashPendingBannerTxt').textContent=msgTxt;
     banner.hidden=!msgTxt;
@@ -9928,7 +9955,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(!pl)return t('dash_badge_none');
       // Libelle court reserve au badge du header (les cartes de plan gardent le nom complet)
       const court={p4:'LIFETIME'};
-      return court[pl.id]||String(t(pl.nameKey)).replace(/<[^>]*>/g,'');
+      return court[pl.id]||String(window.VB_planLabel(pl)).replace(/<[^>]*>/g,'');
     })();
     if(view==='today')renderToday();
     else if(view==='history')renderHistory();
@@ -10737,7 +10764,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const optionsPlans='<option value="">'+t('adm_user_plan_none_option')+'</option>'+
       (window.VB_allPlans?window.VB_allPlans():[]).map(pl=>
       '<option value="'+pl.id+'"'+(planActif&&planActif.plan_id===pl.id?' selected':'')+'>'+
-      stripTags(t(pl.nameKey))+' — '+money(pl.prix)+' HTG</option>'
+      stripTags(window.VB_planLabel(pl))+' — '+money(pl.prix)+' HTG</option>'
     ).join('');
 
     box.innerHTML=
@@ -10776,7 +10803,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<div><dt>'+t('adm_user_role')+'</dt><dd>'+(u.role||'user')+'</dd></div>'+
         '<div><dt>'+t('adm_user_site')+'</dt><dd>'+(u.preferred_site||'—')+'</dd></div>'+
         '<div><dt>'+t('adm_user_since')+'</dt><dd>'+fmt(u.created_at)+'</dd></div>'+
-        '<div><dt>'+t('adm_user_current_plan')+'</dt><dd>'+(planActifObj?stripTags(t(planActifObj.nameKey)):t('adm_user_no_plan'))+'</dd></div>'+
+        '<div><dt>'+t('adm_user_current_plan')+'</dt><dd>'+(planActifObj?stripTags(window.VB_planLabel(planActifObj)):t('adm_user_no_plan'))+'</dd></div>'+
       '</dl>'+
 
       '<div class="admdash-section-h">'+t('adm_user_change_plan_h')+'</div>'+
@@ -11335,7 +11362,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!plans.length){list.innerHTML='<div class="admdash-empty">'+t('adm_plans_empty')+'</div>';return;}
     list.innerHTML=plans.map(p=>{
       const local=window.VB_planById?window.VB_planById(p.id):null;
-      const nom=local?stripTags(t(local.nameKey)):(p.name||p.id);
+      const nom=local?stripTags(window.VB_planLabel(local)):(p.name||p.id);
       return '<button type="button" class="admdash-row" data-plid="'+p.id+'">'+
         '<span class="admdash-row-av">'+p.id.toUpperCase().slice(0,2)+'</span>'+
         '<span class="admdash-row-tx"><b>'+nom+'</b><span>'+
@@ -11357,7 +11384,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const p=plans.find(x=>x.id===selectedPlanId);
     if(!p){box.innerHTML='<div class="admdash-empty">'+t('adm_plans_empty')+'</div>';return;}
     const local=window.VB_planById?window.VB_planById(p.id):null;
-    const nom=local?stripTags(t(local.nameKey)):(p.name||p.id);
+    const nom=local?stripTags(window.VB_planLabel(local)):(p.name||p.id);
     box.innerHTML=
       '<div class="admdash-detail-h">'+
         '<span class="admdash-detail-av">'+p.id.toUpperCase().slice(0,2)+'</span>'+
@@ -12275,7 +12302,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           plans.map(pl=>{
           const nb=tickets.filter(tk=>tk.min_plan_rank<=rank[pl.id]).length;
           return '<span class="admf-sum-item'+(admFichesFiltrePlanRang===rank[pl.id]?' active':'')+'" data-planrank="'+rank[pl.id]+'">'+
-            stripTags(t(pl.nameKey))+' — <b>'+nb+'</b></span>';
+            stripTags(window.VB_planLabel(pl))+' — <b>'+nb+'</b></span>';
         }).join('');
         const ticketsAffiches=admFichesFiltrePlanRang===null?tickets
           :tickets.filter(tk=>tk.min_plan_rank<=admFichesFiltrePlanRang);
@@ -12585,7 +12612,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
     const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
-    const optionsPlans=plans.map(pl=>'<option value="'+rank[pl.id]+'"'+(tk.min_plan_rank===rank[pl.id]?' selected':'')+'>'+stripTags(t(pl.nameKey))+'</option>').join('');
+    const optionsPlans=plans.map(pl=>'<option value="'+rank[pl.id]+'"'+(tk.min_plan_rank===rank[pl.id]?' selected':'')+'>'+stripTags(window.VB_planLabel(pl))+'</option>').join('');
     const optionsSport=['foot','nba'].map(s=>'<option value="'+s+'"'+(tk.sport===s?' selected':'')+'>'+(s==='foot'?t('adm_fiche_sport_foot'):t('adm_fiche_sport_nba'))+'</option>').join('');
     const optionsStatus=['pending','won','lost'].map(s=>'<option value="'+s+'"'+(tk.status===s?' selected':'')+'>'+t('adm_fiche_st_'+s)+'</option>').join('');
 
