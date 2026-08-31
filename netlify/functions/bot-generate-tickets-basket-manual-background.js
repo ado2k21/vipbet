@@ -178,12 +178,19 @@ async function handler(event) {
   // (distincte de la fenêtre par défaut du passage automatique). Aucune
   // liste de championnat (le basketball n'en a jamais eu — tous les
   // championnats proposés par les bookmakers).
+  // CHANGÉ (31/08 v4, même correctif que le passage automatique — voir
+  // bot-generate-tickets-basket-background.js) : élargi à 'NS' ET 'TBD'
+  // ("time to be defined", statut courant pour un match dont l'heure
+  // exacte n'est pas encore confirmée par la ligue, notamment la veille
+  // pour le lendemain — reste bien un match à venir, jamais commencé).
+  const STATUTS_ACCEPTES = ['NS', 'TBD'];
   const noms = {};
   let candidats = [];
   matchsJour.forEach(g => {
     if (!g || !g.id || !g.date) return;
     const statut = g.status && g.status.short;
-    if (statut !== 'NS') return;
+    stats.statutsRecus[statut || '(vide)'] = (stats.statutsRecus[statut || '(vide)'] || 0) + 1;
+    if (STATUTS_ACCEPTES.indexOf(statut) === -1) return;
     const h = heureHaitiDuMatch(g.date);
     if (!h || h.iso !== playDate) return;
     const minutesJour = h.heureNum * 60 + h.minuteNum;
@@ -206,7 +213,9 @@ async function handler(event) {
   if (!candidats.length) {
     logFinal();
     return jsonResponse(200, {
-      resultats: plansChoisis.map(p => ({ rank: p.rank, publie: false, raison: 'Aucun match dans la fenêtre horaire choisie pour cette date.' }))
+      resultats: plansChoisis.map(p => ({ rank: p.rank, publie: false,
+        raison: `Aucun match dans la fenêtre horaire choisie pour cette date (${matchsJour.length} match(s) reçu(s) d'API-Sports, aucun avec un statut/horaire exploitable).`,
+        debug: { statutsRecus: stats.statutsRecus } }))
     });
   }
 

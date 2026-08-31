@@ -237,6 +237,17 @@ function resetStatsBasket() {
   stats.poolFinal = 0;
   stats.fichesPubliees = 0;
   stats.erreurs = [];
+  // Diagnostic (31/08 v4, demande explicite de James après un log réel
+  // montrant matchsTrouves:7 mais candidatsExamines:1 — 6 matchs exclus
+  // AVANT même d'atteindre les cotes, sans qu'aucune trace n'explique
+  // pourquoi) : répartition des matchs REÇUS par statut API-Sports brut
+  // (g.status.short) — jamais utilisé pour décider quoi que ce soit,
+  // uniquement pour voir dans le prochain log si le filtre statut==='NS'
+  // (hypothèse jamais vérifiée en conditions réelles, voir commentaire
+  // d'origine) exclut à tort des matchs valides (ex. 'TBD' = horaire pas
+  // encore confirmé par la ligue, différent de 'NS' mais tout aussi
+  // pariable la veille).
+  stats.statutsRecus = {};
 }
 function logFinal() {
   console.log('[BOT-BASKET]', JSON.stringify(stats, null, 2));
@@ -508,12 +519,21 @@ async function handler(event) {
   // Filtrage local : statut "pas encore commencé" + fenêtre horaire. AUCUNE
   // liste de championnat (règle 1 en en-tête) — tout ce que l'API renvoie
   // avec un statut valide est candidat.
+  // CHANGÉ (31/08 v4) : élargi à 'NS' ET 'TBD' — un log réel a montré
+  // matchsTrouves:7 mais seulement 1 accepté par le filtre statut==='NS'
+  // strict (hypothèse jamais vérifiée jusqu'ici, voir stats.statutsRecus
+  // pour confirmer précisément la répartition au prochain passage). 'TBD'
+  // ("time to be defined") est un statut API-Sports courant pour un match
+  // du LENDEMAIN dont l'heure exacte n'est pas encore confirmée par la
+  // ligue — le match reste bien à venir et pariable, jamais commencé.
+  const STATUTS_ACCEPTES = ['NS', 'TBD'];
   const noms = {};
   let candidats = [];
   matchsJour.forEach(g => {
     if (!g || !g.id || !g.date) return;
     const statut = g.status && g.status.short;
-    if (statut !== 'NS') return; // voir avertissement en en-tête : hypothèse non vérifiée en conditions réelles
+    stats.statutsRecus[statut || '(vide)'] = (stats.statutsRecus[statut || '(vide)'] || 0) + 1;
+    if (STATUTS_ACCEPTES.indexOf(statut) === -1) return;
     const h = heureHaitiDuMatch(g.date);
     if (!h || h.iso !== dateCible) return;
     const minutesJour = h.heureNum * 60 + h.minuteNum;

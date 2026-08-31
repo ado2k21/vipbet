@@ -254,7 +254,17 @@ async function sbRpc(name, params) {
     body: JSON.stringify(params || {})
   });
   if (!resp.ok) throw new Error(`Supabase RPC ${name} → HTTP ${resp.status} : ${await resp.text()}`);
-  const data = await resp.json();
+  // CORRIGÉ (31/08 v4, bug introduit le même jour avec
+  // enregistrerQuotaReel/enregistrerQuotaReelBasket) : les RPC qui ne
+  // retournent rien (ex. record_real_api_quota, RETURNS void) répondent
+  // avec un corps VIDE (HTTP 204 ou 200 sans contenu) — resp.json()
+  // plantait dessus ("Unexpected end of JSON input"), rattrapé par le
+  // try/catch appelant mais polluant stats.erreurs à chaque appel réel.
+  // Lire le texte brut d'abord, ne parser en JSON QUE s'il y a vraiment
+  // quelque chose à parser.
+  const texte = await resp.text();
+  if (!texte) return null;
+  const data = JSON.parse(texte);
   return Array.isArray(data) ? data[0] : data;
 }
 
