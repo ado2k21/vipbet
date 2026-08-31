@@ -1194,6 +1194,12 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 }
 .admf-summary-h span{white-space:nowrap}
 .admf-summary-h b{color:var(--or-clair)}
+.admf-sum-item{
+  cursor:pointer;padding:5px 10px;border-radius:20px;border:1px solid transparent;
+  transition:background .15s,border-color .15s;
+}
+.admf-sum-item:hover{background:rgba(244,243,237,.06)}
+.admf-sum-item.active{background:rgba(201,164,76,.14);border-color:var(--or-clair)}
 .admdash-hist{display:flex;flex-direction:column;gap:1px;border-radius:var(--r-sm);overflow:hidden}
 .admdash-hist-row{display:flex;justify-content:space-between;gap:14px;padding:11px 13px;background:rgba(3,8,23,.42);font-size:12.5px}
 .admdash-hist-row dt{color:var(--gris)}
@@ -4753,8 +4759,9 @@ adm_fiche_gen_echec:"Aucune fiche générée pour ce plan.", adm_fiche_gen_ok_no
 adm_fiche_gen_ok_prog:"programmée pour le {h}", adm_fiche_gen_clamped:"cote max ramenée au plafond du plan",
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} utilisés · {left} restants aujourd'hui",
+adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
 adm_quota_gen_epuise:"⛔ Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"⚠️ Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
-adm_quota_lbl_reel:"Quota réel API-Sports · {remaining}/{max} restants (vérifié à {time})",
+adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} utilisés · {remaining} restants (vérifié à {time})",
 adm_quota_inconnu:"⚠️ Quota réel inconnu depuis minuit UTC — aucun appel API-Sports effectué aujourd'hui.",
 adm_quota_gen_inconnu:"⚠️ Quota inconnu depuis minuit UTC. Lance un diagnostic (?diag=quota-status) avant de générer pour être sûr.",
 adm_apprentissage_btn:"Rapport apprentissage",
@@ -4885,7 +4892,7 @@ adm_settings_2fa_off_h:"2FA désactivé", adm_settings_2fa_off_toast:"La double 
 adm_confirm_q_pw_change:"Confirmer le changement de mot de passe ?",
 adm_confirm_q_2fa_disable:"Confirmer la désactivation du 2FA ? Votre compte sera moins protégé.",
 adm_fiches_h:"Fiches", adm_fiches_p:"Fiches pour chaque jour, groupées par plan. L'historique reste toujours disponible.",
-adm_fiches_date_lbl:"Date", adm_fiches_new:"+ Nouvelle fiche", adm_fiches_empty:"Aucune fiche pour cette date.",
+adm_fiches_date_lbl:"Date", adm_fiches_new:"+ Nouvelle fiche", adm_fiches_empty:"Aucune fiche pour cette date.", adm_fiches_tous_plans:"Tous",
 adm_fiche_draft:"brouillon", adm_fiche_legs:"match(s)",
 adm_fiche_st_pending:"En cours", adm_fiche_st_won:"Gagné", adm_fiche_st_lost:"Perdu",
 adm_fiche_kind_normal:"Cote normal", adm_fiche_kind_exact:"Score exact", adm_fiche_kind_basket:"Basketball",
@@ -5201,8 +5208,9 @@ adm_fiche_gen_echec:"No slip generated for this plan.", adm_fiche_gen_ok_now:"pu
 adm_fiche_gen_ok_prog:"scheduled for {h}", adm_fiche_gen_clamped:"max odds capped to the plan's ceiling",
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 adm_quota_lbl:"API-Sports quota · {used}/{max} used · {left} left today",
+adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
 adm_quota_gen_epuise:"⛔ Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"⚠️ Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
-adm_quota_lbl_reel:"Real API-Sports quota · {remaining}/{max} left (checked at {time})",
+adm_quota_lbl_reel:"API-Sports quota · {used}/{max} used · {remaining} left (checked at {time})",
 adm_quota_inconnu:"⚠️ Real quota unknown since midnight UTC — no API-Sports call made today.",
 adm_quota_gen_inconnu:"⚠️ Quota unknown since midnight UTC. Run a diagnostic (?diag=quota-status) before generating to be sure.",
 adm_apprentissage_btn:"Learning report",
@@ -5333,7 +5341,7 @@ adm_settings_2fa_off_h:"2FA disabled", adm_settings_2fa_off_toast:"Two-factor au
 adm_confirm_q_pw_change:"Confirm the password change?",
 adm_confirm_q_2fa_disable:"Confirm disabling 2FA? Your account will be less protected.",
 adm_fiches_h:"Tickets", adm_fiches_p:"Tickets for each day, grouped by plan. History always stays available.",
-adm_fiches_date_lbl:"Date", adm_fiches_new:"+ New ticket", adm_fiches_empty:"No tickets for this date.",
+adm_fiches_date_lbl:"Date", adm_fiches_new:"+ New ticket", adm_fiches_empty:"No tickets for this date.", adm_fiches_tous_plans:"All",
 adm_fiche_draft:"draft", adm_fiche_legs:"match(es)",
 adm_fiche_st_pending:"In progress", adm_fiche_st_won:"Won", adm_fiche_st_lost:"Lost",
 adm_fiche_kind_normal:"Standard odds", adm_fiche_kind_exact:"Correct score", adm_fiche_kind_basket:"Basketball",
@@ -5649,8 +5657,9 @@ adm_fiche_gen_echec:"Pa gen fich ki jenere pou plan sa a.", adm_fiche_gen_ok_now
 adm_fiche_gen_ok_prog:"pwograme pou {h}", adm_fiche_gen_clamped:"kòt max redwi jiska plafon plan an",
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} itilize · {left} rete jodi a",
+adm_quota_sport_foot:"Foutbòl", adm_quota_sport_basket:"Basketbòl",
 adm_quota_gen_epuise:"⛔ Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"⚠️ Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
-adm_quota_lbl_reel:"Vrè quota API-Sports · {remaining}/{max} rete (verifye a {time})",
+adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} itilize · {remaining} rete (verifye a {time})",
 adm_quota_inconnu:"⚠️ Vrè quota pa konnen depi minwi UTC — pa gen okenn apèl API-Sports jodi a.",
 adm_quota_gen_inconnu:"⚠️ Quota pa konnen depi minwi UTC. Lanse yon dyagnostik (?diag=quota-status) anvan ou jenere pou w sèten.",
 adm_apprentissage_btn:"Rapò aprantisaj",
@@ -5781,7 +5790,7 @@ adm_settings_2fa_off_h:"2FA dezaktive", adm_settings_2fa_off_toast:"Doub otantif
 adm_confirm_q_pw_change:"Konfime chanjman modpas la ?",
 adm_confirm_q_2fa_disable:"Konfime dezaktivasyon 2FA a ? Kont ou ap mwen pwoteje.",
 adm_fiches_h:"Fich", adm_fiches_p:"Fich pou chak jou, gwoupe pa plan. Istorik la toujou disponib.",
-adm_fiches_date_lbl:"Dat", adm_fiches_new:"+ Nouvo fich", adm_fiches_empty:"Pa gen fich pou dat sa a.",
+adm_fiches_date_lbl:"Dat", adm_fiches_new:"+ Nouvo fich", adm_fiches_empty:"Pa gen fich pou dat sa a.", adm_fiches_tous_plans:"Tout",
 adm_fiche_draft:"bouyon", adm_fiche_legs:"match",
 adm_fiche_st_pending:"An kou", adm_fiche_st_won:"Genyen", adm_fiche_st_lost:"Pèdi",
 adm_fiche_kind_normal:"Kòt nòmal", adm_fiche_kind_exact:"Eskò egzak", adm_fiche_kind_basket:"Basketball",
@@ -8698,6 +8707,39 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      sinon l'agregat calcule par la base (fiche verrouillee par le plan,
      dont les selections ne descendent jamais jusqu'ici). */
   const totalOdd=tk=>(tk.legs&&tk.legs.length)?tk.legs.reduce((a,l)=>a*l.odd,1):(tk.totalOdd||0);
+  /* Indice de confiance affiche au Dashboard client (regle du 31/08, v2,
+     demande explicite de James) : derive de la COTE TOTALE de la fiche,
+     jamais du champ interne "confidence" saisi par l'admin/le bot — un
+     combine a petite cote reste statistiquement plus fiable qu'un combine
+     a cote tres elevee, quelle que soit la note interne. Bareme fixe :
+       cote  1  a 30 : vert  (haut)  -- pourcentage affiche 80% a 90%
+       cote  30 a 80 : jaune (moyen) -- pourcentage affiche 60% a 79%
+       cote  80 a x  : rouge (bas, precaution) -- pourcentage 30% a 58%
+     Interpolation lineaire a l'interieur de chaque palier (cote basse =
+     pourcentage haut du palier, cote haute = pourcentage bas du palier) ;
+     le palier rouge plafonne vers cote ~260 (pourcentage jamais sous 30%,
+     jamais invente au hasard, toujours une fonction pure et deterministe
+     de la cote reelle, identique a chaque rendu).
+     Reutilise les memes cles de traduction que l'ancien systeme
+     (dtk_niveau_haut/moyen/bas) -- aucun texte nouveau a ajouter. */
+  function niveauSelonCote(cote){
+    cote=Number(cote)||1;
+    let niveau,pct;
+    if(cote<=30){
+      niveau='haut';
+      const p=Math.max(0,Math.min(1,(cote-1)/29));
+      pct=Math.round(90-p*10);
+    }else if(cote<=80){
+      niveau='moyen';
+      const p=(cote-30)/50;
+      pct=Math.round(79-p*19);
+    }else{
+      niveau='bas';
+      const p=Math.max(0,Math.min(1,(cote-80)/180));
+      pct=Math.round(58-p*28);
+    }
+    return {niveau:niveau,pct:pct};
+  }
   /* 'day' = nombre de jours haitiens ecoules depuis la date de jeu.
      Negatif pour une fiche publiee a l'avance. */
   const dayDate=d=>new Date(minuitHaitiMs(aujourdHuiHaiti())-d*86400000);
@@ -9175,16 +9217,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     const conf=document.createElement('div');
     conf.className='dtk-conf';
-    const lvl=tk.conf>=75?'':(tk.conf>=65?' mid':' low');
-    // Badge de fiabilité coloré (29/08) : même seuils que la barre
-    // (75/65), mot-clé traduit + couleur, lisible sans avoir à interpréter
-    // un pourcentage.
-    const niveauCle=tk.conf>=75?'haut':(tk.conf>=65?'moyen':'bas');
-    const niveauEmoji=tk.conf>=75?'🟢':(tk.conf>=65?'🟡':'🔴');
+    // CHANGÉ (31/08 v2, demande explicite de James) : le badge/barre de
+    // confiance côté Dashboard client ne lit plus tk.conf (le score
+    // interne saisi par l'admin/bot) — il est désormais calculé UNIQUEMENT
+    // à partir de la cote totale réelle de la fiche, via niveauSelonCote()
+    // (barème fixe 1-30 vert / 30-80 jaune / 80+ rouge, voir sa définition
+    // pour le détail). tk.conf reste écrit en base et lu ailleurs (stats
+    // admin, moyenne 30 jours) mais n'influence plus jamais ce qui est
+    // montré ici.
+    const niveauInfo=niveauSelonCote(totalOdd(tk));
+    const lvl=niveauInfo.niveau==='haut'?'':(niveauInfo.niveau==='moyen'?' mid':' low');
+    const niveauCle=niveauInfo.niveau;
+    const niveauEmoji=niveauInfo.niveau==='haut'?'🟢':(niveauInfo.niveau==='moyen'?'🟡':'🔴');
     conf.innerHTML='<div class="dtk-conf-top"><span class="dtk-conf-lbl">'+t('dash_conf')+'</span>'+
-      '<span style="display:flex;align-items:center;gap:6px"><span class="dtk-conf-val">'+tk.conf+'%</span>'+
+      '<span style="display:flex;align-items:center;gap:6px"><span class="dtk-conf-val">'+niveauInfo.pct+'%</span>'+
       '<span class="dtk-badge-niveau '+niveauCle+'">'+niveauEmoji+' '+t('dtk_niveau_'+niveauCle)+'</span></span></div>'+
-      '<div class="dtk-conf-bar"><span class="dtk-conf-fill'+lvl+'" style="width:'+tk.conf+'%"></span></div>';
+      '<div class="dtk-conf-bar"><span class="dtk-conf-fill'+lvl+'" style="width:'+niveauInfo.pct+'%"></span></div>';
     el.appendChild(conf);
 
     const foot=document.createElement('div');
@@ -9402,16 +9450,25 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('dashHiP').textContent=t('dash_hello_p');
 
     // Les fiches 100 % "score exact" ont leur propre carte : on ne les
-    // compte pas deux fois dans la liste des fiches du jour.
+    // compte pas deux fois dans la LISTE affichee des fiches du jour.
     const todays=DATA.tickets.filter(k=>estDuJour(k)&&!estFicheScore(k));
     const visible=todays.filter(k=>k.minPlan<=userRank());
     const legs=visible.reduce((a,k)=>a+k.legs.length,0);
     const best=visible.length?Math.max.apply(null,visible.map(totalOdd)):0;
+    // CHANGÉ (31/08 v2, demande explicite de James) : le CHIFFRE des KPI
+    // "Fiches disponibles"/"Fiches verrouillées", lui, doit compter TOUTE
+    // fiche en cours du jour sans exception -- fiche normale + score exact
+    // (auto ou manuelle) + basketball (auto ou manuelle) -- même si la
+    // fiche score exact garde sa propre carte plus bas et n'apparaît donc
+    // qu'une fois dans la liste elle-même. Ce comptage-ci est distinct de
+    // "todays"/"visible" (qui restent, eux, la base de la liste rendue).
+    const todaysTout=DATA.tickets.filter(k=>estDuJour(k));
+    const visibleTout=todaysTout.filter(k=>k.minPlan<=userRank());
     document.getElementById('dashKpisToday').innerHTML=
-      kpi(visible.length,'dash_k_avail','green')+
+      kpi(visibleTout.length,'dash_k_avail','green')+
       kpi(legs,'dash_k_legs')+
       kpi(best?best.toFixed(2):'—','dash_k_bestodd','gold')+
-      kpi(todays.length-visible.length,'dash_k_locked');
+      kpi(todaysTout.length-visibleTout.length,'dash_k_locked');
 
     const f=filters.today;
     /* "Fich lòt plan" : les fiches que le plan ACTIF ne couvre pas.
@@ -10107,11 +10164,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // bot-diagnostics.js) — remplace le compteur interne ci-dessus comme
   // seule source affichée. est_du_jour=false = aucun appel réel depuis
   // minuit UTC : on ne devine jamais, on l'affiche clairement.
-  async function chargerQuotaReelApi(){
+  // CHANGÉ (31/08 v2, demande explicite de James : "quota restant séparé
+  // foot/basket en temps réel") : accepte désormais un provider explicite
+  // — football et basketball sont deux abonnements API-Sports RÉELLEMENT
+  // distincts (même clé d'API, deux produits séparés, chacun son propre
+  // plafond de 100/jour) — jamais le même compteur. 'api-sports-football'
+  // reste la valeur par défaut pour tout appelant existant non modifié.
+  async function chargerQuotaReelApi(provider){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return null;
     try{
-      const {data,error}=await sb.rpc('get_real_api_quota_today',{p_provider:'api-sports-football'});
+      const {data,error}=await sb.rpc('get_real_api_quota_today',{p_provider:provider||'api-sports-football'});
       if(error)throw error;
       return Array.isArray(data)?data[0]:data;
     }catch(e){return null;}
@@ -10121,20 +10184,49 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(pct>=60)return 'or';
     return 'vert';
   }
-  async function renderQuotaBadge(){
-    const wrap=document.getElementById('admQuotaBadgeWrap');
-    if(!wrap)return;
-    const q=await chargerQuotaReelApi();
+  // Un badge pour UN provider (foot OU basket) — factorisé (31/08 v2) pour
+  // être réutilisé à la fois par le badge double de l'accueil
+  // (renderQuotaBadge) et par le badge simple, contextuel au mode choisi,
+  // de la page de génération manuelle (renderQuotaBadgeGen).
+  function htmlBadgeQuota(q,labelSport){
     if(!q || !q.est_du_jour){
-      wrap.innerHTML='<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+t('adm_quota_inconnu')+'</span></div>';
-      return;
+      return '<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+
+        (labelSport?'<b>'+stripTags(labelSport)+'</b> — ':'')+t('adm_quota_inconnu')+'</span></div>';
     }
     const pct=q.real_limit?Math.round((q.real_limit-q.real_remaining)/q.real_limit*100):0;
     const cls=classeQuota(pct);
     const heure=new Date(q.real_captured_at).toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'});
-    wrap.innerHTML='<div class="adm-quota-badge '+cls+'">'+
+    // Affichage en CHIFFRES (demande explicite de James, 31/08 v3 :
+    // "afficher en chiffre, quota utilisé 80/100, toujours synchronisé") —
+    // {used} calculé à chaque rendu à partir de la donnée FRAÎCHE renvoyée
+    // par get_real_api_quota_today (jamais mis en cache côté client), donc
+    // toujours à jour au moment où l'admin ouvre la page ou clique
+    // Actualiser — jamais une valeur figée.
+    const used=q.real_limit!=null&&q.real_remaining!=null?Math.max(0,q.real_limit-q.real_remaining):null;
+    return '<div class="adm-quota-badge '+cls+'">'+
       '<span class="adm-quota-badge-pct">'+pct+'%</span>'+
-      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl_reel').replace('{remaining}',q.real_remaining).replace('{max}',q.real_limit).replace('{time}',heure)+'</span></div>';
+      '<span class="adm-quota-badge-txt">'+(labelSport?'<b>'+stripTags(labelSport)+'</b> — ':'')+
+      t('adm_quota_lbl_reel')
+        .replace('{used}',used!=null?used:'—')
+        .replace('{remaining}',q.real_remaining)
+        .replace('{max}',q.real_limit)
+        .replace('{time}',heure)+'</span></div>';
+  }
+  // Badge de l'accueil admin (CHANGÉ 31/08 v2, demande explicite de James :
+  // "quota restant séparé foot/basket en temps réel") — affiche désormais
+  // les DEUX quotas, foot et basket, l'un sous l'autre, chacun lu depuis
+  // son propre provider ('api-sports-football'/'api-sports-basketball') —
+  // deux abonnements API-Sports réellement distincts, jamais le même
+  // compteur (voir enregistrerQuotaReelBasket côté bot basketball).
+  async function renderQuotaBadge(){
+    const wrap=document.getElementById('admQuotaBadgeWrap');
+    if(!wrap)return;
+    const [qFoot,qBasket]=await Promise.all([
+      chargerQuotaReelApi('api-sports-football'),
+      chargerQuotaReelApi('api-sports-basketball')
+    ]);
+    wrap.innerHTML=htmlBadgeQuota(qFoot,t('adm_quota_sport_foot'))+
+      '<div style="margin-top:6px">'+htmlBadgeQuota(qBasket,t('adm_quota_sport_basket'))+'</div>';
   }
   // Version "page de génération manuelle" (29/08, rebranchée sur le vrai
   // quota session suivante) : même badge, plus un avertissement clair si
@@ -10146,20 +10238,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // le bouton reste actif (on ne bloque jamais sur une inconnue) mais un
   // avertissement invite à lancer ?diag=quota-status d'abord.
   const PLAFOND_MANUEL_ALERTE=15;
+  // CHANGÉ (31/08 v2, demande explicite de James : "synchroniser avec
+  // indice quota dans admin pour suivre en temps réel le nombre de quota
+  // restant si je veux générer manuellement une fiche") : lisait AVANT
+  // toujours le quota FOOTBALL, même quand admGenMode==='basket' (l'admin
+  // regardait un quota qui n'était pas celui réellement consommé par le
+  // formulaire ouvert). Lit désormais le bon provider selon le mode
+  // ouvert — 'exact' consomme le même quota que 'normal' (même produit
+  // API-Sports football, seul le marché diffère), seul 'basket' consomme
+  // le quota basketball, réellement séparé.
   async function renderQuotaBadgeGen(){
     const wrap=document.getElementById('admGenQuotaWrap');
     const btn=document.getElementById('admGenSubmit');
     if(!wrap)return;
-    const q=await chargerQuotaReelApi();
+    const provider=admGenMode==='basket'?'api-sports-basketball':'api-sports-football';
+    const labelSport=t(admGenMode==='basket'?'adm_quota_sport_basket':'adm_quota_sport_foot');
+    const q=await chargerQuotaReelApi(provider);
     if(btn)btn.disabled=false;
     if(!q || !q.est_du_jour){
-      wrap.innerHTML='<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+t('adm_quota_inconnu')+'</span></div>'+
+      wrap.innerHTML=htmlBadgeQuota(q,labelSport)+
         '<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_inconnu')+'</span></div>';
       return;
     }
-    const pct=q.real_limit?Math.round((q.real_limit-q.real_remaining)/q.real_limit*100):0;
-    const cls=classeQuota(pct);
-    const heure=new Date(q.real_captured_at).toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'});
     let avertissement='';
     if(q.real_remaining<=0){
       avertissement='<div class="adm-quota-badge rouge" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_epuise')+'</span></div>';
@@ -10167,9 +10267,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }else if(q.real_remaining<PLAFOND_MANUEL_ALERTE){
       avertissement='<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_bas').replace('{left}',q.real_remaining)+'</span></div>';
     }
-    wrap.innerHTML='<div class="adm-quota-badge '+cls+'">'+
-      '<span class="adm-quota-badge-pct">'+pct+'%</span>'+
-      '<span class="adm-quota-badge-txt">'+t('adm_quota_lbl_reel').replace('{remaining}',q.real_remaining).replace('{max}',q.real_limit).replace('{time}',heure)+'</span></div>'+avertissement;
+    wrap.innerHTML=htmlBadgeQuota(q,labelSport)+avertissement;
   }
 
   // ============================================================================
@@ -11674,6 +11772,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   let admFichesHistLimit=30;
   const ADMF_HIST_PAGE=30;
   let admFicheLegCible=null;       // index du match a ouvrir a l'ouverture du detail
+  // Récap horizontal cliquable (31/08 v2, demande explicite de James) :
+  // rang du plan actuellement sélectionné dans le récap "Du jour"
+  // (VIP 7 JOU — n, VIP 21 JOU — n, ...) — null = tous les plans affichés
+  // (comportement par défaut, inchangé). Reposé à null à chaque
+  // changement de date/onglet (voir changerDateFiches/setAdmFichesTab)
+  // pour ne jamais laisser un filtre invisible actif sur un autre jour.
+  let admFichesFiltrePlanRang=null;
 
   /* Une fiche "score exact" est identifiee par son contenu reel (toutes ses
      selections sont des scores exacts), jamais par le suffixe du code : une
@@ -11878,12 +11983,32 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // toutes les fiches du jour triees par rang (deja l'ordre renvoye
         // par la requete Supabase, min_plan_rank croissant).
         const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
-        const recap=plans.map(pl=>{
+        // Récap cliquable (31/08 v2, demande explicite de James) : chaque
+        // plan compte TOUTE fiche qui lui est ANCRÉE (min_plan_rank exact),
+        // foot auto/manuel/score-exact + basket auto/manuel confondus —
+        // le filtre ne porte ni sur sport ni sur source, donc rien n'est
+        // exclu par construction. Cliquer un plan filtre la liste des
+        // fiches affichées sous le récap à ce seul rang ; recliquer le
+        // même plan (ou cliquer "Tous") revient à tout afficher.
+        const recap='<span class="admf-sum-item'+(admFichesFiltrePlanRang===null?' active':'')+'" data-planrank="">'+
+            stripTags(t('adm_fiches_tous_plans'))+' — <b>'+tickets.length+'</b></span>'+
+          plans.map(pl=>{
           const nb=tickets.filter(tk=>tk.min_plan_rank===rank[pl.id]).length;
-          return '<span>'+stripTags(t(pl.nameKey))+' — <b>'+nb+'</b></span>';
+          return '<span class="admf-sum-item'+(admFichesFiltrePlanRang===rank[pl.id]?' active':'')+'" data-planrank="'+rank[pl.id]+'">'+
+            stripTags(t(pl.nameKey))+' — <b>'+nb+'</b></span>';
         }).join('');
+        const ticketsAffiches=admFichesFiltrePlanRang===null?tickets
+          :tickets.filter(tk=>tk.min_plan_rank===admFichesFiltrePlanRang);
         body.innerHTML='<div class="admf-summary-h">'+recap+'</div>'+
-          tickets.map(tk=>ficheCardHtml(tk,parFiche[tk.id]||[])).join('');
+          (ticketsAffiches.length?ticketsAffiches.map(tk=>ficheCardHtml(tk,parFiche[tk.id]||[])).join('')
+            :'<div class="admdash-empty">'+t('adm_fiches_empty')+'</div>');
+        body.querySelectorAll('.admf-sum-item').forEach(sp=>{
+          sp.addEventListener('click',()=>{
+            const r=sp.dataset.planrank?parseInt(sp.dataset.planrank,10):null;
+            admFichesFiltrePlanRang=(admFichesFiltrePlanRang===r)?null:r;
+            renderFiches();
+          });
+        });
       }else{
         // Historique : regroupement par jour.
         const jours=[...new Set(tickets.map(tk=>tk.play_date))];
@@ -11934,6 +12059,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     b.addEventListener('click',()=>{
       admFichesTab=b.dataset.ftab;
       admFichesHistLimit=ADMF_HIST_PAGE; // Phase 3 (27/08) : jamais garder une pagination gonflée d'un contexte à l'autre
+      admFichesFiltrePlanRang=null; // le récap cliquable n'existe que sur "Du jour" — jamais un filtre fantôme sur l'Historique
       document.querySelectorAll('#admFichesTabs [data-ftab]').forEach(x=>x.classList.toggle('is-on',x===b));
       majFiltresJodiA();
       renderFiches();
@@ -11948,7 +12074,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       renderFiches();
     });
   });
-  document.getElementById('admFichesDate').addEventListener('change',renderFiches);
+  document.getElementById('admFichesDate').addEventListener('change',()=>{admFichesFiltrePlanRang=null;renderFiches();});
   document.getElementById('admFichesNew').addEventListener('click',()=>{
     selectedFicheId=null;
     fbLegsCourantes=[];
