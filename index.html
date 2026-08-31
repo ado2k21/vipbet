@@ -1187,6 +1187,13 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--ligne);
 }
 .admdash-section-h:first-of-type{border-top:none;padding-top:0;margin-top:0}
+.admf-summary-h{
+  display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
+  font-family:var(--display);font-weight:700;font-size:13.5px;color:#F4F3ED;
+  margin:0 0 14px;padding:0 0 14px;border-bottom:1px solid var(--ligne);
+}
+.admf-summary-h span{white-space:nowrap}
+.admf-summary-h b{color:var(--or-clair)}
 .admdash-hist{display:flex;flex-direction:column;gap:1px;border-radius:var(--r-sm);overflow:hidden}
 .admdash-hist-row{display:flex;justify-content:space-between;gap:14px;padding:11px 13px;background:rgba(3,8,23,.42);font-size:12.5px}
 .admdash-hist-row dt{color:var(--gris)}
@@ -9250,7 +9257,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   function scoresDuJour(){
     const out=[];
-    fichesScoreDuJour().forEach(k=>{k.legs.forEach(lg=>{if(lg.market==='mk_score_l')out.push(lg);});});
+    // CORRIGÉ (session suivante) : ne filtrait que 'mk_score_l' (l'ancienne
+    // valeur écrite par le panneau admin), jamais 'mk_score_exact' (celle
+    // écrite par le bot) — la liste restait donc TOUJOURS vide pour une
+    // fiche générée par le bot, déclenchant le rendu "verrouillé masqué"
+    // même pour un compte Lifetime pleinement autorisé. MARCHES_SCORE_EXACT_DASH
+    // (ligne ~8737) existe déjà pour ce cas précis, jamais utilisée ici.
+    fichesScoreDuJour().forEach(k=>{k.legs.forEach(lg=>{if(MARCHES_SCORE_EXACT_DASH.indexOf(lg.market)>-1)out.push(lg);});});
     return out;
   }
   const nbScoresDuJour=()=>fichesScoreDuJour().reduce((a,k)=>a+k.scoreCount,0);
@@ -11858,14 +11871,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       (legs||[]).forEach(l=>{(parFiche[l.ticket_id]=parFiche[l.ticket_id]||[]).push(l);});
 
       if(admFichesTab==='day'){
-        // Vue du jour : regroupement par plan, comme avant.
+        // Vue du jour (session suivante, demande explicite de James : plus
+        // de sous-titre repete par plan — UNE seule ligne horizontale en
+        // haut recapitulant le nombre de fiches de CHAQUE plan (foot +
+        // basket confondus, bot ou admin confondus), meme a 0, suivie de
+        // toutes les fiches du jour triees par rang (deja l'ordre renvoye
+        // par la requete Supabase, min_plan_rank croissant).
         const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
-        body.innerHTML=plans.map(pl=>{
-          const items=tickets.filter(tk=>tk.min_plan_rank===rank[pl.id]);
-          if(!items.length)return '';
-          return '<div class="admdash-section-h">'+stripTags(t(pl.nameKey))+' — '+items.length+'</div>'+
-            items.map(tk=>ficheCardHtml(tk,parFiche[tk.id]||[])).join('');
-        }).join('') || '<div class="admdash-empty">'+t('adm_fiches_empty')+'</div>';
+        const recap=plans.map(pl=>{
+          const nb=tickets.filter(tk=>tk.min_plan_rank===rank[pl.id]).length;
+          return '<span>'+stripTags(t(pl.nameKey))+' — <b>'+nb+'</b></span>';
+        }).join('');
+        body.innerHTML='<div class="admf-summary-h">'+recap+'</div>'+
+          tickets.map(tk=>ficheCardHtml(tk,parFiche[tk.id]||[])).join('');
       }else{
         // Historique : regroupement par jour.
         const jours=[...new Set(tickets.map(tk=>tk.play_date))];
