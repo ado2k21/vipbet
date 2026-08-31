@@ -9736,24 +9736,27 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // 6. plan actif et sain (aucun rappel a faire).
     const banner=document.getElementById('dashPendingBanner');
     let msgTxt='';
-    // CORRIGÉ (31/08, remarque de James : "lors du renouvellement les
-    // paiements vont en attente mais pas de message disant que tel
-    // abonnement est en attente — toujours le message d'expiration").
-    // Deux situations d'attente à ne pas confondre :
-    //  - un plan ACTIF existe encore et un changement est demandé →
-    //    dash_pending_change_banner ("votre plan actuel reste actif"),
-    //  - aucun plan actif (expiré, ou 1re souscription) et une demande est
-    //    en attente → message dédié qui NOMME le plan demandé, jamais le
-    //    message d'expiration qui laisserait croire qu'il faut repayer.
+    // CORRIGÉ (31/08 v5, remarque de James persistante) : le premier
+    // correctif ne nommait le plan que pour le cas "changement pendant
+    // qu'un plan actif existe encore" (state.pendingPlanId). Mais un user
+    // EXPIRÉ qui relance un renouvellement écrit directement
+    // state.planId (voir completePayment : planEnCoursValide est faux
+    // pour un expiré, donc c'est la branche "else" qui s'exécute, jamais
+    // pendingPlanId) — ce cas retombait donc sur le message générique
+    // "en attente de validation" SANS jamais nommer le plan. Le plan visé
+    // est maintenant résolu depuis pendingPlanId EN PRIORITÉ, sinon
+    // planId — couvre les deux chemins d'écriture identiquement.
+    // Le message disparaît de lui-même dès que l'admin confirme (pend
+    // repasse à false, payStatus='confirmed') ou refuse (payStatus=
+    // 'rejected', pend passe à false) — aucune action cote client requise.
     const nomPlanAttendu=(()=>{
-      const p=window.VB_planById?window.VB_planById(st.pendingPlanId):null;
+      const p=window.VB_planById?window.VB_planById(st.pendingPlanId||st.planId):null;
       return p?String(t(p.nameKey)).replace(/<[^>]*>/g,''):'—';
     })();
     if(changementEnAttente&&aUnPlan){
       msgTxt=t('dash_pending_change_banner').replace('{plan}',nomPlanAttendu);
     }else if(changementEnAttente||pend){
-      msgTxt=(changementEnAttente?t('dash_sub_msg_pending_plan').replace('{plan}',nomPlanAttendu)
-                                 :t('dash_pending_ov_p'));
+      msgTxt=t('dash_sub_msg_pending_plan').replace('{plan}',nomPlanAttendu);
     }else if(rej){
       msgTxt=t('dash_sub_msg_rejected');
     }else if(exp){
@@ -9839,8 +9842,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       // valide par l'admin s'affiche comme s'il etait deja actif. Regle
       // explicite : tant que rien n'est confirme, le badge dit "Aucun
       // plan", meme si state.planId est deja rempli en local.
+      // CORRIGÉ (31/08 v5, bug signalé par James) : un plan CONFIRME mais
+      // dont la date de fin est deja passee restait affiche au badge
+      // (payStatus reste 'confirmed' pour toujours — seule endDate change
+      // avec le temps, rien ne remet jamais payStatus a autre chose tant
+      // qu'aucun nouveau paiement n'est traite). Le badge doit repasser a
+      // "Aucun plan" des l'expiration reelle, meme si l'utilisateur n'a
+      // rien fait — et y rester tant qu'aucun RENOUVELLEMENT COMPLET
+      // (nouvelle demande + confirmation admin) n'a eu lieu. Lifetime
+      // (endDate null) n'expire jamais.
       const stB=getState();
-      const pl=(stB&&stB.paid&&stB.payStatus==='confirmed'&&stB.planId&&window.VB_planById)?window.VB_planById(stB.planId):null;
+      const nonExpire=stB&&(!stB.endDate||new Date(stB.endDate).getTime()>Date.now());
+      const pl=(stB&&stB.paid&&stB.payStatus==='confirmed'&&nonExpire&&stB.planId&&window.VB_planById)?window.VB_planById(stB.planId):null;
       if(!pl)return t('dash_badge_none');
       // Libelle court reserve au badge du header (les cartes de plan gardent le nom complet)
       const court={p4:'LIFETIME'};
