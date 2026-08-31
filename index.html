@@ -11983,22 +11983,29 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // toutes les fiches du jour triees par rang (deja l'ordre renvoye
         // par la requete Supabase, min_plan_rank croissant).
         const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);
-        // Récap cliquable (31/08 v2, demande explicite de James) : chaque
-        // plan compte TOUTE fiche qui lui est ANCRÉE (min_plan_rank exact),
-        // foot auto/manuel/score-exact + basket auto/manuel confondus —
-        // le filtre ne porte ni sur sport ni sur source, donc rien n'est
-        // exclu par construction. Cliquer un plan filtre la liste des
-        // fiches affichées sous le récap à ce seul rang ; recliquer le
-        // même plan (ou cliquer "Tous") revient à tout afficher.
+        // Récap cliquable (CORRIGÉ 31/08 v3, demande explicite de James —
+        // capture d'écran à l'appui : LIFETIME affichait 0 alors que la
+        // fiche score exact du rang 3 lui est bien visible via la cascade
+        // d'accès, et VIP 21 JOU affichait 0 alors qu'il voit aussi les
+        // fiches du rang 1). AVANT : comptait uniquement les fiches
+        // ANCRÉES exactement à ce rang (tk.min_plan_rank===rank), ignorant
+        // la cascade réelle. MAINTENANT : chaque plan compte TOUTE fiche
+        // qu'il peut RÉELLEMENT voir (min_plan_rank<=rang du plan, exactement
+        // la même règle que celle qui gouverne l'accès côté Dashboard
+        // client) — foot auto/manuel/score-exact + basket auto/manuel
+        // confondus, rien exclu par construction. Le total "Tous", lui,
+        // reste tickets.length : chaque fiche unique comptée UNE seule
+        // fois, jamais sommée à travers les 4 plans (qui se chevauchent
+        // par cascade et gonfleraient artificiellement un total sommé).
         const recap='<span class="admf-sum-item'+(admFichesFiltrePlanRang===null?' active':'')+'" data-planrank="">'+
             stripTags(t('adm_fiches_tous_plans'))+' — <b>'+tickets.length+'</b></span>'+
           plans.map(pl=>{
-          const nb=tickets.filter(tk=>tk.min_plan_rank===rank[pl.id]).length;
+          const nb=tickets.filter(tk=>tk.min_plan_rank<=rank[pl.id]).length;
           return '<span class="admf-sum-item'+(admFichesFiltrePlanRang===rank[pl.id]?' active':'')+'" data-planrank="'+rank[pl.id]+'">'+
             stripTags(t(pl.nameKey))+' — <b>'+nb+'</b></span>';
         }).join('');
         const ticketsAffiches=admFichesFiltrePlanRang===null?tickets
-          :tickets.filter(tk=>tk.min_plan_rank===admFichesFiltrePlanRang);
+          :tickets.filter(tk=>tk.min_plan_rank<=admFichesFiltrePlanRang);
         body.innerHTML='<div class="admf-summary-h">'+recap+'</div>'+
           (ticketsAffiches.length?ticketsAffiches.map(tk=>ficheCardHtml(tk,parFiche[tk.id]||[])).join('')
             :'<div class="admdash-empty">'+t('adm_fiches_empty')+'</div>');
