@@ -422,7 +422,12 @@ function construireFicheBasket(pool, cibleMaxOverride) {
     confiance,
     // Pas de plancher (règle 3) — seul le nombre minimum de sélections
     // (2, pour que ce soit réellement un combiné) et le plafond comptent.
-    valide: selections.length >= 2 && coteTotale <= cibleMax * 1.05
+    valide: selections.length >= 2 && coteTotale <= cibleMax * 1.05,
+    // Diagnostic (session suivante) — jamais utilisé pour décider quoi que
+    // ce soit, juste pour comprendre un échec inattendu sans deviner.
+    debugMatchsDistincts: candidats.length,
+    debugMeilleuresCotes: candidats.slice(0, 6).map(b => ({ gameId: b.gameId, market: b.market, odd: b.odd, score: score(b) })),
+    debugCibleMax: cibleMax
   };
 }
 
@@ -565,6 +570,7 @@ async function handler(event) {
   // la première version de ce moteur.
   const fiche = construireFicheBasket(poolBasketFiltre);
   if (!fiche.valide) {
+    stats.erreurs.push(`DIAGNOSTIC échec fiche : matchsDistincts=${fiche.debugMatchsDistincts}, cibleMax=${fiche.debugCibleMax}, meilleuresCotes=${JSON.stringify(fiche.debugMeilleuresCotes)}`);
     logFinal();
     return { statusCode: 200, body: 'Pas assez de sélections NOUVELLES pour un combiné (minimum 2) — contenu déjà publié aujourd\'hui, ou pool trop pauvre.' };
   }

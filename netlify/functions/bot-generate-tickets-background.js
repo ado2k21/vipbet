@@ -2045,7 +2045,7 @@ async function handler(event) {
   // --- Plans réels (cotes cible par rang) ---
   let plans;
   try {
-    plans = await sbSelect('plans', 'select=rank,min_total_odd,max_total_odd,max_leg_odd,includes_exact_score');
+    plans = await sbSelect('plans', 'select=rank,min_total_odd,max_total_odd,max_leg_odd,includes_exact_score&order=rank.asc');
     if (!plans || !plans.length) throw new Error('table plans vide');
     // Tri explicite par rang croissant (28/08, correctif "petites cotes
     // Plan 1") : la requête PostgREST ne garantit AUCUN ordre. Sans ce
@@ -2300,7 +2300,23 @@ async function handler(event) {
       matchUsageCount.set(fid, (matchUsageCount.get(fid) || 0) + 1);
       fixturesUtiliseesNormales.add(fid);
     });
-    await publierFiche(plan, fiche, dateCible, 'foot', noms);
+    // ÉTIQUETAGE PAR RANG EFFECTIF (session suivante, demande explicite de
+    // James : "les petites cotes sont créées en premier et partagées avec
+    // tous les 4 plans, les plus grosses cotes sont partagées aux plus
+    // gros plans seulement — ainsi impossible qu'un plan reste sans fiche
+    // quand des fiches sont créées ce jour-là"). AVANT ce correctif :
+    // chaque fiche était étiquetée au rang du plan pour lequel elle avait
+    // été construite (plan.rank) — une cote 4.51 construite pour le rang 4
+    // restait invisible aux rangs 1/2/3 même si elle tenait largement sous
+    // leur plafond, puisque la cascade d'accès ne remonte JAMAIS vers le
+    // bas (min_plan_rank<=rang abonné). MAINTENANT : on cherche, parmi
+    // TOUS les plans, le rang le PLUS BAS dont le plafond accepte cette
+    // cote précise, et on publie avec CE rang — jamais plus haut que
+    // nécessaire. `plans` est déjà trié par rang croissant (voir le
+    // correctif d'ordre du même jour), donc le premier qui convient est
+    // le bon.
+    const planEtiquette = plans.find(p => p.max_total_odd == null || fiche.coteTotale <= Number(p.max_total_odd)) || plan;
+    await publierFiche(planEtiquette, fiche, dateCible, 'foot', noms);
     return true;
   }
 
@@ -2318,12 +2334,38 @@ async function handler(event) {
   // suivante) : plus de relance à 1.5, construireFicheScoreExact ne
   // rejette déjà plus sur le plancher (même principe que construireFiche)
   // — un seul essai suffit, "1 par plan par jour" reste inchangé.
-  for (const plan of plans) {
-    if (!plan.includes_exact_score) continue;
-    const ficheExacte = construireFicheScoreExact(poolFoot, plan, { selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact });
+  // CORRIGÉ (30/08, confirmé explicitement par James en 2 temps) : le score
+  // exact n'a JAMAIS de plafond de cote — peu importe la cote atteinte, il
+  // est TOUJOURS partagé entre les rangs 3 et 4 ensemble, jamais l'un sans
+  // l'autre, sauf génération manuelle admin qui cible volontairement un
+  // plan précis.
+  // 1er correctif (insuffisant) : une seule construction par jour, mais
+  // encore plafonnée à 100 (le max_total_odd du rang 3) — réglait le
+  // symptôme de la boucle à deux constructions séparées (voir plus haut),
+  // mais aurait quand même rejeté toute fiche au-delà de 100, ce qui n'est
+  // pas ce que James demande.
+  // MAINTENANT : AUCUN plafond de cote n'est appliqué à la construction ni
+  // à l'étiquetage du score exact automatique — cibleMaxOverride neutralise
+  // le plafond du plan de référence dans construireFicheScoreExact, et
+  // l'étiquetage est FIXE sur le rang le plus bas éligible (rang 3),
+  // jamais recalculé selon la cote atteinte. `plans` déjà trié ascendant,
+  // donc le premier plan avec includes_exact_score=true est bien le rang 3.
+  // Cascade d'accès existante (min_plan_rank<=rang abonné) garantit que le
+  // rang 4 la voit aussi automatiquement. Le trigger Postgres
+  // trg_valider_cote_plan a été mis à jour en parallèle (migration du
+  // 30/08) pour exempter le score exact du contrôle de maximum, sinon
+  // l'insertion aurait échoué (cote_hors_plage) dès que la cote dépasse
+  // 100 — la contrainte "maximum toujours strict, jamais exemptable"
+  // documentée jusqu'ici ne s'applique qu'aux fiches classiques.
+  const planScoreExactRef = plans.find(p => p.includes_exact_score);
+  if (planScoreExactRef) {
+    const ficheExacte = construireFicheScoreExact(poolFoot, planScoreExactRef, {
+      selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact,
+      cibleMaxOverride: 99999 // aucun plafond réel pour le score exact automatique
+    });
     stats.fichesGenerees++;
     if (!ficheExacte.valide) {
-      console.log(`[BOT] Rang ${plan.rank} (score exact) : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}. Abonnés couverts via cascade si un rang inférieur a publié.`);
+      console.log(`[BOT] Score exact : aucune fiche propre publiable — ${ficheExacte.selections.length} sélection(s) (minimum 3 requis), cote atteinte ${ficheExacte.coteTotale}.`);
     } else {
       // Score exact ne compte JAMAIS dans le plafond des 2 fiches
       // normales par match ni dans selectionsParFixture — seulement
@@ -2334,7 +2376,10 @@ async function handler(event) {
         selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`);
         fixturesUtiliseesScoreExact.add(s.fixtureId);
       });
-      await publierFiche(plan, ficheExacte, dateCible, 'foot', noms, '-EXACT');
+      // Étiquetage FIXE au rang 3 (jamais recalculé selon la cote) — c'est
+      // ce qui garantit le partage systématique 3+4 via la cascade, peu
+      // importe la cote atteinte.
+      await publierFiche(planScoreExactRef, ficheExacte, dateCible, 'foot', noms, '-EXACT');
     }
   }
 

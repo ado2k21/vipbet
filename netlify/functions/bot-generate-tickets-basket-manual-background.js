@@ -267,10 +267,12 @@ async function handler(event) {
   const fiche = construireFicheBasket(poolBasketFiltre, coteMaxDemandee);
 
   if (!fiche.valide) {
+    stats.erreurs.push(`DIAGNOSTIC échec fiche : matchsDistincts=${fiche.debugMatchsDistincts}, cibleMax=${fiche.debugCibleMax}, meilleuresCotes=${JSON.stringify(fiche.debugMeilleuresCotes)}`);
     logFinal();
     return jsonResponse(200, {
       resultats: [{ rank: planPartage.rank, publie: false, plansConcernes: plansChoisis.map(p => p.rank),
-        raison: `Pas assez de sélections distinctes pour un combiné (${fiche.selections.length} trouvée(s), minimum 2 requis) sous la cote max choisie.` }]
+        raison: `Pas assez de sélections distinctes pour un combiné (${fiche.selections.length} trouvée(s), minimum 2 requis) sous la cote max choisie.`,
+        debug: { matchsDistincts: fiche.debugMatchsDistincts, cibleMax: fiche.debugCibleMax, meilleuresCotes: fiche.debugMeilleuresCotes } }]
     });
   }
 
