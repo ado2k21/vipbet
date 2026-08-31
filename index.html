@@ -6576,7 +6576,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       nd.classList.toggle('on',k===noeud);
     });
     if(n===1&&submitBtn)submitBtn.textContent=t('wiz_btn_next1');
-    if(n===3){renderStep3();armPaymentTimeout();}else{disarmPaymentTimeout();}
+    if(n===3){renderStep3();armPaymentTimeout();demarrerSyncPlansWizard();}
+    else{disarmPaymentTimeout();arreterSyncPlansWizard();}
     if(n===4)renderStep4();
     const first=panels.find(p=>p.dataset.step===String(n)).querySelector('input,button');
     if(first&&window.innerWidth>860)first.focus({preventScroll:true});
@@ -8062,6 +8063,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     page.classList.remove('open');
     document.body.style.overflow='';
     if(opener){opener.focus();opener=null;}
+    // Fermeture complete du parcours (pas juste un changement d'etape) :
+    // arrete la sync live des plans, sinon le canal Realtime/le polling
+    //20s tournerait indefiniment en arriere-plan meme le wizard ferme.
+    arreterSyncPlansWizard();
   }
 
   document.querySelectorAll('[data-auth-open]').forEach(a=>{
@@ -8224,10 +8229,54 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           changed=true;
         }
       });
-      if(changed){syncerCartesTarifsLanding();syncerSimulateurFormules();}
+      if(changed){
+        syncerCartesTarifsLanding();syncerSimulateurFormules();
+        // CHANGÉ (31/08 v7, demande explicite de James : "lorsque admin
+        // modifie les jours/prix des plans, sur la page de paiement où
+        // l'utilisateur choisit son plan, ça doit aussi se synchroniser,
+        // et ainsi de suite pour chaque changement") — AVANT, seules les
+        // cartes tarifaires de la landing page et le simulateur étaient
+        // rafraîchis ; l'étape 3 de l'inscription/renouvellement (choix du
+        // plan à payer) et le récapitulatif final (étape 4) ne l'étaient
+        // JAMAIS, même si la personne les avait déjà sous les yeux au
+        // moment du changement admin.
+        if(document.getElementById('wizStep3')&&document.getElementById('wizStep3').classList.contains('on'))renderStep3();
+        if(document.getElementById('wizStep4')&&document.getElementById('wizStep4').classList.contains('on'))renderStep4();
+      }
       return changed;
     }catch(e){return false;}
   };
+  /* Synchronisation EN DIRECT pendant que la personne est sur la page de
+     paiement (etape 3) — sans ca, un changement admin fait PENDANT
+     qu'elle regarde deja cette page ne serait visible qu'au prochain
+     chargement. Meme principe que le Dashboard (Realtime + polling de
+     secours, voir demarrerRealtime/demarrerResyncPeriodique) : Realtime
+     est reactif immediatement, le polling 20s garantit qu'on ne reste
+     jamais desynchronise plus longtemps meme si Realtime tombe en
+     arriere-plan mobile. Demarre a l'entree de l'etape 3, stoppe des
+     qu'on la quitte (change d'etape ou ferme le parcours) — jamais actif
+     ailleurs, pour ne rien consommer inutilement. */
+  let wizPlansChannel=null, wizPlansPollTimer=null;
+  function demarrerSyncPlansWizard(){
+    arreterSyncPlansWizard();
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(sb&&sb.channel){
+      try{
+        wizPlansChannel=sb.channel('wiz-plans-'+Date.now())
+          .on('postgres_changes',{event:'UPDATE',schema:'public',table:'plans'},()=>{
+            window.VB_syncPlansFromSupabase();
+          })
+          .subscribe();
+      }catch(e){}
+    }
+    wizPlansPollTimer=setInterval(()=>{window.VB_syncPlansFromSupabase();},20000);
+  }
+  function arreterSyncPlansWizard(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(wizPlansChannel&&sb&&sb.removeChannel){try{sb.removeChannel(wizPlansChannel);}catch(e){}}
+    wizPlansChannel=null;
+    if(wizPlansPollTimer){clearInterval(wizPlansPollTimer);wizPlansPollTimer=null;}
+  }
   /* Met a jour le prix REEL, le prix barre (si defini par l'admin) et la
      duree affiches sur les cartes de la page d'accueil. Le prix barre
      n'est touche QUE si l'admin en a explicitement defini un — sinon le
