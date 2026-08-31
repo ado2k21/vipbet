@@ -5056,7 +5056,7 @@ dash_sub_expired:"Expiré",
 dash_activate_cta:"Activer mon plan", dash_rejected_ov_p:"Votre paiement n'a pas abouti. Activez un plan pour voir les cotes.", dash_sub_rejected:"Paiement non réussi", dash_sub_noplan:"Vous n'avez aucun plan actif pour le moment. Activez un plan pour débloquer les fiches et les cotes.",
 dash_pending_h:"Paiement en cours de vérification",
 dash_pending_sub:"Votre paiement est en attente de confirmation par notre équipe. Vos pronostics seront débloqués automatiquement dès validation.",
-dash_pending_ov_p:"En attente de validation de votre paiement.",
+dash_pending_ov_p:"En attente de validation de votre paiement.", dash_sub_msg_pending_plan:"Votre demande d'abonnement {plan} est en attente de validation par notre équipe. Vous pourrez faire une nouvelle demande une fois qu'elle sera confirmée ou refusée.",
 dash_sub_msg_rejected:"Votre changement de plan a échoué. Merci de réessayer.",
 dash_sub_msg_expired:"Votre abonnement est expiré. Veuillez réactiver un abonnement maintenant !",
 dash_sub_msg_renew_soon:"Veuillez renouveler votre abonnement avant le {date}.",
@@ -5505,7 +5505,7 @@ dash_sub_expired:"Expired",
 dash_activate_cta:"Activate my plan", dash_rejected_ov_p:"Your payment didn't go through. Activate a plan to see the odds.", dash_sub_rejected:"Payment unsuccessful", dash_sub_noplan:"You don't have any active plan right now. Activate a plan to unlock slips and odds.",
 dash_pending_h:"Payment under verification",
 dash_pending_sub:"Your payment is awaiting confirmation by our team. Your picks will unlock automatically once validated.",
-dash_pending_ov_p:"Awaiting validation of your payment.",
+dash_pending_ov_p:"Awaiting validation of your payment.", dash_sub_msg_pending_plan:"Your {plan} subscription request is awaiting validation by our team. You will be able to make a new request once it is confirmed or declined.",
 dash_sub_msg_rejected:"Your plan change failed. Please try again.",
 dash_sub_msg_expired:"Your subscription has expired. Please reactivate a plan now!",
 dash_sub_msg_renew_soon:"Please renew your subscription before {date}.",
@@ -5954,7 +5954,7 @@ dash_sub_expired:"Ekspire",
 dash_activate_cta:"Aktive plan mwen", dash_rejected_ov_p:"Peman ou pa t pase. Aktive yon plan pou w wè cotes yo.", dash_sub_rejected:"Peman pa reyisi", dash_sub_noplan:"Ou pa gen okenn plan aktif kounye a. Aktive yon plan pou w debloke fich ak cotes yo.",
 dash_pending_h:"Peman ap tann verifikasyon",
 dash_pending_sub:"Peman ou an ap tann yon admin konfime li. Pronostik yo ap debloke otomatikman apre sa.",
-dash_pending_ov_p:"Ap tann validasyon peman ou.",
+dash_pending_ov_p:"Ap tann validasyon peman ou.", dash_sub_msg_pending_plan:"Demann abònman {plan} ou an ap tann validasyon ekip nou an. W ap ka fè yon nouvo demann lè li konfime oswa refize.",
 dash_sub_msg_rejected:"Chanjman plan ou echwe. Tanpri eseye ankò.",
 dash_sub_msg_expired:"Abònman ou ekspire. Tanpri reyaktive yon plan kounye a !",
 dash_sub_msg_renew_soon:"Tanpri renouvle abònman ou anvan {date}.",
@@ -6494,11 +6494,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     Retourne {ok:true} ou {ok:false,raison:'cle_i18n'}.
   */
   function renouvellementPermis(st,planVise){
-    if(!st||!st.paid)return {ok:true};                       // 1re souscription
-    // Aucun deuxieme paiement possible tant que le premier n'est pas
-    // confirme : sinon deux paiements 'pending' s'empileraient pour la
-    // meme personne, et l'admin ne saurait plus lequel valider.
+    if(!st)return {ok:true};
+    // CORRIGÉ (31/08, bug signalé par James) : ce contrôle était placé
+    // APRÈS le retour anticipé `!st.paid` ci-dessous, donc jamais atteint
+    // par un utilisateur expiré (ni par une 1re souscription) — d'où
+    // plusieurs paiements 'pending' empilés pour la même personne. Il
+    // s'applique désormais à TOUS les cas, sans exception : tant qu'une
+    // demande est en attente, aucune nouvelle transaction n'est possible
+    // avant que l'admin l'ait confirmée OU refusée. Seule décision de
+    // l'admin débloque la situation, jamais l'utilisateur lui-même.
     if(st.payStatus==='pending'||st.pendingRef)return {ok:false,raison:'renew_err_pending'};
+    if(!st.paid)return {ok:true};                            // 1re souscription
     if(st.planId==='p4')return {ok:false,raison:'renew_err_lifetime'};
 
     const fin=enPeriodeDeFin(st);
@@ -7102,6 +7108,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
       }
       if(!uid)return {ok:true,hors_ligne:true,erreur:'Aucune session Supabase active (auth.uid() est null)'};
+      /* Dernier rempart AVANT insertion (31/08, bug signalé par James) :
+         on relit l'état RÉEL en base au lieu de se fier au seul état
+         client, qui peut être périmé (onglet resté ouvert, retour arrière,
+         double-clic, session rechargée depuis un cache local). Si une
+         demande est déjà en attente, on refuse ici — jamais de deuxième
+         ligne 'pending' pour la même personne. L'index unique partiel
+         idx_un_seul_paiement_pending_par_user posé en base reste la
+         garantie de fond si malgré tout la course était perdue. */
+      try{
+        const {data:dejaPending}=await sb.from('payments')
+          .select('reference').eq('user_id',uid).eq('status','pending').limit(1);
+        if(dejaPending&&dejaPending.length){
+          return {ok:false,dejaEnAttente:true,reference:dejaPending[0].reference||null,
+                  erreur:'Un paiement est deja en attente pour ce compte.'};
+        }
+      }catch(e){}
       /* IMPORTANT : on ne ferme PLUS l'ancien abonnement actif ici.
          Tant que le nouveau paiement n'est pas confirme par l'admin, la
          personne garde son abonnement actif en cours — elle continue de
@@ -7130,7 +7152,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         amount_htg:pl?pl.prix:0, method:state.payMethod,
         status:'pending', reference:refAEcrire
       });
-      if(payErr)return {ok:true,hors_ligne:true,erreur:'payments: '+(payErr.message||JSON.stringify(payErr))};
+      if(payErr){
+        // L'index unique partiel en base a refusé un second paiement
+        // 'pending' pour ce compte (course concurrente : deux onglets, ou
+        // état client périmé). On supprime la ligne subscriptions qu'on
+        // venait de créer juste au-dessus, sinon elle resterait orpheline
+        // en 'pending' sans paiement associé.
+        const estDoublon=(payErr.code==='23505')||/duplicate key|idx_un_seul_paiement_pending_par_user/i.test(payErr.message||'');
+        if(subData&&subData.id){
+          try{ await sb.from('subscriptions').delete().eq('id',subData.id); }catch(e){}
+        }
+        if(estDoublon)return {ok:false,dejaEnAttente:true,erreur:'Un paiement est deja en attente pour ce compte.'};
+        return {ok:true,hors_ligne:true,erreur:'payments: '+(payErr.message||JSON.stringify(payErr))};
+      }
       // Notification "paiement en attente" : l'evenement existe des
       // maintenant cote base, et sera suivi plus tard d'une notification
       // DISTINCTE de validation ou de refus emise par l'admin — jamais
@@ -7172,6 +7206,36 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Refus si le plan vise est deja en cours et hors periode de renouvellement/changement
     const permis=renouvellementPermis(state,planCible);
     if(!permis.ok){afficherRefusPaiement(permis.raison);return;}
+    /* Vérification en BASE avant toute mutation d'état (31/08, bug signalé
+       par James) : le contrôle ci-dessus s'appuie sur l'état client, qui
+       peut être périmé (onglet resté ouvert, retour arrière, second
+       appareil). On relit donc la vérité en base AVANT d'écrire quoi que
+       ce soit et AVANT d'afficher le moindre message de succès — sinon la
+       personne verrait "renouvellement enregistré" alors que l'insertion
+       sera refusée juste après. */
+    try{
+      const sbChk=window.VB_getSupabase&&window.VB_getSupabase();
+      let uidChk=state.supabaseUserId;
+      if(sbChk&&!uidChk){
+        const {data:sd}=await sbChk.auth.getSession();
+        uidChk=(sd&&sd.session&&sd.session.user)?sd.session.user.id:null;
+      }
+      if(sbChk&&uidChk){
+        const {data:pend}=await sbChk.from('payments')
+          .select('reference').eq('user_id',uidChk).eq('status','pending').limit(1);
+        if(pend&&pend.length){
+          // On resynchronise l'état local sur la vérité base, pour que
+          // l'interface (bouton renouveler, message de la page plans)
+          // reflète immédiatement l'attente réelle.
+          state.payStatus='pending';
+          if(!state.pendingRef)state.pendingRef=pend[0].reference||null;
+          save();
+          afficherRefusPaiement('renew_err_pending');
+          if(window.VB_refreshPlansUI)window.VB_refreshPlansUI();
+          return;
+        }
+      }
+    }catch(e){}
     const wasRenew=renewMode;
     state.payMethod=method;
     const pl=planById(planCible);
@@ -7265,6 +7329,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        Attendre ici (quelques centaines de ms tout au plus) elimine cette
        course a la racine, plutot que de la contourner. */
     const resSync=await syncAbonnementSupabase();
+    if(resSync&&resSync.dejaEnAttente){
+      // L'insertion a été refusée en base (index unique partiel) : une
+      // demande était déjà en attente. On aligne l'état local sur cette
+      // vérité et on affiche le vrai motif, jamais un succès trompeur.
+      state.payStatus='pending';
+      if(!state.pendingRef&&resSync.reference)state.pendingRef=resSync.reference;
+      save();
+      afficherRefusPaiement('renew_err_pending');
+      if(window.VB_refreshPlansUI)window.VB_refreshPlansUI();
+      return;
+    }
     if(resSync&&resSync.hors_ligne){
       if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('paiement_sync',resSync.erreur);
       if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('err_action_unavailable_p'));
@@ -7781,16 +7856,32 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
                statut de l'abonnement, qui vaut 'cancelled' dans les deux
                cas et ne permet pas de les differencier). */
             let dernierPaiementConfirme=false, dateFinReelle=null;
+            // CORRIGÉ (31/08, bug signalé par James) : ne distinguait AVANT
+            // que 'confirmed' vs "tout le reste", écrasant donc un paiement
+            // réellement 'pending' en payStatus:'rejected'. Conséquence : un
+            // utilisateur expiré ayant déjà une demande en attente repartait
+            // avec un état "refusé", et TOUS les contrôles en aval
+            // (renouvellementPermis, bouton renouveler, message de la page
+            // plans) le laissaient passer — d'où plusieurs paiements
+            // 'pending' empilés pour la même personne. On lit désormais le
+            // vrai statut du dernier paiement, et on conserve sa référence.
+            let paiementEnAttente=false, refEnAttente=null, planEnAttente=null;
             try{
               const {data:dpays}=await sb.from('payments')
-                .select('status,subscription_id').eq('user_id',data.user.id)
+                .select('status,subscription_id,reference,plan_id').eq('user_id',data.user.id)
                 .order('created_at',{ascending:false}).limit(1);
-              if(dpays&&dpays.length&&dpays[0].status==='confirmed'){
-                dernierPaiementConfirme=true;
-                if(dpays[0].subscription_id){
-                  const {data:dsub}=await sb.from('subscriptions')
-                    .select('expires_at').eq('id',dpays[0].subscription_id).single();
-                  if(dsub)dateFinReelle=dsub.expires_at;
+              if(dpays&&dpays.length){
+                if(dpays[0].status==='confirmed'){
+                  dernierPaiementConfirme=true;
+                  if(dpays[0].subscription_id){
+                    const {data:dsub}=await sb.from('subscriptions')
+                      .select('expires_at').eq('id',dpays[0].subscription_id).single();
+                    if(dsub)dateFinReelle=dsub.expires_at;
+                  }
+                }else if(dpays[0].status==='pending'){
+                  paiementEnAttente=true;
+                  refEnAttente=dpays[0].reference||null;
+                  planEnAttente=dpays[0].plan_id||null;
                 }
               }
             }catch(e){}
@@ -7799,13 +7890,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
               pass:(localAcc&&localAcc.pass)||null,
               emailVerified:true,
               planId:null, paid:true,
-              payStatus:dernierPaiementConfirme?'confirmed':'rejected',
+              payStatus:dernierPaiementConfirme?'confirmed':(paiementEnAttente?'pending':'rejected'),
               startDate:null,
               // Un plan confirme puis cancelled a forcement une date de fin
               // reelle dans le passe (sinon il serait encore 'active') ; on
               // l'utilise telle quelle plutot qu'une date inventee.
               endDate:dernierPaiementConfirme?(dateFinReelle||new Date(Date.now()-1000).toISOString()):null,
-              pendingPlanId:null, pendingRef:null, ref:null
+              // Conserves pour que l'interface puisse afficher "en attente
+              // de validation" (plan visé + référence) au lieu du message
+              // generique d'expiration, et masquer le bouton renouveler.
+              pendingPlanId:paiementEnAttente?planEnAttente:null,
+              pendingRef:paiementEnAttente?refEnAttente:null, ref:null
             });
             save();
             closeAuth();
@@ -9464,8 +9559,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // "todays"/"visible" (qui restent, eux, la base de la liste rendue).
     const todaysTout=DATA.tickets.filter(k=>estDuJour(k));
     const visibleTout=todaysTout.filter(k=>k.minPlan<=userRank());
+    // CHANGÉ (31/08, demande explicite de James : "le nombre de fiches
+    // disponibles reste toujours affiché, toujours synchronisé avec le
+    // nombre total de fiches disponibles, mais les fiches restent
+    // masquées pour les users sans plan activé") : ce compteur montre
+    // désormais le TOTAL réel des fiches en cours du jour, quel que soit
+    // le plan de la personne (0 pour un compte sans plan actif avant ce
+    // correctif, ce qui laissait croire qu'il n'y avait rien à voir).
+    // Le verrouillage du CONTENU reste entier et inchangé (ticketEl) —
+    // seul le nombre est visible, jamais les sélections.
     document.getElementById('dashKpisToday').innerHTML=
-      kpi(visibleTout.length,'dash_k_avail','green')+
+      kpi(todaysTout.length,'dash_k_avail','green')+
       kpi(legs,'dash_k_legs')+
       kpi(best?best.toFixed(2):'—','dash_k_bestodd','gold')+
       kpi(todaysTout.length-visibleTout.length,'dash_k_locked');
@@ -9473,10 +9577,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const f=filters.today;
     /* "Fich lòt plan" : les fiches que le plan ACTIF ne couvre pas.
        Elles restent masquees (le verrouillage est gere par ticketEl),
-       avec le nom du plan requis affiche dessous. */
+       avec le nom du plan requis affiche dessous.
+       CHANGÉ (31/08, demande explicite de James : "les fiches masquées
+       sont seulement dans 'autre plan', elles doivent être aussi dans
+       'tout' sur l'accueil user mais masquées avec le même principe") :
+       les onglets "Tout" et par sport n'excluent plus les fiches hors
+       plan — elles sont affichées comme partout ailleurs, verrouillées
+       par ticketEl (contenu jamais révélé, nom du plan requis affiché).
+       L'onglet "Fich lòt plan" reste inchangé : il ne montre QUE les
+       fiches hors plan, c'est sa raison d'être. */
     const list=(f.sport==='other')
       ? todays.filter(k=>k.minPlan>userRank())
-      : todays.filter(k=>(f.sport==='all'||k.sport===f.sport)&&k.minPlan<=userRank());
+      : todays.filter(k=>(f.sport==='all'||k.sport===f.sport));
     // Le Lifetime couvre tout : la categorie n'a plus d'objet pour lui
     const btnOther=document.getElementById('dashFbtnOther');
     const rienDAutre=todays.every(k=>k.minPlan<=userRank())&&
@@ -9624,12 +9736,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // 6. plan actif et sain (aucun rappel a faire).
     const banner=document.getElementById('dashPendingBanner');
     let msgTxt='';
-    if(changementEnAttente){
-      const plCible=window.VB_planById?window.VB_planById(st.pendingPlanId):null;
-      const nomCible=plCible?String(t(plCible.nameKey)).replace(/<[^>]*>/g,''):'—';
-      msgTxt=t('dash_pending_change_banner').replace('{plan}',nomCible);
-    }else if(pend){
-      msgTxt=t('dash_pending_ov_p');
+    // CORRIGÉ (31/08, remarque de James : "lors du renouvellement les
+    // paiements vont en attente mais pas de message disant que tel
+    // abonnement est en attente — toujours le message d'expiration").
+    // Deux situations d'attente à ne pas confondre :
+    //  - un plan ACTIF existe encore et un changement est demandé →
+    //    dash_pending_change_banner ("votre plan actuel reste actif"),
+    //  - aucun plan actif (expiré, ou 1re souscription) et une demande est
+    //    en attente → message dédié qui NOMME le plan demandé, jamais le
+    //    message d'expiration qui laisserait croire qu'il faut repayer.
+    const nomPlanAttendu=(()=>{
+      const p=window.VB_planById?window.VB_planById(st.pendingPlanId):null;
+      return p?String(t(p.nameKey)).replace(/<[^>]*>/g,''):'—';
+    })();
+    if(changementEnAttente&&aUnPlan){
+      msgTxt=t('dash_pending_change_banner').replace('{plan}',nomPlanAttendu);
+    }else if(changementEnAttente||pend){
+      msgTxt=(changementEnAttente?t('dash_sub_msg_pending_plan').replace('{plan}',nomPlanAttendu)
+                                 :t('dash_pending_ov_p'));
     }else if(rej){
       msgTxt=t('dash_sub_msg_rejected');
     }else if(exp){
@@ -9728,6 +9852,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     else renderSub();
     renderNotifs();
   }
+  /* Exposé (31/08) pour que le parcours de paiement puisse rafraîchir
+     immédiatement l'affichage (bouton renouveler masqué, message "en
+     attente" nommant le plan) dès qu'il détecte en base une demande déjà
+     en attente — sans attendre un rechargement de page. */
+  window.VB_refreshPlansUI=()=>{ try{ renderAll(); }catch(e){} };
 
   /* Historique de navigation interne : le bouton "Retounen" revient a la
      page precedente ; s'il n'y en a pas, il ferme le dashboard. */
