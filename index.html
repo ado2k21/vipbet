@@ -2321,6 +2321,40 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .adm-quota-badge.rouge{background:rgba(226,99,79,.1)}
 .adm-quota-badge.rouge .adm-quota-badge-pct{background:rgba(226,99,79,.2);color:#E2634F}
 .adm-quota-badge-txt{color:var(--gris)}
+/* Cards de statistiques Revenus (01/09) — même palette que le reste du
+   site (noir/vert/or/blanc). Grille 2x2, icône thématique en haut à
+   gauche, badge de variation coloré en haut à droite (masqué quand la
+   comparaison n'a pas de sens, ex. mois précédent à 0). */
+.rev-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0 22px}
+.rev-card{
+  background:linear-gradient(158deg,rgba(201,164,76,.07),rgba(3,8,23,0) 60%),#0B1425;
+  border:1px solid var(--ligne);border-radius:var(--r-lg);padding:16px;min-width:0;
+}
+.rev-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}
+.rev-card-ic{
+  width:38px;height:38px;border-radius:50%;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(201,164,76,.14);color:var(--or-clair);
+}
+.rev-card-ic.green{background:rgba(46,212,127,.14);color:var(--vert-vif)}
+.rev-card-ic.neutre{background:rgba(147,168,155,.14);color:var(--gris)}
+.rev-card-badge{
+  font-family:var(--mono);font-weight:700;font-size:10.5px;padding:3px 8px;
+  border-radius:20px;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;
+}
+.rev-card-badge.up{background:rgba(46,212,127,.14);color:var(--vert-vif)}
+.rev-card-badge.down{background:rgba(226,99,79,.14);color:#E2634F}
+.rev-card-lbl{
+  font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gris);margin-bottom:6px;line-height:1.3;
+}
+.rev-card-val{font-family:var(--display);font-weight:800;font-size:23px;color:#F4F3ED;line-height:1.15}
+.rev-card-val.gold{color:var(--or-clair)}
+.rev-card-note{margin-top:6px;font-size:10.5px;color:var(--gris);line-height:1.3}
+@media (max-width:380px){
+  .rev-card-val{font-size:19px}
+  .rev-card{padding:13px}
+}
 /* Bouton de partage WhatsApp (29/08) — sur tickets gagnants uniquement. */
 .dtk-share-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 28px);margin:0 14px 14px;padding:11px;border:none;border-radius:var(--r-sm);background:#25D366;color:#04150C;font-size:13px;font-weight:800;cursor:pointer}
 .dtk-share-btn:active{opacity:.85}
@@ -4296,6 +4330,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><path d="M2.5 10h19M6 15h4"/></svg>
             <span data-i18n="adm_nav_payments">Peman</span>
           </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="revenus">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 7 11.5 15.5 7.5 11.5 1 18"/><polyline points="15 7 20 7 20 12"/></svg>
+            <span data-i18n="adm_nav_revenus">Revni</span>
+          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="plans">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
             <span data-i18n="adm_nav_plans">Plan</span>
@@ -4338,6 +4376,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <div class="dash-kpi"><b>—</b><span data-i18n="adm_k_loading">Chajman...</span></div>
       </div>
       <div id="admQuotaBadgeWrap"></div>
+      <div class="admdash-section-h" data-i18n="adm_rev_h">Revni</div>
+      <div class="rev-cards" id="admRevCards">
+        <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+      </div>
       <div id="admApprentissageWrap" style="margin-top:10px">
         <button type="button" class="wiz-change" id="admApprentissageBtn" data-i18n="adm_apprentissage_btn">Rapport apprentissage</button>
         <div id="admApprentissageResultat" style="margin-top:8px"></div>
@@ -4380,6 +4422,28 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <span data-i18n="dash_back">Retounen</span>
       </button>
       <div id="admUserDetail"></div>
+    </div>
+
+    <!-- VUE : REVENUS (01/09) -->
+    <div class="dash-view" data-adview="revenus">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="dash-hi">
+        <h2 data-i18n="adm_rev_h">Revenus</h2>
+        <p data-i18n="adm_rev_p">Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.</p>
+      </div>
+      <div class="rev-cards" id="admRevCardsFull">
+        <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+      </div>
+      <div class="admdash-refresh-row">
+        <span class="admdash-updated" id="admRevUpdated"></span>
+        <button type="button" class="wiz-change" id="admRevRefresh">
+          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+          <span data-i18n="adm_refresh">Rafrechi</span>
+        </button>
+      </div>
     </div>
 
     <!-- VUE : PAIEMENTS -->
@@ -4912,7 +4976,11 @@ session_stale_h:"Compte ouvert ailleurs",
 session_stale_p:"Ce compte est ouvert dans une autre fenêtre. Rafraîchissez la page pour continuer.",
 dash_menu_lang:"Langue",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Vue d'ensemble", adm_nav_users:"Utilisateurs", adm_nav_payments:"Paiements", adm_nav_plans:"Plans", adm_nav_fiches:"Fiches", adm_nav_faq:"FAQ", adm_nav_testimonials:"Témoignages", adm_nav_settings:"Paramètres",
+adm_nav_home:"Vue d'ensemble", adm_nav_users:"Utilisateurs", adm_nav_payments:"Paiements", adm_nav_revenus:"Revenus", adm_nav_plans:"Plans", adm_nav_fiches:"Fiches", adm_nav_faq:"FAQ", adm_nav_testimonials:"Témoignages", adm_nav_settings:"Paramètres",
+adm_rev_h:"Revenus", adm_rev_p:"Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.",
+adm_rev_total:"Revenu total confirmé", adm_rev_total_note:"Tout historique, paiements validés uniquement.",
+adm_rev_mois:"Revenu ce mois-ci", adm_rev_paiements:"Paiements confirmés ce mois-ci",
+adm_rev_attente:"En attente de validation", adm_rev_attente_note:"{n} paiement(s) — jamais compté comme revenu tant que non validé.",
 adm_settings_h:"Paramètres", adm_settings_p:"Votre mot de passe et la sécurité de votre compte admin.",
 adm_settings_pw_h:"Changer le mot de passe",
 adm_settings_pw_new:"Nouveau mot de passe", adm_settings_pw_confirm:"Confirmer le nouveau mot de passe",
@@ -5364,7 +5432,11 @@ session_stale_h:"Account open elsewhere",
 session_stale_p:"This account is open in another window. Refresh the page to continue.",
 dash_menu_lang:"Language",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Overview", adm_nav_users:"Users", adm_nav_payments:"Payments", adm_nav_plans:"Plans", adm_nav_fiches:"Tickets", adm_nav_faq:"FAQ", adm_nav_testimonials:"Testimonials", adm_nav_settings:"Settings",
+adm_nav_home:"Overview", adm_nav_users:"Users", adm_nav_payments:"Payments", adm_nav_revenus:"Revenue", adm_nav_plans:"Plans", adm_nav_fiches:"Tickets", adm_nav_faq:"FAQ", adm_nav_testimonials:"Testimonials", adm_nav_settings:"Settings",
+adm_rev_h:"Revenue", adm_rev_p:"Same figures as the overview page, always in sync — confirmed payments only.",
+adm_rev_total:"Total confirmed revenue", adm_rev_total_note:"All time, confirmed payments only.",
+adm_rev_mois:"Revenue this month", adm_rev_paiements:"Confirmed payments this month",
+adm_rev_attente:"Awaiting validation", adm_rev_attente_note:"{n} payment(s) — never counted as revenue until validated.",
 adm_settings_h:"Settings", adm_settings_p:"Your password and admin account security.",
 adm_settings_pw_h:"Change password",
 adm_settings_pw_new:"New password", adm_settings_pw_confirm:"Confirm new password",
@@ -5816,7 +5888,11 @@ session_stale_h:"Kont ouvri yon lòt kote",
 session_stale_p:"Kont sa a ouvri nan yon lòt fenèt. Rafrechi paj la pou kontinye.",
 dash_menu_lang:"Lang",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Vi jeneral", adm_nav_users:"Itilizatè", adm_nav_payments:"Peman", adm_nav_plans:"Plan", adm_nav_fiches:"Fich", adm_nav_faq:"FAQ", adm_nav_testimonials:"Temwayaj", adm_nav_settings:"Paramèt",
+adm_nav_home:"Vi jeneral", adm_nav_users:"Itilizatè", adm_nav_payments:"Peman", adm_nav_revenus:"Revni", adm_nav_plans:"Plan", adm_nav_fiches:"Fich", adm_nav_faq:"FAQ", adm_nav_testimonials:"Temwayaj", adm_nav_settings:"Paramèt",
+adm_rev_h:"Revni", adm_rev_p:"Menm chif ak akèy la, toujou senkwonize — sèlman peman ki konfime.",
+adm_rev_total:"Total revni konfime", adm_rev_total_note:"Tout istorik, sèlman peman ki valide.",
+adm_rev_mois:"Revni mwa sa a", adm_rev_paiements:"Peman konfime mwa sa a",
+adm_rev_attente:"Ap tann validasyon", adm_rev_attente_note:"{n} peman — pa janm konte kòm revni jiskaske li valide.",
 adm_settings_h:"Paramèt", adm_settings_p:"Modpas ou ak sekirite kont admin ou.",
 adm_settings_pw_h:"Chanje modpas",
 adm_settings_pw_new:"Nouvo modpas", adm_settings_pw_confirm:"Konfime nouvo modpas la",
@@ -9837,10 +9913,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   /* ---- Vue : abonnement ---- */
   /* ---- Vue : historique abonnement (01/09, demande explicite de James) ----
      Liste TOUS les plans passés et présents de l'utilisateur — mais
-     UNIQUEMENT ceux confirmés par un admin (subscriptions.status=
-     'active'). Un plan encore 'pending' (paiement pas encore validé) ou
-     'cancelled' (refusé/annulé) n'apparaît JAMAIS dans cette liste, quoi
-     qu'il arrive — règle explicite, jamais contournée.
+     UNIQUEMENT ceux confirmés par un admin.
+     CORRIGÉ (session suivante, bug signalé par James : "pas synchronisé
+     avec les anciens plans") : la première version filtrait sur
+     subscriptions.status='active', mais la base ne garde qu'UNE SEULE
+     ligne 'active' par utilisateur à la fois — dès qu'un plan est
+     remplacé (renouvellement, changement), l'ancienne ligne bascule à
+     'cancelled', MÊME si elle avait été réellement confirmée par un
+     admin en son temps. Filtrer sur 'active' faisait donc disparaître
+     tout l'historique réel, ne laissant que le plan courant.
+     La vraie source de vérité pour "confirmé par admin", c'est
+     payments.status='confirmed' (jamais 'pending' ni 'failed'/'refunded')
+     — chaque paiement confirmé est relié à sa ligne subscriptions via
+     subscription_id, qui donne les vraies dates de la période
+     (starts_at/expires_at). Un paiement sans subscription_id lié, ou
+     dont la ligne subscriptions correspondante est introuvable, est
+     silencieusement ignoré plutôt que de risquer d'afficher une ligne
+     à moitié vide — jamais d'erreur visible pour l'utilisateur.
      Le plan actif reste TOUJOURS en haut (badge vert), le reste trié du
      plus récent au plus ancien (badge rouge "Expiré"). "Actif" est
      recalculé à CHAQUE affichage à partir de la vraie date d'expiration
@@ -9860,42 +9949,85 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
       }
       if(!uid){box.innerHTML='';box.appendChild(emptyEl('dash_empty_err'));return;}
-      const {data,error}=await sb.from('subscriptions')
-        .select('id,plan_id,starts_at,expires_at,created_at')
-        .eq('user_id',uid).eq('status','active')
-        .order('starts_at',{ascending:false});
-      if(error)throw error;
-      const lignes=data||[];
+
+      const {data:paysData,error:errPays}=await sb.from('payments')
+        .select('subscription_id,plan_id,confirmed_at')
+        .eq('user_id',uid).eq('status','confirmed')
+        .order('confirmed_at',{ascending:false});
+      if(errPays)throw errPays;
+      // Un paiement confirmé sans subscription_id ne correspond a aucune
+      // periode reelle a afficher — ignore, jamais affiche a moitie.
+      const paysConfirmes=(paysData||[]).filter(p=>p.subscription_id);
+      if(!paysConfirmes.length){
+        box.innerHTML='';
+        box.appendChild(emptyEl('dash_subhistory_empty'));
+        return;
+      }
+      // Un meme abonnement peut, en theorie, avoir plusieurs paiements
+      // confirmes (correction admin) — on ne garde qu'une seule ligne par
+      // subscription_id, la plus recente (deja en tete grace au tri ci-dessus).
+      const parSubscription={};
+      paysConfirmes.forEach(p=>{
+        if(!parSubscription[p.subscription_id])parSubscription[p.subscription_id]=p;
+      });
+      const subIds=Object.keys(parSubscription);
+      const {data:subsData,error:errSubs}=await sb.from('subscriptions')
+        .select('id,plan_id,starts_at,expires_at')
+        .in('id',subIds);
+      if(errSubs)throw errSubs;
+      const subsById={};
+      (subsData||[]).forEach(s=>{subsById[s.id]=s;});
+
+      const maintenant=Date.now();
+      const lignes=[];
+      subIds.forEach(sid=>{
+        const s=subsById[sid];
+        // Ligne subscriptions introuvable (cas limite) : jamais affichee
+        // a moitie, silencieusement ignoree plutot qu'une erreur visible.
+        if(!s)return;
+        lignes.push({
+          planId:s.plan_id||parSubscription[sid].plan_id,
+          startsAt:s.starts_at,
+          expiresAt:s.expires_at,
+          actif: !s.expires_at || new Date(s.expires_at).getTime()>maintenant
+        });
+      });
       if(!lignes.length){
         box.innerHTML='';
         box.appendChild(emptyEl('dash_subhistory_empty'));
         return;
       }
-      const maintenant=Date.now();
-      const enrichies=lignes.map(l=>({
-        l,
-        actif: !l.expires_at || new Date(l.expires_at).getTime()>maintenant
-      }));
-      enrichies.sort((a,b)=>{
+      // Tri du plus recent au plus ancien par date de debut.
+      lignes.sort((a,b)=>new Date(b.startsAt||0)-new Date(a.startsAt||0));
+      // Le badge "Actif" ne peut JAMAIS porter que sur le plan le plus
+      // recent (cas limite reel trouve en base : un compte ayant confirme
+      // plusieurs plans Lifetime successifs aurait, sans cette regle,
+      // plusieurs expires_at=null en meme temps -> plusieurs badges
+      // "Actif" simultanes, ce qui n'a pas de sens). Tous les autres,
+      // meme sans date d'expiration, sont affiches comme "Expire" des
+      // qu'un plan plus recent existe.
+      lignes.forEach((l,i)=>{
+        l.actif = i===0 && (!l.expiresAt || new Date(l.expiresAt).getTime()>maintenant);
+      });
+      lignes.sort((a,b)=>{
         if(a.actif!==b.actif)return a.actif?-1:1;
-        return new Date(b.l.starts_at||b.l.created_at)-new Date(a.l.starts_at||a.l.created_at);
+        return new Date(b.startsAt||0)-new Date(a.startsAt||0);
       });
       box.innerHTML='';
-      enrichies.forEach(x=>{
-        const l=x.l;
-        const pl=window.VB_planById?window.VB_planById(l.plan_id):null;
-        const nom=pl?stripTags(window.VB_planLabel(pl)):l.plan_id;
-        const debut=fmtLong(l.starts_at);
-        const fin=l.expires_at?fmtLong(l.expires_at):t('wiz_d_never');
+      lignes.forEach(l=>{
+        const pl=window.VB_planById?window.VB_planById(l.planId):null;
+        const nom=pl?stripTags(window.VB_planLabel(pl)):l.planId;
+        const debut=fmtLong(l.startsAt);
+        const fin=l.expiresAt?fmtLong(l.expiresAt):t('wiz_d_never');
         const div=document.createElement('div');
-        div.className='subh-item'+(x.actif?' is-actif':'');
+        div.className='subh-item'+(l.actif?' is-actif':'');
         div.innerHTML=
           '<div><div class="subh-item-name"></div>'+
           '<div class="subh-item-dates"></div></div>'+
-          '<span class="subh-badge '+(x.actif?'actif':'expire')+'"></span>';
+          '<span class="subh-badge '+(l.actif?'actif':'expire')+'"></span>';
         div.querySelector('.subh-item-name').textContent=nom;
         div.querySelector('.subh-item-dates').textContent=debut+' \u2192 '+fin;
-        div.querySelector('.subh-badge').textContent=t(x.actif?'dash_subh_actif':'dash_subh_expire');
+        div.querySelector('.subh-badge').textContent=t(l.actif?'dash_subh_actif':'dash_subh_expire');
         box.appendChild(div);
       });
     }catch(e){
@@ -10383,6 +10515,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='home')renderHome();
     if(view==='users')renderUsers();
     if(view==='payments')renderPayments();
+    if(view==='revenus')renderRevenue();
     if(view==='plans')renderPlans();
     if(view==='fiches'){majFiltresJodiA();renderFiches();}
     if(view==='faq')renderFaqList();
@@ -10524,6 +10657,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       });
       renderActiviteRecente();
       renderQuotaBadge(); // RÉACTIVÉ (session suivante) : rebranché sur le vrai quota (get_real_api_quota_today), plus le compteur interne du 29/08.
+      renderRevenue();
     }catch(e){
       box.innerHTML=kpi('—',t('adm_k_error'));
     }
@@ -10659,6 +10793,76 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     wrap.innerHTML=htmlBadgeQuota(q,labelSport)+avertissement;
   }
+
+  // ============================================================================
+  // CARDS DE STATISTIQUES REVENUS (01/09, demande explicite de James) — lit
+  // get_revenue_stats() (RPC dediee, protegee is_admin(), meme migration
+  // que ce correctif, deja en ligne). Regle absolue, jamais contournee :
+  // un revenu n'est compte que si le paiement est 'confirmed' (valide par
+  // un admin) — un paiement 'pending' n'est JAMAIS affiche comme du
+  // revenu. Toutes les valeurs viennent de vraies lignes de la table
+  // payments, jamais de donnees inventees. Meme palette que le reste du
+  // site (voir CSS .rev-card). Synchronisation stricte : la carte de
+  // l'accueil ET la vue dediee du menu affichent TOUJOURS exactement les
+  // memes chiffres, puisque c'est le meme appel RPC qui remplit les deux
+  // conteneurs a chaque fois.
+  // ============================================================================
+  function icRev(path){
+    return '<svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg>';
+  }
+  const IC_TREND='<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>';
+  const IC_CALENDAR='<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>';
+  const IC_CHECK='<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+  const IC_CLOCK='<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
+  function badgeVariation(actuel,precedent){
+    if(!precedent||precedent<=0)return '';
+    const pct=Math.round((actuel-precedent)/precedent*100);
+    const sens=pct>=0?'up':'down';
+    const fleche=pct>=0?'↑':'↓';
+    return '<span class="rev-card-badge '+sens+'">'+fleche+' '+(pct>=0?'+':'')+pct+'%</span>';
+  }
+  function revCard(iconPath,iconTone,badgeHtml,label,valeurHtml,valueClass,note){
+    return '<div class="rev-card">'+
+      '<div class="rev-card-top">'+
+        '<span class="rev-card-ic'+(iconTone?' '+iconTone:'')+'">'+icRev(iconPath)+'</span>'+
+        (badgeHtml||'')+
+      '</div>'+
+      '<div class="rev-card-lbl">'+label+'</div>'+
+      '<div class="rev-card-val'+(valueClass?' '+valueClass:'')+'">'+valeurHtml+'</div>'+
+      (note?'<div class="rev-card-note">'+note+'</div>':'')+
+    '</div>';
+  }
+  async function renderRevenue(){
+    const boxes=[document.getElementById('admRevCards'),document.getElementById('admRevCardsFull')].filter(Boolean);
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!boxes.length)return;
+    if(!sb){boxes.forEach(b=>{b.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_offline')+'</span></div>';});return;}
+    try{
+      const {data,error}=await sb.rpc('get_revenue_stats');
+      if(error)throw error;
+      const r=(Array.isArray(data)?data[0]:data)||{};
+      const totalConfirme=r.total_confirmed!=null?r.total_confirmed:0;
+      const moisConfirme=r.month_confirmed!=null?r.month_confirmed:0;
+      const moisPrecConfirme=r.month_prev_confirmed!=null?r.month_prev_confirmed:0;
+      const moisCount=r.month_confirmed_count!=null?r.month_confirmed_count:0;
+      const moisPrecCount=r.month_prev_confirmed_count!=null?r.month_prev_confirmed_count:0;
+      const enAttenteMontant=r.pending_amount!=null?r.pending_amount:0;
+      const enAttenteCount=r.pending_count!=null?r.pending_count:0;
+      const html=
+        revCard(IC_TREND,null,'',t('adm_rev_total'),money(totalConfirme)+' <small>HTG</small>','gold',t('adm_rev_total_note'))+
+        revCard(IC_CALENDAR,'green',badgeVariation(moisConfirme,moisPrecConfirme),t('adm_rev_mois'),money(moisConfirme)+' <small>HTG</small>')+
+        revCard(IC_CHECK,'green',badgeVariation(moisCount,moisPrecCount),t('adm_rev_paiements'),String(moisCount))+
+        revCard(IC_CLOCK,'neutre','',t('adm_rev_attente'),money(enAttenteMontant)+' <small>HTG</small>',null,t('adm_rev_attente_note').replace('{n}',enAttenteCount));
+      boxes.forEach(b=>{b.innerHTML=html;});
+      const heureMaj=t('adm_updated_at').replace('{t}',new Date().toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'}));
+      const updEl=document.getElementById('admRevUpdated');
+      if(updEl)updEl.textContent=heureMaj;
+    }catch(e){
+      boxes.forEach(b=>{b.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';});
+    }
+  }
+  const admRevRefreshBtn=document.getElementById('admRevRefresh');
+  if(admRevRefreshBtn)admRevRefreshBtn.addEventListener('click',renderRevenue);
 
   // ============================================================================
   // RAPPORT APPRENTISSAGE CONTINU (session suivante, roadmap "amélioration
