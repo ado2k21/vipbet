@@ -4992,7 +4992,7 @@ adm_user_suspend_btn:"Suspendre ce compte", adm_user_reactivate_btn:"Réactiver 
 adm_user_suspend_reason_required:"Une raison est obligatoire pour suspendre un compte.",
 adm_user_suspend_err:"L'action a échoué.", adm_user_suspended_since:"Suspendu le",
 adm_user_plan_changed_h:"Plan modifié", adm_user_plan_changed_p:"Le nouveau plan est actif immédiatement.", adm_user_plan_removed_p:"Le plan a été retiré. Cet utilisateur n'a plus aucun plan actif.", adm_user_plan_none_option:"— Aucun plan (retirer) —",
-adm_user_suspended_h:"Compte suspendu", adm_user_suspended_p:"L'utilisateur ne pourra plus se connecter.",
+adm_user_suspended_h:"Compte suspendu", adm_user_suspended_p:"L'utilisateur ne pourra plus se connecter.", adm_leg_result_lbl:"Résultat", adm_leg_result_none:"Pas encore joué", adm_leg_result_won:"Gagné", adm_leg_result_lost:"Perdu", adm_leg_result_void:"Annulé",
 adm_user_reactivated_h:"Compte réactivé", adm_user_reactivated_p:"L'utilisateur peut de nouveau se connecter.",
 adm_section_subs:"Abonnements", adm_section_pays:"Paiements", adm_none_yet:"Aucun pour l'instant.",
 adm_pay_h:"Paiements", adm_pay_p:"Validez ou refusez les paiements soumis, directement depuis la base de données.",
@@ -5441,7 +5441,7 @@ adm_user_suspend_btn:"Suspend this account", adm_user_reactivate_btn:"Reactivate
 adm_user_suspend_reason_required:"A reason is required to suspend an account.",
 adm_user_suspend_err:"The action failed.", adm_user_suspended_since:"Suspended on",
 adm_user_plan_changed_h:"Plan changed", adm_user_plan_changed_p:"The new plan is active immediately.", adm_user_plan_removed_p:"The plan has been removed. This user no longer has an active plan.", adm_user_plan_none_option:"— No plan (remove) —",
-adm_user_suspended_h:"Account suspended", adm_user_suspended_p:"The user will no longer be able to sign in.",
+adm_user_suspended_h:"Account suspended", adm_user_suspended_p:"The user will no longer be able to sign in.", adm_leg_result_lbl:"Result", adm_leg_result_none:"Not played yet", adm_leg_result_won:"Won", adm_leg_result_lost:"Lost", adm_leg_result_void:"Void",
 adm_user_reactivated_h:"Account reactivated", adm_user_reactivated_p:"The user can sign in again.",
 adm_section_subs:"Subscriptions", adm_section_pays:"Payments", adm_none_yet:"None yet.",
 adm_pay_h:"Payments", adm_pay_p:"Approve or reject submitted payments, directly from the database.",
@@ -5890,7 +5890,7 @@ adm_user_suspend_btn:"Sispann kont sa a", adm_user_reactivate_btn:"Reaktive kont
 adm_user_suspend_reason_required:"Yon rezon obligatwa pou sispann yon kont.",
 adm_user_suspend_err:"Aksyon an echwe.", adm_user_suspended_since:"Sispann nan",
 adm_user_plan_changed_h:"Plan chanje", adm_user_plan_changed_p:"Nouvo plan an aktif imedyatman.", adm_user_plan_removed_p:"Plan an retire. Itilizatè sa a pa gen okenn plan aktif ankò.", adm_user_plan_none_option:"— Okenn plan (retire) —",
-adm_user_suspended_h:"Kont sispann", adm_user_suspended_p:"Itilizatè a pap ka konekte ankò.",
+adm_user_suspended_h:"Kont sispann", adm_user_suspended_p:"Itilizatè a pap ka konekte ankò.", adm_leg_result_lbl:"Rezilta", adm_leg_result_none:"Poko jwe", adm_leg_result_won:"Genyen", adm_leg_result_lost:"Pèdi", adm_leg_result_void:"Anile",
 adm_user_reactivated_h:"Kont reaktive", adm_user_reactivated_p:"Itilizatè a ka konekte ankò.",
 adm_section_subs:"Abònman", adm_section_pays:"Peman", adm_none_yet:"Pa gen ankò.",
 adm_pay_h:"Peman", adm_pay_p:"Valide oswa refize peman ki soumèt yo, dirèkteman soti nan baz done a.",
@@ -12535,6 +12535,27 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ? '<div class="admf-lock"><span style="flex:1">'+marqueLeg(leg.result)+' '+t('adm_fiche_leg_locked')+'</span></div>'
       : '';
     const ro=regle?' disabled':'';
+    // Reglement manuel (session suivante, demande explicite de James : le
+    // compte API-Sports peut etre suspendu, ou le bot indisponible pour
+    // toute autre raison — dans ce cas AUCUNE fiche ne se regle jamais
+    // automatiquement, et il n'existait avant AUCUN moyen d'entrer un
+    // resultat a la main, meme en urgence). Ce selecteur ecrit
+    // directement dans fbLegsCourantes[i].result (voir rebrancherLegs) ;
+    // le vrai verrou reste process cote base (admin_save_ticket) : un
+    // match deja regle ne peut jamais etre re-modifie, meme via ce
+    // selecteur, puisqu'il est simplement absent (bandeau verrouille
+    // ci-dessus a la place). Options : vide (pas encore joue), Gagne,
+    // Perdu, Annule (meme vocabulaire que marqueLeg/l'historique client).
+    const resultSel=regle?'':
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:2px">'+
+        '<label class="fb-leg-result-lbl" style="font-size:12px;opacity:.75;white-space:nowrap">'+t('adm_leg_result_lbl')+'</label>'+
+        '<select class="fb-leg-result" data-idx="'+i+'" style="flex:1">'+
+          '<option value=""'+(!leg.result?' selected':'')+'>'+t('adm_leg_result_none')+'</option>'+
+          '<option value="won">'+t('adm_leg_result_won')+'</option>'+
+          '<option value="lost">'+t('adm_leg_result_lost')+'</option>'+
+          '<option value="void">'+t('adm_leg_result_void')+'</option>'+
+        '</select>'+
+      '</div>';
     return '<div class="admdash-hist-row" data-legidx="'+i+'" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px'+(regle?';opacity:.72':'')+'">'+
       bandeau+
       '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
@@ -12549,6 +12570,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<input type="text" class="fb-leg-field" data-f="pick" placeholder="'+t('adm_fiche_leg_pick')+'" value="'+(leg.pick||'').replace(/"/g,'&quot;')+'" style="flex:2;min-width:100px"'+ro+'>'+
         '<input type="number" step="0.01" class="fb-leg-field" data-f="odd" placeholder="'+t('adm_fiche_leg_odd')+'" value="'+(leg.odd!=null?leg.odd:'')+'" style="flex:1;min-width:70px"'+ro+'>'+
       '</div>'+
+      resultSel+
       '<button type="button" class="btn btn-reject fb-leg-del" data-idx="'+i+'" style="align-self:flex-end;padding:7px 14px;font-size:12px"'+ro+'>'+t('adm_fiche_leg_remove')+'</button>'+
     '</div>';
   }
@@ -12561,12 +12583,35 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         if(champ==='odd')majResumeCote();
       });
     });
+    document.querySelectorAll('.fb-leg-result').forEach(sel=>{
+      sel.addEventListener('change',()=>{
+        const idx=parseInt(sel.dataset.idx,10);
+        fbLegsCourantes[idx].result=sel.value||null;
+        majStatutAutoDepuisLegs();
+      });
+    });
     document.querySelectorAll('.fb-leg-del').forEach(b=>{
       b.addEventListener('click',()=>{
         fbLegsCourantes.splice(parseInt(b.dataset.idx,10),1);
         rerenderLegsList();
       });
     });
+  }
+  /* Reglement manuel : des que TOUS les matchs d'une fiche ont un resultat
+     saisi (won/lost/void), le statut de la fiche entiere se calcule tout
+     seul — jamais a saisir separement, jamais desynchronise du detail par
+     match. Une seule defaite suffit a perdre le combine (regle standard) ;
+     sinon gagnee des que plus aucun match n'est en attente. Le selecteur
+     "Statut" reste modifiable a la main pour les cas hors norme (ex.
+     annulation totale avant que tous les matchs soient joues), mais n'est
+     plus jamais la SEULE source de verite une fois le detail complet. */
+  function majStatutAutoDepuisLegs(){
+    const sel=document.getElementById('admFicheStatus');
+    if(!sel||!fbLegsCourantes.length)return;
+    const tousRegles=fbLegsCourantes.every(l=>!!l.result);
+    if(!tousRegles)return;
+    const perdu=fbLegsCourantes.some(l=>l.result==='lost');
+    sel.value=perdu?'lost':'won';
   }
   function rerenderLegsList(){
     const box=document.getElementById('admFicheLegsList');
@@ -12669,6 +12714,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     document.getElementById('admFicheSave').addEventListener('click',function(){
       const err=document.getElementById('admFicheErr');
+      // Meme calcul qu'a chaque changement de resultat (majStatutAutoDepuisLegs) —
+      // reapplique ici en defense de profondeur, au cas ou la fiche etait deja
+      // partiellement reglee a l'ouverture sans qu'aucun evenement 'change' n'ait eu lieu.
+      majStatutAutoDepuisLegs();
       const payload={
         code:document.getElementById('admFicheCode').value.trim()||null,
         min_plan_rank:parseInt(document.getElementById('admFichePlan').value,10),
