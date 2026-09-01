@@ -2873,6 +2873,52 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
   .h2-cta{justify-content:center}
   .h2-cta .btn{flex:0 0 auto;width:100%;max-width:460px}
 }
+/* Badge quota API (réplication depuis index.html, session 31/08-01/09) — vert/or/rouge selon le pourcentage utilisé. */
+.adm-quota-badge{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:0 0 14px;border-radius:var(--r-sm);font-size:12px}
+.adm-quota-badge-pct{font-family:var(--mono);font-weight:800;font-size:15px;padding:3px 9px;border-radius:20px}
+.adm-quota-badge.vert{background:rgba(46,212,127,.08)}
+.adm-quota-badge.vert .adm-quota-badge-pct{background:rgba(46,212,127,.18);color:var(--vert-vif)}
+.adm-quota-badge.or{background:rgba(201,164,76,.08)}
+.adm-quota-badge.or .adm-quota-badge-pct{background:rgba(201,164,76,.18);color:#E8CE8A}
+.adm-quota-badge.rouge{background:rgba(226,99,79,.1)}
+.adm-quota-badge.rouge .adm-quota-badge-pct{background:rgba(226,99,79,.2);color:#E2634F}
+.adm-quota-badge-txt{color:var(--gris)}
+/* Cards de statistiques Revenus (01/09, demande explicite de James) —
+   même palette que le reste du site (noir/vert/or/blanc), jamais de
+   couleur importée d'ailleurs. Grille 2x2, icône thématique en haut à
+   gauche, badge de variation coloré en haut à droite (masqué quand la
+   comparaison n'a pas de sens, ex. mois précédent à 0 — jamais de %
+   inventé ou de division par zéro affichée). */
+.rev-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0 22px}
+.rev-card{
+  background:linear-gradient(158deg,rgba(201,164,76,.07),rgba(3,8,23,0) 60%),#0B1425;
+  border:1px solid var(--ligne);border-radius:var(--r-lg);padding:16px;min-width:0;
+}
+.rev-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}
+.rev-card-ic{
+  width:38px;height:38px;border-radius:50%;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(201,164,76,.14);color:var(--or-clair);
+}
+.rev-card-ic.green{background:rgba(46,212,127,.14);color:var(--vert-vif)}
+.rev-card-ic.neutre{background:rgba(147,168,155,.14);color:var(--gris)}
+.rev-card-badge{
+  font-family:var(--mono);font-weight:700;font-size:10.5px;padding:3px 8px;
+  border-radius:20px;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;
+}
+.rev-card-badge.up{background:rgba(46,212,127,.14);color:var(--vert-vif)}
+.rev-card-badge.down{background:rgba(226,99,79,.14);color:#E2634F}
+.rev-card-lbl{
+  font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gris);margin-bottom:6px;line-height:1.3;
+}
+.rev-card-val{font-family:var(--display);font-weight:800;font-size:23px;color:#F4F3ED;line-height:1.15}
+.rev-card-val.gold{color:var(--or-clair)}
+.rev-card-note{margin-top:6px;font-size:10.5px;color:var(--gris);line-height:1.3}
+@media (max-width:380px){
+  .rev-card-val{font-size:19px}
+  .rev-card{padding:13px}
+}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -4191,6 +4237,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><path d="M2.5 10h19M6 15h4"/></svg>
             <span data-i18n="adm_nav_payments">Peman</span>
           </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="revenus">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 7 11.5 15.5 7.5 11.5 1 18"/><polyline points="15 7 20 7 20 12"/></svg>
+            <span data-i18n="adm_nav_revenus">Revni</span>
+          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="plans">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
             <span data-i18n="adm_nav_plans">Plan</span>
@@ -4232,6 +4282,11 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       <div class="dash-kpis" id="admKpisHome">
         <div class="dash-kpi"><b>—</b><span data-i18n="adm_k_loading">Chajman...</span></div>
       </div>
+      <div id="admQuotaBadgeWrap"></div>
+      <div class="admdash-section-h" data-i18n="adm_rev_h">Revni</div>
+      <div class="rev-cards" id="admRevCards">
+        <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+      </div>
       <div class="admdash-refresh-row">
         <span class="admdash-updated" id="admHomeUpdated"></span>
         <button type="button" class="wiz-change" id="admHomeRefresh">
@@ -4270,6 +4325,28 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <span data-i18n="dash_back">Retounen</span>
       </button>
       <div id="admUserDetail"></div>
+    </div>
+
+    <!-- VUE : REVENUS (01/09) -->
+    <div class="dash-view" data-adview="revenus">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="dash-hi">
+        <h2 data-i18n="adm_rev_h">Revenus</h2>
+        <p data-i18n="adm_rev_p">Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.</p>
+      </div>
+      <div class="rev-cards" id="admRevCardsFull">
+        <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+      </div>
+      <div class="admdash-refresh-row">
+        <span class="admdash-updated" id="admRevUpdated"></span>
+        <button type="button" class="wiz-change" id="admRevRefresh">
+          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+          <span data-i18n="adm_refresh">Rafrechi</span>
+        </button>
+      </div>
     </div>
 
     <!-- VUE : PAIEMENTS -->
@@ -4348,7 +4425,9 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       </div>
       <div id="admFichesSync" class="admf-sync"></div>
       <button type="button" class="btn btn-or" id="admFichesNew" style="width:100%;margin:12px 0 8px" data-i18n="adm_fiches_new">+ Nouvelle fiche</button>
-      <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
+      <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
+      <button type="button" class="btn btn-or-soft" id="admFicheGenererExactBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_exact_btn">🎯 GÉNÉRER SCORE EXACT</button>
+      <button type="button" class="btn btn-or-soft" id="admFicheGenererBasketBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_submit">🏀 Générer fiche basketball</button>
       <div id="admFichesBody"></div>
     </div>
 
@@ -4368,9 +4447,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <span data-i18n="dash_back">Retounen</span>
       </button>
       <div class="dash-hi">
-        <h2 data-i18n="adm_fiche_gen_h">Générer une fiche</h2>
-        <p data-i18n="adm_fiche_gen_p">Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.</p>
+        <h2 id="admGenTitre" data-i18n="adm_fiche_gen_h">Générer une fiche</h2>
+        <p id="admGenSousTitre" data-i18n="adm_fiche_gen_p">Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.</p>
       </div>
+      <div id="admGenQuotaWrap"></div>
       <div id="admFicheGenererForm">
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_date">Date des matchs</span>
           <input type="date" id="admGenDate"></label>
@@ -4380,7 +4460,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
           <label class="field" style="flex:1"><span class="field-lbl" data-i18n="adm_fiche_gen_hfin">Heure fin (PAP)</span>
             <input type="time" id="admGenHeureFin" value="20:00"></label>
         </div>
-        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_sport">Sport</span>
+        <label class="field" id="admGenSportWrap"><span class="field-lbl" data-i18n="adm_fiche_gen_sport">Sport</span>
           <select id="admGenSport">
             <option value="foot" data-i18n="adm_fiche_sport_foot">Football</option>
             <option value="nba" data-i18n="adm_fiche_kind_basket">Basketball / NBA</option>
@@ -4388,8 +4468,14 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <div id="admGenSportNote" class="admf-note-x2" style="display:none;margin:-4px 0 10px" data-i18n="adm_fiche_gen_nba_note">Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.</div>
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_plans">Plans concernés</span></label>
         <div id="admGenPlans" class="admf-filters" style="flex-wrap:wrap"></div>
-        <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_cotemax">Cote max souhaitée</span>
+        <label class="field" id="admGenCoteMaxWrap"><span class="field-lbl" data-i18n="adm_fiche_gen_cotemax">Cote max souhaitée</span>
           <input type="number" id="admGenCoteMax" min="1.1" step="0.1" value="20"></label>
+        <label class="field" id="admGenNombreMatchsWrap" style="display:none">
+          <span class="field-lbl" data-i18n="adm_fiche_gen_nbmatchs">Nombre de matchs</span>
+          <select id="admGenNombreMatchs">
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option>
+          </select></label>
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_publish">Publication</span>
           <select id="admGenPublishMode">
             <option value="now" data-i18n="adm_fiche_gen_now">Immédiate</option>
@@ -4398,6 +4484,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <label class="field" id="admGenScheduledWrap" style="display:none">
           <span class="field-lbl" data-i18n="adm_fiche_gen_scheduled_at">Date/heure de publication (PAP)</span>
           <input type="datetime-local" id="admGenScheduledAt"></label>
+        <p id="admGenBasketNote" class="admf-note-x2" style="display:none;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_p">Fiche basketball combinée — aucune cote minimale obligatoire, seule la cote max ci-dessus est un plafond strict. Visible par les plans cochés et tous les plans au-dessus (cascade d'accès).</p>
         <button type="button" class="btn btn-or" id="admGenSubmit" style="width:100%;margin-top:8px" data-i18n="adm_fiche_gen_submit">Générer</button>
         <div id="admGenResult" style="margin-top:14px"></div>
       </div>
@@ -4720,7 +4807,8 @@ session_stale_h:"Compte ouvert ailleurs",
 session_stale_p:"Ce compte est ouvert dans une autre fenêtre. Rafraîchissez la page pour continuer.",
 dash_menu_lang:"Langue",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Vue d'ensemble", adm_nav_users:"Utilisateurs", adm_nav_payments:"Paiements", adm_nav_plans:"Plans", adm_nav_fiches:"Fiches", adm_nav_faq:"FAQ", adm_nav_testimonials:"Témoignages", adm_nav_settings:"Paramètres",
+adm_nav_home:"Vue d'ensemble", adm_nav_users:"Utilisateurs", adm_nav_payments:"Paiements", adm_nav_revenus:"Revenus", adm_nav_plans:"Plans", adm_nav_fiches:"Fiches", adm_nav_faq:"FAQ", adm_nav_testimonials:"Témoignages", adm_nav_settings:"Paramètres",
+adm_rev_p:"Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.",
 adm_settings_h:"Paramètres", adm_settings_p:"Votre mot de passe et la sécurité de votre compte admin.",
 adm_settings_pw_h:"Changer le mot de passe",
 adm_settings_pw_new:"Nouveau mot de passe", adm_settings_pw_confirm:"Confirmer le nouveau mot de passe",
@@ -4746,6 +4834,16 @@ adm_fiche_st_pending:"En cours", adm_fiche_st_won:"Gagné", adm_fiche_st_lost:"P
 adm_fiche_kind_normal:"Cote normal", adm_fiche_kind_exact:"Score exact", adm_fiche_kind_basket:"Basketball",
 fiche_note_x2:"Conseil : à jouer en 2 tickets séparés",
 adm_fiche_gen_btn:"⚡ GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
+adm_fiche_gen_exact_btn:"🎯 GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
+adm_fiche_gen_basket_h:"Générer une fiche basketball", adm_fiche_gen_nbmatchs:"Nombre de matchs",
+adm_fiche_gen_confirm:"Confirmer la génération de cette fiche ?", adm_fiche_gen_basket_confirm:"Confirmer la génération de la fiche basketball combinée pour demain ?",
+adm_fiche_gen_basket_p:"Fiche basketball combinée — aucune cote minimale obligatoire, seule la cote max ci-dessus est un plafond strict. Visible par les plans cochés et tous les plans au-dessus (cascade d'accès).",
+adm_fiche_gen_basket_submit:"Générer fiche basketball", adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
+adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
+adm_quota_gen_epuise:"⛔ Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"⚠️ Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
+adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} utilisés · {remaining} restants (vérifié à {time})",
+adm_quota_inconnu:"⚠️ Quota réel inconnu depuis minuit UTC — aucun appel API-Sports effectué aujourd'hui.",
+adm_quota_gen_inconnu:"⚠️ Quota inconnu depuis minuit UTC. Lance un diagnostic (?diag=quota-status) avant de générer pour être sûr.",
 adm_fiche_gen_date:"Date des matchs", adm_fiche_gen_hdebut:"Heure début (PAP)", adm_fiche_gen_hfin:"Heure fin (PAP)", adm_fiche_gen_sport:"Sport",
 adm_fiche_gen_nba_note:"Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.",
 adm_fiche_gen_plans:"Plans concernés", adm_fiche_gen_cotemax:"Cote max souhaitée", adm_fiche_gen_publish:"Publication",
@@ -4794,6 +4892,9 @@ adm_home_h:"Vue d'ensemble", adm_home_p:"Chiffres réels, directement issus de l
 adm_refresh:"Rafraîchir", adm_updated_at:"Mis à jour à {t}",
 adm_k_loading:"Chargement...", adm_k_offline:"Connexion indisponible", adm_k_error:"Erreur de lecture",
 adm_activity_h:"Activité récente", adm_activity_empty:"Aucun paiement en attente pour l'instant.",
+adm_rev_h:"Revenus", adm_rev_total:"Revenu total confirmé", adm_rev_total_note:"Tout historique, paiements validés uniquement.",
+adm_rev_mois:"Revenu ce mois-ci", adm_rev_paiements:"Paiements confirmés ce mois-ci",
+adm_rev_attente:"En attente de validation", adm_rev_attente_note:"{n} paiement(s) — jamais compté comme revenu tant que non validé.",
 adm_activity_pending_pay:"Paiement en attente — {name}",
 adm_k_users:"Utilisateurs", adm_k_subs_active:"Abonnements actifs", adm_k_pay_pending:"Paiements en attente", adm_k_tickets:"Fiches",
 adm_users_h:"Utilisateurs", adm_users_p:"Recherche et détail de chaque compte, directement depuis la base de données.",
@@ -4849,7 +4950,7 @@ adm_user_suspend_btn:"Suspendre ce compte", adm_user_reactivate_btn:"Réactiver 
 adm_user_suspend_reason_required:"Une raison est obligatoire pour suspendre un compte.",
 adm_user_suspend_err:"L'action a échoué.", adm_user_suspended_since:"Suspendu le",
 adm_user_plan_changed_h:"Plan modifié", adm_user_plan_changed_p:"Le nouveau plan est actif immédiatement.",
-adm_user_suspended_h:"Compte suspendu", adm_user_suspended_p:"L'utilisateur ne pourra plus se connecter.",
+adm_user_suspended_h:"Compte suspendu", adm_user_suspended_p:"L'utilisateur ne pourra plus se connecter.", adm_leg_result_lbl:"Résultat", adm_leg_result_none:"Pas encore joué", adm_leg_result_won:"Gagné", adm_leg_result_lost:"Perdu", adm_leg_result_void:"Annulé",
 adm_user_reactivated_h:"Compte réactivé", adm_user_reactivated_p:"L'utilisateur peut de nouveau se connecter.",
 adm_section_subs:"Abonnements", adm_section_pays:"Paiements", adm_none_yet:"Aucun pour l'instant.",
 adm_pay_h:"Paiements", adm_pay_p:"Validez ou refusez les paiements soumis, directement depuis la base de données.",
@@ -5119,7 +5220,8 @@ session_stale_h:"Account open elsewhere",
 session_stale_p:"This account is open in another window. Refresh the page to continue.",
 dash_menu_lang:"Language",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Overview", adm_nav_users:"Users", adm_nav_payments:"Payments", adm_nav_plans:"Plans", adm_nav_fiches:"Tickets", adm_nav_faq:"FAQ", adm_nav_testimonials:"Testimonials", adm_nav_settings:"Settings",
+adm_nav_home:"Overview", adm_nav_users:"Users", adm_nav_payments:"Payments", adm_nav_revenus:"Revenue", adm_nav_plans:"Plans", adm_nav_fiches:"Tickets", adm_nav_faq:"FAQ", adm_nav_testimonials:"Testimonials", adm_nav_settings:"Settings",
+adm_rev_p:"Same figures as the overview page, always in sync — confirmed payments only.",
 adm_settings_h:"Settings", adm_settings_p:"Your password and admin account security.",
 adm_settings_pw_h:"Change password",
 adm_settings_pw_new:"New password", adm_settings_pw_confirm:"Confirm new password",
@@ -5145,6 +5247,16 @@ adm_fiche_st_pending:"In progress", adm_fiche_st_won:"Won", adm_fiche_st_lost:"L
 adm_fiche_kind_normal:"Standard odds", adm_fiche_kind_exact:"Correct score", adm_fiche_kind_basket:"Basketball",
 fiche_note_x2:"Tip: play as 2 separate tickets",
 adm_fiche_gen_btn:"⚡ GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
+adm_fiche_gen_exact_btn:"🎯 GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
+adm_fiche_gen_basket_h:"Generate a basketball ticket", adm_fiche_gen_nbmatchs:"Number of matches",
+adm_fiche_gen_confirm:"Confirm generation of this ticket?", adm_fiche_gen_basket_confirm:"Confirm generation of tomorrow's combined basketball ticket?",
+adm_fiche_gen_basket_p:"Combined basketball ticket — no mandatory minimum odd, only the max odd above is a strict cap. Visible to the checked plans and every plan above them (cascading access).",
+adm_fiche_gen_basket_submit:"Generate basketball ticket", adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
+adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
+adm_quota_gen_epuise:"⛔ Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"⚠️ Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
+adm_quota_lbl_reel:"API-Sports quota · {used}/{max} used · {remaining} left (checked at {time})",
+adm_quota_inconnu:"⚠️ Real quota unknown since midnight UTC — no API-Sports call made today.",
+adm_quota_gen_inconnu:"⚠️ Quota unknown since midnight UTC. Run a diagnostic (?diag=quota-status) before generating to be sure.",
 adm_fiche_gen_date:"Match date", adm_fiche_gen_hdebut:"Start time (PAP)", adm_fiche_gen_hfin:"End time (PAP)", adm_fiche_gen_sport:"Sport",
 adm_fiche_gen_nba_note:"Not available yet — no reliable odds source wired for basketball/NBA.",
 adm_fiche_gen_plans:"Plans concerned", adm_fiche_gen_cotemax:"Desired max odds", adm_fiche_gen_publish:"Publishing",
@@ -5193,6 +5305,9 @@ adm_home_h:"Overview", adm_home_p:"Real figures, taken directly from the databas
 adm_refresh:"Refresh", adm_updated_at:"Updated at {t}",
 adm_k_loading:"Loading...", adm_k_offline:"Connection unavailable", adm_k_error:"Read error",
 adm_activity_h:"Recent activity", adm_activity_empty:"No pending payments right now.",
+adm_rev_h:"Revenue", adm_rev_total:"Total confirmed revenue", adm_rev_total_note:"All time, confirmed payments only.",
+adm_rev_mois:"Revenue this month", adm_rev_paiements:"Confirmed payments this month",
+adm_rev_attente:"Awaiting validation", adm_rev_attente_note:"{n} payment(s) — never counted as revenue until validated.",
 adm_activity_pending_pay:"Pending payment — {name}",
 adm_k_users:"Users", adm_k_subs_active:"Active subscriptions", adm_k_pay_pending:"Pending payments", adm_k_tickets:"Slips",
 adm_users_h:"Users", adm_users_p:"Search and detail for each account, straight from the database.",
@@ -5248,7 +5363,7 @@ adm_user_suspend_btn:"Suspend this account", adm_user_reactivate_btn:"Reactivate
 adm_user_suspend_reason_required:"A reason is required to suspend an account.",
 adm_user_suspend_err:"The action failed.", adm_user_suspended_since:"Suspended on",
 adm_user_plan_changed_h:"Plan changed", adm_user_plan_changed_p:"The new plan is active immediately.",
-adm_user_suspended_h:"Account suspended", adm_user_suspended_p:"The user will no longer be able to sign in.",
+adm_user_suspended_h:"Account suspended", adm_user_suspended_p:"The user will no longer be able to sign in.", adm_leg_result_lbl:"Result", adm_leg_result_none:"Not played yet", adm_leg_result_won:"Won", adm_leg_result_lost:"Lost", adm_leg_result_void:"Void",
 adm_user_reactivated_h:"Account reactivated", adm_user_reactivated_p:"The user can sign in again.",
 adm_section_subs:"Subscriptions", adm_section_pays:"Payments", adm_none_yet:"None yet.",
 adm_pay_h:"Payments", adm_pay_p:"Approve or reject submitted payments, directly from the database.",
@@ -5518,7 +5633,8 @@ session_stale_h:"Kont ouvri yon lòt kote",
 session_stale_p:"Kont sa a ouvri nan yon lòt fenèt. Rafrechi paj la pou kontinye.",
 dash_menu_lang:"Lang",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Vi jeneral", adm_nav_users:"Itilizatè", adm_nav_payments:"Peman", adm_nav_plans:"Plan", adm_nav_fiches:"Fich", adm_nav_faq:"FAQ", adm_nav_testimonials:"Temwayaj", adm_nav_settings:"Paramèt",
+adm_nav_home:"Vi jeneral", adm_nav_users:"Itilizatè", adm_nav_payments:"Peman", adm_nav_revenus:"Revni", adm_nav_plans:"Plan", adm_nav_fiches:"Fich", adm_nav_faq:"FAQ", adm_nav_testimonials:"Temwayaj", adm_nav_settings:"Paramèt",
+adm_rev_p:"Menm chif ak akèy la, toujou senkwonize — sèlman peman ki konfime.",
 adm_settings_h:"Paramèt", adm_settings_p:"Modpas ou ak sekirite kont admin ou.",
 adm_settings_pw_h:"Chanje modpas",
 adm_settings_pw_new:"Nouvo modpas", adm_settings_pw_confirm:"Konfime nouvo modpas la",
@@ -5544,6 +5660,16 @@ adm_fiche_st_pending:"An kou", adm_fiche_st_won:"Genyen", adm_fiche_st_lost:"Pè
 adm_fiche_kind_normal:"Kòt nòmal", adm_fiche_kind_exact:"Eskò egzak", adm_fiche_kind_basket:"Basketball",
 fiche_note_x2:"Konsèy : jwe l an 2 tikè separe",
 adm_fiche_gen_btn:"⚡ JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
+adm_fiche_gen_exact_btn:"🎯 JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
+adm_fiche_gen_basket_h:"Jenere yon fich basketball", adm_fiche_gen_nbmatchs:"Konbyen match",
+adm_fiche_gen_confirm:"Konfime jenerasyon fich sa a?", adm_fiche_gen_basket_confirm:"Konfime jenerasyon fich basketball konbine pou demen an?",
+adm_fiche_gen_basket_p:"Fich basketball konbine — pa gen kòt minimòm obligatwa, se sèlman kòt maks anwo a ki yon plafon strik. Vizib pou plan yo ou koche ak tout plan ki pi wo (kaskad aksè).",
+adm_fiche_gen_basket_submit:"Jenere fich basketball", adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
+adm_quota_sport_foot:"Foutbòl", adm_quota_sport_basket:"Basketbòl",
+adm_quota_gen_epuise:"⛔ Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"⚠️ Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
+adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} itilize · {remaining} rete (verifye a {time})",
+adm_quota_inconnu:"⚠️ Vrè quota pa konnen depi minwi UTC — pa gen okenn apèl API-Sports jodi a.",
+adm_quota_gen_inconnu:"⚠️ Quota pa konnen depi minwi UTC. Lanse yon dyagnostik (?diag=quota-status) anvan ou jenere pou w sèten.",
 adm_fiche_gen_date:"Dat match yo", adm_fiche_gen_hdebut:"Lè kòmanse (PAP)", adm_fiche_gen_hfin:"Lè fini (PAP)", adm_fiche_gen_sport:"Espò",
 adm_fiche_gen_nba_note:"Pa disponib pou kounye a — pa gen sous kòt serye konekte pou basketball/NBA.",
 adm_fiche_gen_plans:"Plan konsène", adm_fiche_gen_cotemax:"Kòt maksimòm ou vle a", adm_fiche_gen_publish:"Piblikasyon",
@@ -5592,6 +5718,9 @@ adm_home_h:"Vi jeneral", adm_home_p:"Chif reyèl, dirèkteman soti nan baz done 
 adm_refresh:"Rafrechi", adm_updated_at:"Mizajou a {t}",
 adm_k_loading:"Chajman...", adm_k_offline:"Koneksyon pa disponib", adm_k_error:"Erè lekti",
 adm_activity_h:"Aktivite resan", adm_activity_empty:"Pa gen peman ki ap tann kounye a.",
+adm_rev_h:"Revni", adm_rev_total:"Total revni konfime", adm_rev_total_note:"Tout istorik, sèlman peman ki valide.",
+adm_rev_mois:"Revni mwa sa a", adm_rev_paiements:"Peman konfime mwa sa a",
+adm_rev_attente:"Ap tann validasyon", adm_rev_attente_note:"{n} peman — pa janm konte kòm revni jiskaske li valide.",
 adm_activity_pending_pay:"Peman ap tann — {name}",
 adm_k_users:"Itilizatè", adm_k_subs_active:"Abònman aktif", adm_k_pay_pending:"Peman ki ap tann", adm_k_tickets:"Fich",
 adm_users_h:"Itilizatè", adm_users_p:"Rechèch ak detay chak kont, dirèkteman soti nan baz done a.",
@@ -5647,7 +5776,7 @@ adm_user_suspend_btn:"Sispann kont sa a", adm_user_reactivate_btn:"Reaktive kont
 adm_user_suspend_reason_required:"Yon rezon obligatwa pou sispann yon kont.",
 adm_user_suspend_err:"Aksyon an echwe.", adm_user_suspended_since:"Sispann nan",
 adm_user_plan_changed_h:"Plan chanje", adm_user_plan_changed_p:"Nouvo plan an aktif imedyatman.",
-adm_user_suspended_h:"Kont sispann", adm_user_suspended_p:"Itilizatè a pap ka konekte ankò.",
+adm_user_suspended_h:"Kont sispann", adm_user_suspended_p:"Itilizatè a pap ka konekte ankò.", adm_leg_result_lbl:"Rezilta", adm_leg_result_none:"Poko jwe", adm_leg_result_won:"Genyen", adm_leg_result_lost:"Pèdi", adm_leg_result_void:"Anile",
 adm_user_reactivated_h:"Kont reaktive", adm_user_reactivated_p:"Itilizatè a ka konekte ankò.",
 adm_section_subs:"Abònman", adm_section_pays:"Peman", adm_none_yet:"Pa gen ankò.",
 adm_pay_h:"Peman", adm_pay_p:"Valide oswa refize peman ki soumèt yo, dirèkteman soti nan baz done a.",
@@ -8792,6 +8921,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='home')renderHome();
     if(view==='users')renderUsers();
     if(view==='payments')renderPayments();
+    if(view==='revenus')renderRevenue();
     if(view==='plans')renderPlans();
     if(view==='fiches')renderFiches();
     if(view==='faq')renderFaqList();
@@ -8893,12 +9023,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!sb){box.innerHTML=kpi('—',t('adm_k_offline'));return;}
     box.innerHTML=kpi('—',t('adm_k_loading'));
     try{
-      const [{count:users},{count:subsActives},{count:paysPending},{count:tickets}]=await Promise.all([
+      // CORRIGÉ (01/09, réplication du correctif déjà en place sur
+      // index.html — 31/08 v6) : l'ancien COUNT(*) brut sur subscriptions
+      // where status='active' pouvait compter deux lignes pour la même
+      // personne, ne vérifiait jamais expires_at (une ligne restée à tort
+      // 'active' après sa fin comptait indéfiniment), et incluait les
+      // comptes suspendus. Remplacé par get_active_subscriptions_count()
+      // (RPC déjà en place côté base, protégée is_admin()).
+      // Compteur "Fiches" : uniquement les fiches EN COURS (status=
+      // 'pending'), pas le total historique toutes confondues — même
+      // correctif que index.html (28/08).
+      const [{count:users},{data:subsActivesData},{count:paysPending},{count:tickets}]=await Promise.all([
         sb.from('profiles').select('id',{count:'exact',head:true}),
-        sb.from('subscriptions').select('id',{count:'exact',head:true}).eq('status','active'),
+        sb.rpc('get_active_subscriptions_count'),
         sb.from('payments').select('id',{count:'exact',head:true}).eq('status','pending'),
-        sb.from('tickets').select('id',{count:'exact',head:true})
+        sb.from('tickets').select('id',{count:'exact',head:true}).eq('status','pending')
       ]);
+      const subsActives=(typeof subsActivesData==='number')?subsActivesData:null;
       box.innerHTML=
         kpi(users!=null?users:'—',t('adm_k_users'),null,'users') +
         kpi(subsActives!=null?subsActives:'—',t('adm_k_subs_active'),'green','users') +
@@ -8911,6 +9052,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         card.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();aller();}});
       });
       renderActiviteRecente();
+      renderQuotaBadge();
+      renderRevenue();
     }catch(e){
       box.innerHTML=kpi('—',t('adm_k_error'));
     }
@@ -8957,6 +9100,171 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       box.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';
     }
   }
+
+  // ============================================================
+  // BADGE DE QUOTA API-SPORTS (réplication depuis index.html, session
+  // 31/08-01/09) — lit get_real_api_quota_today, alimenté par les
+  // en-têtes x-ratelimit-* d'API-Sports sur chaque appel réel des bots.
+  // Football et basketball sont deux abonnements API-Sports réellement
+  // distincts (même clé, deux produits séparés, chacun son propre
+  // plafond de 100/jour) — jamais le même compteur.
+  // ============================================================
+  async function chargerQuotaReelApi(provider){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{
+      const {data,error}=await sb.rpc('get_real_api_quota_today',{p_provider:provider||'api-sports-football'});
+      if(error)throw error;
+      return Array.isArray(data)?data[0]:data;
+    }catch(e){return null;}
+  }
+  function classeQuota(pct){
+    if(pct>=85)return 'rouge';
+    if(pct>=60)return 'or';
+    return 'vert';
+  }
+  // Un badge pour UN provider (foot OU basket) — réutilisé par le badge
+  // double de l'accueil (renderQuotaBadge) et par le badge simple,
+  // contextuel au mode choisi, de la page de génération manuelle
+  // (renderQuotaBadgeGen).
+  function htmlBadgeQuota(q,labelSport){
+    if(!q || !q.est_du_jour){
+      return '<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+
+        (labelSport?'<b>'+stripTags(labelSport)+'</b> — ':'')+t('adm_quota_inconnu')+'</span></div>';
+    }
+    const pct=q.real_limit?Math.round((q.real_limit-q.real_remaining)/q.real_limit*100):0;
+    const cls=classeQuota(pct);
+    const heure=new Date(q.real_captured_at).toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'});
+    // Affichage en CHIFFRES (80/100 utilisés), toujours recalculé à
+    // partir de la donnée fraîche renvoyée par get_real_api_quota_today.
+    const used=q.real_limit!=null&&q.real_remaining!=null?Math.max(0,q.real_limit-q.real_remaining):null;
+    return '<div class="adm-quota-badge '+cls+'">'+
+      '<span class="adm-quota-badge-pct">'+pct+'%</span>'+
+      '<span class="adm-quota-badge-txt">'+(labelSport?'<b>'+stripTags(labelSport)+'</b> — ':'')+
+      t('adm_quota_lbl_reel')
+        .replace('{used}',used!=null?used:'—')
+        .replace('{remaining}',q.real_remaining)
+        .replace('{max}',q.real_limit)
+        .replace('{time}',heure)+'</span></div>';
+  }
+  // Badge de l'accueil admin : affiche les DEUX quotas, foot et basket,
+  // l'un sous l'autre, chacun lu depuis son propre provider.
+  async function renderQuotaBadge(){
+    const wrap=document.getElementById('admQuotaBadgeWrap');
+    if(!wrap)return;
+    const [qFoot,qBasket]=await Promise.all([
+      chargerQuotaReelApi('api-sports-football'),
+      chargerQuotaReelApi('api-sports-basketball')
+    ]);
+    wrap.innerHTML=htmlBadgeQuota(qFoot,t('adm_quota_sport_foot'))+
+      '<div style="margin-top:6px">'+htmlBadgeQuota(qBasket,t('adm_quota_sport_basket'))+'</div>';
+  }
+  // Version "page de génération manuelle" : même badge, plus un
+  // avertissement si le quota restant est trop bas (voire désactive le
+  // bouton si réellement épuisé). Lit le bon provider selon admGenMode —
+  // 'exact' consomme le même quota que 'normal' (football), seul
+  // 'basket' consomme le quota basketball, réellement séparé.
+  const PLAFOND_MANUEL_ALERTE=15;
+  async function renderQuotaBadgeGen(){
+    const wrap=document.getElementById('admGenQuotaWrap');
+    const btn=document.getElementById('admGenSubmit');
+    if(!wrap)return;
+    const provider=admGenMode==='basket'?'api-sports-basketball':'api-sports-football';
+    const labelSport=t(admGenMode==='basket'?'adm_quota_sport_basket':'adm_quota_sport_foot');
+    const q=await chargerQuotaReelApi(provider);
+    if(btn)btn.disabled=false;
+    if(!q || !q.est_du_jour){
+      wrap.innerHTML=htmlBadgeQuota(q,labelSport)+
+        '<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_inconnu')+'</span></div>';
+      return;
+    }
+    let avertissement='';
+    if(q.real_remaining<=0){
+      avertissement='<div class="adm-quota-badge rouge" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_epuise')+'</span></div>';
+      if(btn)btn.disabled=true;
+    }else if(q.real_remaining<PLAFOND_MANUEL_ALERTE){
+      avertissement='<div class="adm-quota-badge or" style="margin-top:6px"><span class="adm-quota-badge-txt">'+t('adm_quota_gen_bas').replace('{left}',q.real_remaining)+'</span></div>';
+    }
+    wrap.innerHTML=htmlBadgeQuota(q,labelSport)+avertissement;
+  }
+
+  // ============================================================================
+  // CARDS DE STATISTIQUES REVENUS (01/09, demande explicite de James, avec
+  // exemple visuel fourni) — lit get_revenue_stats() (RPC dediee, protegee
+  // is_admin(), meme fichier de migration que ce correctif). Regle absolue,
+  // jamais contournee : un revenu n'est compte que si le paiement est
+  // 'confirmed' (valide par un admin) — un paiement 'pending' n'est JAMAIS
+  // affiche comme du revenu, meme separement, meme avec un libelle
+  // different (voir card "En attente" ci-dessous, volontairement isolee
+  // visuellement du reste). Toutes les valeurs viennent de vraies lignes
+  // de la table payments, jamais de donnees inventees. Meme palette que
+  // le reste du site (voir CSS .rev-card — noir/vert/or/blanc, aucune
+  // couleur importee d'un modele externe). Rafraichie dans le meme cycle
+  // que le reste de l'accueil (renderHome), donc toujours synchronisee.
+  // ============================================================================
+  function icRev(path){
+    return '<svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+path+'</svg>';
+  }
+  const IC_TREND='<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>';
+  const IC_CALENDAR='<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>';
+  const IC_CHECK='<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+  const IC_CLOCK='<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
+  // Un seul badge de variation, ou aucun si la base de comparaison est 0
+  // (jamais de division par zero affichee, jamais de "+Infinity%").
+  function badgeVariation(actuel,precedent){
+    if(!precedent||precedent<=0)return '';
+    const pct=Math.round((actuel-precedent)/precedent*100);
+    const sens=pct>=0?'up':'down';
+    const fleche=pct>=0?'↑':'↓';
+    return '<span class="rev-card-badge '+sens+'">'+fleche+' '+(pct>=0?'+':'')+pct+'%</span>';
+  }
+  function revCard(iconPath,iconTone,badgeHtml,label,valeurHtml,valueClass,note){
+    return '<div class="rev-card">'+
+      '<div class="rev-card-top">'+
+        '<span class="rev-card-ic'+(iconTone?' '+iconTone:'')+'">'+icRev(iconPath)+'</span>'+
+        (badgeHtml||'')+
+      '</div>'+
+      '<div class="rev-card-lbl">'+label+'</div>'+
+      '<div class="rev-card-val'+(valueClass?' '+valueClass:'')+'">'+valeurHtml+'</div>'+
+      (note?'<div class="rev-card-note">'+note+'</div>':'')+
+    '</div>';
+  }
+  async function renderRevenue(){
+    // Synchronisation stricte (demande explicite de James, 01/09) : la
+    // carte de l'accueil ET la vue dédiée du menu affichent TOUJOURS
+    // exactement les mêmes chiffres, puisque c'est le même appel RPC qui
+    // remplit les deux conteneurs à chaque fois — jamais deux calculs
+    // séparés qui pourraient diverger.
+    const boxes=[document.getElementById('admRevCards'),document.getElementById('admRevCardsFull')].filter(Boolean);
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!boxes.length)return;
+    if(!sb){boxes.forEach(b=>{b.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_offline')+'</span></div>';});return;}
+    try{
+      const {data,error}=await sb.rpc('get_revenue_stats');
+      if(error)throw error;
+      const r=(Array.isArray(data)?data[0]:data)||{};
+      const totalConfirme=r.total_confirmed!=null?r.total_confirmed:0;
+      const moisConfirme=r.month_confirmed!=null?r.month_confirmed:0;
+      const moisPrecConfirme=r.month_prev_confirmed!=null?r.month_prev_confirmed:0;
+      const moisCount=r.month_confirmed_count!=null?r.month_confirmed_count:0;
+      const moisPrecCount=r.month_prev_confirmed_count!=null?r.month_prev_confirmed_count:0;
+      const enAttenteMontant=r.pending_amount!=null?r.pending_amount:0;
+      const enAttenteCount=r.pending_count!=null?r.pending_count:0;
+      const html=
+        revCard(IC_TREND,null,'',t('adm_rev_total'),money(totalConfirme)+' <small>HTG</small>','gold',t('adm_rev_total_note'))+
+        revCard(IC_CALENDAR,'green',badgeVariation(moisConfirme,moisPrecConfirme),t('adm_rev_mois'),money(moisConfirme)+' <small>HTG</small>')+
+        revCard(IC_CHECK,'green',badgeVariation(moisCount,moisPrecCount),t('adm_rev_paiements'),String(moisCount))+
+        revCard(IC_CLOCK,'neutre','',t('adm_rev_attente'),money(enAttenteMontant)+' <small>HTG</small>',null,t('adm_rev_attente_note').replace('{n}',enAttenteCount));
+      boxes.forEach(b=>{b.innerHTML=html;});
+      const heureMaj=t('adm_updated_at').replace('{t}',new Date().toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'}));
+      const updEl=document.getElementById('admRevUpdated');
+      if(updEl)updEl.textContent=heureMaj;
+    }catch(e){
+      boxes.forEach(b=>{b.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';});
+    }
+  }
+  const admRevRefreshBtn=document.getElementById('admRevRefresh');
+  if(admRevRefreshBtn)admRevRefreshBtn.addEventListener('click',renderRevenue);
 
   /* ---- Donnees reelles : utilisateurs ---- */
   function initiales(txt){
@@ -10574,6 +10882,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      serveur). Réservé aux administrateurs : le jeton de session est
      transmis, revérifié côté serveur avant toute génération. */
   let admGenPlansCache=null;
+  // Mode de génération (réplication du correctif déjà en place sur
+  // index.html, 27/08 pour 'exact', session suivante pour 'basket') :
+  // 'normal' (cote max, foot), 'exact' (nombre de matchs, score exact
+  // uniquement), 'basket' (basketball, endpoint dédié). Détermine le
+  // titre affiché et le corps envoyé aux fonctions Netlify.
+  let admGenMode='normal';
   async function renderAdmGenPlans(){
     const box=document.getElementById('admGenPlans');
     box.innerHTML='<span class="admdash-empty" style="padding:6px 0">'+t('adm_k_loading')+'</span>';
@@ -10594,12 +10908,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       box.innerHTML='<span class="admdash-empty">'+t('adm_k_error')+'</span>';
     }
   }
-  document.getElementById('admFicheGenererBtn').addEventListener('click',()=>{
+  function ouvrirVueGeneration(mode){
+    admGenMode=mode;
     document.getElementById('admGenDate').value=partsHaiti(new Date(Date.now()+24*3600*1000)).iso;
     document.getElementById('admGenResult').innerHTML='';
+    document.getElementById('admGenSportWrap').style.display=(mode==='basket')?'none':'';
+    document.getElementById('admGenBasketNote').style.display=(mode==='basket')?'':'none';
+    document.getElementById('admGenCoteMaxWrap').style.display=(mode==='exact')?'none':'';
+    document.getElementById('admGenNombreMatchsWrap').style.display=(mode==='exact')?'':'none';
+    document.getElementById('admGenTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_h':(mode==='basket'?'adm_fiche_gen_basket_h':'adm_fiche_gen_h'));
+    document.getElementById('admGenSousTitre').textContent=t(mode==='exact'?'adm_fiche_gen_exact_p':(mode==='basket'?'adm_fiche_gen_basket_p':'adm_fiche_gen_p'));
     setView('fichegenerer');
     renderAdmGenPlans();
-  });
+    renderQuotaBadgeGen();
+  }
+  document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
+  document.getElementById('admFicheGenererExactBtn').addEventListener('click',()=>ouvrirVueGeneration('exact'));
+  document.getElementById('admFicheGenererBasketBtn').addEventListener('click',()=>ouvrirVueGeneration('basket'));
   document.getElementById('admGenSport').addEventListener('change',e=>{
     document.getElementById('admGenSportNote').style.display=(e.target.value==='nba')?'block':'none';
   });
@@ -10618,6 +10943,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sport=document.getElementById('admGenSport').value;
     const plansChoisis=Array.from(document.querySelectorAll('.admGenPlanChk:checked')).map(c=>Number(c.value));
     const coteMax=Number(document.getElementById('admGenCoteMax').value);
+    const nombreMatchs=Number(document.getElementById('admGenNombreMatchs').value);
     const publishMode=document.getElementById('admGenPublishMode').value;
     const scheduledAt=document.getElementById('admGenScheduledAt').value;
 
@@ -10630,6 +10956,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(publishMode==='scheduled'&&!scheduledAt){
       resBox.innerHTML='<div class="admdash-empty">'+t('adm_fiche_gen_err_prog')+'</div>';return;
     }
+    if(!window.confirm(admGenMode==='basket'?t('adm_fiche_gen_basket_confirm'):t('adm_fiche_gen_confirm')))return;
 
     btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
     resBox.innerHTML='';
@@ -10638,15 +10965,27 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const token=sessionData&&sessionData.session&&sessionData.session.access_token;
       if(!token)throw new Error(t('adm_fiche_gen_err_session'));
 
+      // corps de requete : mode 'exact' envoie nombreMatchs au lieu de
+      // coteMax. Mode 'basket' : mêmes champs que le mode normal, sport
+      // implicite (pas envoyé), endpoint dédié. Réplication du correctif
+      // déjà en place sur index.html.
+      const corps=admGenMode==='exact'
+        ? {playDate,heureDebut,heureFin,sport,plans:plansChoisis,mode:'exact',nombreMatchs,publishMode,scheduledAt}
+        : (admGenMode==='basket'
+          ? {playDate,heureDebut,heureFin,plans:plansChoisis,coteMax,publishMode,scheduledAt}
+          : {playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt});
       // 28/08 v5 : fonction Background — aucune réponse utilisable, voir
       // index.html pour le détail. Message d'attente + bouton "Vérifier".
-      fetch('/.netlify/functions/bot-generate-tickets-manual-background',{
+      const endpoint=admGenMode==='basket'
+        ?'/.netlify/functions/bot-generate-tickets-basket-manual-background'
+        :'/.netlify/functions/bot-generate-tickets-manual-background';
+      fetch(endpoint,{
         method:'POST',
         headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-        body:JSON.stringify({playDate,heureDebut,heureFin,sport,plans:plansChoisis,coteMax,publishMode,scheduledAt})
+        body:JSON.stringify(corps)
       }).catch(()=>{});
       resBox.innerHTML='<div class="admdash-row" style="cursor:default"><span class="admdash-row-tx"><b>'+
-        stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(t('adm_fiche_gen_bg_attente'))+'</span></span></div>'+
+        stripTags(t('adm_fiche_gen_bg_lance'))+'</b><span>'+stripTags(admGenMode==='basket'?t('adm_fiche_gen_basket_bg_attente'):t('adm_fiche_gen_bg_attente'))+'</span></span></div>'+
         '<button type="button" class="btn btn-outline" id="admGenVerifier" style="width:100%;margin-top:10px">'+
         stripTags(t('adm_fiche_gen_bg_verifier'))+'</button>';
       document.getElementById('admGenVerifier').addEventListener('click',()=>{
@@ -10674,6 +11013,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ? '<div class="admf-lock"><span style="flex:1">'+marqueLeg(leg.result)+' '+t('adm_fiche_leg_locked')+'</span></div>'
       : '';
     const ro=regle?' disabled':'';
+    // Règlement manuel (réplication depuis index.html, session 01/09 —
+    // palliatif pendant une éventuelle suspension API-Sports, ou tout
+    // autre cas où le bot de règlement est indisponible). Écrit
+    // directement dans fbLegsCourantes[i].result ; le vrai verrou reste
+    // côté base (admin_save_ticket) : un match déjà réglé ne peut jamais
+    // être re-modifié, même via ce sélecteur (bandeau verrouillé ci-dessus
+    // à la place).
+    const resultSel=regle?'':
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:2px">'+
+        '<label class="fb-leg-result-lbl" style="font-size:12px;opacity:.75;white-space:nowrap">'+t('adm_leg_result_lbl')+'</label>'+
+        '<select class="fb-leg-result" data-idx="'+i+'" style="flex:1">'+
+          '<option value=""'+(!leg.result?' selected':'')+'>'+t('adm_leg_result_none')+'</option>'+
+          '<option value="won">'+t('adm_leg_result_won')+'</option>'+
+          '<option value="lost">'+t('adm_leg_result_lost')+'</option>'+
+          '<option value="void">'+t('adm_leg_result_void')+'</option>'+
+        '</select>'+
+      '</div>';
     return '<div class="admdash-hist-row" data-legidx="'+i+'" style="flex-direction:column;align-items:stretch;gap:8px;padding:12px'+(regle?';opacity:.72':'')+'">'+
       bandeau+
       '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
@@ -10688,6 +11044,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<input type="text" class="fb-leg-field" data-f="pick" placeholder="'+t('adm_fiche_leg_pick')+'" value="'+(leg.pick||'').replace(/"/g,'&quot;')+'" style="flex:2;min-width:100px"'+ro+'>'+
         '<input type="number" step="0.01" class="fb-leg-field" data-f="odd" placeholder="'+t('adm_fiche_leg_odd')+'" value="'+(leg.odd!=null?leg.odd:'')+'" style="flex:1;min-width:70px"'+ro+'>'+
       '</div>'+
+      resultSel+
       '<button type="button" class="btn btn-reject fb-leg-del" data-idx="'+i+'" style="align-self:flex-end;padding:7px 14px;font-size:12px"'+ro+'>'+t('adm_fiche_leg_remove')+'</button>'+
     '</div>';
   }
@@ -10700,12 +11057,34 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         if(champ==='odd')majResumeCote();
       });
     });
+    document.querySelectorAll('.fb-leg-result').forEach(sel=>{
+      sel.addEventListener('change',()=>{
+        const idx=parseInt(sel.dataset.idx,10);
+        fbLegsCourantes[idx].result=sel.value||null;
+        majStatutAutoDepuisLegs();
+      });
+    });
     document.querySelectorAll('.fb-leg-del').forEach(b=>{
       b.addEventListener('click',()=>{
         fbLegsCourantes.splice(parseInt(b.dataset.idx,10),1);
         rerenderLegsList();
       });
     });
+  }
+  // Règlement manuel : dès que TOUS les matchs d'une fiche ont un résultat
+  // saisi (won/lost/void), le statut de la fiche entière se calcule tout
+  // seul — jamais désynchronisé du détail par match. Une seule défaite
+  // suffit à perdre le combiné, sinon gagnée dès que plus aucun match
+  // n'est en attente. Le sélecteur "Statut" reste modifiable à la main
+  // pour les cas hors norme, mais n'est plus la seule source de vérité
+  // une fois le détail complet.
+  function majStatutAutoDepuisLegs(){
+    const sel=document.getElementById('admFicheStatus');
+    if(!sel||!fbLegsCourantes.length)return;
+    const tousRegles=fbLegsCourantes.every(l=>!!l.result);
+    if(!tousRegles)return;
+    const perdu=fbLegsCourantes.some(l=>l.result==='lost');
+    sel.value=perdu?'lost':'won';
   }
   function rerenderLegsList(){
     const box=document.getElementById('admFicheLegsList');

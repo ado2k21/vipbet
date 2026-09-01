@@ -2255,6 +2255,23 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .dtk-res.won{background:rgba(46,212,127,.16);color:var(--vert-vif)}
 .dtk-res.lost{background:rgba(226,99,79,.14);color:#E2634F}
 .dtk-res.pending{background:rgba(201,164,76,.14);color:var(--or-clair)}
+/* Historique abonnement (01/09, demande explicite de James) — mêmes
+   conventions de couleur que les cartes de fiches (.dtk-res) : vert pour
+   actif, rouge pour expiré. Jamais une autre couleur importée d'ailleurs. */
+.subh-item{
+  background:linear-gradient(158deg,rgba(46,212,127,.05),rgba(3,8,23,0) 60%),#0B1425;
+  border:1px solid var(--ligne);border-radius:var(--r-md);padding:15px 16px;
+  margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.subh-item.is-actif{border-color:rgba(46,212,127,.3)}
+.subh-item-name{font-family:var(--display);font-weight:700;font-size:15px;color:#F4F3ED}
+.subh-item-dates{margin-top:4px;font-family:var(--mono);font-size:11px;color:var(--gris)}
+.subh-badge{
+  flex:0 0 auto;font-family:var(--mono);font-weight:700;font-size:11px;
+  padding:5px 12px;border-radius:20px;white-space:nowrap;
+}
+.subh-badge.actif{background:rgba(46,212,127,.16);color:var(--vert-vif)}
+.subh-badge.expire{background:rgba(226,99,79,.14);color:#E2634F}
 .dtk-note-x2{
   padding:7px 14px;font-size:11px;font-weight:700;color:var(--or-clair);
   background:rgba(201,164,76,.09);border-bottom:1px solid rgba(244,243,237,.045);
@@ -4035,6 +4052,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5.3 5.6.7-4.2 3.9 1.1 5.6L12 15.8 7.1 18.5l1.1-5.6L4 9l5.6-.7L12 3Z"/></svg>
             <span data-i18n="dash_t_sub">Abònman m</span>
           </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-dmenu="subhistory">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="17" rx="2.3"/><path d="M8 2.5v3M16 2.5v3M3.5 9.5h17"/><path d="M8 13.5h3M8 16.5h5"/></svg>
+            <span data-i18n="dash_t_subhistory">Istorik abònman</span>
+          </button>
           <div class="dash-menu-sep"></div>
           <div class="dash-menu-lang">
             <span class="dash-menu-lang-lbl" data-i18n="dash_menu_lang">Lang</span>
@@ -4167,10 +4188,13 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <p data-i18n="dash_stats_p">Tout chif sa yo kalkile apati istorik la — yo pa ekri alamen.</p>
       </div>
       <div class="dash-kpis" id="dashKpisStats"></div>
+      <div id="dashStatsMsgWrap"></div>
+      <div id="dashStatsBySportWrap">
       <div class="dash-hi" style="margin-top:30px">
         <h2 style="font-size:17px" data-i18n="dash_stats_bysport">Pa disiplin</h2>
       </div>
       <div class="dash-kpis" id="dashKpisSport"></div>
+      </div>
       <div class="dash-note">
         <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>
         <span data-i18n="dash_stats_note">To reyisit la kalkile sou fich ki gen yon rezilta final. Fich kap tann yo pa konte. Pèfòmans ki pase pa garanti rezilta kap vini.</span>
@@ -4222,6 +4246,19 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
           <span data-i18n="dash_change_pass">Chanje modpas</span>
         </button>
       </div>
+    </div>
+
+    <!-- VUE : HISTORIQUE ABONNEMENT (01/09) -->
+    <div class="dash-view" data-dview="subhistory">
+      <button class="dash-back" type="button" data-dback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="dash-hi">
+        <h2 data-i18n="dash_subhistory_h">Istorik abònman</h2>
+        <p data-i18n="dash_subhistory_p">Tout plan konfime ou yo, ansyen kou aktyèl.</p>
+      </div>
+      <div id="dashSubHistoryList"></div>
     </div>
 
   </div>
@@ -4732,6 +4769,8 @@ wiz_lock_r1:"Vous devez d'abord créer un compte pour accéder au tableau de bor
 wiz_lock_r2:"Votre adresse e-mail n'est pas encore vérifiée. Terminez la vérification pour continuer.",
 wiz_lock_r3:"Aucun abonnement actif. Réglez votre abonnement pour débloquer le tableau de bord.",
 dash_t_today:"Fiches du jour", dash_t_history:"Historique", dash_t_stats:"Statistiques", dash_t_sub:"Mon abonnement",
+dash_t_subhistory:"Historique abonnement", dash_subhistory_h:"Historique abonnement", dash_subhistory_p:"Tous vos plans confirmés, anciens et actuel.",
+dash_subh_actif:"Actif", dash_subh_expire:"Expiré", dash_subhistory_empty:"Aucun plan confirmé pour l'instant.",
 dash_hello:"Bonjour {name}", dash_hello_p:"Voici les fiches publiées aujourd'hui par notre équipe d'experts.",
 dash_notif_h:"Notifications", dash_notif_clear:"Tout marquer comme lu", dash_notif_empty:"Aucune notification.",
 dash_n1:"Votre fiche F-2401 est gagnante", dash_n2:"4 nouvelles fiches publiées aujourd'hui", dash_n3:"Votre abonnement expire dans 12 jours",
@@ -4779,6 +4818,7 @@ dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
 dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
 dash_empty_hist:"Aucune fiche ne correspond à ces filtres.", dash_hist_needs_plan:"Vous devez avoir un plan actif pour voir votre historique de fiches gagnées ou perdues.",
+dash_stats_needs_plan:"Vous devez avoir un plan actif pour voir vos statistiques de performance.",
 dash_k_avail:"Fiches disponibles", dash_k_legs:"Sélections du jour", dash_k_bestodd:"Meilleure cote", dash_k_locked:"Fiches verrouillées",
 dash_k_played:"Fiches jouées", dash_k_won:"Gagnées", dash_k_lost:"Perdues", dash_k_rate:"Taux de réussite",
 dash_k_avgodd:"Cote moyenne", dash_k_avgconf:"Confiance moyenne",
@@ -5181,6 +5221,8 @@ wiz_lock_r1:"You need to create an account first to access the dashboard.",
 wiz_lock_r2:"Your email address isn't verified yet. Complete verification to continue.",
 wiz_lock_r3:"No active plan. Complete your payment to unlock the dashboard.",
 dash_t_today:"Today's picks", dash_t_history:"History", dash_t_stats:"Statistics", dash_t_sub:"My plan",
+dash_t_subhistory:"Plan history", dash_subhistory_h:"Plan history", dash_subhistory_p:"All your confirmed plans, past and current.",
+dash_subh_actif:"Active", dash_subh_expire:"Expired", dash_subhistory_empty:"No confirmed plan yet.",
 dash_hello:"Hello {name}", dash_hello_p:"Here are the slips published today by our expert team.",
 dash_notif_h:"Notifications", dash_notif_clear:"Mark all as read", dash_notif_empty:"No notifications.",
 dash_n1:"Your slip F-2401 is a winner", dash_n2:"4 new slips published today", dash_n3:"Your plan expires in 12 days",
@@ -5228,6 +5270,7 @@ dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {p
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
 dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
 dash_empty_hist:"No slip matches these filters.", dash_hist_needs_plan:"You need an active plan to see your history of won or lost slips.",
+dash_stats_needs_plan:"You need an active plan to see your performance statistics.",
 dash_k_avail:"Slips available", dash_k_legs:"Selections today", dash_k_bestodd:"Best odds", dash_k_locked:"Locked slips",
 dash_k_played:"Slips played", dash_k_won:"Won", dash_k_lost:"Lost", dash_k_rate:"Success rate",
 dash_k_avgodd:"Average odds", dash_k_avgconf:"Average confidence",
@@ -5630,6 +5673,8 @@ wiz_lock_r1:"Ou dwe kreye yon kont anvan pou w jwenn dashboard la.",
 wiz_lock_r2:"Imèl ou poko verifye. Fini verifikasyon an pou w kontinye.",
 wiz_lock_r3:"Pa gen abònman aktif. Peye abònman ou pou w debloke dashboard la.",
 dash_t_today:"Fich jodi a", dash_t_history:"Istorik", dash_t_stats:"Estatistik", dash_t_sub:"Abònman m",
+dash_t_subhistory:"Istorik abònman", dash_subhistory_h:"Istorik abònman", dash_subhistory_p:"Tout plan konfime ou yo, ansyen kou aktyèl.",
+dash_subh_actif:"Aktif", dash_subh_expire:"Ekspire", dash_subhistory_empty:"Pa gen plan konfime pou kounye a.",
 dash_hello:"Bonjou {name}", dash_hello_p:"Men fich ekip ekspè nou an pibliye jodi a.",
 dash_notif_h:"Notifikasyon", dash_notif_clear:"Make tout kòm li", dash_notif_empty:"Pa gen notifikasyon.",
 dash_n1:"Fich F-2401 ou an genyen", dash_n2:"4 nouvo fich pibliye jodi a", dash_n3:"Abònman ou ap ekspire nan 12 jou",
@@ -5677,6 +5722,7 @@ dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {pla
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
 dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
 dash_empty_hist:"Pa gen fich ki matche ak filtè sa yo.", dash_hist_needs_plan:"Ou dwe gen yon plan aktif pou w wè istorik fich ou genyen oswa pèdi yo.",
+dash_stats_needs_plan:"Ou dwe gen yon plan aktif pou w wè estatistik pèfòmans ou yo.",
 dash_k_avail:"Fich disponib", dash_k_legs:"Seleksyon jodi a", dash_k_bestodd:"Pi bon cote", dash_k_locked:"Fich fèmen",
 dash_k_played:"Fich jwe", dash_k_won:"Genyen", dash_k_lost:"Pèdi", dash_k_rate:"To reyisit",
 dash_k_avgodd:"Cote mwayèn", dash_k_avgconf:"Konfyans mwayèn",
@@ -9740,6 +9786,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   /* ---- Vue : statistiques (calculees, jamais ecrites en dur) ---- */
   function renderStats(){
+    // CORRIGÉ (01/09, risque signalé dans le mémoire du 01/09) : même
+    // règle que renderHistory ci-dessus — sans plan actif (jamais
+    // confirmé, refusé, OU confirmé mais expiré), aucun chiffre de
+    // performance (taux de réussite, cote moyenne, confiance moyenne,
+    // stats par discipline) n'est calculé ni affiché. Seul un message
+    // demandant un plan actif est montré, jamais de KPI partiel.
+    const stStats=getState();
+    const lifeStats=!!(window.VB_isLifetime&&window.VB_isLifetime());
+    const planActifStats=lifeStats||!!(stStats&&stStats.paid&&stStats.payStatus==='confirmed'&&stStats.planId&&!isExpired());
+    const bySportWrap=document.getElementById('dashStatsBySportWrap');
+    const msgWrap=document.getElementById('dashStatsMsgWrap');
+    if(!planActifStats){
+      document.getElementById('dashKpisStats').innerHTML=
+        kpi('—%','dash_k_rate','green')+kpi('—','dash_k_played')+
+        kpi('—','dash_k_avgodd','gold')+kpi('—%','dash_k_avgconf');
+      document.getElementById('dashKpisSport').innerHTML='';
+      if(bySportWrap)bySportWrap.style.display='none';
+      if(msgWrap){msgWrap.innerHTML='';msgWrap.appendChild(emptyEl('dash_stats_needs_plan'));}
+      return;
+    }
+    if(bySportWrap)bySportWrap.style.display='';
+    if(msgWrap)msgWrap.innerHTML='';
     const done=DATA.tickets.filter(k=>k.status!=='pending');
     const won=done.filter(k=>k.status==='won');
     const rate=done.length?Math.round(won.length/done.length*100):0;
@@ -9767,6 +9835,74 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
 
   /* ---- Vue : abonnement ---- */
+  /* ---- Vue : historique abonnement (01/09, demande explicite de James) ----
+     Liste TOUS les plans passés et présents de l'utilisateur — mais
+     UNIQUEMENT ceux confirmés par un admin (subscriptions.status=
+     'active'). Un plan encore 'pending' (paiement pas encore validé) ou
+     'cancelled' (refusé/annulé) n'apparaît JAMAIS dans cette liste, quoi
+     qu'il arrive — règle explicite, jamais contournée.
+     Le plan actif reste TOUJOURS en haut (badge vert), le reste trié du
+     plus récent au plus ancien (badge rouge "Expiré"). "Actif" est
+     recalculé à CHAQUE affichage à partir de la vraie date d'expiration
+     (jamais un statut figé) : un plan bascule donc automatiquement en
+     "Expiré" tout seul dès que sa date passe, et un nouveau plan
+     confirmé après renouvellement apparaît en haut au prochain rendu —
+     sans aucune action manuelle nécessaire. */
+  async function renderSubHistory(){
+    const box=document.getElementById('dashSubHistoryList');
+    if(!box)return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){box.innerHTML='';box.appendChild(emptyEl('dash_empty_err'));return;}
+    try{
+      let uid=(getState()&&getState().supabaseUserId)||null;
+      if(!uid){
+        const {data:sessionData}=await sb.auth.getSession();
+        uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
+      }
+      if(!uid){box.innerHTML='';box.appendChild(emptyEl('dash_empty_err'));return;}
+      const {data,error}=await sb.from('subscriptions')
+        .select('id,plan_id,starts_at,expires_at,created_at')
+        .eq('user_id',uid).eq('status','active')
+        .order('starts_at',{ascending:false});
+      if(error)throw error;
+      const lignes=data||[];
+      if(!lignes.length){
+        box.innerHTML='';
+        box.appendChild(emptyEl('dash_subhistory_empty'));
+        return;
+      }
+      const maintenant=Date.now();
+      const enrichies=lignes.map(l=>({
+        l,
+        actif: !l.expires_at || new Date(l.expires_at).getTime()>maintenant
+      }));
+      enrichies.sort((a,b)=>{
+        if(a.actif!==b.actif)return a.actif?-1:1;
+        return new Date(b.l.starts_at||b.l.created_at)-new Date(a.l.starts_at||a.l.created_at);
+      });
+      box.innerHTML='';
+      enrichies.forEach(x=>{
+        const l=x.l;
+        const pl=window.VB_planById?window.VB_planById(l.plan_id):null;
+        const nom=pl?stripTags(window.VB_planLabel(pl)):l.plan_id;
+        const debut=fmtLong(l.starts_at);
+        const fin=l.expires_at?fmtLong(l.expires_at):t('wiz_d_never');
+        const div=document.createElement('div');
+        div.className='subh-item'+(x.actif?' is-actif':'');
+        div.innerHTML=
+          '<div><div class="subh-item-name"></div>'+
+          '<div class="subh-item-dates"></div></div>'+
+          '<span class="subh-badge '+(x.actif?'actif':'expire')+'"></span>';
+        div.querySelector('.subh-item-name').textContent=nom;
+        div.querySelector('.subh-item-dates').textContent=debut+' \u2192 '+fin;
+        div.querySelector('.subh-badge').textContent=t(x.actif?'dash_subh_actif':'dash_subh_expire');
+        box.appendChild(div);
+      });
+    }catch(e){
+      box.innerHTML='';
+      box.appendChild(emptyEl('dash_empty_err'));
+    }
+  }
   function renderSub(){
     const st=getState()||{};
     const stateEl=document.getElementById('dashSubState');
@@ -9960,6 +10096,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='today')renderToday();
     else if(view==='history')renderHistory();
     else if(view==='stats')renderStats();
+    else if(view==='subhistory')renderSubHistory();
     else renderSub();
     renderNotifs();
   }
