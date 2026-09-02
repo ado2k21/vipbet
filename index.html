@@ -1753,6 +1753,23 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 }
 .wiz-otp input:focus{outline:none;border-color:var(--vert-vif);background:#0D182C}
 .wiz-otp.invalid input{border-color:#E2634F}
+/* Animation "pop" (02/09, demande de James, inspiree d'une demo OTP externe
+   qu'il a partagee) — appliquee a TOUS les verificateurs de code du site
+   (classe partagee .wiz-otp) : inscription (wizOtp), mot de passe oublie
+   (pwrOtp), 2FA admin activation/connexion (mfaEnrollOtp/mfaChallengeOtp),
+   et changement de mot de passe admin (admPwOtp, genere dynamiquement en
+   JS). Classe ajoutee/retiree en JS a chaque chiffre saisi, jamais de Web
+   Animations API — un simple keyframe CSS suffit et reste jamais bloquant
+   si prefers-reduced-motion est actif.*/
+@keyframes wizOtpPop{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.14);border-color:var(--vert-vif);background:#0D182C;box-shadow:0 0 0 3px rgba(46,212,127,.18)}
+  100%{transform:scale(1)}
+}
+.wiz-otp input.otp-pop{animation:wizOtpPop .32s ease}
+@media (prefers-reduced-motion:reduce){
+  .wiz-otp input.otp-pop{animation:none;border-color:var(--vert-vif)}
+}
 /* Overlay 2FA admin : independant du systeme wizard/authpage, declenche
    uniquement apres un mot de passe admin valide. */
 .mfa-overlay{
@@ -3748,12 +3765,12 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
               <span id="wizInlineMail"></span>
             </div>
             <div class="wiz-otp" id="wizOtp">
-              <input type="text" inputmode="numeric" maxlength="1" aria-label="1">
-              <input type="text" inputmode="numeric" maxlength="1" aria-label="2">
-              <input type="text" inputmode="numeric" maxlength="1" aria-label="3">
-              <input type="text" inputmode="numeric" maxlength="1" aria-label="4">
-              <input type="text" inputmode="numeric" maxlength="1" aria-label="5">
-              <input type="text" inputmode="numeric" maxlength="1" aria-label="6">
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="1" autocomplete="one-time-code">
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="2" autocomplete="one-time-code">
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="3" autocomplete="one-time-code">
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="4" autocomplete="one-time-code">
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="5" autocomplete="one-time-code">
+              <input type="text" inputmode="numeric" maxlength="1" aria-label="6" autocomplete="one-time-code">
             </div>
             <span class="field-err" id="wizOtpErr" style="display:none;text-align:center" data-i18n="wiz_v_err">Kòd la pa kòrèk</span>
             <p class="authpage-switch" style="margin:0">
@@ -3861,12 +3878,12 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
                 <span id="pwrMailTo"></span>
               </div>
               <div class="wiz-otp" id="pwrOtp">
-                <input type="text" inputmode="numeric" maxlength="1" aria-label="1">
-                <input type="text" inputmode="numeric" maxlength="1" aria-label="2">
-                <input type="text" inputmode="numeric" maxlength="1" aria-label="3">
-                <input type="text" inputmode="numeric" maxlength="1" aria-label="4">
-                <input type="text" inputmode="numeric" maxlength="1" aria-label="5">
-                <input type="text" inputmode="numeric" maxlength="1" aria-label="6">
+                <input type="text" inputmode="numeric" maxlength="1" aria-label="1" autocomplete="one-time-code">
+                <input type="text" inputmode="numeric" maxlength="1" aria-label="2" autocomplete="one-time-code">
+                <input type="text" inputmode="numeric" maxlength="1" aria-label="3" autocomplete="one-time-code">
+                <input type="text" inputmode="numeric" maxlength="1" aria-label="4" autocomplete="one-time-code">
+                <input type="text" inputmode="numeric" maxlength="1" aria-label="5" autocomplete="one-time-code">
+                <input type="text" inputmode="numeric" maxlength="1" aria-label="6" autocomplete="one-time-code">
               </div>
               <span class="field-err" id="pwrOtpErr" style="display:none;text-align:center" data-i18n="wiz_v_err">Kòd la pa kòrèk</span>
               <p class="authpage-switch" style="margin:0">
@@ -3952,12 +3969,12 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <button type="button" class="btn btn-ghost" id="mfaSecretCopy" data-i18n="mfa_copy">Kopye</button>
       </div>
       <div class="wiz-otp" id="mfaEnrollOtp">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="1">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="2">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="3">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="4">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="5">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="6">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="1" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="2" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="3" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="4" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="5" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="6" autocomplete="one-time-code">
       </div>
       <span class="field-err" id="mfaEnrollErr" style="display:none;text-align:center;margin-bottom:14px" data-i18n="mfa_err_code">Kòd la pa kòrèk</span>
       <button type="button" class="btn btn-or" id="mfaEnrollSubmit" style="width:100%" data-i18n="mfa_btn_activate">Aktive 2FA</button>
@@ -3967,12 +3984,12 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       <h3 data-i18n="mfa_challenge_h">Verifikasyon an 2 etap</h3>
       <p data-i18n="mfa_challenge_p">Antre kòd 6 chif ki nan app otantifikasyon ou a.</p>
       <div class="wiz-otp" id="mfaChallengeOtp">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="1">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="2">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="3">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="4">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="5">
-        <input type="text" inputmode="numeric" maxlength="1" aria-label="6">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="1" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="2" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="3" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="4" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="5" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="6" autocomplete="one-time-code">
       </div>
       <span class="field-err" id="mfaChallengeErr" style="display:none;text-align:center;margin-bottom:14px" data-i18n="mfa_err_code">Kòd la pa kòrèk</span>
       <button type="button" class="btn btn-or" id="mfaChallengeSubmit" style="width:100%" data-i18n="mfa_btn_verify">Verifye</button>
@@ -6914,6 +6931,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   fVerify.addEventListener('submit',async ev=>{
     ev.preventDefault();
+    // Animation en cascade au clic sur Vérifier (02/09, demande explicite
+    // de James : jouer aussi au clic, pas seulement a chaque chiffre tape)
+    // — meme decalage progressif que la demo d'origine qu'il a partagee.
+    otpInputs.forEach((inp,i)=>{
+      setTimeout(()=>{
+        inp.classList.remove('otp-pop');
+        void inp.offsetWidth;
+        inp.classList.add('otp-pop');
+      },i*45);
+    });
     const entered=otpInputs.map(i=>i.value).join('');
     if(entered.length!==6){
       otp.classList.add('invalid');
@@ -7064,6 +7091,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     inp.addEventListener('input',()=>{
       inp.value=inp.value.replace(/\D/g,'').slice(0,1);
       otp.classList.remove('invalid');otpErr.style.display='none';
+      // Animation "pop" (02/09) : jouee uniquement quand un chiffre est
+      // reellement rentre (jamais sur un backspace qui vide la case) —
+      // classe retiree juste apres pour pouvoir se rejouer sur la meme
+      // case si l'utilisateur corrige un chiffre.
+      if(inp.value){
+        inp.classList.remove('otp-pop');
+        void inp.offsetWidth; // force le reflow pour rejouer l'animation
+        inp.classList.add('otp-pop');
+      }
       if(inp.value&&i<otpInputs.length-1)otpInputs[i+1].focus();
     });
     inp.addEventListener('keydown',ev=>{
@@ -7600,6 +7636,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     inp.addEventListener('input',()=>{
       inp.value=inp.value.replace(/\D/g,'').slice(0,1);
       pwrOtp.classList.remove('invalid');pwrOtpErr.style.display='none';
+      // Animation "pop" (02/09), meme principe que wizOtp — voir CSS/JS
+      // de wizOtp pour le detail du raisonnement, jamais duplique ici.
+      if(inp.value){
+        inp.classList.remove('otp-pop');
+        void inp.offsetWidth;
+        inp.classList.add('otp-pop');
+      }
       if(inp.value&&i<pwrOtpInputs.length-1)pwrOtpInputs[i+1].focus();
     });
     inp.addEventListener('keydown',ev=>{
@@ -7660,6 +7703,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
 
     if(pwr.stage==='code'){
+      // Animation en cascade au clic (02/09), meme principe que wizOtp.
+      pwrOtpInputs.forEach((inp,i)=>{
+        setTimeout(()=>{
+          inp.classList.remove('otp-pop');
+          void inp.offsetWidth;
+          inp.classList.add('otp-pop');
+        },i*45);
+      });
       const entered=pwrOtpInputs.map(i=>i.value).join('');
       if(entered.length!==6){
         pwrOtp.classList.add('invalid');
@@ -12246,7 +12297,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       box.innerHTML=
         '<p style="font-size:13px;color:var(--gris);margin-bottom:14px;line-height:1.5">'+t('adm_settings_pw_code_p').replace('{email}',email)+'</p>'+
         '<div class="wiz-otp" id="admPwOtp">'+
-          Array.from({length:6}).map((_,i)=>'<input type="text" inputmode="numeric" maxlength="1" aria-label="'+(i+1)+'">').join('')+
+          Array.from({length:6}).map((_,i)=>'<input type="text" inputmode="numeric" maxlength="1" aria-label="'+(i+1)+'" autocomplete="one-time-code">').join('')+
         '</div>'+
         '<span class="field-err" id="admPwOtpErr" style="display:none;text-align:center;margin:8px 0"></span>'+
         '<button type="button" class="btn btn-confirm" id="admPwCodeNext" style="width:100%;margin-top:10px">'+t('wiz_btn_verify')+'</button>'+
@@ -12257,6 +12308,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         inp.addEventListener('input',()=>{
           inp.value=inp.value.replace(/\D/g,'').slice(0,1);
           errBox.style.display='none';
+          // Animation "pop" (02/09), meme principe que wizOtp — ce
+          // composant est genere dynamiquement (renderAdmPwSection),
+          // donc le listener est recree a chaque affichage, jamais un
+          // souci puisque la classe CSS .wiz-otp est deja partagee.
+          if(inp.value){
+            inp.classList.remove('otp-pop');
+            void inp.offsetWidth;
+            inp.classList.add('otp-pop');
+          }
           if(inp.value&&i<inputs.length-1)inputs[i+1].focus();
         });
         inp.addEventListener('keydown',ev=>{
@@ -12264,6 +12324,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         });
       });
       document.getElementById('admPwCodeNext').addEventListener('click',()=>{
+        // Animation en cascade au clic (02/09), meme principe que wizOtp.
+        inputs.forEach((inp,i)=>{
+          setTimeout(()=>{
+            inp.classList.remove('otp-pop');
+            void inp.offsetWidth;
+            inp.classList.add('otp-pop');
+          },i*45);
+        });
         const code=inputs.map(i=>i.value.trim()).join('');
         if(code.length!==6){errBox.textContent=t('wiz_v_err');errBox.style.display='block';return;}
         admPwCode=code;
@@ -13664,6 +13732,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       inp.addEventListener('input',()=>{
         inp.value=inp.value.replace(/\D/g,'').slice(0,1);
         errBox.style.display='none';
+        // Animation "pop" (02/09), meme principe que wizOtp — appliquee
+        // ici aux deux ecrans 2FA admin (activation + connexion), qui
+        // partagent cette meme fonction brancherOtp.
+        if(inp.value){
+          inp.classList.remove('otp-pop');
+          void inp.offsetWidth;
+          inp.classList.add('otp-pop');
+        }
         if(inp.value&&i<inputs.length-1)inputs[i+1].focus();
       });
       inp.addEventListener('keydown',ev=>{
@@ -13871,6 +13947,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   });
 
   document.getElementById('mfaEnrollSubmit').addEventListener('click',async()=>{
+    // Animation en cascade au clic (02/09), meme principe que wizOtp.
+    enrollOtp.forEach((inp,i)=>{
+      setTimeout(()=>{
+        inp.classList.remove('otp-pop');
+        void inp.offsetWidth;
+        inp.classList.add('otp-pop');
+      },i*45);
+    });
     const code=enrollOtp.map(i=>i.value.trim()).join('');
     if(code.length!==6){enrollErr.textContent=t('mfa_err_code');enrollErr.style.display='block';return;}
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
@@ -13898,6 +13982,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   });
 
   document.getElementById('mfaChallengeSubmit').addEventListener('click',async()=>{
+    // Animation en cascade au clic (02/09), meme principe que wizOtp.
+    challengeOtp.forEach((inp,i)=>{
+      setTimeout(()=>{
+        inp.classList.remove('otp-pop');
+        void inp.offsetWidth;
+        inp.classList.add('otp-pop');
+      },i*45);
+    });
     const code=challengeOtp.map(i=>i.value.trim()).join('');
     if(code.length!==6){challengeErr.textContent=t('mfa_err_code');challengeErr.style.display='block';return;}
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
