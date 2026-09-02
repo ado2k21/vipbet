@@ -9100,6 +9100,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     return '<span class="dtk-leg-mark none">·</span>';
   }
   const fmtLong=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'long',year:'numeric',timeZone:TZ_HAITI}):'—';
+  // CORRIGÉ (02/09, bug signalé par James : "Istorik abònman" toujours vide
+  // malgré des donnees confirmees en base) — stripTags etait utilisee dans
+  // renderSubHistory() mais jamais definie dans cette IIFE (elle n'existe
+  // que dans deux AUTRES IIFE separees du fichier, qui ne partagent pas
+  // leur scope). Consequence : ReferenceError silencieusement attrape par
+  // le catch(e) de renderSubHistory, affichant l'etat d'erreur generique
+  // meme quand les requetes Supabase reussissaient (200 OK, vraies
+  // donnees recues) — jamais un probleme de donnees ni de RLS.
+  const stripTags=h=>{const d=document.createElement('div');d.innerHTML=h;return d.textContent||'';};
 
   /* ---- Chargement des fiches : la base est la SEULE source ----
      On lit les fiches publiees (90 derniers jours) et leurs selections.
