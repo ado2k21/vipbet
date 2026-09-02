@@ -1758,15 +1758,22 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
    (classe partagee .wiz-otp) : inscription (wizOtp), mot de passe oublie
    (pwrOtp), 2FA admin activation/connexion (mfaEnrollOtp/mfaChallengeOtp),
    et changement de mot de passe admin (admPwOtp, genere dynamiquement en
-   JS). Classe ajoutee/retiree en JS a chaque chiffre saisi, jamais de Web
-   Animations API — un simple keyframe CSS suffit et reste jamais bloquant
-   si prefers-reduced-motion est actif.*/
+   JS). Classe ajoutee/retiree en JS a chaque chiffre saisi ET au clic sur
+   Verifier — jamais de Web Animations API, un simple keyframe CSS suffit
+   et reste jamais bloquant si prefers-reduced-motion est actif.
+   DUREE 1,5s (02/09 v2, demande explicite de James — la version initiale
+   a 0,32s etait jugee trop rapide/peu visible) : plusieurs paliers pour
+   que le mouvement reste lisible sur toute la duree, jamais un long temps
+   mort au milieu. */
 @keyframes wizOtpPop{
-  0%{transform:scale(1)}
-  40%{transform:scale(1.14);border-color:var(--vert-vif);background:#0D182C;box-shadow:0 0 0 3px rgba(46,212,127,.18)}
-  100%{transform:scale(1)}
+  0%{transform:scale(1);border-color:var(--ligne);box-shadow:none}
+  15%{transform:scale(1.22);border-color:var(--vert-vif);background:#0D182C;box-shadow:0 0 0 5px rgba(46,212,127,.22)}
+  35%{transform:scale(1.05);box-shadow:0 0 0 3px rgba(46,212,127,.14)}
+  55%{transform:scale(1.14);box-shadow:0 0 0 4px rgba(46,212,127,.18)}
+  80%{transform:scale(1.02);border-color:var(--vert-vif);box-shadow:0 0 0 2px rgba(46,212,127,.1)}
+  100%{transform:scale(1);border-color:var(--vert-vif);box-shadow:none}
 }
-.wiz-otp input.otp-pop{animation:wizOtpPop .32s ease}
+.wiz-otp input.otp-pop{animation:wizOtpPop 1.5s ease}
 @media (prefers-reduced-motion:reduce){
   .wiz-otp input.otp-pop{animation:none;border-color:var(--vert-vif)}
 }
