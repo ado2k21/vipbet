@@ -3286,6 +3286,20 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
           </div>
         </div>
 
+        <!-- AJOUTÉ (04/09, audit du site) : le cahier des charges d'origine
+             demandait Cote/Gain potentiel/Profit dans le simulateur — seul
+             le Profit manquait vraiment ici (la Cote et la Mise sont deja
+             visibles via le bouton en surbrillance juste au-dessus, pas
+             besoin de les repeter). Le JS (updateSim2, deja ecrit et
+             fonctionnel, voir s2El.profit) attendait deja cet element —
+             aucun changement JS necessaire, uniquement le HTML manquant. -->
+        <div class="sim2-gain" style="margin-top:8px">
+          <div class="sim2-gain-txt">
+            <span class="sim2-gain-lab" data-i18n="lbl_profit_net">PROFIT NET</span>
+            <span class="sim2-gain-val"><b id="s2-profit" style="color:var(--vert-vif)">+11 163 Gdes</b></span>
+          </div>
+        </div>
+
     <div class="h2-cta">
       <button class="btn h2-btn-green" data-goto="#abonnements">
         <span data-i18n="hero_cta1">DÉMARRER MAINTENANT</span>
@@ -4866,7 +4880,7 @@ sim_title:"ESSAYEZ CETTE DÉMO ET VOYEZ CE QUE VOTRE ARGENT RAPPORTE",
 sim_sub:"Choisissez un montant et choisissez un PLAN pour voir ce que vous gagnez sur ParyajPam.",
 sim_step1:"1. CHOISIR LE MONTANT (Gdes HTG)", sim_step2:"2. CHOISIR UNE FORMULE D'ABONNEMENT VIP",
 result_title:"CE QUE VOUS GAGNEZ",
-lbl_gain_brut:"GAIN POTENTIEL", sim_cta:"ACTIVER L'ABONNEMENT",
+lbl_gain_brut:"GAIN POTENTIEL", lbl_profit_net:"PROFIT NET", sim_cta:"ACTIVER L'ABONNEMENT",
 word_formule:"FORMULE",
 ab_populaire:"Le plus populaire",
 faq6_q:"Comment vais-je recevoir les Cote ?",
@@ -5324,7 +5338,7 @@ sim_title:"TRY THIS DEMO AND SEE WHAT YOUR MONEY MAKES",
 sim_sub:"Pick an amount and pick a PLAN to see what you make on ParyajPam.",
 sim_step1:"1. CHOOSE THE AMOUNT (Gdes HTG)", sim_step2:"2. CHOOSE A VIP SUBSCRIPTION PLAN",
 result_title:"WHAT YOU MAKE",
-lbl_gain_brut:"GROSS POTENTIAL WINNINGS", sim_cta:"ACTIVATE SUBSCRIPTION",
+lbl_gain_brut:"GROSS POTENTIAL WINNINGS", lbl_profit_net:"NET PROFIT", sim_cta:"ACTIVATE SUBSCRIPTION",
 word_formule:"PLAN",
 ab_populaire:"Most popular",
 faq6_q:"How will I receive the Cote?",
@@ -5782,7 +5796,7 @@ sim_title:"ESEYE DEMO SA GAD VALÈ KOB OU K FÈ",
 sim_sub:"Chwazi yon montan epi chwazi yon PLAN pou wè kòb wap fè sou ParyajPam.",
 sim_step1:"1. CHWAZI MONTAN (Gdes HTG)", sim_step2:"2. CHWAZI YON FÒMIL ABÒNMAN VIP",
 result_title:"KÒB OU K FÈ",
-lbl_gain_brut:"GEN POTANSYÈL", sim_cta:"AKTIVE ABÒNMAN AN",
+lbl_gain_brut:"GEN POTANSYÈL", lbl_profit_net:"PWOFI NÈT", sim_cta:"AKTIVE ABÒNMAN AN",
 word_formule:"FÒMIL",
 ab_populaire:"Pi popilè a",
 faq6_q:"Kijan map resevwa Cote yo?",
