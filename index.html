@@ -2148,6 +2148,7 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .dash-menu-item.on{background:var(--vert-vif);color:#04140D;box-shadow:0 4px 14px rgba(46,212,127,.35)}
 .dash-menu-item.on svg{color:#04140D}
 .dash-menu-item.danger{margin-top:6px}
+.dash-menu-item.danger svg{color:#E2634F}
 .dash-menu-item.danger:hover{background:rgba(226,99,79,.1);color:#E2634F}
 .dash-menu-item.danger:hover svg{color:#E2634F}
 .dash-menu-sep{height:1px;background:var(--ligne);margin:8px 4px}
@@ -3210,7 +3211,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9L12 2.6Z"/></svg>
         <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9L12 2.6Z"/></svg>
       </span>
-      <span class="h2-rating-txt"><b>4.6</b> · <span data-i18n="rating_label">Excellent sur Trustpilot</span></span>
+      <span class="h2-rating-txt"><b id="statTrustpilot">4.6</b> · <span data-i18n="rating_label">Excellent sur Trustpilot</span></span>
     </div>
 
     <div class="h2-stats">
@@ -4225,7 +4226,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
           <div class="dash-menu-sep"></div>
           <button class="dash-menu-item danger" type="button" role="menuitem" id="dashMenuExit">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17l5-5-5-5M20 12H9M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/></svg>
-            <span data-i18n="dash_menu_exit">Kite dashboard la</span>
+            <span data-i18n="dash_menu_exit">Dekonekte</span>
           </button>
         </div>
       </div>
@@ -4467,6 +4468,10 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4V5Z"/></svg>
             <span data-i18n="adm_nav_testimonials">Temwayaj</span>
           </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="landing">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+            <span data-i18n="adm_nav_landing">Estatistik akèy</span>
+          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="settings">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="adm_nav_settings">Paramèt</span>
@@ -4474,7 +4479,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
           <div class="dash-menu-sep"></div>
           <button class="dash-menu-item danger" type="button" role="menuitem" id="admMenuExit">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17l5-5-5-5M20 12H9M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/></svg>
-            <span data-i18n="adm_menu_exit">Kite Dashboard Admin</span>
+            <span data-i18n="adm_menu_exit">Dekonekte</span>
           </button>
         </div>
       </div>
@@ -4785,6 +4790,19 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         <span data-i18n="dash_back">Retounen</span>
       </button>
       <div id="admTestiDetail"></div>
+    </div>
+
+    <!-- VUE : STATISTIQUES ACCUEIL (chiffres marketing modifiables, synchronises en direct sur la landing) -->
+    <div class="dash-view" data-adview="landing">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="dash-hi">
+        <h2 data-i18n="adm_landing_h">Estatistik paj akèy la</h2>
+        <p data-i18n="adm_landing_p">Chif sa yo parèt sou paj akèy la — chanjman yo aplike PATOUT sou sit la imedyatman.</p>
+      </div>
+      <div id="admLandingBody"></div>
     </div>
 
     <!-- VUE : PARAMETRES -->
@@ -5115,7 +5133,7 @@ session_stale_h:"Compte ouvert ailleurs",
 session_stale_p:"Ce compte est ouvert dans une autre fenêtre. Rafraîchissez la page pour continuer.",
 dash_menu_lang:"Langue",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Vue d'ensemble", adm_nav_users:"Utilisateurs", adm_nav_payments:"Paiements", adm_nav_revenus:"Revenus", adm_nav_plans:"Plans", adm_nav_fiches:"Fiches", adm_nav_faq:"FAQ", adm_nav_testimonials:"Témoignages", adm_nav_settings:"Paramètres",
+adm_nav_home:"Vue d'ensemble", adm_nav_users:"Utilisateurs", adm_nav_payments:"Paiements", adm_nav_revenus:"Revenus", adm_nav_plans:"Plans", adm_nav_fiches:"Fiches", adm_nav_faq:"FAQ", adm_nav_testimonials:"Témoignages", adm_nav_landing:"Stats accueil", adm_nav_settings:"Paramètres",
 adm_rev_h:"Revenus", adm_rev_p:"Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.",
 adm_rev_total:"Revenu total confirmé", adm_rev_total_note:"Tout historique, paiements validés uniquement.",
 adm_rev_mois:"Revenu ce mois-ci", adm_rev_paiements:"Paiements confirmés ce mois-ci",
@@ -5176,7 +5194,7 @@ adm_fiche_err_leg_incomplete:"Chaque match doit avoir au moins les équipes, le 
 adm_fiche_err_save:"L'enregistrement a échoué.",
 adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatement si publiée.",
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
-adm_menu_exit:"Quitter le Dashboard Admin",
+adm_menu_exit:"Déconnecter",
 adm_home_h:"Vue d'ensemble", adm_home_p:"Chiffres réels, directement issus de la base de données.",
 adm_refresh:"Rafraîchir", adm_updated_at:"Mis à jour à {t}",
 adm_k_loading:"Chargement...", adm_k_offline:"Connexion indisponible", adm_k_error:"Erreur de lecture",
@@ -5219,6 +5237,11 @@ adm_faq_toast_h:"Question enregistrée", adm_faq_toast_p:"Visible immédiatement
 adm_faq_toast_del_h:"Question supprimée", adm_faq_toast_del_p:"Elle n'apparaît plus sur le site.",
 adm_testi_h:"Témoignages", adm_testi_p:"Témoignages clients, ajoutés manuellement et publiés quand vous le décidez.",
 adm_testi_new:"+ Nouveau témoignage", adm_testi_empty:"Aucun témoignage pour l'instant.",
+adm_landing_h:"Statistiques de la page d'accueil", adm_landing_p:"Ces chiffres apparaissent sur la page d'accueil — les changements s'appliquent PARTOUT sur le site immédiatement.",
+adm_landing_users_lbl:"Utilisateurs actifs", adm_landing_tickets_lbl:"Fiches réussies", adm_landing_rate_lbl:"Taux de réussite (%)", adm_landing_trust_lbl:"Note Trustpilot (sur 5)",
+adm_landing_err_users:"Entrez un nombre d'utilisateurs valide.", adm_landing_err_tickets:"Entrez un nombre de fiches valide.", adm_landing_err_rate:"Entrez un taux entre 0 et 100.", adm_landing_err_trust:"Entrez une note entre 0 et 5.",
+adm_landing_err_save:"Échec de l'enregistrement",
+adm_landing_toast_h:"Statistiques mises à jour", adm_landing_toast_p:"Les nouveaux chiffres sont actifs immédiatement sur la page d'accueil.",
 adm_testi_author:"Nom de l'auteur",
 adm_testi_content_ht:"Témoignage (Créole)", adm_testi_content_fr:"Témoignage (Français)", adm_testi_content_en:"Témoignage (Anglais)",
 adm_testi_rating:"Note",
@@ -5264,7 +5287,7 @@ pwr_back_dash:"Retour au tableau de bord",
 wiz_sending:"Voye...",
 toast_mail_err_h:"Envoi impossible",
 toast_mail_err_p:"L'e-mail n'a pas pu être envoyé. Réessayez dans un instant.",
-plan_changed_lifetime:"Vous avez débloqué l'accès à vie !", dash_menu_exit:"Quitter le tableau de bord",
+plan_changed_lifetime:"Vous avez débloqué l'accès à vie !", dash_menu_exit:"Déconnecter",
 wiz_p_moncash:"MonCash otomatik", wiz_p_natcash:"NatCash otomatik",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
@@ -5573,7 +5596,7 @@ session_stale_h:"Account open elsewhere",
 session_stale_p:"This account is open in another window. Refresh the page to continue.",
 dash_menu_lang:"Language",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Overview", adm_nav_users:"Users", adm_nav_payments:"Payments", adm_nav_revenus:"Revenue", adm_nav_plans:"Plans", adm_nav_fiches:"Tickets", adm_nav_faq:"FAQ", adm_nav_testimonials:"Testimonials", adm_nav_settings:"Settings",
+adm_nav_home:"Overview", adm_nav_users:"Users", adm_nav_payments:"Payments", adm_nav_revenus:"Revenue", adm_nav_plans:"Plans", adm_nav_fiches:"Tickets", adm_nav_faq:"FAQ", adm_nav_testimonials:"Testimonials", adm_nav_landing:"Homepage stats", adm_nav_settings:"Settings",
 adm_rev_h:"Revenue", adm_rev_p:"Same figures as the overview page, always in sync — confirmed payments only.",
 adm_rev_total:"Total confirmed revenue", adm_rev_total_note:"All time, confirmed payments only.",
 adm_rev_mois:"Revenue this month", adm_rev_paiements:"Confirmed payments this month",
@@ -5634,7 +5657,7 @@ adm_fiche_err_leg_incomplete:"Each match needs at least the teams, the pick, and
 adm_fiche_err_save:"Save failed.",
 adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if published.",
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
-adm_menu_exit:"Leave Admin Dashboard",
+adm_menu_exit:"Log out",
 adm_home_h:"Overview", adm_home_p:"Real figures, taken directly from the database.",
 adm_refresh:"Refresh", adm_updated_at:"Updated at {t}",
 adm_k_loading:"Loading...", adm_k_offline:"Connection unavailable", adm_k_error:"Read error",
@@ -5677,6 +5700,11 @@ adm_faq_toast_h:"Question saved", adm_faq_toast_p:"Visible immediately on the si
 adm_faq_toast_del_h:"Question deleted", adm_faq_toast_del_p:"It no longer appears on the site.",
 adm_testi_h:"Testimonials", adm_testi_p:"Customer testimonials, added manually and published when you decide.",
 adm_testi_new:"+ New testimonial", adm_testi_empty:"No testimonials yet.",
+adm_landing_h:"Homepage statistics", adm_landing_p:"These numbers appear on the homepage — changes apply EVERYWHERE on the site immediately.",
+adm_landing_users_lbl:"Active users", adm_landing_tickets_lbl:"Successful tickets", adm_landing_rate_lbl:"Win rate (%)", adm_landing_trust_lbl:"Trustpilot rating (out of 5)",
+adm_landing_err_users:"Enter a valid number of users.", adm_landing_err_tickets:"Enter a valid number of tickets.", adm_landing_err_rate:"Enter a rate between 0 and 100.", adm_landing_err_trust:"Enter a rating between 0 and 5.",
+adm_landing_err_save:"Failed to save",
+adm_landing_toast_h:"Statistics updated", adm_landing_toast_p:"The new numbers are active immediately on the homepage.",
 adm_testi_author:"Author name",
 adm_testi_content_ht:"Testimonial (Creole)", adm_testi_content_fr:"Testimonial (French)", adm_testi_content_en:"Testimonial (English)",
 adm_testi_rating:"Rating",
@@ -5722,7 +5750,7 @@ pwr_back_dash:"Back to dashboard",
 wiz_sending:"Sending...",
 toast_mail_err_h:"Couldn't send email",
 toast_mail_err_p:"The email couldn't be sent. Please try again in a moment.",
-plan_changed_lifetime:"You have unlocked lifetime access!", dash_menu_exit:"Leave the dashboard",
+plan_changed_lifetime:"You have unlocked lifetime access!", dash_menu_exit:"Log out",
 wiz_p_moncash:"MonCash automatic", wiz_p_natcash:"NatCash automatic",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
@@ -6031,7 +6059,7 @@ session_stale_h:"Kont ouvri yon lòt kote",
 session_stale_p:"Kont sa a ouvri nan yon lòt fenèt. Rafrechi paj la pou kontinye.",
 dash_menu_lang:"Lang",
 adm_role_badge:"ADMIN",
-adm_nav_home:"Vi jeneral", adm_nav_users:"Itilizatè", adm_nav_payments:"Peman", adm_nav_revenus:"Revni", adm_nav_plans:"Plan", adm_nav_fiches:"Fich", adm_nav_faq:"FAQ", adm_nav_testimonials:"Temwayaj", adm_nav_settings:"Paramèt",
+adm_nav_home:"Vi jeneral", adm_nav_users:"Itilizatè", adm_nav_payments:"Peman", adm_nav_revenus:"Revni", adm_nav_plans:"Plan", adm_nav_fiches:"Fich", adm_nav_faq:"FAQ", adm_nav_testimonials:"Temwayaj", adm_nav_landing:"Estatistik akèy", adm_nav_settings:"Paramèt",
 adm_rev_h:"Revni", adm_rev_p:"Menm chif ak akèy la, toujou senkwonize — sèlman peman ki konfime.",
 adm_rev_total:"Total revni konfime", adm_rev_total_note:"Tout istorik, sèlman peman ki valide.",
 adm_rev_mois:"Revni mwa sa a", adm_rev_paiements:"Peman konfime mwa sa a",
@@ -6092,7 +6120,7 @@ adm_fiche_err_leg_incomplete:"Chak match dwe gen omwen ekip yo, pronostik la, ak
 adm_fiche_err_save:"Anrejistreman echwe.",
 adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li pibliye.",
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
-adm_menu_exit:"Kite Dashboard Admin",
+adm_menu_exit:"Dekonekte",
 adm_home_h:"Vi jeneral", adm_home_p:"Chif reyèl, dirèkteman soti nan baz done a.",
 adm_refresh:"Rafrechi", adm_updated_at:"Mizajou a {t}",
 adm_k_loading:"Chajman...", adm_k_offline:"Koneksyon pa disponib", adm_k_error:"Erè lekti",
@@ -6135,6 +6163,11 @@ adm_faq_toast_h:"Kesyon anrejistre", adm_faq_toast_p:"Vizib imedyatman sou sit l
 adm_faq_toast_del_h:"Kesyon efase", adm_faq_toast_del_p:"Li pa parèt sou sit la ankò.",
 adm_testi_h:"Temwayaj", adm_testi_p:"Temwayaj kliyan yo, ajoute manyèlman epi pibliye lè ou deside.",
 adm_testi_new:"+ Nouvo temwayaj", adm_testi_empty:"Pa gen temwayaj pou kounye a.",
+adm_landing_h:"Estatistik paj akèy la", adm_landing_p:"Chif sa yo parèt sou paj akèy la — chanjman yo aplike PATOUT sou sit la imedyatman.",
+adm_landing_users_lbl:"Itilizatè aktif", adm_landing_tickets_lbl:"Fich ki reyisi", adm_landing_rate_lbl:"To reyisit (%)", adm_landing_trust_lbl:"Nòt Trustpilot (sou 5)",
+adm_landing_err_users:"Antre yon kantite itilizatè ki valid.", adm_landing_err_tickets:"Antre yon kantite fich ki valid.", adm_landing_err_rate:"Antre yon to ant 0 ak 100.", adm_landing_err_trust:"Antre yon nòt ant 0 ak 5.",
+adm_landing_err_save:"Echèk anrejistreman an",
+adm_landing_toast_h:"Estatistik mete ajou", adm_landing_toast_p:"Nouvo chif yo aktif imedyatman sou paj akèy la.",
 adm_testi_author:"Non oto a",
 adm_testi_content_ht:"Temwayaj (Kreyòl)", adm_testi_content_fr:"Temwayaj (Fransè)", adm_testi_content_en:"Temwayaj (Anglè)",
 adm_testi_rating:"Nòt",
@@ -6180,7 +6213,7 @@ pwr_back_dash:"Retounen nan Dashboard la",
 wiz_sending:"Ap voye...",
 toast_mail_err_h:"Nou pa ka voye imèl la",
 toast_mail_err_p:"Imèl la pa t kapab voye. Tanpri eseye ankò nan yon ti moman.",
-plan_changed_lifetime:"Ou debloke aksè a vi a !", dash_menu_exit:"Kite dashboard la",
+plan_changed_lifetime:"Ou debloke aksè a vi a !", dash_menu_exit:"Dekonekte",
 wiz_p_moncash:"MonCash otomatik", wiz_p_natcash:"NatCash otomatik",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
@@ -9437,6 +9470,47 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     return false;
   }
 
+  /* ---- Date d'inscription REELLE (session diagnostic, demande explicite
+     de James : "un nouvel utilisateur ne voit pas l'historique des
+     anciennes fiches, son historique commence apres son inscription") ----
+     Les fiches publiees AVANT la creation du compte ne lui appartiennent
+     jamais, meme une fois abonne. Chargee UNE SEULE fois par session
+     (meme principe que rangScoreMin ci-dessus : catalogue/etat personnel
+     stable, jamais relu inutilement), depuis profiles.created_at — jamais
+     invente, jamais approxime. Repli sur auth.getSession().user.created_at
+     (date de creation du compte AUTH lui-meme, deja presente cote client,
+     sans appel reseau supplementaire) uniquement si la ligne profiles est
+     introuvable ou la lecture echoue — jamais bloquant pour autant : en
+     cas de double echec, dateInscriptionUser reste null et AUCUN filtre
+     de date n'est applique (voir renderHistory/renderStats), jamais un
+     ecran vide affiche comme si l'utilisateur n'avait aucun historique. */
+  let dateInscriptionUser=null;
+  async function chargerDateInscription(){
+    if(dateInscriptionUser!=null)return false;   // deja charge, jamais relu
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return false;
+    try{
+      let uid=(getState()&&getState().supabaseUserId)||null;
+      if(!uid){
+        const {data:sessionData}=await sb.auth.getSession();
+        uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
+      }
+      if(!uid)return false;
+      let brut=null;
+      try{
+        const {data,error}=await sb.from('profiles').select('created_at').eq('id',uid).single();
+        if(!error&&data&&data.created_at)brut=data.created_at;
+      }catch(e){}
+      if(!brut){
+        const {data:sessionData}=await sb.auth.getSession();
+        brut=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.created_at:null;
+      }
+      if(!brut)return false;
+      dateInscriptionUser=partsHaiti(new Date(brut)).iso;
+      return true;
+    }catch(e){return false;}
+  }
+
   /* Rechargement complet : rang de plan reel PUIS fiches. Utilise a
      l'ouverture du Dashboard, toutes les 45 s tant qu'il reste ouvert, et
      immediatement apres tout changement d'abonnement — un plan qui change
@@ -9447,8 +9521,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{
       const g=await chargerReglesPlans();
       const r=await chargerRangServeur();
+      const d=await chargerDateInscription();
       const f=await chargerFichesReelles();
-      bouge=!!(g||r||f);
+      bouge=!!(g||r||d||f);
     }catch(e){}
     if(bouge||forcer)renderAll();
     return bouge;
@@ -10049,7 +10124,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       document.getElementById('dashCountHist').textContent=t('dash_count').replace('{n}',0);
       return;
     }
-    const done=DATA.tickets.filter(k=>k.status!=='pending');
+    // Jamais l'historique d'avant l'inscription (voir chargerDateInscription
+    // ci-dessus) — si la date n'a pas pu etre determinee, aucun filtre
+    // n'est applique plutot que de risquer un historique tronque a tort.
+    const done=DATA.tickets.filter(k=>k.status!=='pending'
+      &&(dateInscriptionUser==null||k.playDate>=dateInscriptionUser));
     const won=done.filter(k=>k.status==='won').length;
     const rate=done.length?Math.round(won/done.length*100):0;
     document.getElementById('dashKpisHist').innerHTML=
@@ -10091,7 +10170,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     if(bySportWrap)bySportWrap.style.display='';
     if(msgWrap)msgWrap.innerHTML='';
-    const done=DATA.tickets.filter(k=>k.status!=='pending');
+    // Meme regle que renderHistory : jamais de performance calculee sur
+    // des fiches publiees avant l'inscription de l'utilisateur.
+    const done=DATA.tickets.filter(k=>k.status!=='pending'
+      &&(dateInscriptionUser==null||k.playDate>=dateInscriptionUser));
     const won=done.filter(k=>k.status==='won');
     const rate=done.length?Math.round(won.length/done.length*100):0;
     const avgOdd=done.length?(done.reduce((a,k)=>a+totalOdd(k),0)/done.length):0;
@@ -10727,6 +10809,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='fiches'){majFiltresJodiA();renderFiches();}
     if(view==='faq')renderFaqList();
     if(view==='testimonials')renderTestiList();
+    if(view==='landing')renderLandingStatsAdmin();
     if(view==='settings')renderSettings();
   }
   document.querySelectorAll('#admDash [data-adback]').forEach(b=>{
@@ -12116,6 +12199,87 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }catch(e){
       const err=document.getElementById('admPlanErr');
       if(err){err.textContent=t('adm_plans_err_save')+' — '+((e&&e.message)?e.message:String(e)).slice(0,140);err.style.display='block';}
+      if(btn)btn.disabled=false;
+    }
+  }
+
+  /* ---- Statistiques de la page d'accueil (chiffres marketing modifiables
+     par l'admin, table landing_stats, une seule ligne) — meme principe que
+     renderPlanDetail/sauvegarderPlan ci-dessus : lecture directe, saisie
+     validee, confirmation avant ecriture, propagation immediate au reste
+     du site via VB_chargerLandingStats (Realtime deja actif cote landing,
+     ceci force en plus un rafraichissement immediat si l'admin lui-meme a
+     la landing ouverte dans un autre onglet). */
+  async function renderLandingStatsAdmin(){
+    const box=document.getElementById('admLandingBody');
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!box)return;
+    box.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
+    if(!sb)return;
+    let row=null;
+    try{
+      const {data,error}=await sb.from('landing_stats').select('*').eq('id',1).single();
+      if(!error)row=data;
+    }catch(e){}
+    if(!row){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+
+    box.innerHTML=
+      '<label class="field"><span class="field-lbl">'+t('adm_landing_users_lbl')+'</span>'+
+      '<input type="number" min="0" step="1" id="admLandUsers" value="'+row.active_users+'"></label>'+
+      '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_landing_tickets_lbl')+'</span>'+
+      '<input type="number" min="0" step="1" id="admLandTickets" value="'+row.successful_tickets+'"></label>'+
+      '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_landing_rate_lbl')+'</span>'+
+      '<input type="number" min="0" max="100" step="1" id="admLandRate" value="'+row.win_rate_pct+'"></label>'+
+      '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_landing_trust_lbl')+'</span>'+
+      '<input type="number" min="0" max="5" step="0.1" id="admLandTrust" value="'+row.trustpilot_rating+'"></label>'+
+      '<button type="button" class="btn btn-confirm" id="admLandSave" style="width:100%;margin-top:14px">'+t('adm_plans_save')+'</button>'+
+      '<div id="admLandErr" class="field-err" style="display:none;margin-top:8px"></div>';
+
+    document.getElementById('admLandSave').addEventListener('click',function(){
+      const err=document.getElementById('admLandErr');
+      const usersV=parseInt(document.getElementById('admLandUsers').value,10);
+      const ticketsV=parseInt(document.getElementById('admLandTickets').value,10);
+      const rateV=parseInt(document.getElementById('admLandRate').value,10);
+      const trustV=parseFloat(document.getElementById('admLandTrust').value);
+      if(isNaN(usersV)||usersV<0){err.textContent=t('adm_landing_err_users');err.style.display='block';return;}
+      if(isNaN(ticketsV)||ticketsV<0){err.textContent=t('adm_landing_err_tickets');err.style.display='block';return;}
+      if(isNaN(rateV)||rateV<0||rateV>100){err.textContent=t('adm_landing_err_rate');err.style.display='block';return;}
+      if(isNaN(trustV)||trustV<0||trustV>5){err.textContent=t('adm_landing_err_trust');err.style.display='block';return;}
+      err.style.display='none';
+      demanderConfirmation(this,t('adm_confirm_q_save'),()=>sauvegarderLandingStats(row,usersV,ticketsV,rateV,trustV));
+    });
+  }
+
+  async function sauvegarderLandingStats(ancien,usersV,ticketsV,rateV,trustV){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return;
+    const btn=document.getElementById('admLandSave');
+    if(btn)btn.disabled=true;
+    try{
+      const {error}=await sb.from('landing_stats').update({
+        active_users:usersV, successful_tickets:ticketsV, win_rate_pct:rateV, trustpilot_rating:trustV,
+        updated_at:new Date().toISOString(), updated_by:(currentUser&&currentUser.id)||null
+      }).eq('id',1);
+      if(error)throw error;
+      try{
+        await sb.from('audit_log').insert({
+          admin_id:(currentUser&&currentUser.id)||null,
+          action:'landing_stats_updated',
+          target_user_id:null,
+          old_value:{active_users:ancien.active_users, successful_tickets:ancien.successful_tickets, win_rate_pct:ancien.win_rate_pct, trustpilot_rating:ancien.trustpilot_rating},
+          new_value:{active_users:usersV, successful_tickets:ticketsV, win_rate_pct:rateV, trustpilot_rating:trustV},
+          reason:null
+        });
+      }catch(e){}
+      // Repercuter IMMEDIATEMENT sur la landing page (Realtime la mettra
+      // aussi a jour de son cote, mais ceci evite d'attendre si l'admin
+      // regarde deja sa propre landing dans un autre onglet du meme appareil).
+      if(window.VB_chargerLandingStats)await window.VB_chargerLandingStats();
+      if(window.VB_toast)window.VB_toast('adm_landing_toast_h',t('adm_landing_toast_p'));
+      if(viewStack.length)setView(viewStack.pop(),true);else setView('landing',true);
+    }catch(e){
+      const err=document.getElementById('admLandErr');
+      if(err){err.textContent=t('adm_landing_err_save')+' — '+((e&&e.message)?e.message:String(e)).slice(0,140);err.style.display='block';}
       if(btn)btn.disabled=false;
     }
   }
@@ -14304,68 +14468,107 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   });
 })();
 
-/* ---------- Compteur d'utilisateurs actifs ----------
-   Il n'augmente QUE lorsqu'une inscription est terminee et le paiement
-   valide. Aucune incrementation a l'affichage, au scroll ou au temps. */
+/* ---------- Statistiques de la page d'accueil ----------
+   CORRIGÉ (session diagnostic, 03/09) : l'ancienne version calculait ces
+   chiffres en direct (count sur profiles + tickets), mais un visiteur non
+   connecte n'a jamais eu le droit de lire profiles (RLS "visible par
+   proprietaire ou admin") — le count retombait silencieusement a 0,
+   jamais une erreur, jamais rattrape. REMPLACE (demande explicite de
+   James) par une lecture de la table landing_stats, modifiable par
+   l'admin depuis le Dashboard (voir renderLandingStatsAdmin plus bas) —
+   plus aucun calcul automatique, la valeur affichee est TOUJOURS celle
+   choisie par l'admin, synchronisee partout des qu'il l'enregistre. */
+(function(){
+  const elUsers=document.getElementById('statUsers');
+  const elWon=document.getElementById('statWon');
+  const elRate=document.getElementById('statRate');
+  const elTrust=document.getElementById('statTrustpilot');
+  if(!elUsers&&!elWon&&!elRate&&!elTrust)return;
+
+  /* Ecrase directement le texte affiche, meme si l'animation au scroll a
+     deja tourne ou est en cours avec l'ancienne valeur par defaut du HTML
+     — jamais un chiffre errone laisse a l'ecran en attendant un futur
+     passage dans le viewport. */
+  function peindre(row){
+    if(!row)return;
+    if(elUsers){
+      const suffixe=row.active_users_suffix||'';
+      elUsers.dataset.count=String(row.active_users);
+      elUsers.dataset.base=String(row.active_users);
+      elUsers.dataset.suffix=suffixe;
+      elUsers.textContent=Number(row.active_users).toLocaleString('en-US')+suffixe;
+    }
+    if(elWon){
+      elWon.dataset.count=String(row.successful_tickets);
+      elWon.dataset.base=String(row.successful_tickets);
+      elWon.textContent=String(row.successful_tickets);
+    }
+    if(elRate){
+      elRate.dataset.count=String(row.win_rate_pct);
+      elRate.dataset.base=String(row.win_rate_pct);
+      elRate.textContent=row.win_rate_pct+'%';
+    }
+    if(elTrust){
+      const n=Number(row.trustpilot_rating);
+      elTrust.textContent=isFinite(n)?n.toFixed(1):String(row.trustpilot_rating);
+    }
+  }
+
+  async function chargerLandingStats(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return;
+    try{
+      const {data,error}=await sb.from('landing_stats')
+        .select('active_users,active_users_suffix,successful_tickets,win_rate_pct,trustpilot_rating')
+        .eq('id',1).single();
+      // Jamais de "0" affiche en cas de panne : les valeurs de demo deja
+      // integrees au HTML (identiques aux valeurs par defaut de la table)
+      // restent affichees telles quelles tant que la lecture echoue.
+      if(error||!data)return;
+      peindre(data);
+    }catch(e){}
+  }
+  chargerLandingStats();
+  window.addEventListener('load',chargerLandingStats);
+  window.VB_chargerLandingStats=chargerLandingStats;   // rejouable a la demande (admin, apres enregistrement)
+
+  /* Synchronisation EN DIRECT : Realtime (immediat) + polling 20s de
+     secours (meme principe que demarrerSyncPlansWizard) — si l'admin
+     modifie un chiffre pendant qu'un visiteur a deja la page d'accueil
+     ouverte, ca se met a jour sans qu'il ait besoin de recharger. */
+  const sbRt=window.VB_getSupabase&&window.VB_getSupabase();
+  if(sbRt&&sbRt.channel){
+    try{
+      sbRt.channel('landing-stats-'+Date.now())
+        .on('postgres_changes',{event:'UPDATE',schema:'public',table:'landing_stats'},()=>{
+          chargerLandingStats();
+        })
+        .subscribe();
+    }catch(e){}
+  }
+  setInterval(chargerLandingStats,20000);
+})();
+
+/* ---------- Compteur d'utilisateurs actifs (bonus visuel local) ----------
+   Ajoute UNIQUEMENT +1 dans CE navigateur au moment d'une inscription
+   reussie dans CET onglet — jamais la source de verite (qui reste
+   landing_stats.active_users, modifiable par l'admin). Purement
+   cosmetique : donne l'impression au nouvel inscrit que son inscription
+   vient d'etre comptee, sans jamais modifier ce que voient les autres
+   visiteurs. */
 (function(){
   const el=document.getElementById('statUsers');
   if(!el)return;
-  const KEY='vipbetcote.signups.v1';
-  const base=parseInt(el.dataset.base,10)||0;
-  const readN=()=>{try{return parseInt(localStorage.getItem(KEY),10)||0;}catch(e){return window.__vbSignups||0;}};
-  const writeN=n=>{window.__vbSignups=n;try{localStorage.setItem(KEY,String(n));}catch(e){}};
-
-  function paint(){
-    const total=(parseInt(el.dataset.base,10)||0)+readN();
-    el.dataset.count=String(total);
-    el.textContent=total.toLocaleString('en-US');
-  }
-  // valeur de depart correcte des le chargement
-  paint();
-
   window.VB_countSignup=function(){
-    writeN(readN()+1);
-    paint();
+    const actuel=parseInt(el.dataset.count,10)||parseInt(el.dataset.base,10)||0;
+    const suffixe=el.dataset.suffix||'';
+    const total=actuel+1;
+    el.dataset.count=String(total);
+    el.textContent=total.toLocaleString('en-US')+suffixe;
     el.style.transition='transform .35s cubic-bezier(.34,1.56,.64,1)';
     el.style.transform='scale(1.14)';
     setTimeout(()=>{el.style.transform='';},360);
   };
-
-  /* Vraies statistiques : remplace les valeurs de depart integrees au
-     fichier par les vrais chiffres Supabase, UNIQUEMENT si la lecture
-     reussit. Sinon, les valeurs de demo deja presentes restent affichees
-     telles quelles — jamais un "0" ou un chiffre errone. */
-  async function chargerStatsReelles(){
-    const sb=window.VB_getSupabase&&window.VB_getSupabase();
-    if(!sb)return;
-    try{
-      const [{count:users},{data:tickets}]=await Promise.all([
-        sb.from('profiles').select('id',{count:'exact',head:true}),
-        sb.from('tickets').select('status').neq('status','pending')
-      ]);
-      if(users!=null){
-        el.dataset.base=String(users);
-        paint();
-      }
-      if(tickets&&tickets.length){
-        const gagnes=tickets.filter(t=>t.status==='won').length;
-        const taux=Math.round((gagnes/tickets.length)*100);
-        const elWon=document.getElementById('statWon');
-        const elRate=document.getElementById('statRate');
-        if(elWon){
-          elWon.dataset.count=String(gagnes);elWon.dataset.base=String(gagnes);
-          elWon.textContent=String(gagnes);   // ecrase l'affichage meme si l'animation a deja tourne avec l'ancienne valeur
-        }
-        if(elRate){
-          elRate.dataset.count=String(taux);elRate.dataset.base=String(taux);
-          elRate.textContent=taux+'%';
-        }
-      }
-    }catch(e){ /* les valeurs de demo integrees restent affichees */ }
-  }
-  chargerStatsReelles();
-  window.addEventListener('load',chargerStatsReelles);
-  window.VB_chargerStatsReelles=chargerStatsReelles;   // rejouable a la demande
 })();
 
 /* ---------- Routage simple : hero par defaut, sauf lien direct connu ----------
