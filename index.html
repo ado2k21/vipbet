@@ -2087,25 +2087,27 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 /* --- Menu du dashboard --- */
 /* REFAIT (02/09, demande explicite de James, sur modele "Overlay Sidebar"
    qu'il a partage) : converti d'un petit popup ancre en haut a droite en
-   un tiroir plein ecran glissant depuis la gauche, position:fixed sur
-   tout le viewport — jamais un changement de structure HTML ni de logique
-   JS (ouverture/fermeture, tap en dehors pour fermer, deja en place),
-   uniquement le rendu visuel change. Couleurs strictement celles du site
-   (vert/noir/or), jamais le bleu de la maquette d'origine — demande
-   explicite "synchronisation avec meme couleur du site". La ligne
-   utilisateur (#dashMenuUser / #admMenuUser) est deplacee tout en bas via
-   flexbox order, comme sur la maquette, sans toucher au HTML. */
+   un tiroir plein ecran, position:fixed sur tout le viewport — jamais un
+   changement de structure HTML ni de logique JS (ouverture/fermeture, tap
+   en dehors pour fermer, deja en place), uniquement le rendu visuel
+   change. Couleurs strictement celles du site (vert/noir/or), jamais le
+   bleu de la maquette d'origine. La ligne utilisateur (#dashMenuUser /
+   #admMenuUser) est deplacee tout en bas via flexbox order, comme sur la
+   maquette, sans toucher au HTML.
+   CORRIGE (04/09) : glisse depuis la DROITE, pas la gauche — demande
+   explicite de James, le bouton ☰ etant lui-meme a droite du header,
+   c'est le cote naturel d'ouverture. */
 .dash-menu{
-  position:fixed;top:0;left:0;height:100vh;height:100dvh;
+  position:fixed;top:0;right:0;height:100vh;height:100dvh;
   width:min(280px,82vw);
   background:linear-gradient(165deg,#0B1425 0%,#060B18 100%);
-  border:none;border-right:1px solid var(--ligne);
-  border-radius:0 var(--r-lg) var(--r-lg) 0;
+  border:none;border-left:1px solid var(--ligne);
+  border-radius:var(--r-lg) 0 0 var(--r-lg);
   box-shadow:0 0 70px rgba(0,0,0,.65);
   z-index:9000;
   padding:calc(22px + env(safe-area-inset-top)) 14px 18px;
   display:flex;flex-direction:column;gap:2px;
-  transform:translateX(-100%);opacity:1;visibility:hidden;
+  transform:translateX(100%);opacity:1;visibility:hidden;
   transition:transform .3s cubic-bezier(.32,.72,0,1),visibility .3s;
   overflow-y:auto;
 }
