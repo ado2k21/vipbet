@@ -4643,7 +4643,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       <button type="button" class="btn btn-or" id="admFichesNew" style="width:100%;margin:12px 0 8px" data-i18n="adm_fiches_new">+ Nouvelle fiche</button>
       <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
       <button type="button" class="btn btn-or-soft" id="admFicheGenererExactBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_exact_btn">🎯 GÉNÉRER SCORE EXACT</button>
-      <button type="button" class="btn btn-or-soft" id="admFicheGenererBasketBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_submit">🏀 Générer fiche basketball</button>
+      <button type="button" class="btn btn-or-soft" id="admFicheGenererBasketBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_submit">🏀 GÉNÉRER FICHE BASKETBALL</button>
       <div id="admFichesBody"></div>
     </div>
 
@@ -4676,12 +4676,19 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
           <label class="field" style="flex:1"><span class="field-lbl" data-i18n="adm_fiche_gen_hfin">Heure fin (PAP)</span>
             <input type="time" id="admGenHeureFin" value="20:00"></label>
         </div>
-        <label class="field" id="admGenSportWrap"><span class="field-lbl" data-i18n="adm_fiche_gen_sport">Sport</span>
-          <select id="admGenSport">
-            <option value="foot" data-i18n="adm_fiche_sport_foot">Football</option>
-            <option value="nba" data-i18n="adm_fiche_kind_basket">Basketball / NBA</option>
-          </select></label>
-        <div id="admGenSportNote" class="admf-note-x2" style="display:none;margin:-4px 0 10px" data-i18n="adm_fiche_gen_nba_note">Non disponible pour l'instant — aucune source de cotes fiable branchée pour le basketball/NBA.</div>
+        <!-- RETIRÉ (04/09, demande explicite de James) : le sélecteur
+             Football/Basketball ici était redondant ET dangereux — le
+             basketball a déjà son propre bouton dédié ("🏀 Générer fiche
+             basketball") avec son propre endpoint
+             (bot-generate-tickets-basket-manual-background). Choisir
+             "Basketball/NBA" ici aurait envoyé sport='nba' vers l'endpoint
+             FOOTBALL (bot-generate-tickets-manual-background), qui n'a
+             jamais réellement supporté le basketball — d'où la note
+             "Non disponible pour l'instant" qui s'affichait. Remplacé par
+             un champ caché fixé à 'foot' : aucune autre ligne de code
+             (soumission, endpoint, validation) n'a besoin de changer,
+             sport reste toujours lu de la même façon plus bas. -->
+        <input type="hidden" id="admGenSport" value="foot">
         <label class="field"><span class="field-lbl" data-i18n="adm_fiche_gen_plans">Plans concernés</span></label>
         <div id="admGenPlans" class="admf-filters" style="flex-wrap:wrap"></div>
         <!-- Mode normal (26/08) : cote max souhaitée. Réutilisée telle
@@ -4991,7 +4998,7 @@ adm_apprentissage_vide:"Pas encore assez de résultats réglés pour un rapport.
 adm_apprentissage_labels:"Par label de confiance (A-E)",
 adm_apprentissage_marches:"Par championnat + marché",
 adm_fiche_gen_basket_p:"Fiche basketball combinée — aucune cote minimale obligatoire, seule la cote max ci-dessus est un plafond strict. Visible par les plans cochés et tous les plans au-dessus (cascade d'accès).",
-adm_fiche_gen_basket_submit:"Générer fiche basketball",
+adm_fiche_gen_basket_submit:"🏀 GÉNÉRER FICHE BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
 dtk_cd_min:"⏱ Premier match dans {n} min", dtk_cd_h:"⏱ Premier match dans {h}h{m}", dtk_cd_j:"⏱ Premier match dans {j} j", dtk_cd_bientot:"⏱ Premier match imminent", dtk_cd_encours:"⏱ Premier match en cours",
@@ -5449,7 +5456,7 @@ adm_apprentissage_vide:"Not enough settled results yet for a report.",
 adm_apprentissage_labels:"By confidence label (A-E)",
 adm_apprentissage_marches:"By league + market",
 adm_fiche_gen_basket_p:"Combined basketball ticket — no mandatory minimum odd, only the max odd above is a strict cap. Visible to the checked plans and every plan above them (cascading access).",
-adm_fiche_gen_basket_submit:"Generate basketball ticket",
+adm_fiche_gen_basket_submit:"🏀 GENERATE BASKETBALL SLIP",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
 dtk_cd_min:"⏱ First match in {n} min", dtk_cd_h:"⏱ First match in {h}h{m}", dtk_cd_j:"⏱ First match in {j} d", dtk_cd_bientot:"⏱ First match starting soon", dtk_cd_encours:"⏱ First match underway",
@@ -5907,7 +5914,7 @@ adm_apprentissage_vide:"Poko gen ase rezilta regle pou yon rapò.",
 adm_apprentissage_labels:"Pa etikèt konfyans (A-E)",
 adm_apprentissage_marches:"Pa chanpyona + mache",
 adm_fiche_gen_basket_p:"Fich basketball konbine — pa gen kòt minimòm obligatwa, se sèlman kòt maks anwo a ki yon plafon strik. Vizib pou plan yo ou koche ak tout plan ki pi wo (kaskad aksè).",
-adm_fiche_gen_basket_submit:"Jenere fich basketball",
+adm_fiche_gen_basket_submit:"🏀 JENERE FICH BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
 dtk_cd_min:"⏱ Premye match nan {n} min", dtk_cd_h:"⏱ Premye match nan {h}è{m}", dtk_cd_j:"⏱ Premye match nan {j} jou", dtk_cd_bientot:"⏱ Premye match pral kòmanse", dtk_cd_encours:"⏱ Premye match ap jwe",
@@ -13076,11 +13083,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('admGenDate').value=partsHaiti(new Date(Date.now()+24*3600*1000)).iso;
     document.getElementById('admGenResult').innerHTML='';
     // Mode basketball (session suivante, corrigé : mêmes options que le
-    // foot) — seuls le sélecteur Sport (implicite : basketball) et le
-    // nombre de matchs (spécifique score exact) sont masqués. Date,
-    // heure début/fin, plans, cote max et publication restent identiques
-    // au mode normal.
-    document.getElementById('admGenSportWrap').style.display=(mode==='basket')?'none':'';
+    // foot) — le nombre de matchs (spécifique score exact) est masqué.
+    // Date, heure début/fin, plans, cote max et publication restent
+    // identiques au mode normal. Sport n'est plus affiché nulle part
+    // (04/09) : toujours 'foot' pour normal/exact, le basketball ayant
+    // son propre bouton et endpoint dédiés — voir admGenSport ci-dessus.
     document.getElementById('admGenBasketNote').style.display=(mode==='basket')?'':'none';
     document.getElementById('admGenCoteMaxWrap').style.display=(mode==='exact')?'none':'';
     document.getElementById('admGenNombreMatchsWrap').style.display=(mode==='exact')?'':'none';
@@ -13093,9 +13100,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   document.getElementById('admFicheGenererBtn').addEventListener('click',()=>ouvrirVueGeneration('normal'));
   document.getElementById('admFicheGenererExactBtn').addEventListener('click',()=>ouvrirVueGeneration('exact'));
   document.getElementById('admFicheGenererBasketBtn').addEventListener('click',()=>ouvrirVueGeneration('basket'));
-  document.getElementById('admGenSport').addEventListener('change',e=>{
-    document.getElementById('admGenSportNote').style.display=(e.target.value==='nba')?'block':'none';
-  });
   document.getElementById('admGenPublishMode').addEventListener('change',e=>{
     document.getElementById('admGenScheduledWrap').style.display=(e.target.value==='scheduled')?'block':'none';
   });
@@ -13124,8 +13128,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(publishMode==='scheduled'&&!scheduledAt){
       resBox.innerHTML='<div class="admdash-empty">'+t('adm_fiche_gen_err_prog')+'</div>';return;
     }
-    if(!window.confirm(admGenMode==='basket'?t('adm_fiche_gen_basket_confirm'):t('adm_fiche_gen_confirm')))return;
+    // CORRIGÉ (04/09, capture d'écran à l'appui : James a vu le popup natif
+    // du navigateur au lieu du modal stylé) — remplace window.confirm()
+    // par demanderConfirmation() (icône 'fiche', même modal que partout
+    // ailleurs dans l'admin). demanderConfirmation étant asynchrone (le
+    // modal attend le clic de l'utilisateur), tout ce qui suivait l'ancien
+    // "if(!window.confirm(...))return;" est déplacé dans lancerGeneration(),
+    // appelée uniquement si l'admin confirme — comportement strictement
+    // identique sinon, aucune règle de génération changée.
+    const texteConfirm=admGenMode==='basket'?t('adm_fiche_gen_basket_confirm'):t('adm_fiche_gen_confirm');
+    demanderConfirmation(btn,texteConfirm,lancerGeneration,'fiche');
 
+    async function lancerGeneration(){
     btn.disabled=true;btn.textContent=t('adm_fiche_gen_wait');
     resBox.innerHTML='';
     try{
@@ -13168,6 +13182,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       resBox.innerHTML='<div class="admdash-empty">'+stripTags(e.message)+'</div>';
     }finally{
       btn.disabled=false;btn.textContent=t('adm_fiche_gen_submit');
+    }
     }
   });
 
