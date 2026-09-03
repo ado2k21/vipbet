@@ -223,6 +223,7 @@ function projeterTotalBasket(profils, homeId, awayId) {
 const stats = {
   demarre: null,
   dateCible: null,
+  urgence: false, // AJOUTÉ (04/09) : true uniquement si généré via le passage d'urgence 20h Haïti (voir handler)
   matchsTrouves: 0,
   candidatsExamines: 0,
   poolFinal: 0,
@@ -232,6 +233,7 @@ const stats = {
 function resetStatsBasket() {
   stats.demarre = new Date().toISOString();
   stats.dateCible = null;
+  stats.urgence = false;
   stats.matchsTrouves = 0;
   stats.candidatsExamines = 0;
   stats.poolFinal = 0;
@@ -475,8 +477,34 @@ async function handler(event) {
   const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
 
   const maintenant = partsHaiti(new Date());
-  if (!modeTest && maintenant.heureNum !== 19) {
-    return { statusCode: 200, body: 'Hors fenêtre 19h00 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
+  // CORRIGÉ (04/09, bug réel confirmé — même famille que le foot) :
+  // l'ancienne condition n'autorisait l'exécution QUE pendant l'heure 19
+  // (heureNum!==19 → abandon), donc seulement 4 passages/soir (19h00 à
+  // 19h45) — alors que le cron ('*/15 23,0 * * *') couvre déjà jusqu'à
+  // 20h59 Haïti. Si les 4 passages de l'heure 19 échouaient tous, les
+  // passages de 20h00-20h45 (pourtant déjà couverts par le cron)
+  // s'arrêtaient aussitôt pour rien.
+  //
+  // FILET D'URGENCE (04/09, demande explicite de James) : 20h00-20h59
+  // Haïti fait désormais officiellement partie de la fenêtre autorisée.
+  // MÊMES RÈGLES STRICTES que côté foot pour ne jamais créer de bug :
+  //  1. Aucun nouveau chemin de construction — le handler() est identique,
+  //     rien de dupliqué.
+  //  2. Protection anti-doublon INCHANGÉE (vérification "existantes" juste
+  //     en dessous) : si 19h a déjà publié une fiche basket pour dateCible,
+  //     ce passage s'arrête immédiatement sans rien recréer.
+  //  3. Aucun match disponible = aucune fiche créée, sans code
+  //     supplémentaire : déjà garanti par les vérifications existantes
+  //     (matchsTrouves, poolFinal) plus bas dans le handler.
+  //  4. stats.urgence=true uniquement pour la traçabilité dans les logs.
+  const dansLaFenetreNormale = maintenant.heureNum === 19;
+  const dansLaFenetreUrgence = maintenant.heureNum === 20;
+  if (!modeTest && !(dansLaFenetreNormale || dansLaFenetreUrgence)) {
+    return { statusCode: 200, body: 'Hors fenêtre 19h00–20h59 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
+  }
+  if (dansLaFenetreUrgence) {
+    stats.urgence = true;
+    console.log('[BOT-BASKET] === PASSAGE D\'URGENCE 20h Haïti (la fenêtre normale 19h n\'a rien publié) ===');
   }
   if (modeTest) console.log('[BOT-BASKET] === MODE TEST déclenché manuellement ===');
 

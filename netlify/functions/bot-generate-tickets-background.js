@@ -29,7 +29,7 @@
 const config = {
   // Toutes les 15 min entre 21h00 et 23h59 UTC — couvre 18h30 Haïti
   // (UTC-4 en heure d'été → 22h30 UTC ; UTC-5 en heure standard → 23h30 UTC)
-  schedule: '*/15 21-23 * * *'
+  schedule: '*/15 21-23,0 * * *'
 };
 
 // ============================================================================
@@ -380,6 +380,7 @@ const stats = {
   demarre: null,
   fuseauUtilise: TZ_HAITI,
   dateCible: null,
+  urgence: false, // AJOUTÉ (04/09) : true uniquement si généré via le passage d'urgence 20h Haïti (voir handler)
   pagesOddsRecuperees: 0,
   pagesOddsTotal: 0,
   matchsTrouves: 0,
@@ -403,6 +404,7 @@ const stats = {
 function resetStats() {
   stats.demarre = new Date().toISOString();
   stats.dateCible = null;
+  stats.urgence = false;
   stats.pagesOddsRecuperees = 0;
   stats.pagesOddsTotal = 0;
   stats.matchsTrouves = 0;
@@ -2038,17 +2040,43 @@ async function handler(event) {
   const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';
   const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
 
-  // Ne générer que si on est effectivement à 18h30 (ou après, jusqu'à la
-  // fin de la fenêtre) en Haïti — le cron se déclenche plus souvent que
-  // nécessaire par sécurité DST. CHANGÉ (session suivante, 17h00→18h30) :
-  // vérifie maintenant heure ET minute, pas seulement l'heure — sinon un
-  // décalage vers une cible à la demie (18h30) se déclencherait dès 18h00
-  // (premier passage de l'heure 18), pas à l'heure demandée. dateCible
-  // reste "demain" quoi qu'il arrive : ce décalage n'exclut aucun match.
+  // Ne générer qu'à partir de 18h30 Haïti — le cron se déclenche plus
+  // souvent que nécessaire par sécurité DST. CORRIGÉ (04/09, bug réel
+  // confirmé : James a constaté 0 fiche générée pour le lendemain malgré
+  // le cron actif) — l'ancienne condition n'autorisait l'exécution QUE
+  // pendant l'heure 18 (heureNum===18), donc seulement 2 passages/soir
+  // (18h30 et 18h45). Si ces 2 seuls passages échouaient pour une raison
+  // transitoire (réseau, coup froid Netlify), TOUS les passages suivants
+  // (19h00 à 19h45, pourtant couverts par le cron) s'arrêtaient aussitôt
+  // puisque l'heure n'était plus 18 — aucun filet de sécurité de toute la
+  // soirée. Désormais : autorisé sur 18h30-19h59 (fenêtre normale).
+  //
+  // FILET D'URGENCE (04/09, demande explicite de James) : si la fenêtre
+  // normale s'est entièrement soldée par un échec (ou n'a jamais pu
+  // s'exécuter), un DERNIER passage est autorisé à 20h00-20h59 Haïti.
+  // RÈGLES STRICTES pour ne jamais créer de bug :
+  //  1. Aucun nouveau chemin de construction — exactement la même fonction
+  //     handler(), rien de dupliqué, donc aucun nouveau bug possible dans
+  //     la logique de génération elle-même.
+  //  2. Protection anti-doublon INCHANGÉE (dejaGenereAujourdhui, juste en
+  //     dessous) : si la génération normale a déjà publié une fiche pour
+  //     dateCible, ce passage s'arrête immédiatement sans rien recréer.
+  //  3. Aucun match disponible = aucune fiche créée, sans code
+  //     supplémentaire : déjà garanti par les vérifications existantes
+  //     (fixturesJour.length, candidats.length) plus bas dans le handler.
+  //  4. stats.urgence=true uniquement pour la traçabilité dans les logs
+  //     Netlify — n'influence aucune décision de construction.
   // (ignoré en mode test)
   const maintenant = partsHaiti(new Date());
-  if (!modeTest && !(maintenant.heureNum === 18 && maintenant.minuteNum >= 30)) {
-    return { statusCode: 200, body: 'Hors fenêtre 18h30 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
+  const dansLaFenetreNormale = maintenant.heureNum === 18 && maintenant.minuteNum >= 30;
+  const dansLaFenetreNormaleFin = maintenant.heureNum === 19;
+  const dansLaFenetreUrgence = maintenant.heureNum === 20;
+  if (!modeTest && !(dansLaFenetreNormale || dansLaFenetreNormaleFin || dansLaFenetreUrgence)) {
+    return { statusCode: 200, body: 'Hors fenêtre 18h30–20h59 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
+  }
+  if (dansLaFenetreUrgence) {
+    stats.urgence = true;
+    console.log('[BOT] === PASSAGE D\'URGENCE 20h Haïti (la fenêtre normale 18h30-19h59 n\'a rien publié) ===');
   }
   if (modeTest) console.log('[BOT] === MODE TEST déclenché manuellement ===');
 
