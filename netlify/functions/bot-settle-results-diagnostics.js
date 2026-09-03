@@ -15,7 +15,10 @@
  * lit toujours le code le plus récent de l'autre au démarrage).
  *
  * Utilisation : ouvrir dans Safari —
- *   https://machecha.netlify.app/.netlify/functions/bot-settle-results-diagnostics?token=test2026vip
- * ============================================================================
+ *   https://machecha.netlify.app/.netlify/functions/bot-settle-results-diagnostics?token=VOTRE_BOT_TEST_TOKEN
+ * (remplacer VOTRE_BOT_TEST_TOKEN par la vraie valeur de la variable
+ * d'environnement Netlify BOT_TEST_TOKEN — jamais écrite en clair ici,
+ * précisément pour éviter ce que le scan de secrets Netlify vient de
+ * détecter). ============================================================================
  */
 module.exports.handler = require('./bot-settle-results.js').handler;
