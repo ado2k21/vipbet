@@ -2307,47 +2307,78 @@ async function handler(event) {
   // sein de CE run.
   const fixturesUtiliseesScoreExact = new Set(fixturesUtiliseesNormales);
 
-  // Nombre MAXIMUM de fiches classiques par plan (28/08, demande explicite
-  // de James) — jamais un objectif forcé, seulement un plafond : un jour
-  // pauvre en matchs, un plan peut très bien n'en recevoir qu'une seule
-  // (ou aucune), comme avant. Le score exact, lui, reste 1 par plan par
-  // jour, inchangé (non concerné par cette demande).
-  const MAX_FICHES_PAR_PLAN = 3;
-  const fichesPublieesParPlan = {}; // rank -> nb de fiches classiques publiées ce passage
-  const planEncoreActif = {};       // rank -> false dès qu'un tour échoue (inutile de retenter, le pool ne peut que s'appauvrir davantage)
-  plans.forEach(p => { fichesPublieesParPlan[p.rank] = 0; planEncoreActif[p.rank] = true; });
+  // ============================================================================
+  // ÉCHELLE DE PALIERS PAR JOUR (04/09, refonte complète demandée par James
+  // après avoir constaté que les jours riches en matchs — ex. 10+ matchs,
+  // coupes Italie/Allemagne — ne produisaient quasiment jamais de grosses
+  // cotes). ANCIEN SYSTÈME (remplacé) : chaque plan tentait 1 fiche
+  // garantie puis jusqu'à 2 bonus, à CHAQUE FOIS dans SA PROPRE fourchette
+  // (rang 1 visait 2-15, rang 2 visait 15-80, etc.) — un jour riche, les
+  // rangs 2/3/4 échouaient souvent à atteindre leur propre plancher une
+  // fois le pool déjà entamé par le rang 1 et le score exact, laissant
+  // surtout de petites cotes au final.
+  //
+  // NOUVEAU SYSTÈME : le bot détecte d'abord si la journée est "riche" ou
+  // "pauvre" en matchs UTILISABLES (nbMatchsDisponibles, déjà filtré par
+  // marché/fiabilité — pas juste le nombre brut de matchs API-Sports).
+  //   - JOUR RICHE (≥ SEUIL_JOUR_RICHE matchs utilisables) : le bot tente,
+  //     DANS L'ORDRE, 3 paliers de cote partagés pour la journée entière
+  //     (jamais rattachés à un plan précis au moment de la construction) :
+  //       Palier 1 : cote 2 à 4   — GARANTI (comme avant), s'arrête si échoue
+  //       Palier 2 : cote 4 à 15  — tenté seulement si le pool le permet
+  //       Palier 3 : cote 15 à X  — sans plafond réel (X = illimité),
+  //                                 tenté seulement si le pool le permet
+  //   - JOUR PAUVRE (< SEUIL_JOUR_RICHE) : UNE seule fiche, cible large
+  //     (2 à 15, la fourchette du rang 1) — le pool limité décide
+  //     naturellement jusqu'où elle monte (ex. cote 7 donné par James
+  //     comme illustration, ou moins si vraiment peu de matchs).
+  //
+  // RÈGLES DE PARTAGE ENTRE PLANS (inchangées, à ne jamais casser) —
+  // l'étiquetage se fait TOUJOURS par le plafond réel atteint, jamais par
+  // le palier visé : `plans.find(p => coteTotale <= p.max_total_odd)`
+  // (plans déjà triés par rang croissant). Cascade déjà existante
+  // (min_plan_rank<=rang abonné) : une fiche étiquetée à un rang est
+  // visible par CE rang ET tous les rangs supérieurs.
+  //   - Cote ≤ 15 (plafond VIP 7 JOU)   → visible par LES 4 PLANS.
+  //   - Cote 15 à 80 (plafond VIP 21J)  → visible par VIP 21J/30J/Lifetime.
+  //   - Cote 80 à 100 (plafond VIP 30J) → visible par VIP 30J/Lifetime.
+  //   - Cote > 100 (aucun plafond réel) → Lifetime seul.
+  // Le score exact (construit plus haut, avant ce bloc) reste TOTALEMENT
+  // séparé de ces paliers : toujours 1 par jour, toujours partagé entre
+  // VIP 30 JOU et Lifetime ensemble (rang 3+4), jamais concerné ici — "+
+  // score exact pour le(s) plan(s) concerné(s)" reste vrai un jour riche
+  // COMME un jour pauvre, aucun changement sur ce point.
+  // ============================================================================
+  const SEUIL_JOUR_RICHE = 8; // matchs utilisables distincts — ajustable si besoin
+  const jourRiche = nbMatchsDisponibles >= SEUIL_JOUR_RICHE;
 
-  // avecRepli=true (tour 1, fiche GARANTIE) : publie dès que possible sous
-  // le plafond du plan, quelle que soit la cote atteinte — CHANGÉ (session
-  // suivante, décision explicite de James, inverse le 28/08) : la vraie
-  // cible (cibleMin) continue de GUIDER la construction à l'intérieur de
-  // construireFiche (un jour riche en matchs, le résultat l'atteint donc
-  // normalement quand même), mais ne bloque plus la publication si elle
-  // n'est pas atteinte. Plus de relance à 1.5 nécessaire : construireFiche
-  // ne rejette déjà plus sur le plancher, un seul essai suffit.
-  // avecRepli=false (fiches BONUS, tours 2-3) : règle du 28/08 TOUJOURS
-  // valable ici, volontairement pas concernée par le changement ci-dessus
-  // (confirmé par James) — une fiche bonus n'existe QUE si elle atteint
-  // vraiment la cote visée par ce plan, jamais un supplément à cote
-  // artificiellement basse juste pour remplir un quota.
-  async function tenterEtPublier(plan, avecRepli) {
+  const PALIERS_JOUR_RICHE = [
+    { nom: 'Palier 1 (2-4)',  cibleMin: 2,  cibleMax: 4,     avecRepli: true  },
+    { nom: 'Palier 2 (4-15)', cibleMin: 4,  cibleMax: 15,    avecRepli: false },
+    { nom: 'Palier 3 (15-X)', cibleMin: 15, cibleMax: 99999, avecRepli: false }
+  ];
+  const PALIER_JOUR_PAUVRE = [
+    { nom: 'Fiche unique (2-15, jour pauvre)', cibleMin: 2, cibleMax: 15, avecRepli: true }
+  ];
+
+  async function tenterEtPublierPalier(palier) {
     const buteursTmp = new Set(buteursUtilises);
     const equipesTmp = new Map(equipesUtilisees);
-    const fiche = construireFiche(poolFoot, plan, {
+    // plans[0] (rang 1) sert uniquement de plan "porteur" pour les
+    // quelques usages internes de construireFiche qui lisent plan.rank —
+    // cibleMinOverride/cibleMaxOverride priment TOUJOURS sur plan.min_
+    // total_odd/max_total_odd (voir construireFiche, déjà en place),
+    // donc le palier réellement visé n'est jamais celui du rang 1.
+    const fiche = construireFiche(poolFoot, plans[0], {
       buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
-      fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles
+      fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles,
+      cibleMinOverride: palier.cibleMin, cibleMaxOverride: palier.cibleMax
     });
     stats.fichesGenerees++;
     if (!fiche.valide) return false;
-    if (!avecRepli && fiche.coteTotale < Number(plan.min_total_odd || 0)) return false;
+    if (!palier.avecRepli && fiche.coteTotale < palier.cibleMin) return false;
     buteursTmp.forEach(p => buteursUtilises.add(p));
     equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
-    // Met à jour les 3 structures avec les sélections de CETTE fiche
-    // (28/08 v2) : selectionsExclues (doublon exact), selectionsParFixture
-    // (pour la détection de contradiction des prochaines fiches) et
-    // matchUsageCount (+1 par match distinct utilisé dans cette fiche,
-    // jamais par leg — un match ne compte qu'une fois par fiche, déjà
-    // garanti par matchsUtilises à l'intérieur de construireFiche).
     const fixturesDeCetteFiche = new Set();
     fiche.selections.forEach(s => {
       selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`);
@@ -2359,24 +2390,46 @@ async function handler(event) {
       matchUsageCount.set(fid, (matchUsageCount.get(fid) || 0) + 1);
       fixturesUtiliseesNormales.add(fid);
     });
-    // ÉTIQUETAGE PAR RANG EFFECTIF (session suivante, demande explicite de
-    // James : "les petites cotes sont créées en premier et partagées avec
-    // tous les 4 plans, les plus grosses cotes sont partagées aux plus
-    // gros plans seulement — ainsi impossible qu'un plan reste sans fiche
-    // quand des fiches sont créées ce jour-là"). AVANT ce correctif :
-    // chaque fiche était étiquetée au rang du plan pour lequel elle avait
-    // été construite (plan.rank) — une cote 4.51 construite pour le rang 4
-    // restait invisible aux rangs 1/2/3 même si elle tenait largement sous
-    // leur plafond, puisque la cascade d'accès ne remonte JAMAIS vers le
-    // bas (min_plan_rank<=rang abonné). MAINTENANT : on cherche, parmi
-    // TOUS les plans, le rang le PLUS BAS dont le plafond accepte cette
-    // cote précise, et on publie avec CE rang — jamais plus haut que
-    // nécessaire. `plans` est déjà trié par rang croissant (voir le
-    // correctif d'ordre du même jour), donc le premier qui convient est
-    // le bon.
-    const planEtiquette = plans.find(p => p.max_total_odd == null || fiche.coteTotale <= Number(p.max_total_odd)) || plan;
+    // ÉTIQUETAGE PAR RANG EFFECTIF (inchangé, voir commentaire des règles
+    // de partage ci-dessus) : jamais le palier visé, toujours le plafond
+    // RÉELLEMENT atteint qui décide.
+    const planEtiquette = plans.find(p => p.max_total_odd == null || fiche.coteTotale <= Number(p.max_total_odd)) || plans[0];
     await publierFiche(planEtiquette, fiche, dateCible, 'foot', noms);
+    console.log(`[BOT] ${palier.nom} publié : cote ${fiche.coteTotale.toFixed(2)}, étiqueté rang ${planEtiquette.rank}.`);
     return true;
+  }
+
+  // Jour pauvre (04/09, clarification explicite de James : "une seule
+  // cote aléatoire... ou deux petites cotes aussi, c'est le bot qui
+  // décide") — jamais un chiffre imposé (ni 7 ni aucun autre), le
+  // résultat dépend uniquement des vraies cotes disponibles ce jour-là
+  // (2, 3, 10, 12... selon le mix de sélections premium/safe réellement
+  // trouvées). Une 2ᵉ fiche (même fourchette 2-15) est tentée seulement
+  // si la 1ère a réussi ET que le pool le permet encore — jamais forcée,
+  // jamais signalée comme une anomalie si elle échoue.
+  const MAX_FICHES_JOUR_PAUVRE = 2;
+  const paliersATenter = jourRiche ? PALIERS_JOUR_RICHE : PALIER_JOUR_PAUVRE;
+  console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter.`);
+  for (const palier of paliersATenter) {
+    const ok = await tenterEtPublierPalier(palier);
+    if (!ok) {
+      console.log(`[BOT] ${palier.nom} non publié (pool insuffisant pour cette cible, ou aucune sélection valide restante).`);
+      // Le palier GARANTI (1 un jour riche, l'unique un jour pauvre) qui
+      // échoue signale un pool vraiment trop pauvre pour tout le reste —
+      // inutile de tenter les paliers suivants dans ce cas précis. Un
+      // palier BONUS (2 ou 3) qui échoue n'arrête jamais les autres :
+      // le palier 3 peut très bien réussir même si le palier 2 a échoué.
+      if (palier.avecRepli) break;
+    }
+  }
+  if (!jourRiche) {
+    // Tentatives supplémentaires jour pauvre, jusqu'à MAX_FICHES_JOUR_PAUVRE
+    // au total (la 1ère déjà tentée ci-dessus) — même fourchette 2-15,
+    // aucun chiffre imposé, jamais un échec traité comme une anomalie.
+    for (let i = 1; i < MAX_FICHES_JOUR_PAUVRE; i++) {
+      const ok = await tenterEtPublierPalier(PALIER_JOUR_PAUVRE[0]);
+      if (!ok) break; // pool épuisé : normal, pas une erreur
+    }
   }
 
   // SCORE EXACT D'ABORD (28/08 v6, retour explicite de James après le test
@@ -2439,39 +2492,6 @@ async function handler(event) {
       // ce qui garantit le partage systématique 3+4 via la cascade, peu
       // importe la cote atteinte.
       await publierFiche(planScoreExactRef, ficheExacte, dateCible, 'foot', noms, '-EXACT');
-    }
-  }
-
-  // TOUR 1 — fiche GARANTIE pour chaque plan (session suivante : publie
-  // désormais dès que possible sous le plafond du plan, quelle que soit la
-  // cote atteinte — voir tenterEtPublier). Ne reste sans fiche QUE si le
-  // pool entier n'a plus 2 sélections utilisables pour ce plan (contenu
-  // déjà épuisé par le score exact/d'autres plans aujourd'hui, ou
-  // vraiment trop peu de matchs) — dans ce seul cas, ses abonnés restent
-  // couverts par le rang inférieur via la cascade d'accès.
-  for (const plan of plans) {
-    const ok = await tenterEtPublier(plan, true);
-    if (ok) { fichesPublieesParPlan[plan.rank] = 1; }
-    else {
-      planEncoreActif[plan.rank] = false;
-      console.log(`[BOT] Rang ${plan.rank} : aucune fiche publiable au tour 1 (pool épuisé — moins de 2 sélections restantes pour ce plan) — cible [${plan.min_total_odd}–${plan.max_total_odd}]. Abonnés couverts via cascade par le rang inférieur.`);
-    }
-  }
-
-  // TOURS 2 et 3 — fiches BONUS, jusqu'à 3 au total par plan (28/08,
-  // demande explicite de James). Traitement PAR TOUR (une tentative pour
-  // CHAQUE plan, puis une autre) plutôt que "le Plan 1 prend tout avant que
-  // les autres jouent" — protège les gros plans (VIP/Lifetime) d'un pool
-  // déjà épuisé par les petits plans avant même d'avoir eu leur propre
-  // chance à leur vraie cote cible, un jour riche en matchs. Aucun log
-  // d'échec ici : ne pas atteindre 3 fiches est le cas normal, pas une
-  // anomalie à signaler comme le tour 1.
-  for (let tour = 2; tour <= MAX_FICHES_PAR_PLAN; tour++) {
-    for (const plan of plans) {
-      if (!planEncoreActif[plan.rank]) continue; // déjà échoué à un tour précédent : le pool ne peut que s'être appauvri davantage
-      const ok = await tenterEtPublier(plan, false);
-      if (ok) fichesPublieesParPlan[plan.rank]++;
-      else planEncoreActif[plan.rank] = false;
     }
   }
 
