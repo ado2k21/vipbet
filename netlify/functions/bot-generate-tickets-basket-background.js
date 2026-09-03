@@ -251,8 +251,25 @@ function resetStatsBasket() {
   // pariable la veille).
   stats.statutsRecus = {};
 }
-function logFinal() {
+// CORRIGÉ (session diagnostic, demande explicite de James : "pourquoi le
+// bot basket ne publie jamais rien ?") — en plus du console.log existant
+// (jamais retiré, toujours visible dans le panneau de logs Netlify),
+// persiste désormais le résumé complet de CHAQUE passage dans la table
+// Supabase bot_run_log. Objectif unique : pouvoir diagnostiquer depuis la
+// base de données, sans avoir besoin d'ouvrir les logs Netlify (jamais
+// accessibles autrement que depuis le panneau Netlify lui-même). N'écrit
+// JAMAIS rien qui influence la construction de la fiche — purement
+// journalisation, après coup, et jamais bloquante : un échec d'écriture
+// ici ne doit jamais empêcher le bot de rendre sa réponse normale.
+async function logFinal() {
   console.log('[BOT-BASKET]', JSON.stringify(stats, null, 2));
+  try {
+    await sbInsert('bot_run_log', [{ bot: 'basket', stats }]);
+  } catch (e) {
+    // Jamais bloquant : une panne de journalisation ne doit jamais faire
+    // échouer le bot lui-même, ni masquer le résultat déjà déterminé.
+    console.log('[BOT-BASKET] échec écriture bot_run_log:', e.message);
+  }
 }
 
 // Fenêtre horaire basketball : dès 08h00, jusqu'à 23h59 Haïti INCLUS — voir
@@ -510,11 +527,11 @@ async function handler(event) {
 
   if (!API_SPORTS_KEY) {
     stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
-    logFinal();
+    await logFinal();
     return { statusCode: 500, body: 'Configuration incomplète.' };
   }
   try { verifierConfigSupabase(); }
-  catch (e) { stats.erreurs.push(e.message); logFinal(); return { statusCode: 500, body: e.message }; }
+  catch (e) { stats.erreurs.push(e.message); await logFinal(); return { statusCode: 500, body: e.message }; }
 
   const dateCible = dateCibleDemainHaiti();
   stats.dateCible = dateCible;
@@ -525,7 +542,7 @@ async function handler(event) {
     const existantes = await sbSelect('tickets',
       `select=id&sport=eq.basket&play_date=eq.${dateCible}&source=eq.bot&limit=1`);
     if (existantes.length && !modeTest) {
-      logFinal();
+      await logFinal();
       return { statusCode: 200, body: 'Déjà généré aujourd\'hui pour cette date — rien à refaire.' };
     }
   } catch (e) {
@@ -540,7 +557,7 @@ async function handler(event) {
   const matchsJour = await recupererMatchsBasketJour(dateCible);
   stats.matchsTrouves = matchsJour.length;
   if (!matchsJour.length) {
-    logFinal();
+    await logFinal();
     return { statusCode: 200, body: 'Aucun match basketball disponible — aucune fiche publiée.' };
   }
 
@@ -609,7 +626,7 @@ async function handler(event) {
   stats.poolFinal = poolBasket.length;
 
   if (!poolBasket.length) {
-    logFinal();
+    await logFinal();
     return { statusCode: 200, body: 'Aucune sélection basketball ne passe les filtres — aucune fiche publiée.' };
   }
 
@@ -644,7 +661,7 @@ async function handler(event) {
   const fiche = construireFicheBasket(poolBasketFiltre);
   if (!fiche.valide) {
     stats.erreurs.push(`DIAGNOSTIC échec fiche : matchsDistincts=${fiche.debugMatchsDistincts}, cibleMax=${fiche.debugCibleMax}, meilleuresCotes=${JSON.stringify(fiche.debugMeilleuresCotes)}`);
-    logFinal();
+    await logFinal();
     return { statusCode: 200, body: 'Pas assez de sélections NOUVELLES pour un combiné (minimum 2) — contenu déjà publié aujourd\'hui, ou pool trop pauvre.' };
   }
   // publierFiche attend fixtureId sur chaque selection (champ générique,
@@ -674,7 +691,7 @@ async function handler(event) {
     stats.erreurs.push(`publierFiche a échoué (basket) : ${nouvelles.length ? nouvelles.join(' | ') : 'raison inconnue, aucune erreur remontée par le module foot'}`);
   }
 
-  logFinal();
+  await logFinal();
   return {
     statusCode: 200,
     body: `Terminé. ${stats.fichesPubliees} fiche(s) basketball publiée(s) pour ${dateCible} (cote ${fiche.coteTotale}, ${fiche.selections.length} sélections).`
