@@ -5085,7 +5085,7 @@ wiz_v_sub2:"Nous avons envoyé un code à 6 chiffres à votre adresse.",
 wiz_v_back:"Changer d'adresse e-mail",
 dash_tag_pair:"À jouer par 2", dash_score_count:"{n} scores exacts",
 plan_changed_carry:"Vos {n} jour(s) restant(s) ont été ajoutés.",
-renew_err_pending:"Votre paiement précédent est encore en attente de validation par notre équipe. Vous pourrez changer ou renouveler votre plan une fois qu'il sera confirmé.",
+renew_err_pending:"Votre paiement précédent est encore en attente de validation par notre équipe. Vous pourrez changer ou renouveler votre plan une fois qu'il sera confirmé.", renew_err_email_non_verifie:"Votre email doit d'abord être vérifié (code reçu par email lors de l'inscription) avant de pouvoir vous abonner. Vérifiez votre boîte de réception, ou contactez le support si vous ne trouvez pas le code.",
 pending_toast_h:"Paiement en attente",
 renew_err_encours:"Ce plan est déjà en cours.",
 renew_err_lifetime:"Vous possédez déjà l'abonnement à vie (Lifetime) — aucun changement n'est nécessaire.",
@@ -5543,7 +5543,7 @@ wiz_v_sub2:"We sent a 6-digit code to your address.",
 wiz_v_back:"Change email address",
 dash_tag_pair:"Play in pairs", dash_score_count:"{n} correct scores",
 plan_changed_carry:"Your {n} remaining day(s) were added.",
-renew_err_pending:"Your previous payment is still awaiting verification by our team. You'll be able to change or renew your plan once it's confirmed.",
+renew_err_pending:"Your previous payment is still awaiting verification by our team. You'll be able to change or renew your plan once it's confirmed.", renew_err_email_non_verifie:"Your email must be verified first (code received by email at signup) before you can subscribe. Check your inbox, or contact support if you can't find the code.",
 pending_toast_h:"Payment pending",
 renew_err_encours:"This plan is already active.",
 renew_err_lifetime:"You already own the Lifetime plan — no change is needed.",
@@ -6001,7 +6001,7 @@ wiz_v_sub2:"Nou voye yon kòd 6 chif nan imèl ou.",
 wiz_v_back:"Chanje imèl la",
 dash_tag_pair:"Jwe pa de", dash_score_count:"{n} eskò egzak",
 plan_changed_carry:"{n} jou ki te rete ou yo ajoute.",
-renew_err_pending:"Peman anvan ou an toujou ap tann ekip nou an verifye li. W ap ka chanje oswa renouvle plan ou depi li konfime.",
+renew_err_pending:"Peman anvan ou an toujou ap tann ekip nou an verifye li. W ap ka chanje oswa renouvle plan ou depi li konfime.", renew_err_email_non_verifie:"Fòk imèl ou verifye anvan (kòd ou te resevwa nan imèl lè w te enskri) anvan ou ka abòne. Tcheke bwat imèl ou, oswa kontakte sipò si ou pa jwenn kòd la.",
 pending_toast_h:"Peman ap tann",
 renew_err_encours:"Plan sa a deja an kou.",
 renew_err_lifetime:"Ou gen deja abònman Lifetime a — pa gen chanjman ki nesesè.",
@@ -7432,10 +7432,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // venait de créer juste au-dessus, sinon elle resterait orpheline
         // en 'pending' sans paiement associé.
         const estDoublon=(payErr.code==='23505')||/duplicate key|idx_un_seul_paiement_pending_par_user/i.test(payErr.message||'');
+        // AJOUTÉ (04/09, correctif de sécurité email_verified) : la policy
+        // RLS bloque désormais l'insertion tant que profiles.email_verified
+        // n'est pas true. Sans cette détection, l'erreur brute Postgres
+        // (code 42501, "row-level security policy") tombait dans le repli
+        // générique ci-dessous — traité à tort comme "hors ligne, sera
+        // réessayé plus tard", alors que rien ne se résout tout seul ici :
+        // l'utilisateur doit d'abord terminer la vérification par code.
+        const estNonVerifie=(payErr.code==='42501')||/row-level security|policy/i.test(payErr.message||'');
         if(subData&&subData.id){
           try{ await sb.from('subscriptions').delete().eq('id',subData.id); }catch(e){}
         }
         if(estDoublon)return {ok:false,dejaEnAttente:true,erreur:'Un paiement est deja en attente pour ce compte.'};
+        if(estNonVerifie)return {ok:false,emailNonVerifie:true,erreur:'Votre email doit d\'abord etre verifie (code recu par email) avant de pouvoir vous abonner.'};
         return {ok:true,hors_ligne:true,erreur:'payments: '+(payErr.message||JSON.stringify(payErr))};
       }
       // Notification "paiement en attente" : l'evenement existe des
@@ -7460,6 +7469,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const TITRE={
       renew_err_encours:'renew_toast_h', renew_err_lifetime:'lifetime_toast_h',
       renew_err_inferieur:'change_toast_h', renew_err_pending:'pending_toast_h',
+      renew_err_email_non_verifie:'err_action_unavailable_h',
       wiz_p_stripe_nosession:'err_action_unavailable_h',
       wiz_p_stripe_indispo:'err_action_unavailable_h'
     };
@@ -7611,6 +7621,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       save();
       afficherRefusPaiement('renew_err_pending');
       if(window.VB_refreshPlansUI)window.VB_refreshPlansUI();
+      return;
+    }
+    if(resSync&&resSync.emailNonVerifie){
+      // AJOUTÉ (04/09, correctif de sécurité email_verified) : la policy
+      // RLS a bloqué l'insertion car ce compte n'a pas réellement complété
+      // la vérification par code — message clair, jamais un simple
+      // "hors ligne, réessayez plus tard" qui n'aurait jamais résolu quoi
+      // que ce soit tout seul ici.
+      afficherRefusPaiement('renew_err_email_non_verifie');
       return;
     }
     if(resSync&&resSync.hors_ligne){
