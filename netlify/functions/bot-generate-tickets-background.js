@@ -239,15 +239,27 @@ const BUTEURS_RECONNUS_PAR_CLUB = {
 function normaliserNom(s) {
   return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 }
+// CORRIGÉ (revue de code, 04/09) : la comparaison précédente était une
+// simple sous-chaîne (n.includes(ref)), ce qui faisait correspondre à tort
+// "Kane" à "Kanel Joseph", ou "Son" à "Anderson"/"Johnson" — n'importe quel
+// nom contenant la référence comme fragment était accepté. Compare
+// désormais par MOTS ENTIERS uniquement : tous les mots de la référence
+// doivent apparaître, chacun identique de bout en bout, parmi les mots du
+// nom retourné par l'API — jamais un simple fragment.
+function nomsCorrespondent(nomJoueur, nomReference) {
+  const motsJoueur = new Set(normaliserNom(nomJoueur).split(/\s+/).filter(Boolean));
+  const motsReference = normaliserNom(nomReference).split(/\s+/).filter(Boolean);
+  if (!motsReference.length || !motsJoueur.size) return false;
+  return motsReference.every(mot => motsJoueur.has(mot));
+}
 // Vérifie que le joueur appartient à l'un des DEUX clubs du match s'ils
 // sont dans GRANDS_CLUBS_BUTEUR — jamais juste "un des deux clubs est
 // grand", il faut que ce SOIT ce club-là qui ait ce joueur précis.
 function estButeurReconnu(nomJoueur, equipeDomicileId, equipeExterieurId) {
-  const n = normaliserNom(nomJoueur);
   for (const clubId of [equipeDomicileId, equipeExterieurId]) {
     const liste = BUTEURS_RECONNUS_PAR_CLUB[clubId];
     if (!liste) continue;
-    if (liste.some(ref => n.includes(normaliserNom(ref)) || normaliserNom(ref).includes(n))) return true;
+    if (liste.some(ref => nomsCorrespondent(nomJoueur, ref))) return true;
   }
   return false;
 }
@@ -1295,7 +1307,18 @@ function construireFiche(pool, plan, options) {
   // N'empêche jamais un marché réellement performant d'être choisi, juste
   // sa RÉPÉTITION excessive au-delà d'un seuil raisonnable.
   const marchesUtiliseesJour = options.marchesUtiliseesJour || new Map();
-  const PLAFOND_MARCHE_PAR_JOUR = 3;
+  // CORRIGÉ (retour explicite de James, 04/09) — deux versions successives
+  // avant celle-ci : d'abord un plafond de 3 (trop permissif, BTTS restait
+  // systématique dans les 2 fiches basses du jour), puis un plafond de 1
+  // (trop strict — James : "pas jamais, si BTTS est évidente deux fois,
+  // pas de problème, le principe reste de primer la réussite, aucune
+  // interdiction"). REMPLACÉ par un LÉGER MALUS dans le tri de
+  // meilleurParMatch ci-dessous, jamais un blocage : un marché déjà
+  // retenu ailleurs aujourd'hui devient un peu moins prioritaire face à
+  // une alternative de fiabilité proche, mais s'il reste clairement le
+  // meilleur choix pour un match donné, il est choisi quand même — la
+  // qualité réelle prime toujours sur la diversité forcée.
+  const MALUS_MARCHE_DEJA_UTILISE = 0.06;
 
   let cibleMin = options.cibleMinOverride != null
     ? Number(options.cibleMinOverride)
@@ -1331,7 +1354,14 @@ function construireFiche(pool, plan, options) {
   // passer par le handler) → repli sur 1/cote, jamais une erreur.
   function meilleurParMatch(liste) {
     const meilleur = {};
-    const score = b => (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
+    const score = b => {
+      let s = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
+      // Malus léger (voir MALUS_MARCHE_DEJA_UTILISE ci-dessus) — jamais
+      // appliqué au buteur (déjà régi par son propre système), jamais aux
+      // fiches à cote haute (Palier 3+, où le pool est déjà tendu).
+      if (cibleMax <= 15 && b.market !== 'mk_buteur' && (marchesUtiliseesJour.get(b.market) || 0) > 0) s -= MALUS_MARCHE_DEJA_UTILISE;
+      return s;
+    };
     liste.forEach(b => {
       if (!meilleur[b.fixtureId] || score(b) > score(meilleur[b.fixtureId])) meilleur[b.fixtureId] = b;
     });
@@ -1399,11 +1429,8 @@ function construireFiche(pool, plan, options) {
     // (anciennes données) → aucune restriction, jamais bloquant.
     if (bet.equipeDomicileId != null && (equipesUtilisees.get(bet.equipeDomicileId) || 0) >= MAX_APPARITIONS_EQUIPE) return false;
     if (bet.equipeExterieurId != null && (equipesUtilisees.get(bet.equipeExterieurId) || 0) >= MAX_APPARITIONS_EQUIPE) return false;
-    // Plafond JOUR (voir définition de marchesUtiliseesJour ci-dessus) —
-    // exempté du score exact et du buteur, qui ont déjà leurs propres
-    // limites bien plus strictes (buteursUtilises, système séparé), pour
-    // ne jamais bloquer inutilement ce qui est déjà correctement contrôlé.
-    if (bet.market !== 'mk_buteur' && (marchesUtiliseesJour.get(bet.market) || 0) >= PLAFOND_MARCHE_PAR_JOUR) return false;
+    // Plus de blocage ici (voir meilleurParMatch : malus léger, jamais une
+    // interdiction — retour explicite de James, 04/09).
     // Cotes ≥1.90 acceptées pour les marchés SAFE/PREMIUM déjà bien établis
     // et encadrés (victoire directe, plus de 2.5 buts, BTTS) — le plafond
     // strict du plan ne s'applique qu'aux cotes hors de ces plages
@@ -1420,7 +1447,11 @@ function construireFiche(pool, plan, options) {
     championnatsUtilises[bet.league] = (championnatsUtilises[bet.league] || 0) + 1;
     if (bet.equipeDomicileId != null) equipesUtilisees.set(bet.equipeDomicileId, (equipesUtilisees.get(bet.equipeDomicileId) || 0) + 1);
     if (bet.equipeExterieurId != null) equipesUtilisees.set(bet.equipeExterieurId, (equipesUtilisees.get(bet.equipeExterieurId) || 0) + 1);
-    marchesUtiliseesJour.set(bet.market, (marchesUtiliseesJour.get(bet.market) || 0) + 1);
+    // Incrément cohérent avec la restriction ci-dessus : ne compte que
+    // l'usage en zone Palier 1/2, jamais pollué par les fiches à cote
+    // haute (exemptées du plafond, elles ne doivent pas non plus fausser
+    // le compteur d'une future fiche Palier 1/2 dans la même journée).
+    if (cibleMax <= 15) marchesUtiliseesJour.set(bet.market, (marchesUtiliseesJour.get(bet.market) || 0) + 1);
     coteTotale *= bet.odd;
     return true;
   }
@@ -2364,7 +2395,8 @@ async function handler(event) {
   // AJOUTÉ (session diagnostic, 04/09) : même compteur que
   // bot-generate-tickets-manual-background.js (qui le calculait déjà sans
   // jamais l'utiliser) — désormais réellement appliqué à l'intérieur de
-  // construireFiche (voir PLAFOND_MARCHE_PAR_JOUR). Partagé sur toute la
+  // construireFiche comme léger malus de diversité (voir
+  // MALUS_MARCHE_DEJA_UTILISE, jamais un blocage). Partagé sur toute la
   // génération automatique du jour, tous paliers confondus.
   const marchesUtiliseesJour = new Map();
   // Partie 1/2/9 : sélections déjà utilisées AUJOURD'HUI, relues depuis la
