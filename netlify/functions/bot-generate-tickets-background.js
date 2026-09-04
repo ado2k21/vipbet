@@ -27,9 +27,17 @@
 // tout échec de build lié à une dépendance manquante.
 
 const config = {
-  // Toutes les 15 min entre 21h00 et 23h59 UTC — couvre 18h30 Haïti
-  // (UTC-4 en heure d'été → 22h30 UTC ; UTC-5 en heure standard → 23h30 UTC)
-  schedule: '*/15 21-23,0 * * *'
+  // CORRIGÉ (session diagnostic, 03/09, demande explicite de James) :
+  // l'ancienne plage '21-23,0 UTC' ne couvrait que 16h00-19h59 Haïti (UTC-5,
+  // pas d'heure d'été en Haïti) — le filet de secours interne du handler
+  // (dansLaFenetreUrgence, heureNum===20) existait dans le CODE mais
+  // Netlify n'appelait JAMAIS la fonction pendant l'heure 20h Haïti :
+  // du code mort depuis son ajout. Ajout de l'heure UTC 1 (=20h-20h59
+  // Haïti) pour que ce filet de secours puisse réellement se déclencher —
+  // indépendamment par sport, comme déjà prévu par la logique existante :
+  // il s'active si le football a échoué, si le basketball a échoué, ou
+  // si les deux ont échoué, chacun gérant son propre etat de generation.
+  schedule: '*/15 21-23,0,1 * * *'
 };
 
 // ============================================================================
@@ -425,8 +433,20 @@ function rejeter(raison) {
   stats.matchsRejetes++;
   stats.raisonsRejet[raison] = (stats.raisonsRejet[raison] || 0) + 1;
 }
-function logFinal() {
+// CORRIGÉ (session diagnostic, 03/09, demande explicite de James : "verifie
+// en base pourquoi aucune fiche n'a ete creee automatiquement") — meme
+// correctif exact que bot-generate-tickets-basket-background.js : le
+// console.log seul est invisible sans acces aux logs Netlify. Persiste
+// desormais le resume de CHAQUE passage dans bot_run_log (bot='foot'),
+// jamais bloquant, jamais utilise pour influencer la construction de la
+// fiche -- uniquement de la journalisation, apres coup.
+async function logFinal() {
   console.log('[BOT]', JSON.stringify(stats, null, 2));
+  try {
+    await sbInsert('bot_run_log', [{ bot: 'foot', stats }]);
+  } catch (e) {
+    console.log('[BOT] échec écriture bot_run_log:', e.message);
+  }
 }
 
 // ============================================================================
@@ -2083,12 +2103,12 @@ async function handler(event) {
 
   if (!API_SPORTS_KEY) {
     stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
-    logFinal();
+    await logFinal();
     return { statusCode: 500, body: 'Configuration incomplète.' };
   }
 
   try { verifierConfigSupabase(); }
-  catch (e) { stats.erreurs.push(e.message); logFinal(); return { statusCode: 500, body: e.message }; }
+  catch (e) { stats.erreurs.push(e.message); await logFinal(); return { statusCode: 500, body: e.message }; }
 
   const dateCible = dateCibleDemainHaiti();
   stats.dateCible = dateCible;
@@ -2097,7 +2117,7 @@ async function handler(event) {
   // --- Protection anti-doublon ---
   if (await dejaGenereAujourdhui(dateCible)) {
     stats.doublonsDetectes = true;
-    logFinal();
+    await logFinal();
     return { statusCode: 200, body: `Fiches déjà générées pour ${dateCible} — abandon.` };
   }
 
@@ -2117,7 +2137,7 @@ async function handler(event) {
     plans.sort((a, b) => a.rank - b.rank);
   } catch (e) {
     stats.erreurs.push('lecture table plans: ' + e.message);
-    logFinal();
+    await logFinal();
     return { statusCode: 500, body: 'Impossible de lire les plans.' };
   }
 
@@ -2127,7 +2147,7 @@ async function handler(event) {
 
   if (!fixturesJour.length) {
     console.log('[BOT] Aucun match reçu — vérifier le plan API-Sports (endpoint /fixtures).');
-    logFinal();
+    await logFinal();
     return { statusCode: 200, body: 'Aucun match disponible — aucune fiche publiée.' };
   }
 
@@ -2495,7 +2515,7 @@ async function handler(event) {
     }
   }
 
-  logFinal();
+  await logFinal();
   return {
     statusCode: 200,
     body: `Terminé. ${stats.fichesPubliees} fiche(s) publiée(s) pour ${dateCible}.`

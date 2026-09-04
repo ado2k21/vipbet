@@ -59,8 +59,13 @@
 // heure d'été UTC-4, 00h00 UTC le jour suivant en heure standard UTC-5) —
 // deux valeurs d'heures séparées par une virgule, jamais une plage
 // unique (23-0 n'est pas une plage cron valide).
+// CORRIGÉ (session diagnostic, 03/09, demande explicite de James) : ajout
+// de l'heure UTC 1 (=20h-20h59 Haïti) — même raison exacte que le bot
+// football (voir bot-generate-tickets-background.js) : le filet de
+// secours interne (heureNum===20) ne pouvait jamais se déclencher tant
+// que Netlify n'appelait pas la fonction pendant cette heure-là.
 const config = {
-  schedule: '*/15 23,0 * * *'
+  schedule: '*/15 23,0,1 * * *'
 };
 
 const bot = require('./bot-generate-tickets-background.js');
