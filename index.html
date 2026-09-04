@@ -5104,7 +5104,7 @@ notif_renewed:"Votre abonnement {plan} a été renouvelé",
 notif_expired:"Votre abonnement a expiré",
 notif_soon:"Votre abonnement expire dans {n} jour(s)",
 notif_today:"{n} fiche(s) disponible(s) aujourd'hui",
-notif_won:"Votre fiche {id} est gagnante",
+notif_won_foot:"Une de vos fiches Football est gagnante", notif_won_basket:"Une de vos fiches Basketball est gagnante", notif_won_exact:"Votre fiche Score Exact est gagnante",
 notif_ago_min:"Il y a {n} min", notif_ago_h:"Il y a {n} h", notif_ago_d:"Il y a {n} j",
 dash_badge_none:"Aucun plan",
 err_action_unavailable_h:"Action indisponible", err_action_unavailable_p:"Cette action est temporairement indisponible. Veuillez réessayer dans quelques secondes.",
@@ -5567,7 +5567,7 @@ notif_renewed:"Your {plan} plan has been renewed",
 notif_expired:"Your plan has expired",
 notif_soon:"Your plan expires in {n} day(s)",
 notif_today:"{n} slip(s) available today",
-notif_won:"Your slip {id} is a winner",
+notif_won_foot:"One of your Football tickets is a winner", notif_won_basket:"One of your Basketball tickets is a winner", notif_won_exact:"Your Exact Score ticket is a winner",
 notif_ago_min:"{n} min ago", notif_ago_h:"{n} h ago", notif_ago_d:"{n} d ago",
 dash_badge_none:"No plan",
 err_action_unavailable_h:"Action unavailable", err_action_unavailable_p:"This action is temporarily unavailable. Please try again in a few seconds.",
@@ -6030,7 +6030,7 @@ notif_renewed:"Abònman {plan} ou an renouvle",
 notif_expired:"Abònman ou ekspire",
 notif_soon:"Abònman ou ap ekspire nan {n} jou",
 notif_today:"{n} fich disponib jodi a",
-notif_won:"Fich {id} ou an genyen",
+notif_won_foot:"Youn nan fich Foutbòl ou yo genyen", notif_won_basket:"Youn nan fich Basketball ou yo genyen", notif_won_exact:"Fich Score Egzat ou an genyen",
 notif_ago_min:"Gen {n} min", notif_ago_h:"Gen {n} è", notif_ago_d:"Gen {n} jou",
 dash_badge_none:"Okenn plan",
 err_action_unavailable_h:"Aksyon pa disponib", err_action_unavailable_p:"Aksyon sa a pa disponib pou kounye a. Tanpri eseye ankò nan kèk segond.",
@@ -9660,8 +9660,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // 5. Dernier resultat gagnant de l'historique
     const won=DATA.tickets.filter(k=>k.status==='won'&&k.minPlan<=userRank())
                           .sort((a,b)=>a.day-b.day)[0];
-    if(won)out.push({id:'won'+won.id,type:'won',texte:t('notif_won').replace('{id}',won.id),
+    // CORRIGÉ (retour explicite de James, 04/09) : affichait auparavant le
+    // code technique brut de la fiche (ex. "BOT-2026-09-02-FOOT-R3-EXACT")
+    // directement dans la notification — en plus d'être un mauvais format,
+    // ce code contient littéralement "BOT", ce qui viole la règle absolue
+    // "zéro mention d'IA/algorithme". Remplacé par un libellé générique
+    // selon le type réel de fiche, jamais le code interne.
+    if(won){
+      const estExact=won.scoreCount>0&&won.scoreCount>=won.legsCount;
+      const cle=estExact?'notif_won_exact':((won.sport==='basket'||won.sport==='nba')?'notif_won_basket':'notif_won_foot');
+      out.push({id:'won'+won.uid,type:'won',texte:t(cle),
                      ts:Date.now()-won.day*86400000});
+    }
 
     out.sort((a,b)=>b.ts-a.ts);
     // Une notification issue du serveur (prefixe 'sb') se base sur son
