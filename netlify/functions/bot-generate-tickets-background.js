@@ -202,6 +202,56 @@ const GRANDS_CLUBS_BUTEUR = [
   2938   // Al-Ittihad FC (Arabie Saoudite) — Benzema
 ];
 
+// Buteurs RÉELLEMENT reconnus par grand club (règle du 25/08 réaffirmée le
+// 04/09, retour explicite de James : "le bot met des buteurs dans des
+// équipes un peu faibles, il faut éviter n'importe quel joueur"). AVANT ce
+// correctif, seul le CLUB était vérifié (voir clubAutorise plus bas) — le
+// joueur choisi pouvait être n'importe qui dans le match, y compris un
+// joueur de l'équipe ADVERSE non listée, dès lors que sa cote était la
+// plus basse du match. Chaque nom ci-dessous doit appartenir au vrai
+// effectif actuel du club listé dans GRANDS_CLUBS_BUTEUR — LISTE À
+// VÉRIFIER/COMPLÉTER PAR JAMES : les effectifs changent (transferts,
+// blessures longue durée), cette liste doit être tenue à jour
+// manuellement, jamais devinée automatiquement. Comparaison insensible à
+// la casse et aux accents (normaliserNom). Un nom absent de cette liste
+// n'est JAMAIS retenu, même si son club et son odd sont valides — mieux
+// vaut aucun buteur qu'un joueur non vérifié.
+const BUTEURS_RECONNUS_PAR_CLUB = {
+  541:  ['Mbappe', 'Mbappé', 'Vinicius Junior', 'Vinicius', 'Rodrygo', 'Bellingham'],           // Real Madrid
+  529:  ['Lewandowski', 'Robert Lewandowski', 'Raphinha', 'Yamal', 'Lamine Yamal'],             // Barcelona
+  157:  ['Kane', 'Harry Kane'],                                                                  // Bayern München
+  50:   ['Haaland', 'Erling Haaland'],                                                           // Manchester City
+  33:   ['Hojlund', 'Højlund', 'Rasmus Hojlund'],                                                 // Manchester United
+  40:   ['Salah', 'Mohamed Salah', 'Nunez', 'Darwin Nunez'],                                     // Liverpool
+  42:   ['Saka', 'Bukayo Saka', 'Havertz', 'Kai Havertz'],                                       // Arsenal
+  49:   ['Jackson', 'Nicolas Jackson', 'Palmer', 'Cole Palmer'],                                 // Chelsea
+  47:   ['Son', 'Son Heung-min', 'Solanke', 'Dominic Solanke'],                                  // Tottenham
+  505:  ['Lautaro Martinez', 'Lautaro', 'Thuram', 'Marcus Thuram'],                              // Inter
+  496:  ['Vlahovic', 'Dusan Vlahovic'],                                                           // Juventus
+  489:  ['Leao', 'Rafael Leao'],                                                                  // AC Milan
+  492:  ['Osimhen', 'Victor Osimhen', 'Lukaku', 'Romelu Lukaku'],                                // Napoli
+  85:   ['Dembele', 'Ousmane Dembele', 'Dembélé'],                                               // Paris Saint Germain
+  9568: ['Messi', 'Lionel Messi'],                                                                // Inter Miami
+  2939: ['Ronaldo', 'Cristiano Ronaldo'],                                                         // Al-Nassr
+  2932: ['Mitrovic', 'Aleksandar Mitrovic', 'Neves', 'Ruben Neves'],                             // Al-Hilal
+  2938: ['Benzema', 'Karim Benzema']                                                              // Al-Ittihad
+};
+function normaliserNom(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+// Vérifie que le joueur appartient à l'un des DEUX clubs du match s'ils
+// sont dans GRANDS_CLUBS_BUTEUR — jamais juste "un des deux clubs est
+// grand", il faut que ce SOIT ce club-là qui ait ce joueur précis.
+function estButeurReconnu(nomJoueur, equipeDomicileId, equipeExterieurId) {
+  const n = normaliserNom(nomJoueur);
+  for (const clubId of [equipeDomicileId, equipeExterieurId]) {
+    const liste = BUTEURS_RECONNUS_PAR_CLUB[clubId];
+    if (!liste) continue;
+    if (liste.some(ref => n.includes(normaliserNom(ref)) || normaliserNom(ref).includes(n))) return true;
+  }
+  return false;
+}
+
 // Fenêtre horaire football en heure Haïti (règle métier stricte)
 const FOOT_MIN_HOUR = 7;   // 07:00 accepté (28/08 v3, demande explicite de James — était 08:00)
 const FOOT_MAX_MINUTES = 22 * 60; // 22:00 accepté, 22:01 refusé
@@ -1056,7 +1106,15 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
         const ressembleANombre = /^-?\d+(\.\d+)?$/.test(String(v.value).trim());
-        if (!ressembleANombre && c >= 1.30 && c <= 3.00 && c < meilleureCote) {
+        // CORRIGÉ (04/09, retour explicite de James) : clubAutorise
+        // vérifiait seulement qu'UN DES DEUX clubs du match était grand —
+        // n'importe quel joueur du match (y compris l'adversaire, souvent
+        // plus faible) pouvait être choisi si sa cote était la plus basse.
+        // Exige désormais que ce SOIT le joueur reconnu de ce grand club
+        // précis (voir BUTEURS_RECONNUS_PAR_CLUB) — jamais un joueur non
+        // vérifié, même à cote très basse.
+        const estReconnu = estButeurReconnu(v.value, infosFixture && infosFixture.equipeDomicileId, infosFixture && infosFixture.equipeExterieurId);
+        if (!ressembleANombre && estReconnu && c >= 1.30 && c <= 3.00 && c < meilleureCote) {
           meilleureCote = c;
           meilleurButeur = v;
         }
@@ -1225,6 +1283,19 @@ function construireFiche(pool, plan, options) {
   // ne reçoit jamais cette option — exemption structurelle, Partie 4).
   const equipesUtilisees = options.equipesUtilisees || new Map();
   const MAX_APPARITIONS_EQUIPE = 2;
+  // CORRIGÉ (session diagnostic, 04/09, retour explicite de James : "je
+  // vois le plus souvent BTTS, je ne veux pas des habitudes qui peuvent
+  // causer des échecs") — marchesUtiliseesJour était déjà CALCULÉ et
+  // TRANSMIS (voir bot-generate-tickets-manual-background.js) mais jamais
+  // LU ici : rien n'empêchait un même marché de dominer toutes les fiches
+  // de la journée quand son scoreFiabilite ressort en tête sur presque
+  // chaque match. Plafond appliqué à l'échelle du jour entier (toutes
+  // fiches confondues, bot ET génération manuelle) — jamais à l'intérieur
+  // d'une seule fiche, où PLAFOND_PAR_MARCHE s'applique déjà séparément.
+  // N'empêche jamais un marché réellement performant d'être choisi, juste
+  // sa RÉPÉTITION excessive au-delà d'un seuil raisonnable.
+  const marchesUtiliseesJour = options.marchesUtiliseesJour || new Map();
+  const PLAFOND_MARCHE_PAR_JOUR = 3;
 
   let cibleMin = options.cibleMinOverride != null
     ? Number(options.cibleMinOverride)
@@ -1328,6 +1399,11 @@ function construireFiche(pool, plan, options) {
     // (anciennes données) → aucune restriction, jamais bloquant.
     if (bet.equipeDomicileId != null && (equipesUtilisees.get(bet.equipeDomicileId) || 0) >= MAX_APPARITIONS_EQUIPE) return false;
     if (bet.equipeExterieurId != null && (equipesUtilisees.get(bet.equipeExterieurId) || 0) >= MAX_APPARITIONS_EQUIPE) return false;
+    // Plafond JOUR (voir définition de marchesUtiliseesJour ci-dessus) —
+    // exempté du score exact et du buteur, qui ont déjà leurs propres
+    // limites bien plus strictes (buteursUtilises, système séparé), pour
+    // ne jamais bloquer inutilement ce qui est déjà correctement contrôlé.
+    if (bet.market !== 'mk_buteur' && (marchesUtiliseesJour.get(bet.market) || 0) >= PLAFOND_MARCHE_PAR_JOUR) return false;
     // Cotes ≥1.90 acceptées pour les marchés SAFE/PREMIUM déjà bien établis
     // et encadrés (victoire directe, plus de 2.5 buts, BTTS) — le plafond
     // strict du plan ne s'applique qu'aux cotes hors de ces plages
@@ -1344,6 +1420,7 @@ function construireFiche(pool, plan, options) {
     championnatsUtilises[bet.league] = (championnatsUtilises[bet.league] || 0) + 1;
     if (bet.equipeDomicileId != null) equipesUtilisees.set(bet.equipeDomicileId, (equipesUtilisees.get(bet.equipeDomicileId) || 0) + 1);
     if (bet.equipeExterieurId != null) equipesUtilisees.set(bet.equipeExterieurId, (equipesUtilisees.get(bet.equipeExterieurId) || 0) + 1);
+    marchesUtiliseesJour.set(bet.market, (marchesUtiliseesJour.get(bet.market) || 0) + 1);
     coteTotale *= bet.odd;
     return true;
   }
@@ -1502,7 +1579,22 @@ function construireFicheScoreExact(pool, plan, options) {
     // scores répétés (2:0, 1:1...) sur des matchs sans lien entre eux.
     // Le match est maintenant EXCLU plutôt que deviné sans corroboration —
     // conforme à "jamais forcer, qualité > quantité" déjà établi ailleurs.
-    if (!prof) return;
+    // CORRIGÉ (session diagnostic, 04/09, retour explicite de James :
+    // "toujours aucun résultat") — la règle du 28/08 ("aucun profil du même
+    // match → exclu") était trop stricte en pratique : elle exige qu'un
+    // AUTRE marché du MÊME match (BTTS/totaux) soit déjà validé, ce qui
+    // n'arrive que sur une fraction des matchs, laissant souvent zéro
+    // candidat au final. AJOUT d'un second type de corroboration, jamais
+    // du hasard non plus : un VRAI historique mesuré (même seuil que
+    // classerConfiance, SEUIL_MIN_FIABILITE réglages settled) pour ce
+    // championnat+marché score-exact précis. Le profil du même match reste
+    // TOUJOURS préféré en premier (plus précis, propre à ce match) ; ce
+    // repli ne s'active que si aucun profil n'existe pour ce match.
+    if (!prof) {
+      const avecHistorique = candidats.find(c => c.tauxReel != null && c.echantillonReel != null && c.echantillonReel >= SEUIL_MIN_FIABILITE);
+      if (avecHistorique) meilleur[fixtureId] = avecHistorique;
+      return;
+    }
     const correspondants = candidats.filter(c => correspond(parseScore(c.pick), prof));
     if (!correspondants.length) return; // profil réel mais aucun score ne colle : pareil, on exclut plutôt que de forcer
     meilleur[fixtureId] = correspondants[0];
@@ -2269,6 +2361,12 @@ async function handler(event) {
   // par équipe, partagé sur toute la génération du jour — max 2 fiches
   // par équipe, jamais appliqué au score exact (Partie 4).
   const equipesUtilisees = new Map();
+  // AJOUTÉ (session diagnostic, 04/09) : même compteur que
+  // bot-generate-tickets-manual-background.js (qui le calculait déjà sans
+  // jamais l'utiliser) — désormais réellement appliqué à l'intérieur de
+  // construireFiche (voir PLAFOND_MARCHE_PAR_JOUR). Partagé sur toute la
+  // génération automatique du jour, tous paliers confondus.
+  const marchesUtiliseesJour = new Map();
   // Partie 1/2/9 : sélections déjà utilisées AUJOURD'HUI, relues depuis la
   // base (pas seulement depuis ce lot en mémoire) — protège aussi contre
   // une double-exécution accidentelle du bot le même jour (idempotence,
@@ -2391,7 +2489,7 @@ async function handler(event) {
     // donc le palier réellement visé n'est jamais celui du rang 1.
     const fiche = construireFiche(poolFoot, plans[0], {
       buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
-      fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles,
+      fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles, marchesUtiliseesJour,
       cibleMinOverride: palier.cibleMin, cibleMaxOverride: palier.cibleMax
     });
     stats.fichesGenerees++;

@@ -418,13 +418,53 @@ async function handler(event) {
   const coteMaxEffective = planMax != null ? Math.min(coteMaxDemandee, planMax) : coteMaxDemandee;
   const clamped = planMax != null && coteMaxDemandee > planMax;
 
-  const fiche = construireFiche(poolFoot, planPartage, {
-    buteursUtilises, equipesUtilisees, marchesUtiliseesJour, selectionsExclues, fixturesExclues, nbMatchsDisponibles,
-    cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
-  });
+  // CASCADE PAR PALIERS (session diagnostic, 04/09, demande explicite de
+  // James : "le bot doit essayer le plus possible pour obtenir la cote
+  // demandée, si c'est pas possible une cote plus bas, ainsi de suite") —
+  // REMPLACE l'appel unique précédent (qui acceptait silencieusement
+  // n'importe quel résultat partiel, même très en dessous de la cote
+  // demandée, dès que 2 sélections + non-dépassement du plafond étaient
+  // atteints). Essaie D'ABORD la cote exacte demandée par l'admin ; si le
+  // pool ne permet pas de s'en approcher (moins de 85% atteint), redescend
+  // par paliers relatifs (100/85/70/50/30/15% de la demande, jamais sous
+  // 2) jusqu'à trouver ce qui est RÉELLEMENT possible avec les matchs du
+  // jour — jamais un plafond fixe arbitraire, toujours relatif à ce que
+  // l'admin a demandé. Chaque tentative utilise des COPIES temporaires des
+  // compteurs partagés (buteurs/équipes/marchés) — rien n'est répercuté
+  // sur les tentatives suivantes ni sur le reste de la génération tant
+  // qu'un palier n'est pas explicitement retenu, exactement le même
+  // principe que tenterEtPublierPalier côté bot automatique.
+  const paliersCascade = [1, 0.85, 0.7, 0.5, 0.3, 0.15]
+    .map(frac => Math.max(2, Math.round(coteMaxEffective * frac * 100) / 100))
+    .filter((v, i, arr) => arr.indexOf(v) === i); // dédoublonne les paliers qui convergent vers la même valeur (petites cibles)
 
-  if (!fiche.valide) {
-    resultats.push({ rank: planPartage.rank, publie: false, plansConcernes: plansChoisis.map(p => p.rank), raison: `Aucune combinaison NOUVELLE possible (${fiche.selections.length} sélection(s) trouvée(s), minimum 2 requis) — le contenu disponible est déjà utilisé ailleurs aujourd'hui, ou le pool est trop pauvre.` });
+  let fiche = null, cibleRetenue = null;
+  for (const cible of paliersCascade) {
+    const buteursTmp = new Set(buteursUtilises);
+    const equipesTmp = new Map(equipesUtilisees);
+    const marchesTmp = new Map(marchesUtiliseesJour);
+    const essai = construireFiche(poolFoot, planPartage, {
+      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, marchesUtiliseesJour: marchesTmp,
+      selectionsExclues, fixturesExclues, nbMatchsDisponibles,
+      cibleMinOverride: cible, cibleMaxOverride: cible
+    });
+    const dernierPalier = cible === paliersCascade[paliersCascade.length - 1];
+    // Palier retenu si : la cote atteinte s'approche vraiment de CE
+    // palier (≥85% de sa valeur) — sinon on redescend encore. Sur le tout
+    // dernier palier (le plus permissif), on accepte quand même le
+    // meilleur résultat valide obtenu, même en dessous de 85%, plutôt que
+    // de finir sans rien alors qu'une vraie combinaison existe.
+    if (essai.valide && (essai.coteTotale >= cible * 0.85 || dernierPalier)) {
+      fiche = essai; cibleRetenue = cible;
+      buteursTmp.forEach(p => buteursUtilises.add(p));
+      equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
+      marchesTmp.forEach((v, k) => marchesUtiliseesJour.set(k, v));
+      break;
+    }
+  }
+
+  if (!fiche) {
+    resultats.push({ rank: planPartage.rank, publie: false, plansConcernes: plansChoisis.map(p => p.rank), raison: `Aucune combinaison NOUVELLE possible, même en réduisant la cote demandée (paliers essayés : ${paliersCascade.join(', ')}) — le contenu disponible est déjà utilisé ailleurs aujourd'hui, ou le pool est vraiment trop pauvre.` });
     return jsonResponse(200, { resultats });
   }
   fiche.selections.forEach(s => { selectionsExclues.add(cleSelection(s)); fixturesExclues.add(s.fixtureId); });
@@ -432,6 +472,11 @@ async function handler(event) {
   resultats.push({
     rank: planPartage.rank, publie: ok, coteTotale: fiche.coteTotale, selections: fiche.selections.length,
     coteMaxDemandee: coteMaxDemandee, coteMaxAppliquee: coteMaxEffective, clampeAuMaxDuPlan: clamped,
+    // Transparence sur la cascade (voir plus haut) : cibleRetenue est le
+    // palier réellement atteint, jamais silencieusement différent de
+    // coteMaxDemandee sans que l'admin ne le voie.
+    cibleDemandee: coteMaxEffective, cibleAtteinte: cibleRetenue,
+    reduitParCascade: cibleRetenue < coteMaxEffective,
     plansConcernes: plansChoisis.map(p => p.rank),
     programmee, scheduledPublishAt: scheduledPublishAtIso,
     raison: ok ? null : (stats.erreurs[stats.erreurs.length - 1] || 'Échec de publication.')
@@ -443,7 +488,11 @@ async function handler(event) {
   // utiliser le bouton dédié "GÉNÉRER SCORE EXACT" séparément si voulu).
   if (planPartage.includes_exact_score) {
     const ficheExacte = construireFicheScoreExact(poolFoot, planPartage, {
-      selectionsExclues, fixturesExclues, cibleMinOverride: 1.01, cibleMaxOverride: coteMaxEffective
+      // Même correctif que la fiche normale ci-dessus (cibleMinOverride
+      // n'était jamais la vraie cible demandée) — sans effet pratique
+      // majeur ici (le plafond cibleMax*1.05 dominait déjà la boucle vu la
+      // progression rapide des cotes score-exact), corrigé par cohérence.
+      selectionsExclues, fixturesExclues, cibleMinOverride: coteMaxEffective, cibleMaxOverride: coteMaxEffective
     });
     if (ficheExacte.valide) {
       ficheExacte.selections.forEach(s => { selectionsExclues.add(cleSelection(s)); fixturesExclues.add(s.fixtureId); });
