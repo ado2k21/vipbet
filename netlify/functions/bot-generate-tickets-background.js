@@ -554,6 +554,32 @@ async function apiSportsGet(host, path, params) {
   return data.response || [];
 }
 
+// CACHE DE DONNÉES (session diagnostic, 04/09, demande explicite de James :
+// "évite qu'une nouvelle tentative retélécharge tout, ça gaspille le
+// quota") — ne change RIEN à la logique de sélection ni de construction
+// des fiches, uniquement à la façon dont les données brutes API-Sports
+// sont récupérées. Une tentative dans les 6h suivant un appel réussi
+// réutilise la même réponse au lieu de rappeler l'API — cible précisément
+// le cas d'usage réel (plusieurs passages toutes les 15 min dans la même
+// soirée, fenêtre normale + urgence comprises). Jamais bloquant : un échec
+// de lecture/écriture cache retombe simplement sur un appel réel, comme
+// avant ce correctif.
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h — couvre toute la fenêtre du soir (normale + urgence) sans jamais réutiliser les données de la veille
+async function lireCache(cle) {
+  try {
+    const rows = await sbSelect('api_fixtures_cache', `select=payload,fetched_at&provider=eq.api-sports-football&cle=eq.${encodeURIComponent(cle)}&limit=1`);
+    if (rows && rows.length) {
+      const age = Date.now() - new Date(rows[0].fetched_at).getTime();
+      if (age >= 0 && age < CACHE_TTL_MS) return rows[0].payload;
+    }
+  } catch (e) { /* jamais bloquant — repli sur l'appel réel */ }
+  return null;
+}
+async function ecrireCache(cle, payload) {
+  try { await sbRpc('cache_api_fixtures_upsert', { p_provider: 'api-sports-football', p_cle: cle, p_payload: payload }); }
+  catch (e) { /* jamais bloquant — la prochaine tentative retentera l'écriture */ }
+}
+
 // STRATÉGIE DÉFINITIVEMENT FIXÉE (24/08, 5ᵉ et dernière révision) :
 // la requête par championnat (date + league) sur /odds est une IMPASSE sur
 // le plan gratuit (season obligatoire, rejetée pour la saison en cours).
@@ -566,9 +592,14 @@ async function apiSportsGet(host, path, params) {
 // /odds?fixture=<id> (pas de "league", donc pas de "season" requis).
 // Garantit qu'un grand championnat apparaît dès qu'il joue ce jour-là.
 async function recupererFixturesJour(dateCible) {
+  const cle = `fixtures:${dateCible}`;
+  const enCache = await lireCache(cle);
+  if (enCache) return enCache;
   try {
     const data = await apiSportsGetRaw(FOOT_HOST, '/fixtures', { date: dateCible, timezone: TZ_HAITI });
-    return data.response || [];
+    const reponse = data.response || [];
+    if (reponse.length) await ecrireCache(cle, reponse); // jamais mis en cache un resultat vide -- une prochaine tentative doit pouvoir reessayer un vrai appel
+    return reponse;
   } catch (e) {
     stats.erreurs.push('foot/fixtures(jour): ' + e.message);
     return [];
@@ -583,6 +614,13 @@ function attendre(ms) {
 
 async function recupererCoteParFixture(fixtureId, essai) {
   essai = essai || 1;
+  // Cache (voir lireCache/ecrireCache plus haut) — uniquement vérifié au
+  // 1er essai, jamais lors d'un réessai après 429 (le cache était déjà
+  // vide/périmé au 1er essai, le revérifier ne changerait rien).
+  if (essai === 1) {
+    const enCache = await lireCache(`odds:${fixtureId}`);
+    if (enCache) return enCache;
+  }
   // Suivi de quota (29/08) : vérifié avant CHAQUE appel /odds — c'est ici
   // que se joue l'essentiel de la consommation (jusqu'à 60/passage). Ne
   // décompte jamais deux fois un même essai (le réessai après 429 plus bas
@@ -619,7 +657,9 @@ async function recupererCoteParFixture(fixtureId, essai) {
       // révèle. Absorbé silencieusement avant ce correctif.
       stats.erreurs.push(`foot/odds(fixture=${fixtureId})${/request limit|reached the.*limit/i.test(messagesErreur.join(' ')) ? ' [QUOTA JOURNALIER DÉPASSÉ]' : ''}: ${messagesErreur.join(' | ')}`);
     }
-    return (data.response && data.response[0]) || null;
+    const resultat = (data.response && data.response[0]) || null;
+    if (resultat) await ecrireCache(`odds:${fixtureId}`, resultat); // jamais mis en cache un resultat vide -- une prochaine tentative doit pouvoir reessayer un vrai appel
+    return resultat;
   } catch (e) {
     stats.erreurs.push(`foot/odds(fixture=${fixtureId}): ${e.message}`);
     return null;
@@ -1352,6 +1392,19 @@ function construireFiche(pool, plan, options) {
   // vrai historique de réussite, jamais un choix arbitraire haut ou bas.
   // b.scoreFiabilite absent (pas encore annoté, ex. appel direct sans
   // passer par le handler) → repli sur 1/cote, jamais une erreur.
+  // REDESIGN (retour explicite de James, 04/09, en concertation avant
+  // implementation) : remplace les categories a quota fixe (2 premium max
+  // quelle que soit la cible) par une analyse unifiee. Chaque selection
+  // (SAFE ou PREMIUM) est evaluee par son score de fiabilite reel PLUS un
+  // poids de progression qui grandit avec l'ambition de la cible visee --
+  // jamais l'inverse (jamais l'odd seul qui decide). Un match "serre" ou
+  // peu fiable pour un pari a odd elevee reste ecarte par son propre
+  // scoreFiabilite (implicite dans la cote + historique reel), meme si ce
+  // poids de progression le rendrait tentant. Pour une petite cible
+  // (<20), le poids reste faible : la prudence deja actee reste la
+  // norme, mais un pick premium genuinement evident peut quand meme
+  // ressortir -- plus jamais un plafond dur a 1 seul.
+  const POIDS_PROGRESSION = cibleMax < 20 ? 0.015 : cibleMax < 50 ? 0.05 : cibleMax < 90 ? 0.09 : 0.13;
   function meilleurParMatch(liste) {
     const meilleur = {};
     const score = b => {
@@ -1360,6 +1413,7 @@ function construireFiche(pool, plan, options) {
       // appliqué au buteur (déjà régi par son propre système), jamais aux
       // fiches à cote haute (Palier 3+, où le pool est déjà tendu).
       if (cibleMax <= 15 && b.market !== 'mk_buteur' && (marchesUtiliseesJour.get(b.market) || 0) > 0) s -= MALUS_MARCHE_DEJA_UTILISE;
+      s += POIDS_PROGRESSION * Math.log(b.odd);
       return s;
     };
     liste.forEach(b => {
@@ -1370,10 +1424,13 @@ function construireFiche(pool, plan, options) {
       return score(b) - score(a);
     });
   }
-  const safe = meilleurParMatch(pool.filter(b => b.tier === 'SAFE'));
-  // Buteur (🔴) exclu du pool PREMIUM général — réservé aux plans score-exact,
+  // Un seul bassin, SAFE et PREMIUM combinés : pour chaque match,
+  // meilleurParMatch choisit désormais LUI-MÊME laquelle des deux options
+  // (si les deux existent) sert le mieux la fiche, selon l'analyse
+  // ci-dessus — jamais une catégorie qui décide à la place de l'analyse.
+  // Buteur (🔴) exclu de ce bassin général — réservé aux plans score-exact,
   // et jamais un joueur déjà utilisé dans une fiche publiée plus tôt ce jour.
-  const premium = meilleurParMatch(pool.filter(b => b.tier === 'PREMIUM' && b.market !== 'mk_buteur'));
+  const candidats = meilleurParMatch(pool.filter(b => (b.tier === 'SAFE' || b.tier === 'PREMIUM') && b.market !== 'mk_buteur'));
   // Le score exact n'apparaît JAMAIS dans la fiche normale — uniquement
   // dans la fiche dédiée (construireFicheScoreExact, "jamais mélangée avec
   // d'autres marchés"). Bug corrigé le 25/08 : une ancienne ligne insérait
@@ -1401,10 +1458,6 @@ function construireFiche(pool, plan, options) {
   const PLAFOND_PAR_MARCHE = cibleMax < 20
     ? { mk_buteur: 1, mk_total_domicile: 1, mk_total_exterieur: 1 }
     : { mk_buteur: 1 };
-  // Plan 1 : prudence renforcée — éviter de combiner trop de grosses cotes
-  // (règle explicite de James). Limite le nombre de sélections 🟡 (premium)
-  // autorisées, quasi tout doit venir du 🟢 (safe).
-  const MAX_PREMIUM_PLAN1 = 1;
 
   function tenterAjout(bet) {
     if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match dans LA MÊME fiche
@@ -1464,28 +1517,23 @@ function construireFiche(pool, plan, options) {
       if (tenterAjout(b)) { buteursUtilises.add(b.pick); break; }
     }
   }
-  // Sélections 🟡 (premium) : jusqu'à 2, sauf si la CIBLE de la fiche est
-  // <20 (règle du document d'optimisation du 25/08, point 11 : "éviter
-  // plusieurs victoires proches de 2.00 dans une même fiche <20" — cette
-  // règle dépend de la cote cible réelle de la fiche, pas du rang du plan :
-  // un plan autre que le Plan 1 peut très bien avoir, un jour donné, une
-  // cible réduite via cibleMinOverride ou une config <20, et doit alors
-  // suivre la même prudence).
-  const maxPremium = cibleMax < 20 ? MAX_PREMIUM_PLAN1 : 2;
+  // Boucle UNIQUE (retour explicite de James, 04/09, en concertation avant
+  // implémentation) — remplace les deux phases précédentes (premium puis
+  // safe, quotas fixes). L'ordre est décidé par meilleurParMatch
+  // ci-dessus (fiabilité réelle + poids de progression selon la cible) —
+  // jamais une catégorie qui décide à la place de l'analyse. Garde-fou
+  // SOUPLE (jamais un blocage total de la boucle) sur les petites cibles
+  // (<20) : au-delà de MAX_PREMIUM_PETITE_CIBLE sélections PREMIUM
+  // retenues, les candidats PREMIUM suivants sont sautés (pas bloquants),
+  // les SAFE restent toujours acceptés — la prudence sur les petites
+  // cibles reste réelle, sans jamais figer le nombre à 1 seul comme avant.
+  const MAX_PREMIUM_PETITE_CIBLE = 2;
   let premCount = 0;
-  for (const b of premium) {
-    if (premCount >= maxPremium) break;
-    if (tenterAjout(b)) premCount++;
-  }
-  // Compléter avec du 🟢 (safe) jusqu'à atteindre la cible (jamais au-delà du max).
-  // CORRECTIF (25/08) : une seule sélection premium peut déjà dépasser
-  // cibleMin (ex. 2.50 pour un plan à 2.00 min) — sans le "selections.length<2"
-  // ci-dessous, la boucle s'arrêtait avant d'ajouter une 2ᵉ sélection, la
-  // fiche restait à 1 seule sélection et échouait la validation (≥2 requis),
-  // donc n'était JAMAIS publiée. C'est la cause du Plan 1 manquant le 25/08.
-  for (const b of safe) {
+  for (const b of candidats) {
+    if (selections.length >= MAX_SELECTIONS) break;
     if (selections.length >= 2 && coteTotale >= cibleMin) break;
-    tenterAjout(b);
+    if (cibleMax < 20 && b.tier === 'PREMIUM' && premCount >= MAX_PREMIUM_PETITE_CIBLE) continue;
+    if (tenterAjout(b)) { if (b.tier === 'PREMIUM') premCount++; }
   }
 
   // Score de confiance = moyenne des scoreFiabilite des légs retenus.
@@ -1513,8 +1561,8 @@ function construireFiche(pool, plan, options) {
     confiance,
     // CHANGÉ (session suivante, décision explicite de James — inverse la
     // règle du 28/08) : cibleMin reste utilisé PLUS HAUT pour VISER la
-    // vraie cote cible pendant la construction (boucle "compléter avec du
-    // safe jusqu'à cibleMin" ci-dessus, inchangée) — un jour riche en
+    // vraie cote cible pendant la construction (boucle unique guidée par
+    // l'analyse ci-dessus, inchangée dans son principe) — un jour riche en
     // matchs, le résultat atteint donc toujours sa vraie plage
     // normalement. Mais cibleMin ne REJETTE plus le résultat s'il n'est
     // pas atteint : seul le plafond du plan (cibleMax) reste une limite
