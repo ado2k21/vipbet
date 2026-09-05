@@ -949,20 +949,28 @@ async function recupererFiabiliteMarches() {
   return carte;
 }
 
-// Score de sélection = mélange 50/50 entre la probabilité implicite du
-// bookmaker (1/cote — toujours disponible, vraie donnée de marché) et le
-// taux de réussite RÉEL observé pour ce championnat+marché (quand assez
-// d'historique existe). Remplace l'ancien tri "toujours la cote la plus
-// haute par match" par un tri qui privilégie la fiabilité réelle — peut
-// tout aussi bien favoriser une cote basse (1.20) qu'une cote plus élevée
-// (1.70), selon ce qui a VRAIMENT le mieux réussi jusqu'ici pour ce
-// championnat et ce marché précis.
+// Score de sélection = mélange entre la probabilité implicite du
+// bookmaker pour CE MATCH précis (1/cote — toujours disponible, vraie
+// donnée de marché) et le taux de réussite RÉEL observé pour ce
+// championnat+marché (quand assez d'historique existe).
+// CORRIGÉ (retour explicite de James, 04/09 : "le bot choisit toujours
+// BTTS à 1.75 même dans des matchs qui n'ont pas une vraie possibilité
+// de BTTS — ça doit être selon l'analyse du match précis, pas une
+// habitude") — l'ancien mélange 50/50 pouvait faire remonter un marché
+// juste parce que le CHAMPIONNAT ENTIER a un bon historique dessus, même
+// si CE match précis ne le justifie pas franchement. La cote réelle de
+// CE match reflète déjà l'évaluation du bookmaker sur CES deux équipes
+// précises (forme récente, tendance offensive/défensive, championnat
+// réputé serré comme certains championnats sud-américains, etc.) — c'est
+// donc désormais le signal DOMINANT (70%), le taux historique du
+// championnat restant un vrai correctif (30%), jamais ignoré, mais jamais
+// prioritaire sur ce que CE match précis annonce.
 function annoterPoolAvecFiabilite(poolFoot, carteFiabilite) {
   poolFoot.forEach(bet => {
     const probMarche = 1 / bet.odd;
     const info = carteFiabilite.get(`${bet.league}|${bet.market}`);
     const tauxReel = info ? info.taux : null;
-    bet.scoreFiabilite = (tauxReel != null) ? (probMarche * 0.5 + tauxReel * 0.5) : probMarche;
+    bet.scoreFiabilite = (tauxReel != null) ? (probMarche * 0.7 + tauxReel * 0.3) : probMarche;
     bet.tauxReel = tauxReel;
     bet.echantillonReel = info ? info.echantillon : null;
     // VALUE BET (session suivante, roadmap "amélioration continue") :
@@ -1111,6 +1119,22 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
             pick: 'Plus de 2.5 buts', odd: c, tier: 'PREMIUM',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
+          });
+        }
+        // AJOUTÉ (retour explicite de James, 04/09) : "Moins de 3.5 buts"
+        // (match ENTIER, jamais confondu avec le total par équipe déjà géré
+        // plus bas) — pour les matchs annoncés serrés, ou les championnats
+        // réputés peu prolifiques (certains championnats sud-américains,
+        // par exemple). AUCUNE restriction par championnat ni par match :
+        // seule la cote réelle proposée décide s'il est retenu (jamais une
+        // interdiction, toujours selon l'analyse) — même donnée déjà
+        // récupérée via ce même appel /odds, aucun coût de quota
+        // supplémentaire.
+        if (c >= 1.19 && c <= 1.90 && v.value === 'Under 3.5') {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
+            pick: 'Moins de 3.5 buts', odd: c, tier: c <= 1.30 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
