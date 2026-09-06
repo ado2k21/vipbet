@@ -59,9 +59,29 @@
 # Haiti, demande explicite de James). dateCible reste toujours "demain" :
 # ce decalage n'exclut aucun match, contrairement a un decalage qui aurait
 # touche le jour meme.
+#
+# 06/09 — SECOURS DEPLACE DE 20h A 21h HAITI (foot) ET 22h HAITI (basket),
+# demande explicite de James. CAUSE RACINE confirmee en base (bot_run_log)
+# du bug "le secours n'a jamais cree de fiche foot" : cette section ne
+# declarait QUE "21-23" pour le foot -- jamais les heures UTC 0/1 dont le
+# filet de secours interne du handler (voir bot-generate-tickets-background.js)
+# avait besoin pour se declencher a 20h Haiti. Netlify n'a donc simplement
+# JAMAIS appele la fonction pendant cette heure-la, ete comme hiver -- le
+# code du filet de secours etait correct mais totalement mort faute de
+# declaration ici (meme famille de bug que le paragraphe ci-dessus).
+#
+# Nouvelle traduction Haiti -> UTC (les 2 decalages possibles, ete UTC-4 /
+# hiver UTC-5, JAMAIS un seul suppose a l'avance) :
+#   - Foot, secours 21h Haiti   -> UTC 01h (ete) et 02h (hiver)
+#   - Basket, secours 22h Haiti -> UTC 02h (ete) et 03h (hiver)
+# L'heure UTC 0 est CONSERVEE pour le foot : necessaire a la fenetre
+# NORMALE (18h30-19h59 Haiti) en heure d'hiver (19h59 Haiti hiver = 00h59
+# UTC le jour suivant), sans lien avec le secours -- a ne pas retirer sous
+# peine de casser silencieusement la fenetre normale au changement d'heure
+# du 1er novembre 2026.
 # ============================================================================
 [functions."bot-generate-tickets-background"]
-  schedule = "*/15 21-23 * * *"
+  schedule = "*/15 21-23,0,1,2 * * *"
 
 # Session suivante — moteur basketball, fonction et quota API-Sports
 # COMPLETEMENT separes du foot (v1.basketball.api-sports.io, 100/jour
@@ -72,8 +92,12 @@
 # 00h00 UTC le jour suivant en heure standard UTC-5) -- deux heures
 # separees par une virgule, jamais une plage unique (23-0 n'est pas une
 # plage cron valide).
+#
+# 06/09 — heures 2 et 3 ajoutees pour le nouveau secours 22h Haiti (voir
+# paragraphe complet ci-dessus, meme raison exacte que le foot) ; l'heure
+# 1 (ancien secours 20h Haiti) n'est plus necessaire et est retiree.
 [functions."bot-generate-tickets-basket-background"]
-  schedule = "*/15 23,0 * * *"
+  schedule = "*/15 23,0,2,3 * * *"
 
 # bot-settle-results (28/08, demande explicite de James : "le calcul des
 # resultats doit se faire a n'importe quelle heure") — passe de
