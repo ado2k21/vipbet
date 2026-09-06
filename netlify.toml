@@ -111,3 +111,36 @@
 
 [functions."bot-publish-scheduled"]
   schedule = "*/5 * * * *"
+
+# ============================================================================
+# 06/09 — CORRECTIF CACHE (demande explicite de James : "modification pas
+# visible au reload, ni pour un nouvel utilisateur qui vient d'avoir le
+# lien") — CAUSE RACINE confirmée par élimination : la base Supabase et la
+# RLS sont vérifiées correctes (écriture et lecture publique fonctionnent),
+# et la mise à jour EN DIRECT (sans reload, JS déjà chargé en mémoire)
+# fonctionne bien — seul un vrai RELOAD casse l'affichage, symptôme
+# identique pour un nouveau visiteur n'ayant jamais visité le site avant.
+# Cela pointe vers UNE SEULE cause possible restante : index.html/admin.html
+# servis par le CDN Netlify SANS en-tête de cache explicite, ce qui laisse
+# Netlify (et/ou le navigateur) servir une copie mise en cache au lieu du
+# fichier réellement déployé le plus récent — à un visiteur récurrent
+# COMME à un nouveau visiteur si le nœud CDN qu'il touche n'a pas encore
+# invalidé son propre cache après un déploiement.
+# Forcé à toujours se revalider (jamais servi tel quel sans repasser par
+# l'origine) — n'affecte AUCUNE logique applicative, uniquement le
+# comportement de cache HTTP.
+# ============================================================================
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
