@@ -30,14 +30,23 @@ const config = {
   // CORRIGÉ (session diagnostic, 03/09, demande explicite de James) :
   // l'ancienne plage '21-23,0 UTC' ne couvrait que 16h00-19h59 Haïti (UTC-5,
   // pas d'heure d'été en Haïti) — le filet de secours interne du handler
-  // (dansLaFenetreUrgence, heureNum===20) existait dans le CODE mais
-  // Netlify n'appelait JAMAIS la fonction pendant l'heure 20h Haïti :
-  // du code mort depuis son ajout. Ajout de l'heure UTC 1 (=20h-20h59
-  // Haïti) pour que ce filet de secours puisse réellement se déclencher —
-  // indépendamment par sport, comme déjà prévu par la logique existante :
-  // il s'active si le football a échoué, si le basketball a échoué, ou
-  // si les deux ont échoué, chacun gérant son propre etat de generation.
-  schedule: '*/15 21-23,0,1 * * *'
+  // (dansLaFenetreUrgence) existait dans le CODE mais Netlify n'appelait
+  // JAMAIS la fonction pendant l'heure de secours Haïti : du code mort
+  // depuis son ajout.
+  //
+  // MODIFIÉ (06/09, demande explicite de James) : secours déplacé de 20h à
+  // 21h Haïti. Traduction UTC pour les 2 décalages possibles (été UTC-4 /
+  // hiver UTC-5, jamais un seul supposé à l'avance) : 21h Haïti = 01h UTC
+  // (été) ou 02h UTC (hiver) — d'où les heures 1 et 2 ci-dessous. L'heure 0
+  // est CONSERVÉE : nécessaire à la fenêtre NORMALE (18h30-19h59 Haïti) en
+  // heure d'hiver (19h59 Haïti hiver = 00h59 UTC le jour suivant), sans
+  // lien avec le secours — ne jamais la retirer sous peine de casser
+  // silencieusement la fenêtre normale au changement d'heure du 1er
+  // novembre 2026. RAPPEL : cette valeur n'est que documentaire — seule la
+  // déclaration dans netlify.toml est réellement prise en compte par
+  // Netlify (voir l'en-tête de ce fichier plus bas et le commentaire
+  // correspondant dans netlify.toml).
+  schedule: '*/15 21-23,0,1,2 * * *'
 };
 
 // ============================================================================
@@ -2268,7 +2277,10 @@ async function handler(event) {
   //
   // FILET D'URGENCE (04/09, demande explicite de James) : si la fenêtre
   // normale s'est entièrement soldée par un échec (ou n'a jamais pu
-  // s'exécuter), un DERNIER passage est autorisé à 20h00-20h59 Haïti.
+  // s'exécuter), un DERNIER passage est autorisé.
+  // MODIFIÉ (06/09, demande explicite de James) : heure de secours déplacée
+  // de 20h00-20h59 à 21h00-21h59 Haïti. Le créneau 20h-20h59 Haïti devient
+  // un trou volontaire sans passage (rien ne s'y déclenche plus).
   // RÈGLES STRICTES pour ne jamais créer de bug :
   //  1. Aucun nouveau chemin de construction — exactement la même fonction
   //     handler(), rien de dupliqué, donc aucun nouveau bug possible dans
@@ -2285,13 +2297,13 @@ async function handler(event) {
   const maintenant = partsHaiti(new Date());
   const dansLaFenetreNormale = maintenant.heureNum === 18 && maintenant.minuteNum >= 30;
   const dansLaFenetreNormaleFin = maintenant.heureNum === 19;
-  const dansLaFenetreUrgence = maintenant.heureNum === 20;
+  const dansLaFenetreUrgence = maintenant.heureNum === 21;
   if (!modeTest && !(dansLaFenetreNormale || dansLaFenetreNormaleFin || dansLaFenetreUrgence)) {
-    return { statusCode: 200, body: 'Hors fenêtre 18h30–20h59 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
+    return { statusCode: 200, body: 'Hors fenêtre 18h30–19h59 ou 21h00–21h59 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
   }
   if (dansLaFenetreUrgence) {
     stats.urgence = true;
-    console.log('[BOT] === PASSAGE D\'URGENCE 20h Haïti (la fenêtre normale 18h30-19h59 n\'a rien publié) ===');
+    console.log('[BOT] === PASSAGE D\'URGENCE 21h Haïti (la fenêtre normale 18h30-19h59 n\'a rien publié) ===');
   }
   if (modeTest) console.log('[BOT] === MODE TEST déclenché manuellement ===');
 

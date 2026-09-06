@@ -62,10 +62,19 @@
 // CORRIGÉ (session diagnostic, 03/09, demande explicite de James) : ajout
 // de l'heure UTC 1 (=20h-20h59 Haïti) — même raison exacte que le bot
 // football (voir bot-generate-tickets-background.js) : le filet de
-// secours interne (heureNum===20) ne pouvait jamais se déclencher tant
-// que Netlify n'appelait pas la fonction pendant cette heure-là.
+// secours interne ne pouvait jamais se déclencher tant que Netlify
+// n'appelait pas la fonction pendant cette heure-là.
+//
+// MODIFIÉ (06/09, demande explicite de James) : secours déplacé de 20h à
+// 22h Haïti. Traduction UTC pour les 2 décalages possibles (été UTC-4 /
+// hiver UTC-5) : 22h Haïti = 02h UTC (été) ou 03h UTC (hiver) — d'où les
+// heures 2 et 3 ci-dessous. L'heure 1 (ancien secours 20h Haïti en heure
+// d'hiver) n'est plus nécessaire et est retirée ; 23 et 0 restent
+// nécessaires à la fenêtre NORMALE (19h Haïti, été et hiver). RAPPEL :
+// cette valeur n'est que documentaire — seule la déclaration dans
+// netlify.toml est réellement prise en compte par Netlify.
 const config = {
-  schedule: '*/15 23,0,1 * * *'
+  schedule: '*/15 23,0,2,3 * * *'
 };
 
 const bot = require('./bot-generate-tickets-background.js');
@@ -233,6 +242,7 @@ const stats = {
   candidatsExamines: 0,
   poolFinal: 0,
   fichesPubliees: 0,
+  cibleAtteinte: null, // AJOUTÉ (06/09) : palier de cote réellement atteint par la cascade, transparence pure, jamais utilisé pour décider
   erreurs: []
 };
 function resetStatsBasket() {
@@ -243,6 +253,7 @@ function resetStatsBasket() {
   stats.candidatsExamines = 0;
   stats.poolFinal = 0;
   stats.fichesPubliees = 0;
+  stats.cibleAtteinte = null;
   stats.erreurs = [];
   // Diagnostic (31/08 v4, demande explicite de James après un log réel
   // montrant matchsTrouves:7 mais candidatsExamines:1 — 6 matchs exclus
@@ -507,8 +518,9 @@ async function handler(event) {
   // passages de 20h00-20h45 (pourtant déjà couverts par le cron)
   // s'arrêtaient aussitôt pour rien.
   //
-  // FILET D'URGENCE (04/09, demande explicite de James) : 20h00-20h59
-  // Haïti fait désormais officiellement partie de la fenêtre autorisée.
+  // FILET D'URGENCE — MODIFIÉ (06/09, demande explicite de James) : heure
+  // de secours déplacée de 20h00-20h59 à 22h00-22h59 Haïti. Le créneau
+  // 20h-21h59 Haïti devient un trou volontaire sans passage.
   // MÊMES RÈGLES STRICTES que côté foot pour ne jamais créer de bug :
   //  1. Aucun nouveau chemin de construction — le handler() est identique,
   //     rien de dupliqué.
@@ -520,13 +532,13 @@ async function handler(event) {
   //     (matchsTrouves, poolFinal) plus bas dans le handler.
   //  4. stats.urgence=true uniquement pour la traçabilité dans les logs.
   const dansLaFenetreNormale = maintenant.heureNum === 19;
-  const dansLaFenetreUrgence = maintenant.heureNum === 20;
+  const dansLaFenetreUrgence = maintenant.heureNum === 22;
   if (!modeTest && !(dansLaFenetreNormale || dansLaFenetreUrgence)) {
-    return { statusCode: 200, body: 'Hors fenêtre 19h00–20h59 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
+    return { statusCode: 200, body: 'Hors fenêtre 19h00–19h59 ou 22h00–22h59 Haïti — rien à faire. (ajoutez ?token=... pour tester manuellement)' };
   }
   if (dansLaFenetreUrgence) {
     stats.urgence = true;
-    console.log('[BOT-BASKET] === PASSAGE D\'URGENCE 20h Haïti (la fenêtre normale 19h n\'a rien publié) ===');
+    console.log('[BOT-BASKET] === PASSAGE D\'URGENCE 22h Haïti (la fenêtre normale 19h n\'a rien publié) ===');
   }
   if (modeTest) console.log('[BOT-BASKET] === MODE TEST déclenché manuellement ===');
 
@@ -660,14 +672,50 @@ async function handler(event) {
   }
   const poolBasketFiltre = poolBasket.filter(b => !selectionsExcluesBasket.has(cleSelectionBasket(b)));
 
-  // UNE SEULE fiche combinée (règle 2 en en-tête), publiée à
-  // min_plan_rank=1 (règle 5) — jamais plusieurs fiches, contrairement à
-  // la première version de ce moteur.
-  const fiche = construireFicheBasket(poolBasketFiltre);
-  if (!fiche.valide) {
-    stats.erreurs.push(`DIAGNOSTIC échec fiche : matchsDistincts=${fiche.debugMatchsDistincts}, cibleMax=${fiche.debugCibleMax}, meilleuresCotes=${JSON.stringify(fiche.debugMeilleuresCotes)}`);
+  // MODIFIÉ (06/09, demande explicite de James : "même effort pour auto") —
+  // AVANT : un seul essai à cibleMax=25 (comportement par défaut de
+  // construireFicheBasket) — si le pool triable par fiabilité s'épuisait
+  // avant d'approcher 25 (ex. beaucoup de matchs mais tous à cote proche,
+  // ou MAX_SELECTIONS_BASKET=10 atteint trop tôt), la fiche publiée
+  // pouvait rester très en dessous de 25 sans qu'aucune tentative
+  // supplémentaire ne soit faite — même avec beaucoup de matchs
+  // disponibles ce jour-là. REMPLACE par la MÊME cascade par paliers que
+  // la génération manuelle (voir bot-generate-tickets-manual-background.js/
+  // genererFicheBasketManuelle) : essaie d'abord le plafond plein (25),
+  // et seulement si le pool du jour ne permet pas de s'en approcher (moins
+  // de 85% atteint), redescend par paliers (100/85/70/50/30/15% de 25,
+  // jamais sous 2) — jamais un plafond fixe unique qui abandonne
+  // silencieusement en dessous de ce qui était réellement possible.
+  // Aucun nouveau chemin de construction : construireFicheBasket() reste
+  // strictement identique, seul le nombre d'appels change.
+  const paliersCascadeBasket = [1, 0.85, 0.7, 0.5, 0.3, 0.15]
+    .map(frac => Math.max(2, Math.round(CIBLE_MAX_BASKET * frac * 100) / 100))
+    .filter((v, i, arr) => arr.indexOf(v) === i); // dédoublonne les paliers qui convergent vers la même valeur
+
+  let fiche = null, cibleRetenueBasket = null;
+  for (const cible of paliersCascadeBasket) {
+    const essai = construireFicheBasket(poolBasketFiltre, cible);
+    const dernierPalier = cible === paliersCascadeBasket[paliersCascadeBasket.length - 1];
+    // Même règle d'acceptation que le manuel : palier retenu si la cote
+    // atteinte s'approche vraiment de CE palier (≥85% de sa valeur) —
+    // sinon on redescend encore. Sur le tout dernier palier (le plus
+    // permissif), on accepte le meilleur résultat valide obtenu même en
+    // dessous de 85%, plutôt que de finir sans rien alors qu'une vraie
+    // combinaison existe.
+    if (essai.valide && (essai.coteTotale >= cible * 0.85 || dernierPalier)) {
+      fiche = essai; cibleRetenueBasket = cible;
+      break;
+    }
+  }
+  // Transparence (même principe que le manuel) — n'influence jamais la
+  // décision, uniquement visible dans bot_run_log pour comprendre le
+  // résultat obtenu vs le plafond nominal de 25.
+  stats.cibleAtteinte = cibleRetenueBasket;
+
+  if (!fiche) {
+    stats.erreurs.push(`DIAGNOSTIC échec fiche : paliers essayés=${paliersCascadeBasket.join(', ')}, matchsDistincts=${poolBasketFiltre.length ? new Set(poolBasketFiltre.map(b => b.gameId)).size : 0}`);
     await logFinal();
-    return { statusCode: 200, body: 'Pas assez de sélections NOUVELLES pour un combiné (minimum 2) — contenu déjà publié aujourd\'hui, ou pool trop pauvre.' };
+    return { statusCode: 200, body: 'Pas assez de sélections NOUVELLES pour un combiné (minimum 2), même en réduisant la cote — contenu déjà publié aujourd\'hui, ou pool trop pauvre.' };
   }
   // publierFiche attend fixtureId sur chaque selection (champ générique,
   // partagé avec le foot) — gameId basketball y est placé directement.

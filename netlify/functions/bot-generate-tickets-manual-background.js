@@ -54,6 +54,21 @@ const {
   annoterPoolAvecBSD, BSD_API_KEY
 } = bot;
 
+// AJOUTÉ (06/09, demande explicite de James : "génération manuelle
+// basketball ne doit jamais être bloquée par une fiche déjà en cours, sauf
+// si aucun match n'est disponible") — réutilise EXACTEMENT les mêmes
+// briques que le bot automatique basketball (exports prévus pour cet
+// usage précis, voir la section "EXPORTS RÉUTILISABLES" en bas de
+// bot-generate-tickets-basket-background.js), jamais une copie séparée de
+// la logique d'extraction/construction/quota.
+const basketBot = require('./bot-generate-tickets-basket-background.js');
+const {
+  recupererMatchsBasketJour, recupererProfilsEquipesBasket,
+  recupererCoteParMatchBasket, extraireMarchesBasket, construireFicheBasket,
+  BASKET_MIN_HOUR, BASKET_MAX_MINUTES, CIBLE_MAX_BASKET,
+  stats: statsBasket, resetStatsBasket, logFinal: logFinalBasket
+} = basketBot;
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 // Clé anon PUBLIQUE (même valeur que celle déjà embarquée côté navigateur
 // dans admin.html/index.html — ce n'est pas un secret, elle sert
@@ -155,13 +170,19 @@ async function handler(event) {
   if (minDebut == null || minFin == null || minDebut >= minFin) {
     return jsonResponse(400, { erreur: 'Fenêtre horaire invalide (heure de début doit précéder heure de fin, format HH:MM).' });
   }
-  if (sport !== 'foot') {
-    // Le basketball n'est PAS encore raccordé à une vraie génération de
-    // fiches (seuls des diagnostics existent aujourd'hui côté bot — voir
-    // diagnostiquerNBA/diagnostiquerBasket dans bot-generate-tickets-background.js,
-    // l'API NBA v2 n'expose même aucune cote). Refuser clairement plutôt
-    // que de publier une fiche construite sur des données inventées.
-    return jsonResponse(400, { erreur: 'Basketball/NBA : génération manuelle pas encore disponible (aucune source de cotes fiable branchée pour l\'instant). Football uniquement pour le moment.' });
+  // MODIFIÉ (06/09, demande explicite de James) : le basketball est
+  // désormais raccordé à une vraie génération manuelle (voir
+  // genererFicheBasketManuelle plus bas, réutilise les briques du bot
+  // automatique basketball). Seul un sport ni 'foot' ni 'basket' reste
+  // refusé.
+  if (sport !== 'foot' && sport !== 'basket') {
+    return jsonResponse(400, { erreur: 'Sport invalide (foot ou basket attendu).' });
+  }
+  if (sport === 'basket' && mode === 'exact') {
+    // Score exact basketball : jamais implémenté, aucune donnée fiable de
+    // ce type branchée pour l'instant — refuser clairement plutôt que
+    // d'inventer quoi que ce soit.
+    return jsonResponse(400, { erreur: 'Score exact non disponible pour le basketball pour le moment.' });
   }
   const rangsDemandes = Array.isArray(plans) ? plans.map(Number).filter(n => n >= 1 && n <= 4) : [];
   if (!rangsDemandes.length) {
@@ -187,6 +208,16 @@ async function handler(event) {
       return jsonResponse(400, { erreur: 'La publication programmée doit être dans le futur.' });
     }
     scheduledPublishAtIso = utc.toISOString();
+  }
+
+  // AJOUTÉ (06/09) : bifurcation basketball — logique entièrement séparée
+  // de la suite du handler (spécifique football à partir d'ici : leagues,
+  // fixtures, marchés foot). Voir genererFicheBasketManuelle plus bas.
+  if (sport === 'basket') {
+    return await genererFicheBasketManuelle({
+      playDate, minDebut, minFin, coteMaxDemandee,
+      programmee, scheduledPublishAtIso, rangsDemandes
+    });
   }
 
   // --- Plans réels demandés (jamais inventer min/max/max_leg_odd) ---
@@ -509,6 +540,180 @@ async function handler(event) {
   }
 
   return jsonResponse(200, { resultats });
+}
+
+// ============================================================================
+// GÉNÉRATION MANUELLE BASKETBALL (06/09, demande explicite de James)
+// ----------------------------------------------------------------------------
+// Réutilise EXACTEMENT les mêmes briques que bot-generate-tickets-basket-
+// background.js (récupération des matchs, cotes, extraction des marchés,
+// construction de fiche, publication) — jamais une copie séparée.
+//
+// RÈGLES EXPLICITES DE JAMES POUR CETTE FONCTION :
+//  1. JAMAIS bloquée par l'existence d'une fiche basketball déjà publiée
+//     (aujourd'hui, hier, ou "en cours" / pas encore réglée) — contrairement
+//     à l'idempotence du bot automatique (qui, elle, reste inchangée et
+//     continue de s'appliquer À LUI SEUL). Ici, comme côté foot manuel, on
+//     exclut seulement les SÉLECTIONS déjà publiées aujourd'hui pour ce
+//     sport (anti-doublon de contenu), jamais un blocage global sur la
+//     simple présence d'un ticket.
+//  2. Seul blocage légitime : aucun match disponible pour la date/fenêtre
+//     demandée, ou aucune combinaison valide (minimum 2 sélections) —
+//     jamais autre chose.
+//  3. La fiche basketball reste — même principe que le bot automatique,
+//     règle 5 de son en-tête — TOUJOURS partagée à TOUS les plans via
+//     min_plan_rank=1, quels que soient les plans cochés par l'admin dans
+//     ce formulaire (la cascade d'accès existante couvre déjà tous les
+//     rangs au-dessus). rangsDemandes n'est utilisé ici que pour le
+//     rapport retourné à l'admin (plansConcernes), jamais pour restreindre
+//     la construction elle-même.
+//  4. Cascade par paliers (100/85/70/50/30/15% de la cote demandée) —
+//     même principe que le foot manuel juste au-dessus : jamais un échec
+//     sec si la cote exacte demandée n'est pas atteignable, on redescend
+//     par paliers jusqu'à trouver ce qui est réellement possible avec les
+//     matchs du jour.
+// ============================================================================
+async function genererFicheBasketManuelle({ playDate, minDebut, minFin, coteMaxDemandee, programmee, scheduledPublishAtIso, rangsDemandes }) {
+  resetStatsBasket();
+
+  const matchsJour = await recupererMatchsBasketJour(playDate);
+  if (!matchsJour.length) {
+    await logFinalBasket();
+    return jsonResponse(200, {
+      resultats: [{ publie: false, raison: 'Aucun match basketball reçu pour cette date depuis API-Sports.' }]
+    });
+  }
+
+  // Filtrage local : fenêtre horaire CHOISIE PAR L'ADMIN (même principe que
+  // le foot manuel) — reste néanmoins borné par la fenêtre par défaut du
+  // bot (BASKET_MIN_HOUR à BASKET_MAX_MINUTES), appliquée de toute façon à
+  // l'intérieur d'extraireMarchesBasket plus bas.
+  const noms = {};
+  let candidats = [];
+  matchsJour.forEach(g => {
+    if (!g || !g.id || !g.date) return;
+    const statut = g.status && g.status.short;
+    if (!['NS', 'TBD'].includes(statut)) return;
+    const h = heureHaitiDuMatch(g.date);
+    if (!h || h.iso !== playDate) return;
+    const minutesJour = h.heureNum * 60 + h.minuteNum;
+    if (minutesJour < minDebut || minutesJour > minFin) return;
+    noms[g.id] = {
+      gameId: g.id,
+      label: g.teams ? `${(g.teams.home && g.teams.home.name) || '?'} — ${(g.teams.away && g.teams.away.name) || '?'}` : `Match ${g.id}`,
+      kickoffUtc: g.date,
+      league: (g.league && g.league.name) || 'Basketball',
+      leagueCountry: (g.country && g.country.name) || null,
+      equipeDomicileId: g.teams && g.teams.home && g.teams.home.id,
+      equipeExterieurId: g.teams && g.teams.away && g.teams.away.id
+    };
+    candidats.push(g.id);
+  });
+
+  const PLAFOND_APPELS_COTES_BASKET = 30; // même plafond que le bot automatique
+  if (candidats.length > PLAFOND_APPELS_COTES_BASKET) candidats = candidats.slice(0, PLAFOND_APPELS_COTES_BASKET);
+
+  if (!candidats.length) {
+    await logFinalBasket();
+    return jsonResponse(200, {
+      resultats: [{ publie: false, raison: 'Aucun match disponible dans la fenêtre horaire choisie pour cette date.' }]
+    });
+  }
+
+  const profilsEquipes = await recupererProfilsEquipesBasket(playDate);
+  const DELAI_ENTRE_APPELS_MS = 6500; // même rythme que partout ailleurs, contrainte API-Sports
+  // Pas de vérification de quota séparée ici : recupererCoteParMatchBasket
+  // encapsule déjà son propre suivi de quota (module basket, privé) et
+  // renvoie simplement null sans appel réel une fois épuisé — jamais un
+  // risque de dépasser le vrai plafond API-Sports, juste une attente
+  // résiduelle entre candidats restants si ça arrive en cours de route.
+  let poolBasket = [];
+  for (let i = 0; i < candidats.length; i++) {
+    const gameId = candidats[i];
+    const oddsItem = await recupererCoteParMatchBasket(gameId);
+    if (oddsItem) poolBasket = poolBasket.concat(extraireMarchesBasket(oddsItem, playDate, noms[gameId], profilsEquipes));
+    if (i < candidats.length - 1) await attendre(DELAI_ENTRE_APPELS_MS);
+  }
+
+  if (!poolBasket.length) {
+    await logFinalBasket();
+    return jsonResponse(200, {
+      resultats: [{ publie: false, raison: 'Aucune sélection ne passe les filtres de marché pour les matchs disponibles.' }]
+    });
+  }
+
+  // Anti-doublon de CONTENU (jamais de blocage global — voir règle 1 en
+  // en-tête) : exclut les sélections déjà publiées aujourd'hui pour ce
+  // sport, qu'elles viennent du bot automatique ou d'une génération
+  // manuelle précédente le même jour.
+  const selectionsExcluesBasket = new Set();
+  try {
+    const legsExistants = await sbSelect('ticket_legs',
+      `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${playDate}&tickets.sport=eq.basket`);
+    legsExistants.forEach(l => selectionsExcluesBasket.add(`${l.fixture_id}|${l.market}|${l.pick}`));
+  } catch (e) {
+    // Non bloquant — au pire on revient au comportement sans protection
+    // cross-run, jamais une raison de bloquer une génération manuelle.
+  }
+  const poolBasketFiltre = poolBasket.filter(b => !selectionsExcluesBasket.has(`${b.gameId}|${b.market}|${b.pick}`));
+
+  if (!poolBasketFiltre.length) {
+    await logFinalBasket();
+    return jsonResponse(200, {
+      resultats: [{ publie: false, raison: 'Toutes les sélections disponibles sont déjà utilisées dans une fiche publiée aujourd\'hui — pool trop pauvre pour une fiche NOUVELLE.' }]
+    });
+  }
+
+  // Cascade par paliers — même principe que le foot manuel : essaie
+  // d'abord la cote exacte demandée, redescend si le pool du jour ne le
+  // permet pas.
+  const paliersCascade = [1, 0.85, 0.7, 0.5, 0.3, 0.15]
+    .map(frac => Math.max(2, Math.round(coteMaxDemandee * frac * 100) / 100))
+    .filter((v, i, arr) => arr.indexOf(v) === i);
+
+  let fiche = null, cibleRetenue = null;
+  for (const cible of paliersCascade) {
+    const essai = construireFicheBasket(poolBasketFiltre, cible);
+    const dernierPalier = cible === paliersCascade[paliersCascade.length - 1];
+    if (essai.valide && (essai.coteTotale >= cible * 0.85 || dernierPalier)) {
+      fiche = essai; cibleRetenue = cible;
+      break;
+    }
+  }
+
+  if (!fiche) {
+    await logFinalBasket();
+    return jsonResponse(200, {
+      resultats: [{ publie: false, raison: `Aucune combinaison NOUVELLE possible, même en réduisant la cote demandée (paliers essayés : ${paliersCascade.join(', ')}) — contenu déjà utilisé ailleurs aujourd'hui, ou pool trop pauvre.` }]
+    });
+  }
+
+  // Fiche partagée à TOUS les plans (règle 3 en en-tête) — synthétique,
+  // jamais lue depuis la table plans, exactement comme le bot automatique.
+  const planPartage = { rank: 1, min_total_odd: null, max_total_odd: null };
+  const nomsPourPublication = {};
+  fiche.selections.forEach(s => {
+    s.fixtureId = s.gameId;
+    nomsPourPublication[s.gameId] = { label: noms[s.gameId] && noms[s.gameId].label };
+  });
+
+  const publierOptions = {
+    source: 'admin', published: !programmee,
+    scheduledPublishAt: programmee ? scheduledPublishAtIso : null,
+    forcerExemption: true, codePrefix: `ADM${partsHaiti(new Date()).heure.replace(':', '')}${String(new Date().getSeconds()).padStart(2, '0')}`
+  };
+  const ok = await publierFiche(planPartage, fiche, playDate, 'basket', nomsPourPublication, '', publierOptions);
+  await logFinalBasket();
+
+  return jsonResponse(200, {
+    resultats: [{
+      publie: ok, coteTotale: fiche.coteTotale, selections: fiche.selections.length,
+      coteMaxDemandee, cibleAtteinte: cibleRetenue, reduitParCascade: cibleRetenue < coteMaxDemandee,
+      plansConcernes: rangsDemandes, note: 'Fiche basketball partagée à tous les plans (min_plan_rank=1), quels que soient les plans cochés.',
+      programmee, scheduledPublishAt: scheduledPublishAtIso,
+      raison: ok ? null : (statsBasket.erreurs[statsBasket.erreurs.length - 1] || 'Échec de publication.')
+    }]
+  });
 }
 
 module.exports.handler = handler;
