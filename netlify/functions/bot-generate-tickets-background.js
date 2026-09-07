@@ -1560,13 +1560,19 @@ function construireFiche(pool, plan, options) {
   // implémentation) — remplace les deux phases précédentes (premium puis
   // safe, quotas fixes). L'ordre est décidé par meilleurParMatch
   // ci-dessus (fiabilité réelle + poids de progression selon la cible) —
-  // jamais une catégorie qui décide à la place de l'analyse. Garde-fou
-  // SOUPLE (jamais un blocage total de la boucle) sur les petites cibles
-  // (<20) : au-delà de MAX_PREMIUM_PETITE_CIBLE sélections PREMIUM
-  // retenues, les candidats PREMIUM suivants sont sautés (pas bloquants),
-  // les SAFE restent toujours acceptés — la prudence sur les petites
-  // cibles reste réelle, sans jamais figer le nombre à 1 seul comme avant.
-  const MAX_PREMIUM_PETITE_CIBLE = 2;
+  // jamais une catégorie qui décide à la place de l'analyse. Le garde-fou
+  // sur le nombre de sélections PREMIUM (petites cibles) a été retiré le
+  // 06/09 (voir plus bas) — la fiabilité seule décide désormais, sans
+  // compteur arbitraire.
+  // RETIRÉ (06/09, demande explicite de James : "il faut enlever les
+  // restrictions aussi pour le nombre de sélection premium dans une
+  // fiche" — "dans chaque match il y a toujours des gros cotes un peu
+  // fiable aussi"). AVANT, au-delà de MAX_PREMIUM_PETITE_CIBLE (2)
+  // sélections PREMIUM sur une petite cible, les candidats PREMIUM
+  // suivants étaient sautés. Ce garde-fou est supprimé : un candidat
+  // PREMIUM est choisi ou non uniquement sur sa fiabilité réelle
+  // (meilleurParMatch, scoreFiabilite par équipe/match/championnat,
+  // inchangé) — jamais sur un simple compteur arbitraire.
   let premCount = 0;
   // MODIFIÉ (06/09, demande explicite de James) : AVANT, la boucle
   // s'arrêtait dès que coteTotale atteignait cibleMin (15 pour le palier
@@ -1583,7 +1589,6 @@ function construireFiche(pool, plan, options) {
   for (const b of candidats) {
     if (selections.length >= MAX_SELECTIONS) break;
     if (arretAnticipeActif && selections.length >= 2 && coteTotale >= cibleMin) break;
-    if (cibleMax < 20 && b.tier === 'PREMIUM' && premCount >= MAX_PREMIUM_PETITE_CIBLE) continue;
     if (tenterAjout(b)) { if (b.tier === 'PREMIUM') premCount++; }
   }
 
@@ -2604,28 +2609,42 @@ async function handler(event) {
   const SEUIL_JOUR_RICHE = 8; // matchs utilisables distincts — ajustable si besoin
   const jourRiche = nbMatchsDisponibles >= SEUIL_JOUR_RICHE;
 
-  // AJOUTÉ (06/09, demande explicite de James : "garantie de cote 50+ si
-  // beaucoup de matchs, mais toujours basé sur une analyse fiable, jamais
-  // du remplissage") — seuil séparé et volontairement plus élevé que
-  // SEUIL_JOUR_RICHE (8) : 8 matchs ne suffisent pas à garantir 50 de façon
-  // fiable, mais une vraie soirée Ligue des Champions (souvent 15-20+
-  // matchs simultanés/rapprochés) le permet. Valeur ajustable ici si
-  // l'expérience montre qu'elle doit monter ou descendre.
-  const SEUIL_GARANTIE_50 = 20;
-  const CIBLE_GARANTIE_50 = 50;
-  const jourGarantie50 = nbMatchsDisponibles >= SEUIL_GARANTIE_50;
+  // MODIFIÉ (06/09, demande explicite de James) : AVANT, cette garantie
+  // n'était tentée qu'à partir de 20 matchs disponibles — retour explicite
+  // de James : "pas de barrières, le système sait quel fiche créer, il
+  // fait effort selon les matchs disponibles pour satisfaire le besoin".
+  // Concrètement : même 5 à 10 matchs peuvent suffire à atteindre 50 si
+  // les cotes réelles choisies sont assez hautes (ex. 3 sélections à ~3.7
+  // chacune) — le nombre de matchs n'est PAS le bon critère, seule la
+  // vraie disponibilité de cotes fiables l'est. Le palier vise donc
+  // TOUJOURS 50 (pousserVersCibleMax), quel que soit nbMatchsDisponibles.
+  // avecRepli:true (changé de false) : publie le MEILLEUR résultat obtenu
+  // même s'il n'atteint pas 50 — jamais un tout-ou-rien. Le principe reste
+  // celui déjà connu et accepté : plus la cote grimpe, plus la fiabilité
+  // moyenne baisse mécaniquement (déjà vrai avant, assumé).
+  // MODIFIÉ (06/09, demande explicite de James) : 50 était un chiffre que
+  // j'avais inventé, pas une vraie référence du système — "je mets 50 mais
+  // pas toujours 50, cela peut être plus aussi, voir le plafond des plans".
+  // La vraie cible doit être le plafond RÉEL le plus haut effectivement
+  // configuré dans la table plans (ex. VIP 21J=80, VIP 30J=100 — voir
+  // règles de partage documentées plus haut), jamais un nombre arbitraire
+  // fixé dans le code. Franchir ce plafond fait naturellement tomber la
+  // fiche dans la zone exclusive du plan le plus haut (Lifetime, plafond
+  // null = illimité). Repli à 50 uniquement si la table plans ne contient
+  // vraiment aucun plafond exploitable (cas anormal).
+  const plafondsReelsPlans = plans
+    .map(p => (p.max_total_odd != null ? Number(p.max_total_odd) : null))
+    .filter(v => v != null && isFinite(v));
+  const CIBLE_GARANTIE = plafondsReelsPlans.length ? Math.max(...plafondsReelsPlans) : 50;
+  // maxSelectionsOverride : borné par le nombre réel de matchs disponibles
+  // (impossible de dépasser 1 sélection par match de toute façon, voir
+  // matchsUtilises dans tenterAjout), jamais un chiffre arbitraire fixe.
+  const maxSelectionsEffortMax = Math.min(35, Math.max(10, nbMatchsDisponibles));
 
   const PALIERS_JOUR_RICHE = [
     { nom: 'Palier 1 (2-4)',  cibleMin: 2,  cibleMax: 4,     avecRepli: true  },
     { nom: 'Palier 2 (4-15)', cibleMin: 4,  cibleMax: 15,    avecRepli: false },
-    // MODIFIÉ (06/09) : si assez de matchs pour viser une vraie garantie,
-    // cibleMin devient 50 (pas juste 15) ET pousserVersCibleMax force la
-    // boucle à continuer d'ajouter des sélections fiables jusqu'à cette
-    // cible, au lieu de s'arrêter dès 15 comme avant. maxSelectionsOverride
-    // relève le plafond de 10 à 20 pour laisser la place nécessaire.
-    jourGarantie50
-      ? { nom: `Palier 3 GARANTIE (${CIBLE_GARANTIE_50}-X)`, cibleMin: CIBLE_GARANTIE_50, cibleMax: 99999, avecRepli: false, pousserVersCibleMax: true, maxSelectionsOverride: 20 }
-      : { nom: 'Palier 3 (15-X)', cibleMin: 15, cibleMax: 99999, avecRepli: false }
+    { nom: `Palier 3 — effort max (vise ${CIBLE_GARANTIE}+)`, cibleMin: CIBLE_GARANTIE, cibleMax: 99999, avecRepli: true, pousserVersCibleMax: true, maxSelectionsOverride: maxSelectionsEffortMax }
   ];
   const PALIER_JOUR_PAUVRE = [
     { nom: 'Fiche unique (2-15, jour pauvre)', cibleMin: 2, cibleMax: 15, avecRepli: true }
@@ -2681,7 +2700,7 @@ async function handler(event) {
   // jamais signalée comme une anomalie si elle échoue.
   const MAX_FICHES_JOUR_PAUVRE = 2;
   const paliersATenter = jourRiche ? PALIERS_JOUR_RICHE : PALIER_JOUR_PAUVRE;
-  console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter. Garantie ${CIBLE_GARANTIE_50}+ ${jourGarantie50 ? 'ACTIVE' : 'inactive'} (seuil=${SEUIL_GARANTIE_50}).`);
+  console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter. Effort max toujours actif, vise ${CIBLE_GARANTIE}+ (plafond réel le plus haut des plans, max ${maxSelectionsEffortMax} sélections selon matchs dispo).`);
   for (const palier of paliersATenter) {
     const ok = await tenterEtPublierPalier(palier);
     if (!ok) {
