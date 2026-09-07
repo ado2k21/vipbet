@@ -1482,7 +1482,13 @@ function construireFiche(pool, plan, options) {
 
   const MAX_PAR_MARCHE = 2;   // diversification des marchés
   const MAX_PAR_CHAMPIONNAT = 3; // diversification des championnats
-  const MAX_SELECTIONS = 10;
+  // AJOUTÉ (06/09, demande explicite de James : "garantie de cote 50+ si
+  // beaucoup de matchs") — maxSelectionsOverride permet au palier "garantie"
+  // de dépasser 10 sélections quand assez de matchs fiables sont
+  // disponibles. Jamais utilisé par défaut (10 reste la valeur normale,
+  // protection contre la dilution du taux de réussite réel) — seul le
+  // palier 3 en jour très riche l'utilise (voir plus bas).
+  const MAX_SELECTIONS = options.maxSelectionsOverride != null ? Number(options.maxSelectionsOverride) : 10;
   // PLAFOND_PAR_MARCHE dynamique selon la cible : pour une fiche <20, le
   // document d'optimisation (point 11) demande explicitement d'éviter
   // plusieurs "Domicile Plus de X buts"/"Extérieur Plus de X buts" dans la
@@ -1562,9 +1568,21 @@ function construireFiche(pool, plan, options) {
   // cibles reste réelle, sans jamais figer le nombre à 1 seul comme avant.
   const MAX_PREMIUM_PETITE_CIBLE = 2;
   let premCount = 0;
+  // MODIFIÉ (06/09, demande explicite de James) : AVANT, la boucle
+  // s'arrêtait dès que coteTotale atteignait cibleMin (15 pour le palier
+  // 3) — c'est la VRAIE raison pour laquelle la cote ne dépassait quasi
+  // jamais 15-20, même avec beaucoup de matchs disponibles : rien ne la
+  // poussait plus loin. Avec options.pousserVersCibleMax=true (utilisé
+  // uniquement par le palier "garantie 50+", voir plus bas, jamais par
+  // défaut), cet arrêt anticipé est désactivé : la boucle continue
+  // d'ajouter des sélections DÉJÀ TRIÉES PAR FIABILITÉ (aucune sélection
+  // de moindre qualité ajoutée pour "faire du chiffre" — c'est le même
+  // pool analysé, juste utilisé plus en profondeur) jusqu'à cibleMax, la
+  // limite de sélections, ou l'épuisement du pool.
+  const arretAnticipeActif = !options.pousserVersCibleMax;
   for (const b of candidats) {
     if (selections.length >= MAX_SELECTIONS) break;
-    if (selections.length >= 2 && coteTotale >= cibleMin) break;
+    if (arretAnticipeActif && selections.length >= 2 && coteTotale >= cibleMin) break;
     if (cibleMax < 20 && b.tier === 'PREMIUM' && premCount >= MAX_PREMIUM_PETITE_CIBLE) continue;
     if (tenterAjout(b)) { if (b.tier === 'PREMIUM') premCount++; }
   }
@@ -2586,10 +2604,28 @@ async function handler(event) {
   const SEUIL_JOUR_RICHE = 8; // matchs utilisables distincts — ajustable si besoin
   const jourRiche = nbMatchsDisponibles >= SEUIL_JOUR_RICHE;
 
+  // AJOUTÉ (06/09, demande explicite de James : "garantie de cote 50+ si
+  // beaucoup de matchs, mais toujours basé sur une analyse fiable, jamais
+  // du remplissage") — seuil séparé et volontairement plus élevé que
+  // SEUIL_JOUR_RICHE (8) : 8 matchs ne suffisent pas à garantir 50 de façon
+  // fiable, mais une vraie soirée Ligue des Champions (souvent 15-20+
+  // matchs simultanés/rapprochés) le permet. Valeur ajustable ici si
+  // l'expérience montre qu'elle doit monter ou descendre.
+  const SEUIL_GARANTIE_50 = 20;
+  const CIBLE_GARANTIE_50 = 50;
+  const jourGarantie50 = nbMatchsDisponibles >= SEUIL_GARANTIE_50;
+
   const PALIERS_JOUR_RICHE = [
     { nom: 'Palier 1 (2-4)',  cibleMin: 2,  cibleMax: 4,     avecRepli: true  },
     { nom: 'Palier 2 (4-15)', cibleMin: 4,  cibleMax: 15,    avecRepli: false },
-    { nom: 'Palier 3 (15-X)', cibleMin: 15, cibleMax: 99999, avecRepli: false }
+    // MODIFIÉ (06/09) : si assez de matchs pour viser une vraie garantie,
+    // cibleMin devient 50 (pas juste 15) ET pousserVersCibleMax force la
+    // boucle à continuer d'ajouter des sélections fiables jusqu'à cette
+    // cible, au lieu de s'arrêter dès 15 comme avant. maxSelectionsOverride
+    // relève le plafond de 10 à 20 pour laisser la place nécessaire.
+    jourGarantie50
+      ? { nom: `Palier 3 GARANTIE (${CIBLE_GARANTIE_50}-X)`, cibleMin: CIBLE_GARANTIE_50, cibleMax: 99999, avecRepli: false, pousserVersCibleMax: true, maxSelectionsOverride: 20 }
+      : { nom: 'Palier 3 (15-X)', cibleMin: 15, cibleMax: 99999, avecRepli: false }
   ];
   const PALIER_JOUR_PAUVRE = [
     { nom: 'Fiche unique (2-15, jour pauvre)', cibleMin: 2, cibleMax: 15, avecRepli: true }
@@ -2606,7 +2642,9 @@ async function handler(event) {
     const fiche = construireFiche(poolFoot, plans[0], {
       buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
       fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles, marchesUtiliseesJour,
-      cibleMinOverride: palier.cibleMin, cibleMaxOverride: palier.cibleMax
+      cibleMinOverride: palier.cibleMin, cibleMaxOverride: palier.cibleMax,
+      pousserVersCibleMax: palier.pousserVersCibleMax || false,
+      maxSelectionsOverride: palier.maxSelectionsOverride
     });
     stats.fichesGenerees++;
     if (!fiche.valide) return false;
@@ -2643,7 +2681,7 @@ async function handler(event) {
   // jamais signalée comme une anomalie si elle échoue.
   const MAX_FICHES_JOUR_PAUVRE = 2;
   const paliersATenter = jourRiche ? PALIERS_JOUR_RICHE : PALIER_JOUR_PAUVRE;
-  console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter.`);
+  console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter. Garantie ${CIBLE_GARANTIE_50}+ ${jourGarantie50 ? 'ACTIVE' : 'inactive'} (seuil=${SEUIL_GARANTIE_50}).`);
   for (const palier of paliersATenter) {
     const ok = await tenterEtPublierPalier(palier);
     if (!ok) {
