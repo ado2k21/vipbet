@@ -9,6 +9,13 @@
   # scanner de secrets de Netlify fait echouer le build en detectant la
   # valeur de SUPABASE_URL dans le HTML publie.
   #
+  # 08/09 -- PLOPPLOP_BASE_URL ajoutee pour la MEME raison exacte : sa
+  # valeur est une simple URL publique de documentation d'API, jamais un
+  # secret, et le scanner la retrouverait dans le bundle des fonctions de
+  # paiement en faisant echouer le build sur un faux positif.
+  # Le VRAI secret du prestataire est PLOPPLOP_CLIENT_SECRET : il n'est
+  # ecrit NULLE PART dans le depot et ne doit JAMAIS etre ajoute ici.
+  #
   # SECRETS_SCAN_OMIT_KEYS doit S'INCLURE ELLE-MEME dans sa propre liste.
   # Sinon le scanner cherche aussi la VALEUR de cette variable partout
   # dans le depot -- et comme sa valeur contient le texte "SUPABASE_URL",
@@ -17,7 +24,7 @@
   # process.env.SUPABASE_URL, et fait echouer le build sur un faux
   # positif en cascade. Cette entree ne cache aucun vrai secret : elle ne
   # contient que des NOMS de variables, jamais leur contenu.
-  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,SECRETS_SCAN_OMIT_KEYS"
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,PLOPPLOP_BASE_URL,SECRETS_SCAN_OMIT_KEYS"
 
 [functions]
   directory = "netlify/functions"
@@ -111,6 +118,36 @@
 
 [functions."bot-publish-scheduled"]
   schedule = "*/5 * * * *"
+
+# ============================================================================
+# 08/09/2026 — PAIEMENT AUTOMATIQUE MonCash / NatCash (prestataire PLOP PLOP)
+#
+# L'API du prestataire n'offre AUCUN webhook : sa documentation demande
+# explicitement de relancer api/paiement-verify jusqu'au passage du champ
+# trans_status a "ok". Cette fonction planifiee est donc le SEUL filet
+# pour quelqu'un qui paie puis ferme son navigateur avant d'etre revenu
+# sur le site -- sans elle, il aurait paye sans jamais etre active.
+#
+# Elle libere aussi les tentatives abandonnees : sans cela, l'index unique
+# partiel idx_un_seul_paiement_pending_par_user bloquerait DEFINITIVEMENT
+# toute personne ayant ferme la page du prestataire sans payer, qui ne
+# pourrait plus jamais lancer une nouvelle demande.
+#
+# Toutes les 3 minutes, 24h/24 : un paiement n'a pas d'heure ouvrable. Le
+# cout reste faible -- la fonction ressort immediatement quand aucun
+# paiement n'est en attente, ce qui est le cas la plupart du temps.
+#
+# ATTENTION -- paiement-create et paiement-verify NE SONT VOLONTAIREMENT
+# PAS DECLAREES ICI : ce sont des fonctions HTTP normales, appelees
+# directement par index.html. Les declarer ici les rendrait injoignables
+# par URL, meme famille d'erreur que bot-diagnostics (voir plus haut).
+#
+# Le config.schedule exporte dans paiement-poll-background.js reste
+# PUREMENT DOCUMENTAIRE -- seule la declaration ci-dessous declenche
+# reellement (lecons des 27/08 et 06/09).
+# ============================================================================
+[functions."paiement-poll-background"]
+  schedule = "*/3 * * * *"
 
 # ============================================================================
 # 06/09 — CORRECTIF CACHE (demande explicite de James : "modification pas
