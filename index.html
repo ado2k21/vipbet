@@ -1922,16 +1922,34 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 
 .wiz-pay-lbl{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#CBD8E4;margin-top:4px}
 .wiz-pay-lbl svg{flex-shrink:0;color:var(--or-clair)}
-.wiz-pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Cartes de paiement automatique (11/09) : une par ligne, logo en pastille,
+   titre + badge "Recommande", sous-titre et chevron. Remplace les deux
+   petites tuiles cote a cote (logo + libelle seulement) : MonCash et
+   NatCash automatiques sont le chemin a privilegier, l'ancien rendu ne le
+   montrait pas. Palette du site uniquement (vert/noir/blanc/or). */
+.wiz-pay-methods{display:grid;grid-template-columns:1fr;gap:10px}
 .wiz-paym{
-  display:flex;align-items:center;gap:10px;cursor:pointer;
-  background:#0B1425;border:1.5px solid var(--ligne);border-radius:var(--r-sm);padding:12px;
+  display:flex;align-items:center;gap:12px;cursor:pointer;width:100%;text-align:left;
+  background:#0B1425;border:1.5px solid var(--ligne);border-radius:var(--r-sm);padding:12px 14px;
   transition:border-color .2s,background .2s;
 }
 .wiz-paym:hover{border-color:rgba(46,212,127,.45)}
 .wiz-paym.on{border-color:var(--vert-vif);background:#0D1B2E}
-.wiz-paym img{height:20px;width:auto;flex-shrink:0}
-.wiz-paym span{font-size:13.5px;font-weight:600;color:#F4F3ED}
+.wiz-paym-ic{
+  flex-shrink:0;width:44px;height:44px;border-radius:12px;background:#FFFFFF;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.wiz-paym-ic img{max-width:36px;max-height:26px;width:auto;height:auto;display:block}
+.wiz-paym-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.wiz-paym-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wiz-paym-name{font-size:14px;font-weight:700;color:#F4F3ED}
+.wiz-paym-badge{
+  font-size:10px;font-weight:800;letter-spacing:.04em;
+  background:var(--vert-vif);color:#04140B;border-radius:999px;padding:3px 9px;white-space:nowrap;
+}
+.wiz-paym-sub{font-size:12px;color:var(--gris);line-height:1.35}
+.wiz-paym-chev{flex-shrink:0;color:var(--gris);transition:color .2s,transform .2s}
+.wiz-paym:hover .wiz-paym-chev,.wiz-paym.on .wiz-paym-chev{color:var(--vert-vif);transform:translateX(2px)}
 
 /* --- Bouton Stripe + logos --- */
 .wiz-sep{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
@@ -2051,7 +2069,6 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   .wiz-bar::before{right:15px}
   .wiz-otp input{width:42px;height:50px;font-size:19px}
   .wiz-otp{gap:6px}
-  .wiz-pay-methods{grid-template-columns:1fr}
 }
 @media (max-width:400px){
   .wiz-otp input{width:38px;height:46px;font-size:17px}
@@ -5319,6 +5336,7 @@ toast_mail_err_h:"Envoi impossible",
 toast_mail_err_p:"L'e-mail n'a pas pu être envoyé. Réessayez dans un instant.",
 plan_changed_lifetime:"Vous avez débloqué l'accès à vie !", dash_menu_exit:"Déconnecter",
 wiz_p_moncash:"MonCash otomatik", wiz_p_natcash:"NatCash otomatik",
+wiz_p_auto_badge:"Recommandé", wiz_p_auto_sub:"Confirmation automatique — moins d'une minute en général",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
 auth_err_nouser:"Aucun compte trouvé avec cet identifiant",
@@ -5792,6 +5810,7 @@ toast_mail_err_h:"Couldn't send email",
 toast_mail_err_p:"The email couldn't be sent. Please try again in a moment.",
 plan_changed_lifetime:"You have unlocked lifetime access!", dash_menu_exit:"Log out",
 wiz_p_moncash:"MonCash automatic", wiz_p_natcash:"NatCash automatic",
+wiz_p_auto_badge:"Recommended", wiz_p_auto_sub:"Automatic confirmation — usually under a minute",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
 auth_err_nouser:"No account found with these details",
@@ -6265,6 +6284,7 @@ toast_mail_err_h:"Nou pa ka voye imèl la",
 toast_mail_err_p:"Imèl la pa t kapab voye. Tanpri eseye ankò nan yon ti moman.",
 plan_changed_lifetime:"Ou debloke aksè a vi a !", dash_menu_exit:"Dekonekte",
 wiz_p_moncash:"MonCash otomatik", wiz_p_natcash:"NatCash otomatik",
+wiz_p_auto_badge:"Rekòmande", wiz_p_auto_sub:"Konfimasyon otomatik — anjeneral mwens pase yon minit",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
 auth_err_nouser:"Nou pa jwenn okenn kont ak idantifyan sa a",
@@ -7391,11 +7411,26 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     });
   }
 
+  /* CHEVRON reutilise tel quel par les deux cartes — defini une fois. */
+  const PAYM_CHEVRON='<svg class="wiz-paym-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+
   function renderPayMethods(){
+    /* Mise a jour des libelles au changement de langue : la carte contient
+       maintenant plusieurs <span>, donc on vise chaque element par sa
+       classe (avant : querySelector('span'), qui attrapait le premier et
+       aurait ecrase la pastille du logo). */
     if(payWrap.children.length){
       [...payWrap.children].forEach(c=>{
         const m=METHODS.find(x=>x.id===c.dataset.method);
-        if(m)c.querySelector('span').textContent=t(m.labelKey);
+        if(!m)return;
+        const nom=c.querySelector('.wiz-paym-name');
+        const badge=c.querySelector('.wiz-paym-badge');
+        const sub=c.querySelector('.wiz-paym-sub');
+        const img=c.querySelector('.wiz-paym-ic img');
+        if(nom)nom.textContent=t(m.labelKey);
+        if(badge)badge.textContent=t('wiz_p_auto_badge');
+        if(sub)sub.textContent=t('wiz_p_auto_sub');
+        if(img)img.alt=t(m.labelKey);
       });
       return;
     }
@@ -7405,7 +7440,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       b.type='button';
       b.className='wiz-paym';
       b.dataset.method=m.id;
-      b.innerHTML=(src?'<img src="'+src.src+'" alt="'+t(m.labelKey)+'">':'')+'<span>'+t(m.labelKey)+'</span>';
+      b.innerHTML=
+        '<span class="wiz-paym-ic">'+(src?'<img src="'+src.src+'" alt="'+t(m.labelKey)+'">':'')+'</span>'+
+        '<span class="wiz-paym-txt">'+
+          '<span class="wiz-paym-line">'+
+            '<span class="wiz-paym-name"></span>'+
+            '<span class="wiz-paym-badge"></span>'+
+          '</span>'+
+          '<span class="wiz-paym-sub"></span>'+
+        '</span>'+PAYM_CHEVRON;
+      /* textContent plutot que de l'interpolation dans innerHTML : les
+         libelles viennent des traductions, jamais injectes en HTML brut. */
+      b.querySelector('.wiz-paym-name').textContent=t(m.labelKey);
+      b.querySelector('.wiz-paym-badge').textContent=t('wiz_p_auto_badge');
+      b.querySelector('.wiz-paym-sub').textContent=t('wiz_p_auto_sub');
       b.addEventListener('click',()=>{
         state.payMethod=m.id;save();
         [...payWrap.children].forEach(c=>c.classList.toggle('on',c.dataset.method===m.id));
