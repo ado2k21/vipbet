@@ -46,7 +46,15 @@ function lireConfig() {
     /* Duree de vie d'un paiement en attente. Passe ce delai, la ligne est
        liberee : sans cela l'index unique idx_un_seul_paiement_pending_par_user
        bloquerait definitivement quelqu'un ayant ferme la page du prestataire. */
-    dureeVieMinutes: parseInt(process.env.PLOPPLOP_PENDING_TTL_MIN || '45', 10) || 45
+    /* 45 min etait trop long : un MonCash/NatCash reel se confirme en
+       general en quelques secondes a 1-2 minutes. Un reseau coupe en
+       cours de paiement, ou une personne qui n'a rien rempli sur la page
+       du prestataire, doit redevenir un echec exploitable (nouvel essai
+       possible) en quelques minutes, pas en trois quarts d'heure —
+       l'API du prestataire ne renvoyant que "no"/"ok" (voir
+       verifierEtConfirmer), ce delai est la SEULE facon de detecter un
+       abandon. Reglable sans redeploiement via PLOPPLOP_PENDING_TTL_MIN. */
+    dureeVieMinutes: parseInt(process.env.PLOPPLOP_PENDING_TTL_MIN || '15', 10) || 15
   };
   const manquantes = [];
   if (!cfg.supabaseUrl) manquantes.push('SUPABASE_URL');
@@ -347,4 +355,3 @@ module.exports = {
   verifierTransaction,
   verifierEtConfirmer
 };
-
