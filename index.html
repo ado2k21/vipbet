@@ -1998,6 +1998,21 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .wiz-done-sum dt{color:var(--gris)}
 .wiz-done-sum dd{color:#F4F3ED;font-weight:600;text-align:right}
 
+/* --- Etape 4 : statut du paiement automatique MonCash/NatCash --- */
+.wiz-auto{
+  width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+  margin-top:4px;padding:13px 15px;
+  background:#0B1425;border:1px solid var(--ligne);border-radius:var(--r-sm);
+}
+.wiz-auto-txt{font-size:13px;color:var(--gris);text-align:center;margin:0;line-height:1.5}
+.wiz-auto-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.wiz-auto-link{font-size:12.5px;color:var(--or-clair);text-decoration:underline}
+.wiz-auto-retry{
+  font-size:12.5px;color:#F4F3ED;background:rgba(46,212,127,.12);
+  border:1px solid rgba(46,212,127,.35);border-radius:8px;padding:7px 12px;cursor:pointer;
+}
+.wiz-auto-retry:hover{background:rgba(46,212,127,.2)}
+
 /* --- Bandeau de reprise --- */
 .wiz-resume{
   display:flex;align-items:flex-start;gap:11px;padding:13px 15px;border-radius:var(--r-sm);
@@ -3950,6 +3965,13 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
                 <div><dt data-i18n="wiz_d_end">Dat ekspirasyon</dt><dd id="wizDoneEnd"></dd></div>
                 <div><dt data-i18n="wiz_d_ref">Referans</dt><dd id="wizDoneRef"></dd></div>
               </dl>
+              <div class="wiz-auto" id="wizAutoStatus" hidden>
+                <p class="wiz-auto-txt" id="wizAutoTxt"></p>
+                <div class="wiz-auto-actions">
+                  <a href="#" target="_blank" rel="noopener" class="wiz-auto-link" id="wizAutoOpenLink" data-i18n="wiz_auto_open_cta">Ouvri paj peman an</a>
+                  <button type="button" class="wiz-auto-retry" id="wizAutoRetryBtn" data-i18n="wiz_auto_retry_cta">Mwen fin peye a</button>
+                </div>
+              </div>
               <button type="button" class="btn btn-or authpage-submit" id="wizDoneCta" data-i18n="wiz_d_cta">Ale nan dashboard la</button>
             </div>
           </div>
@@ -4983,6 +5005,16 @@ wiz_d_h:"Votre abonnement est actif", wiz_d_sub:"Votre compte est prêt. Vous po
 wiz_d_plan:"Plan", wiz_d_start:"Date de début", wiz_d_end:"Date d'expiration", wiz_d_ref:"Référence",
 wiz_d_never:"Sans expiration", wiz_d_cta:"Accéder au tableau de bord", wiz_d_pending_dates:"Fixée après confirmation",
 wiz_d_h_pending:"Paiement en cours de vérification", wiz_d_sub_pending:"Votre compte est prêt. Vos pronostics seront débloqués dès que notre équipe aura validé votre paiement.",
+wiz_d_sub_pending_auto:"Votre compte est prêt. La confirmation est automatique et prend généralement moins d'une minute.",
+wiz_auto_pending_note:"Vérification automatique en cours.",
+wiz_auto_attente_p:"Vérification automatique en cours auprès du prestataire…",
+wiz_auto_verif_p:"Vérification en cours…",
+wiz_auto_erreur_p:"Connexion au prestataire impossible pour le moment. Nouvel essai automatique dans quelques instants.",
+wiz_auto_confirme_p:"Votre paiement a été confirmé automatiquement.",
+wiz_auto_echec_p:"Le paiement n'a pas pu être confirmé. Vous pouvez réessayer.",
+wiz_auto_echec_changement_p:"Le changement de plan a échoué. Votre abonnement actuel reste actif.",
+wiz_auto_open_cta:"Ouvrir la page de paiement",
+wiz_auto_retry_cta:"J'ai terminé le paiement",
 wiz_lock_h:"Tableau de bord verrouillé", wiz_lock_cta:"Continuer mon inscription",
 wiz_lock_r1:"Vous devez d'abord créer un compte pour accéder au tableau de bord.",
 wiz_lock_r2:"Votre adresse e-mail n'est pas encore vérifiée. Terminez la vérification pour continuer.",
@@ -5446,6 +5478,16 @@ wiz_d_h:"Your plan is active", wiz_d_sub:"Your account is ready. You can now acc
 wiz_d_plan:"Plan", wiz_d_start:"Start date", wiz_d_end:"Expiry date", wiz_d_ref:"Reference",
 wiz_d_never:"No expiry", wiz_d_cta:"Go to dashboard", wiz_d_pending_dates:"Set after confirmation",
 wiz_d_h_pending:"Payment under verification", wiz_d_sub_pending:"Your account is ready. Your picks will unlock as soon as our team confirms your payment.",
+wiz_d_sub_pending_auto:"Your account is ready. Confirmation is automatic and usually takes under a minute.",
+wiz_auto_pending_note:"Automatic verification in progress.",
+wiz_auto_attente_p:"Automatic verification with the payment provider in progress…",
+wiz_auto_verif_p:"Checking…",
+wiz_auto_erreur_p:"Could not reach the payment provider right now. Retrying automatically in a moment.",
+wiz_auto_confirme_p:"Your payment has been confirmed automatically.",
+wiz_auto_echec_p:"The payment could not be confirmed. You can try again.",
+wiz_auto_echec_changement_p:"The plan change failed. Your current subscription remains active.",
+wiz_auto_open_cta:"Open payment page",
+wiz_auto_retry_cta:"I've completed the payment",
 wiz_lock_h:"Dashboard locked", wiz_lock_cta:"Continue my sign-up",
 wiz_lock_r1:"You need to create an account first to access the dashboard.",
 wiz_lock_r2:"Your email address isn't verified yet. Complete verification to continue.",
@@ -5909,6 +5951,16 @@ wiz_d_h:"Abònman ou aktive", wiz_d_sub:"Kont ou prè. Ou ka jwenn fich VIP yo k
 wiz_d_plan:"Plan", wiz_d_start:"Dat kòmansman", wiz_d_end:"Dat ekspirasyon", wiz_d_ref:"Referans",
 wiz_d_never:"San ekspirasyon", wiz_d_cta:"Ale nan dashboard la", wiz_d_pending_dates:"Fikse apre konfimasyon",
 wiz_d_h_pending:"Peman an ap verifye", wiz_d_sub_pending:"Kont ou pare. Pronostik ou yo ap debloke depi ekip nou konfime peman an.",
+wiz_d_sub_pending_auto:"Kont ou pare. Konfimasyon an otomatik, li pran mwens pase yon minit anjeneral.",
+wiz_auto_pending_note:"Verifikasyon otomatik ap fèt.",
+wiz_auto_attente_p:"Verifikasyon otomatik ap fèt avèk prestatè peman an…",
+wiz_auto_verif_p:"Ap verifye…",
+wiz_auto_erreur_p:"Nou pa ka jwenn prestatè peman an kounye a. N ap eseye ankò otomatikman talè.",
+wiz_auto_confirme_p:"Peman ou konfime otomatikman.",
+wiz_auto_echec_p:"Nou pa t kapab konfime peman an. Ou ka eseye ankò.",
+wiz_auto_echec_changement_p:"Chanjman plan an echwe. Abònman aktyèl ou rete aktif.",
+wiz_auto_open_cta:"Ouvri paj peman an",
+wiz_auto_retry_cta:"Mwen fin peye a",
 wiz_lock_h:"Dashboard la fèmen", wiz_lock_cta:"Kontinye enskripsyon m",
 wiz_lock_r1:"Ou dwe kreye yon kont anvan pou w jwenn dashboard la.",
 wiz_lock_r2:"Imèl ou poko verifye. Fini verifikasyon an pou w kontinye.",
@@ -7290,6 +7342,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const payErr=document.getElementById('wizPayErr');
   const paySubmit=document.getElementById('wizPaySubmit');
   const METHODS=[{id:'moncash',labelKey:'wiz_p_moncash',sel:'.pay-moncash img'},{id:'natcash',labelKey:'wiz_p_natcash',sel:'.pay-natcash img'}];
+  /* MonCash et NatCash sont en paiement automatique reel (prestataire
+     PLOP PLOP, cote serveur) : cette liste pilote a la fois le rendu des
+     boutons ci-dessus ET tout le nouveau flux automatique plus bas
+     (completePayment, renderStep4). Stripe n'y figure jamais : son bouton
+     est separe (wizStripeBtn) et reste sur le flux manuel existant. */
+  const PAIEMENT_AUTO_METHODS=METHODS.map(m=>m.id);
+  const PAIEMENT_CREATE_URL='/.netlify/functions/paiement-create';
+  const PAIEMENT_VERIFY_URL='/.netlify/functions/paiement-verify';
 
   function renderRecap(){
     /* Le plan PREVISUALISE (avant paiement) ne doit jamais ecraser le plan
@@ -7524,7 +7584,211 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(window.VB_toast)window.VB_toast(TITRE[raison]||'renew_toast_h',t(raison));
   }
 
-  async function completePayment(method){
+  /* ================= PAIEMENT AUTOMATIQUE MonCash/NatCash =================
+     Le prestataire (PLOP PLOP) n'offre aucun webhook : la seule verite est
+     l'appel serveur paiement-verify, relance ici periodiquement tant que
+     cette page reste ouverte. Le filet reel, qui fonctionne meme si la
+     personne ferme son navigateur, est la fonction planifiee cote serveur
+     paiement-poll-background (toutes les 3 min) — ce sondage cote client
+     n'est qu'un confort pour un retour plus rapide a l'ecran. */
+  let pollAutoTimer=null, pollAutoTries=0;
+  const POLL_AUTO_INTERVAL_MS=6000;
+  const POLL_AUTO_MAX_TRIES=50; // ~5 min ; au-dela, seul le filet serveur continue
+
+  function arreterPollAuto(){
+    if(pollAutoTimer){clearTimeout(pollAutoTimer);pollAutoTimer=null;}
+    pollAutoTries=0;
+  }
+
+  async function getAccessTokenWizard(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{
+      const {data}=await sb.auth.getSession();
+      return (data&&data.session&&data.session.access_token)||null;
+    }catch(e){return null;}
+  }
+
+  function fermerFenetreAuto(w){
+    try{if(w&&!w.closed)w.close();}catch(e){}
+  }
+
+  function renderStatutPaiementAuto(etat){
+    const txt=document.getElementById('wizAutoTxt');
+    if(!txt)return;
+    const CLES={attente:'wiz_auto_attente_p',verification_manuelle:'wiz_auto_verif_p',erreur:'wiz_auto_erreur_p'};
+    txt.textContent=t(CLES[etat]||'wiz_auto_attente_p');
+  }
+
+  async function verifierPaiementAutoUneFois(){
+    if(!state.autoPaymentId)return null;
+    const token=await getAccessTokenWizard();
+    if(!token)return {ok:false,etat:'erreur'};
+    try{
+      const rep=await fetch(PAIEMENT_VERIFY_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+        body:JSON.stringify({payment_id:state.autoPaymentId})
+      });
+      return await rep.json().catch(()=>null);
+    }catch(e){return {ok:false,etat:'erreur'};}
+  }
+
+  /* Applique le resultat d'UNE verification. N'est jamais appele en
+     parallele avec elle-meme (toujours via planifierPollAuto ou le bouton
+     de relance manuelle, jamais les deux a la fois — voir leurs gardes). */
+  async function appliquerResultatVerifAuto(res){
+    if(!res)return;
+    if(res.etat==='confirme'){
+      state.autoPaymentId=null;state.autoProviderUrl=null;save();
+      // Reconstruit l'etat local depuis la VRAIE ligne subscriptions —
+      // fonction deja existante et eprouvee (utilisee au retour de
+      // connexion apres une action admin), qui gere aussi la fusion
+      // pendingPlanId/plan actif exactement comme ici. Aucune date ni
+      // aucun champ n'est donc jamais reconstruit "a la main" ici.
+      let sessionUser=null;
+      try{
+        const sb=window.VB_getSupabase&&window.VB_getSupabase();
+        if(sb){const {data:sd}=await sb.auth.getSession();sessionUser=(sd&&sd.session&&sd.session.user)||null;}
+      }catch(e){}
+      if(sessionUser&&window.VB_reprendreApresAdmin){
+        await window.VB_reprendreApresAdmin(sessionUser);
+      }else{
+        renderStep4();
+      }
+      if(window.VB_toast)window.VB_toast('renew_success_h',t('wiz_auto_confirme_p'));
+      return;
+    }
+    if(res.etat==='erreur'||res.etat==='attente'){
+      renderStatutPaiementAuto(res.etat);
+      return;
+    }
+    // expire / refuse / clos / manuel : tentative definitivement close,
+    // sans succes. Deux cas, jamais confondus :
+    const etaitChangement=!!state.pendingPlanId;
+    state.autoPaymentId=null;state.autoProviderUrl=null;
+    if(etaitChangement){
+      // Le plan ACTIF n'a jamais ete touche par cette tentative : la
+      // personne garde un acces plein, seul le changement est annule.
+      state.pendingPlanId=null;state.pendingRef=null;save();
+      if(window.VB_toast)window.VB_toast('renew_toast_h',t('wiz_auto_echec_changement_p'));
+      renderStep4();
+    }else{
+      // Premiere souscription (ou renouvellement d'un plan expire) qui
+      // echoue : rien de reel n'a jamais ete active pour cette personne.
+      state.paid=false;state.payStatus=null;state.planId=null;state.ref=null;
+      state.startDate=null;state.endDate=null;save();
+      if(window.VB_toast)window.VB_toast('renew_toast_h',t('wiz_auto_echec_p'));
+      showStep(3);
+    }
+  }
+
+  function demarrerPollAuto(){
+    arreterPollAuto();
+    planifierPollAuto();
+  }
+
+  function planifierPollAuto(){
+    pollAutoTimer=setTimeout(async()=>{
+      pollAutoTries++;
+      const res=await verifierPaiementAutoUneFois();
+      await appliquerResultatVerifAuto(res);
+      const enCours=res&&(res.etat==='attente'||res.etat==='erreur');
+      if(enCours&&pollAutoTries<POLL_AUTO_MAX_TRIES&&state.step===4&&state.autoPaymentId){
+        planifierPollAuto();
+      }else{
+        arreterPollAuto();
+      }
+    },POLL_AUTO_INTERVAL_MS);
+  }
+
+  /* Creation reelle de la transaction chez le prestataire. Contrairement
+     a syncAbonnementSupabase() (utilisee par Stripe/manuel), cette
+     fonction n'ecrit RIEN directement dans Supabase depuis ce navigateur :
+     subscriptions ET payments sont crees cote serveur (service_role), avec
+     le VRAI montant et une reference prestataire jamais exposee ici — voir
+     netlify/functions/paiement-create.js. */
+  async function lancerPaiementAutomatique({method,pl,planCible,planEnCoursValide,ancienPlan,wasRenew,fenetreAuto}){
+    const token=await getAccessTokenWizard();
+    if(!token){
+      fermerFenetreAuto(fenetreAuto);
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('err_action_unavailable_p'));
+      return;
+    }
+    let data=null;
+    try{
+      const rep=await fetch(PAIEMENT_CREATE_URL,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+        body:JSON.stringify({plan_id:planCible,method:method})
+      });
+      data=await rep.json().catch(()=>null);
+    }catch(e){data=null;}
+
+    if(!data||data.ok!==true||!data.url){
+      fermerFenetreAuto(fenetreAuto);
+      const code=data&&data.code;
+      if(code==='PAIEMENT_DEJA_EN_ATTENTE'){
+        state.payStatus='pending';
+        if(data.reference)state.pendingRef=data.reference;
+        save();
+        afficherRefusPaiement('renew_err_pending');
+        if(window.VB_refreshPlansUI)window.VB_refreshPlansUI();
+        return;
+      }
+      if(code==='EMAIL_NON_VERIFIE'){afficherRefusPaiement('renew_err_email_non_verifie');return;}
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('err_action_unavailable_p'));
+      return;
+    }
+
+    // Succes : la ligne pending existe deja cote serveur, avec le VRAI
+    // montant protege par le trigger de base (jamais ecrit ni lisible
+    // depuis ce navigateur). On redirige vers la page du prestataire dans
+    // la fenetre deja ouverte au moment du clic (voir l'ecouteur 'submit'
+    // plus bas) — sinon, un window.open() ici serait bloque sur mobile
+    // puisqu'on est apres un 'await'.
+    if(fenetreAuto){try{fenetreAuto.location.href=data.url;}catch(e){}}
+    else{try{window.open(data.url,'_blank','noopener');}catch(e){}}
+
+    state.payMethod=method;
+    state.autoPaymentId=data.payment_id;
+    state.autoProviderUrl=data.url;
+    if(planEnCoursValide){
+      state.pendingPlanId=pl.id;
+      state.pendingRef=data.reference;
+    }else{
+      state.ref=data.reference;
+      state.planId=pl.id;
+      state.pendingPlanId=null;
+      state.pendingRef=null;
+      state.paid=true;
+      state.payStatus='pending';
+      state.startDate=new Date().toISOString();
+      state.endDate=pl.days?new Date(Date.now()+pl.days*86400000).toISOString():null;
+    }
+    state.step=4;
+    state.started=false;
+    save();
+    accounts.put({
+      email:state.email.trim().toLowerCase(),
+      pass:state.pass,
+      fullname:state.fullname,site:state.site,
+      emailVerified:true,paid:true,
+      payStatus:planEnCoursValide?state.payStatus:'pending',
+      planId:state.planId,payMethod:state.payMethod,
+      startDate:state.startDate,endDate:state.endDate,
+      ref:state.ref
+    });
+    if(!wasRenew&&window.VB_countSignup)window.VB_countSignup();
+    if(ancienPlan&&ancienPlan!==pl.id){
+      if(window.VB_toast)window.VB_toast('plan_changed_h',t(pl.id==='p4'?'plan_changed_lifetime':'plan_changed_p')+' '+t('wiz_auto_pending_note'));
+    }else if(ancienPlan){
+      if(window.VB_toast)window.VB_toast('renew_success_h',t('renew_success_p')+' '+t('wiz_auto_pending_note'));
+    }
+    showStep(4);
+  }
+
+  async function completePayment(method,fenetreAuto){
     if(sessionPerimee){
       if(window.VB_toast)window.VB_toast('session_stale_h',t('session_stale_p'));
       return;
@@ -7577,6 +7841,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        cours est deja termine, continue d'agir immediatement comme
        avant. */
     const planEnCoursValide=state.paid&&state.payStatus==='confirmed'&&state.endDate&&new Date(state.endDate).getTime()>now.getTime();
+
+    /* MonCash et NatCash sont en paiement automatique REEL, entierement
+       gere cote serveur (creation chez le prestataire + verification +
+       activation) : ce chemin n'ecrit jamais rien lui-meme dans Supabase
+       et ne genere jamais de reference localement, contrairement au bloc
+       Stripe/manuel ci-dessous. Voir lancerPaiementAutomatique(). */
+    if(PAIEMENT_AUTO_METHODS.includes(method)){
+      await lancerPaiementAutomatique({method,pl,planCible,planEnCoursValide,ancienPlan,wasRenew,fenetreAuto});
+      return;
+    }
 
     // CORRECTIF MAJEUR : 'state.ref' doit TOUJOURS pointer sur le paiement
     // du plan ACTIF et CONFIRME, jamais sur une demande de changement en
@@ -7688,7 +7962,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ev.preventDefault();
     if(!state.payMethod){payErr.textContent=t('wiz_p_err_method');payErr.style.display='block';return;}
     payErr.style.display='none';
-    completePayment(state.payMethod);
+    /* MonCash/NatCash : l'URL du prestataire n'est connue qu'apres un
+       appel serveur (async). La fenetre doit donc s'ouvrir ICI, de facon
+       synchrone dans le geste de soumission — un window.open() place
+       apres un 'await' est bloque par les navigateurs mobiles (meme regle
+       deja appliquee au bouton Stripe juste en dessous). */
+    let fenetreAuto=null;
+    if(PAIEMENT_AUTO_METHODS.includes(state.payMethod)){
+      try{fenetreAuto=window.open('','_blank');}catch(e){fenetreAuto=null;}
+    }
+    completePayment(state.payMethod,fenetreAuto);
   });
 
   /* ===== Paiement par carte (Stripe) — flux v134 restaure (choix explicite
@@ -7726,13 +8009,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const pl=planById(enAttenteChangement?state.pendingPlanId:state.planId);
     const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
     const pend=enAttenteChangement||state.payStatus==='pending';
+    const methodeAuto=PAIEMENT_AUTO_METHODS.includes(state.payMethod);
     const ic=document.getElementById('wizDoneIc');
     ic.classList.toggle('is-pending',pend);
     ic.innerHTML=pend
       ?'<svg class="ic" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'
       :'<svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>';
     document.getElementById('wizDoneH').textContent=t(pend?'wiz_d_h_pending':'wiz_d_h');
-    document.getElementById('wizDoneSub').textContent=t(pend?'wiz_d_sub_pending':'wiz_d_sub');
+    // La copie "notre equipe va valider" ne convient qu'au flux
+    // manuel/admin : pour MonCash/NatCash, la verification est reellement
+    // automatique et le panneau de statut ci-dessous donne le detail.
+    document.getElementById('wizDoneSub').textContent=t(pend?(methodeAuto?'wiz_d_sub_pending_auto':'wiz_d_sub_pending'):'wiz_d_sub');
     document.getElementById('wizDonePlan').textContent=pl?stripTags(window.VB_planLabel(pl)):'—';
     // Tant que ce n'est pas confirme, on ne peut pas encore montrer de
     // vraies dates (elles ne sont fixees qu'a la confirmation admin) —
@@ -7741,6 +8028,46 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('wizDoneStart').textContent=enAttenteChangement?t('wiz_d_pending_dates'):fmt(state.startDate);
     document.getElementById('wizDoneEnd').textContent=enAttenteChangement?t('wiz_d_pending_dates'):(state.endDate?fmt(state.endDate):t('wiz_d_never'));
     document.getElementById('wizDoneRef').textContent=(enAttenteChangement?state.pendingRef:state.ref)||'—';
+
+    /* Paiement automatique MonCash/NatCash en attente : panneau de statut
+       + reprise du sondage si cette page est rouverte (F5, retour sur
+       l'onglet) pendant qu'une verification reste en cours. Le filet
+       serveur (paiement-poll-background, toutes les 3 min) continue de
+       toute facon meme si cette page n'est jamais rouverte. */
+    const boxAuto=document.getElementById('wizAutoStatus');
+    if(boxAuto){
+      const auto=pend&&methodeAuto&&!!state.autoPaymentId;
+      boxAuto.hidden=!auto;
+      if(auto){
+        const lien=document.getElementById('wizAutoOpenLink');
+        if(lien)lien.href=state.autoProviderUrl||'#';
+        renderStatutPaiementAuto('attente');
+        if(!pollAutoTimer)demarrerPollAuto();
+      }else{
+        arreterPollAuto();
+      }
+    }
+  }
+
+  /* Relance manuelle : utile si la personne revient sur cet onglet apres
+     avoir paye pendant que le sondage automatique est justement entre
+     deux passages (jusqu'a 6s d'attente sinon). N'interfere jamais avec
+     le sondage en cours : appliquerResultatVerifAuto() est idempotente,
+     et un resultat 'confirme' arrete de toute facon tout sondage a venir
+     (state.autoPaymentId est remis a null). */
+  const wizAutoRetryBtn=document.getElementById('wizAutoRetryBtn');
+  if(wizAutoRetryBtn){
+    wizAutoRetryBtn.addEventListener('click',async()=>{
+      if(!state.autoPaymentId)return;
+      wizAutoRetryBtn.disabled=true;
+      renderStatutPaiementAuto('verification_manuelle');
+      try{
+        const res=await verifierPaiementAutoUneFois();
+        await appliquerResultatVerifAuto(res);
+      }finally{
+        wizAutoRetryBtn.disabled=false;
+      }
+    });
   }
 
   /* ================= REINITIALISATION DU MOT DE PASSE =================
