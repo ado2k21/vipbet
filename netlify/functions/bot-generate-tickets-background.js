@@ -907,7 +907,7 @@ function extraireMarchesBSD(evenementBSD, dateCible, infosFixture, prioritaire) 
   // Total buts — SAFE (Over 1.5) et PREMIUM (Over 2.5), mêmes bornes que
   // extraireMarchesFoot (id 5). Pas d'équivalent BSD pour "Under 4.5".
   const cOver15 = parseFloat(evenementBSD.odds_over_15);
-  if (isFinite(cOver15) && cOver15 >= 1.19 && cOver15 <= 1.70) {
+  if (isFinite(cOver15) && cOver15 >= 1.20 && cOver15 <= 1.70) {
     trouvees.push(Object.assign({}, base, { market: 'mk_total_buts', pick: traduireButs('Over 1.5'), odd: cOver15, tier: 'SAFE' }));
   }
   const cOver25 = parseFloat(evenementBSD.odds_over_25);
@@ -917,7 +917,7 @@ function extraireMarchesBSD(evenementBSD, dateCible, infosFixture, prioritaire) 
 
   // BTTS — mêmes bornes que extraireMarchesFoot (id 8).
   const cBttsOui = parseFloat(evenementBSD.odds_btts_yes);
-  if (isFinite(cBttsOui) && cBttsOui >= 1.19 && cBttsOui <= 2.20) {
+  if (isFinite(cBttsOui) && cBttsOui >= 1.20 && cBttsOui <= 2.20) {
     trouvees.push(Object.assign({}, base, {
       market: 'mk_btts', pick: 'Les deux équipes marquent : Oui', odd: cBttsOui,
       tier: cBttsOui <= 1.70 ? 'SAFE' : 'PREMIUM'
@@ -1058,7 +1058,9 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
   // par le bookmaker (1/cote) — plus la cote est basse, plus la probabilité
   // de réussite est jugée élevée. C'est cette logique qui guide tous les
   // seuils ci-dessous (SAFE = cotes basses = forte probabilité). Plancher
-  // absolu à 1.19 : en dessous, la marge de sécurité devient trop faible
+  // absolu à 1.20 (valeur confirmée par James le 11/09 — 1.19 était une
+  // approximation du code, jamais une règle) : en dessous, la marge de
+  // sécurité devient trop faible
   // pour justifier une sélection.
   bets.forEach(betType => {
     // Score exact (id 10) — probabilité raisonnable (cote 4.0–15.0).
@@ -1073,7 +1075,15 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         .map(v => ({ value: v.value, odd: parseFloat(v.odd) }))
         .filter(v => isFinite(v.odd) && v.odd >= 4.0 && v.odd <= 15.0)
         .sort((a, b) => a.odd - b.odd)
-        .slice(0, 5);
+        // ÉLARGI 5 -> 8 (11/09). Les 5 scores les moins chers d'un match sont
+        // presque toujours 1:1 / 1:0 / 2:1 / 0:0 / 2:0 — dont SEULS 1:1 et 2:1
+        // survivent au profil BTTS (home>0 && away>0). Avec la nouvelle règle
+        // "jamais deux fois le même score dans une fiche", cela plafonnait la
+        // fiche à 2 sélections, sous le minimum structurel de 3. Aller
+        // jusqu'à 8 fait entrer 1:2 / 2:2 / 3:1, sans aucun appel API
+        // supplémentaire (même réponse /odds déjà en main) et sans toucher
+        // aux bornes de cote 4.0-15.0.
+        .slice(0, 8);
       candidats.forEach(c => {
         trouvees.push({
           fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_score_exact',
@@ -1091,7 +1101,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': 'X1', 'Home/Away': '12', 'Draw/Away': 'X2' };
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.19 && c <= 1.70) {
+        if (c >= 1.20 && c <= 1.70) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_double_chance',
             pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[v.value] || v.value}`, odd: c, tier: 'SAFE',
@@ -1101,13 +1111,23 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       });
     }
     // Victoire directe (id 1) — profil "premium"
+    // ÉLARGI VERS LE BAS (11/09, correctif répétition de cotes) : la plage
+    // commençait à 1.95, ce qui laissait un TROU RÉEL dans le pool entre
+    // 1.70 (plafond double chance / total buts) et 1.95 — aucune sélection
+    // ne pouvait exister entre ces deux valeurs, quel que soit le match.
+    // L'algorithme de sélection n'avait donc structurellement aucune cote
+    // intermédiaire à proposer, d'où les enchaînements au plancher (1.20).
+    // Abaisser le minimum à 1.55 ne rend RIEN plus risqué : une cote plus
+    // basse = probabilité implicite PLUS FORTE (favori plus net). Le tier
+    // suit la cote réelle — SAFE en dessous de 1.80, PREMIUM au-dessus,
+    // exactement la même convention que mk_total_buts et mk_btts.
     if (betType.id === 1) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.95 && c <= 2.50 && (v.value === 'Home' || v.value === 'Away')) {
+        if (c >= 1.55 && c <= 2.50 && (v.value === 'Home' || v.value === 'Away')) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_1x2',
-            pick: `Victoire : ${v.value}`, odd: c, tier: 'PREMIUM',
+            pick: `Victoire : ${v.value}`, odd: c, tier: c <= 1.80 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
@@ -1117,7 +1137,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
     if (betType.id === 5) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (c >= 1.19 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
+        if (c >= 1.20 && c <= 1.70 && ['Over 1.5', 'Under 4.5'].includes(v.value)) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
             pick: traduireButs(v.value), odd: c, tier: 'SAFE',
@@ -1140,10 +1160,27 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         // interdiction, toujours selon l'analyse) — même donnée déjà
         // récupérée via ce même appel /odds, aucun coût de quota
         // supplémentaire.
-        if (c >= 1.19 && c <= 1.90 && v.value === 'Under 3.5') {
+        if (c >= 1.20 && c <= 1.90 && v.value === 'Under 3.5') {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
             pick: 'Moins de 3.5 buts', odd: c, tier: c <= 1.30 ? 'SAFE' : 'PREMIUM',
+            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
+          });
+        }
+        // AJOUTÉ (11/09, correctif répétition de cotes) : "Moins de 2.5
+        // buts" — marché réellement proposé sur paryajpam.com, déjà présent
+        // dans la MÊME réponse /odds (id 5), donc aucun coût de quota
+        // supplémentaire. Il occupe naturellement la plage 1.30–2.00, celle
+        // qui manquait le plus au pool : sans lui, les seules alternatives
+        // "totaux" étaient Over 1.5 / Under 4.5 (toutes deux collées au
+        // plancher 1.20–1.25 sur la majorité des matchs). Contrepartie
+        // logique de "Plus de 2.5 buts" déjà géré juste au-dessus, et
+        // estContradictoire() traite déjà correctement Plus/Moins sur un
+        // même seuil (voir contredictionPlusMoins).
+        if (c >= 1.30 && c <= 2.00 && v.value === 'Under 2.5') {
+          trouvees.push({
+            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
+            pick: 'Moins de 2.5 buts', odd: c, tier: c <= 1.60 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
@@ -1153,7 +1190,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
     if (betType.id === 8) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        if (v.value === 'Yes' && c >= 1.19 && c <= 2.20) {
+        if (v.value === 'Yes' && c >= 1.20 && c <= 2.20) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_btts',
             pick: 'Les deux équipes marquent : Oui', odd: c,
@@ -1225,11 +1262,12 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       const label = betType.id === 16 ? 'Domicile' : 'Extérieur';
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
-        // Plancher remonté de 1.10 à 1.19 (28/08, règle stricte : aucune
-        // sélection individuelle sous 1.19, quel que soit le marché — une
+        // Plancher remonté de 1.10 à 1.20 (28/08, porté à 1.20 le 11/09 —
+        // règle stricte : aucune sélection individuelle sous 1.20, quel que
+        // soit le marché — une
         // cote plus basse n'ajoute pas de fiabilité réelle, seulement une
         // fausse sécurité, et dilue la cote totale sans justification).
-        if (c >= 1.19 && c <= 1.30) {
+        if (c >= 1.20 && c <= 1.30) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: cote,
             pick: `${label} : ${traduireButs(v.value)}`, odd: c, tier: 'SAFE',
@@ -1438,17 +1476,21 @@ function construireFiche(pool, plan, options) {
   // norme, mais un pick premium genuinement evident peut quand meme
   // ressortir -- plus jamais un plafond dur a 1 seul.
   const POIDS_PROGRESSION = cibleMax < 20 ? 0.015 : cibleMax < 50 ? 0.05 : cibleMax < 90 ? 0.09 : 0.13;
+  // Score de base, INCHANGÉ dans sa formule (fiabilité réelle + poids de
+  // progression + malus de marché déjà utilisé dans la journée). Simplement
+  // hissé hors de meilleurParMatch (11/09) pour être réutilisé aussi par
+  // candidatsParMatch et par le classement dynamique de la boucle greedy.
+  const score = b => {
+    let s = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
+    // Malus léger (voir MALUS_MARCHE_DEJA_UTILISE ci-dessus) — jamais
+    // appliqué au buteur (déjà régi par son propre système), jamais aux
+    // fiches à cote haute (Palier 3+, où le pool est déjà tendu).
+    if (cibleMax <= 15 && b.market !== 'mk_buteur' && (marchesUtiliseesJour.get(b.market) || 0) > 0) s -= MALUS_MARCHE_DEJA_UTILISE;
+    s += POIDS_PROGRESSION * Math.log(b.odd);
+    return s;
+  };
   function meilleurParMatch(liste) {
     const meilleur = {};
-    const score = b => {
-      let s = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd);
-      // Malus léger (voir MALUS_MARCHE_DEJA_UTILISE ci-dessus) — jamais
-      // appliqué au buteur (déjà régi par son propre système), jamais aux
-      // fiches à cote haute (Palier 3+, où le pool est déjà tendu).
-      if (cibleMax <= 15 && b.market !== 'mk_buteur' && (marchesUtiliseesJour.get(b.market) || 0) > 0) s -= MALUS_MARCHE_DEJA_UTILISE;
-      s += POIDS_PROGRESSION * Math.log(b.odd);
-      return s;
-    };
     liste.forEach(b => {
       if (!meilleur[b.fixtureId] || score(b) > score(meilleur[b.fixtureId])) meilleur[b.fixtureId] = b;
     });
@@ -1457,13 +1499,98 @@ function construireFiche(pool, plan, options) {
       return score(b) - score(a);
     });
   }
+
+  // AJOUTÉ (11/09, correctif répétition de cotes — cause racine n°1).
+  // meilleurParMatch ne renvoyait QU'UNE seule sélection par match : celle
+  // qui maximise `scoreFiabilite + POIDS_PROGRESSION*ln(cote)`. Or
+  // scoreFiabilite vaut ~1/cote, et la dérivée de `1/x + k*ln(x)` reste
+  // NÉGATIVE tant que x < 1/k (soit x < 66 avec k=0.015) : la cote LA PLUS
+  // BASSE du match gagnait donc systématiquement, sur tous les matchs, quel
+  // que soit le championnat. Comme le plancher d'extraction est 1.20, chaque
+  // match livrait sa sélection au plancher — d'où les suites 1.20 / 1.20 /
+  // 1.20 / 1.22 constatées en production.
+  // Avec un seul candidat par match, toute règle anti-doublon aurait
+  // simplement SUPPRIMÉ le match au lieu de le varier. On garde donc
+  // maintenant le meilleur candidat PAR MARCHÉ, puis les MAX_CANDIDATS_PAR_MATCH
+  // meilleurs de ce match : la règle anti-doublon a désormais une vraie
+  // alternative à proposer sur le même match. tenterAjout continue
+  // d'interdire deux légs du même match dans une même fiche (matchsUtilises),
+  // donc ces candidats supplémentaires sont uniquement des REPLIS, jamais
+  // des sélections en plus.
+  const MAX_CANDIDATS_PAR_MATCH = 3;
+  function candidatsParMatch(liste) {
+    const meilleurParCle = {};
+    liste.forEach(b => {
+      const cle = `${b.fixtureId}|${b.market}`;
+      if (!meilleurParCle[cle] || score(b) > score(meilleurParCle[cle])) meilleurParCle[cle] = b;
+    });
+    const parFixture = {};
+    Object.values(meilleurParCle).forEach(b => {
+      (parFixture[b.fixtureId] = parFixture[b.fixtureId] || []).push(b);
+    });
+    const sortie = [];
+    Object.values(parFixture).forEach(l => {
+      l.sort((a, b) => score(b) - score(a));
+      l.slice(0, MAX_CANDIDATS_PAR_MATCH).forEach(b => sortie.push(b));
+    });
+    return sortie.sort((a, b) => {
+      if (a.prioritaire !== b.prioritaire) return a.prioritaire ? -1 : 1;
+      return score(b) - score(a);
+    });
+  }
+
+  // ---- Variation réelle des cotes (11/09) ---------------------------------
+  // AUCUN hasard : les cotes restent exactement celles du bookmaker, jamais
+  // inventées ni tirées au sort (règle posée par James le 28/08 — "je ne
+  // veux pas du hasard si ce n'est pas choisi avec des données réelles").
+  // Ce qui change, c'est que le classement tient désormais compte de l'état
+  // RÉEL de la fiche en cours de construction : une sélection dont la bande
+  // de cote est déjà représentée devient légèrement moins prioritaire face à
+  // une alternative de fiabilité comparable. Un pick nettement meilleur
+  // passe quand même — même philosophie que MALUS_MARCHE_DEJA_UTILISE,
+  // jamais une interdiction.
+  const BORNES_BANDES = [1.30, 1.42, 1.55, 1.70, 1.90, 2.15];
+  function bandeCote(odd) {
+    let i = 0;
+    while (i < BORNES_BANDES.length && odd >= BORNES_BANDES[i]) i++;
+    return i;
+  }
+  const MALUS_BANDE_REPETEE = 0.045;
+  // Malus progressif par marché DANS LA FICHE (distinct de
+  // MALUS_MARCHE_DEJA_UTILISE, qui porte sur la journée entière). Répond au
+  // 3ᵉ point : alterner réellement entre Double chance, totaux et 1X2 au
+  // lieu d'empiler le même marché jusqu'au plafond MAX_PAR_MARCHE.
+  const MALUS_MARCHE_DANS_FICHE = 0.05;
+  // Anti-doublon en chaîne (2ᵉ point, demande explicite) : jamais plus de
+  // deux sélections D'AFFILÉE à la cote identique, et jamais plus de deux
+  // occurrences de la même cote exacte dans toute la fiche. Comparaison en
+  // centièmes entiers pour éviter toute imprécision de flottant.
+  const MAX_MEME_COTE_PAR_FICHE = 2;
+  const MAX_MEME_COTE_CONSECUTIVES = 2;
+  const clefCote = odd => Math.round(odd * 100);
+  const bandesUtilisees = new Map();
+  const cotesUtilisees = new Map();
+  // CORRIGÉ (11/09, retour explicite de James : "pour éviter des répétitions
+  // c'est mieux, mais cela ne doit pas causer l'enlèvement des matchs").
+  // Première version : refus SEC. Si le seul candidat exploitable d'un match
+  // portait une cote déjà présente deux fois, le match entier sortait de la
+  // fiche — une règle cosmétique faisait perdre une vraie sélection, ce qui
+  // est exactement l'inverse de la priorité du système (le gain d'abord).
+  // MAINTENANT : la boucle greedy fait un premier passage avec ces règles
+  // actives, et si AUCUN candidat du pool ne passe, elle refait un passage
+  // avec varieteSouple=true qui les neutralise. Les vraies contraintes
+  // (contradiction, plafond de cote, apparitions d'équipe, sélection déjà
+  // publiée...) ne sont JAMAIS neutralisées, elles — seules les deux règles
+  // de répétition de cote le sont. Conséquence : une cote peut se répéter
+  // trois fois si et seulement si c'était ça ou perdre le match.
+  let varieteSouple = false;
   // Un seul bassin, SAFE et PREMIUM combinés : pour chaque match,
   // meilleurParMatch choisit désormais LUI-MÊME laquelle des deux options
   // (si les deux existent) sert le mieux la fiche, selon l'analyse
   // ci-dessus — jamais une catégorie qui décide à la place de l'analyse.
   // Buteur (🔴) exclu de ce bassin général — réservé aux plans score-exact,
   // et jamais un joueur déjà utilisé dans une fiche publiée plus tôt ce jour.
-  const candidats = meilleurParMatch(pool.filter(b => (b.tier === 'SAFE' || b.tier === 'PREMIUM') && b.market !== 'mk_buteur'));
+  const candidats = candidatsParMatch(pool.filter(b => (b.tier === 'SAFE' || b.tier === 'PREMIUM') && b.market !== 'mk_buteur'));
   // Le score exact n'apparaît JAMAIS dans la fiche normale — uniquement
   // dans la fiche dédiée (construireFicheScoreExact, "jamais mélangée avec
   // d'autres marchés"). Bug corrigé le 25/08 : une ancienne ligne insérait
@@ -1528,6 +1655,21 @@ function construireFiche(pool, plan, options) {
     // strict du plan ne s'applique qu'aux cotes hors de ces plages
     // contrôlées. EXACT_SCORE et PREMIUM sont donc tous deux exemptés.
     if (bet.odd > maxLeg && bet.tier !== 'EXACT_SCORE' && bet.tier !== 'PREMIUM') return false;
+    // ANTI-DOUBLON EN CHAÎNE (11/09, demande explicite de James) — deux
+    // règles distinctes, toutes deux dures (jamais un simple malus, la
+    // répétition visible de cotes identiques est un défaut d'affichage, pas
+    // un arbitrage de fiabilité) :
+    //   1. jamais plus de MAX_MEME_COTE_PAR_FICHE occurrences de la même
+    //      cote exacte dans une fiche ;
+    //   2. jamais plus de MAX_MEME_COTE_CONSECUTIVES sélections d'affilée à
+    //      la même cote (les légs sont affichés dans l'ordre d'ajout).
+    const cleCote = clefCote(bet.odd);
+    if (!varieteSouple) {
+      if ((cotesUtilisees.get(cleCote) || 0) >= MAX_MEME_COTE_PAR_FICHE) return false;
+      let consecutives = 0;
+      for (let i = selections.length - 1; i >= 0 && clefCote(selections[i].odd) === cleCote; i--) consecutives++;
+      if (consecutives >= MAX_MEME_COTE_CONSECUTIVES) return false;
+    }
     const plafondMarche = PLAFOND_PAR_MARCHE[bet.market] || MAX_PAR_MARCHE;
     if ((marchesUtilises[bet.market] || 0) >= plafondMarche) return false;
     if ((championnatsUtilises[bet.league] || 0) >= MAX_PAR_CHAMPIONNAT) return false;
@@ -1539,6 +1681,11 @@ function construireFiche(pool, plan, options) {
     championnatsUtilises[bet.league] = (championnatsUtilises[bet.league] || 0) + 1;
     if (bet.equipeDomicileId != null) equipesUtilisees.set(bet.equipeDomicileId, (equipesUtilisees.get(bet.equipeDomicileId) || 0) + 1);
     if (bet.equipeExterieurId != null) equipesUtilisees.set(bet.equipeExterieurId, (equipesUtilisees.get(bet.equipeExterieurId) || 0) + 1);
+    // État de variation de la fiche en cours — lu par scoreDynamique au
+    // tour suivant de la boucle greedy, jamais persisté au-delà de la fiche.
+    cotesUtilisees.set(cleCote, (cotesUtilisees.get(cleCote) || 0) + 1);
+    const bande = bandeCote(bet.odd);
+    bandesUtilisees.set(bande, (bandesUtilisees.get(bande) || 0) + 1);
     // Incrément cohérent avec la restriction ci-dessus : ne compte que
     // l'usage en zone Palier 1/2, jamais pollué par les fiches à cote
     // haute (exemptées du plafond, elles ne doivent pas non plus fausser
@@ -1586,10 +1733,51 @@ function construireFiche(pool, plan, options) {
   // pool analysé, juste utilisé plus en profondeur) jusqu'à cibleMax, la
   // limite de sélections, ou l'épuisement du pool.
   const arretAnticipeActif = !options.pousserVersCibleMax;
-  for (const b of candidats) {
-    if (selections.length >= MAX_SELECTIONS) break;
+  // REMPLACÉ (11/09, correctif répétition de cotes) : la boucle parcourait
+  // UNE SEULE FOIS une liste triée d'avance, donc l'ordre ne pouvait pas
+  // tenir compte de ce qui venait déjà d'être retenu dans la fiche. Elle est
+  // maintenant re-classée à chaque itération avec scoreDynamique, qui ajoute
+  // au score de base deux malus dépendant de l'état RÉEL de la fiche en
+  // cours (bande de cote déjà représentée, marché déjà représenté). Le
+  // critère de fond reste identique — la fiabilité mesurée décide toujours,
+  // ces malus ne font que départager des candidats de qualité proche.
+  // Coût : O(n²) sur un pool de quelques dizaines de candidats, négligeable
+  // devant un seul appel réseau /odds.
+  const restants = candidats.slice();
+  const scoreDynamique = b => {
+    let s = score(b);
+    s -= MALUS_BANDE_REPETEE * (bandesUtilisees.get(bandeCote(b.odd)) || 0);
+    s -= MALUS_MARCHE_DANS_FICHE * (marchesUtilises[b.market] || 0);
+    return s;
+  };
+  while (selections.length < MAX_SELECTIONS) {
     if (arretAnticipeActif && selections.length >= 2 && coteTotale >= cibleMin) break;
-    if (tenterAjout(b)) { if (b.tier === 'PREMIUM') premCount++; }
+    restants.sort((a, b) => {
+      if (a.prioritaire !== b.prioritaire) return a.prioritaire ? -1 : 1;
+      return scoreDynamique(b) - scoreDynamique(a);
+    });
+    let ajoute = false;
+    // Passage 1 : règles de variation actives. Passage 2 (uniquement si le
+    // premier n'a rien pu retenir) : règles de variation neutralisées, pour
+    // ne jamais perdre un match à cause d'une simple répétition de cote.
+    for (const souple of [false, true]) {
+      varieteSouple = souple;
+      for (let i = 0; i < restants.length; i++) {
+        if (tenterAjout(restants[i])) {
+          if (restants[i].tier === 'PREMIUM') premCount++;
+          restants.splice(i, 1);
+          ajoute = true;
+          break;
+        }
+      }
+      if (ajoute) break;
+    }
+    varieteSouple = false;
+    // Aucun candidat du pool n'a pu être accepté, même règles de variation
+    // neutralisées : ce sont donc les vraies contraintes qui bloquent, et
+    // aucun passage suivant ne pourrait réussir non plus. Garantit la
+    // terminaison sans compteur d'itérations arbitraire.
+    if (!ajoute) break;
   }
 
   // Score de confiance = moyenne des scoreFiabilite des légs retenus.
@@ -1636,6 +1824,54 @@ function construireFiche(pool, plan, options) {
  * Réservée aux plans score-exact ; s'ajoute à la fiche normale du même
  * plan (ne la remplace pas — confirmé par James).
  */
+// ============================================================================
+// FRÉQUENCES RÉELLES DES SCORES EXACTS (ajouté 11/09)
+// ----------------------------------------------------------------------------
+// Distribution empirique des scores finals en football de clubs (grands
+// championnats européens et sud-américains, toutes compétitions confondues).
+// Valeurs stables d'une saison à l'autre — c'est une propriété du sport, pas
+// une donnée de marché, donc aucune source externe ni quota API n'est requis.
+// Utilisée UNIQUEMENT pour départager des scores déjà validés par le profil
+// réel du match (BTTS / totaux effectivement récupérés pour CE match) :
+// jamais pour créer un pronostic à elle seule.
+//
+// MOTIF : construireFicheScoreExact retenait `correspondants[0]`, c'est-à-dire
+// la cote la plus basse parmi les scores compatibles avec le profil. Or le
+// profil "BTTS" impose home>0 && away>0, et le score compatible le moins cher
+// est TOUJOURS 1:1 — coté ~6.50 par presque tous les bookmakers. D'où les
+// fiches observées en production : 1:1 @ 6.50, 1:1 @ 6.50, 1:1 @ 6.50.
+// Le score le moins cher n'est pas forcément le plus probable pour un match
+// donné ; pondérer par la fréquence réelle rétablit un vrai arbitrage.
+const FREQUENCE_SCORES = {
+  '1:1': 0.115, '1:0': 0.095, '2:1': 0.090, '0:0': 0.075, '2:0': 0.070,
+  '0:1': 0.062, '1:2': 0.055, '2:2': 0.040, '3:1': 0.035, '0:2': 0.030,
+  '3:0': 0.030, '1:3': 0.022, '3:2': 0.018, '2:3': 0.015, '4:1': 0.012,
+  '4:0': 0.012, '0:3': 0.012, '1:4': 0.006, '3:3': 0.006, '4:2': 0.007,
+  '2:4': 0.005, '0:4': 0.004, '5:0': 0.004, '5:1': 0.004
+};
+const FREQUENCE_SCORE_MAX = 0.115; // 1:1, le score le plus fréquent
+const FREQUENCE_SCORE_INCONNUE = 0.003; // score hors table (très rare) — jamais 0, jamais surévalué
+
+function libelleScoreExact(pick) {
+  const m = /(\d+):(\d+)/.exec(String(pick || ''));
+  return m ? `${m[1]}:${m[2]}` : null;
+}
+function frequenceScoreExact(pick) {
+  const cle = libelleScoreExact(pick);
+  return (cle && FREQUENCE_SCORES[cle] != null) ? FREQUENCE_SCORES[cle] : FREQUENCE_SCORE_INCONNUE;
+}
+// Arbitrage entre deux signaux indépendants, jamais un seul :
+//  - 60 % la fréquence statistique réelle du score (normalisée sur 1:1) ;
+//  - 40 % la probabilité implicite du bookmaker pour CE match précis
+//    (1/cote, normalisée sur la borne haute de la plage retenue, cote 4.0).
+// Un score rare reste donc écartable même si sa cote est attractive, et un
+// score fréquent reste écartable si le bookmaker le juge improbable ici.
+function scoreScoreExact(b) {
+  const freq = frequenceScoreExact(b.pick) / FREQUENCE_SCORE_MAX;
+  const probImplicite = Math.min(1, (1 / b.odd) / 0.25);
+  return 0.6 * freq + 0.4 * probImplicite;
+}
+
 function construireFicheScoreExact(pool, plan, options) {
   options = options || {};
   if (!plan.includes_exact_score) return { selections: [], coteTotale: 0, confiance: 0, valide: false };
@@ -1698,6 +1934,15 @@ function construireFicheScoreExact(pool, plan, options) {
   pool.filter(b => b.tier === 'EXACT_SCORE' && !fixturesExclues.has(b.fixtureId)).forEach(b => {
     (parFixture[b.fixtureId] = parFixture[b.fixtureId] || []).push(b);
   });
+  // CHANGÉ (11/09) : `meilleur` ne retient plus UN candidat par match mais
+  // jusqu'à MAX_SCORES_PAR_MATCH, classés par scoreScoreExact — la règle
+  // "jamais deux fois le même score dans une fiche" (plus bas) a ainsi une
+  // vraie alternative sur le même match au lieu d'exclure le match.
+  // 5 = exactement le nombre de candidats que extraireMarchesFoot conserve
+  // par match (slice(0, 5)) : on n'en jette donc aucun ici. Descendre plus
+  // bas réduisait mécaniquement le nombre de matchs exploitables dès que les
+  // scores les mieux classés étaient déjà pris ailleurs dans la fiche.
+  const MAX_SCORES_PAR_MATCH = 5;
   const meilleur = {};
   Object.entries(parFixture).forEach(([fixtureId, candidats]) => {
     candidats.sort((a, b) => a.odd - b.odd); // du moins cher au plus cher
@@ -1726,13 +1971,26 @@ function construireFicheScoreExact(pool, plan, options) {
     // TOUJOURS préféré en premier (plus précis, propre à ce match) ; ce
     // repli ne s'active que si aucun profil n'existe pour ce match.
     if (!prof) {
-      const avecHistorique = candidats.find(c => c.tauxReel != null && c.echantillonReel != null && c.echantillonReel >= SEUIL_MIN_FIABILITE);
-      if (avecHistorique) meilleur[fixtureId] = avecHistorique;
+      const avecHistorique = candidats.filter(c => c.tauxReel != null && c.echantillonReel != null && c.echantillonReel >= SEUIL_MIN_FIABILITE);
+      if (avecHistorique.length) {
+        meilleur[fixtureId] = avecHistorique
+          .sort((a, b) => scoreScoreExact(b) - scoreScoreExact(a))
+          .slice(0, MAX_SCORES_PAR_MATCH);
+      }
       return;
     }
     const correspondants = candidats.filter(c => correspond(parseScore(c.pick), prof));
     if (!correspondants.length) return; // profil réel mais aucun score ne colle : pareil, on exclut plutôt que de forcer
-    meilleur[fixtureId] = correspondants[0];
+    // CHANGÉ (11/09) : `correspondants[0]` (= le moins cher compatible avec le
+    // profil) donnait invariablement 1:1 sur un profil BTTS. Le classement se
+    // fait désormais sur scoreScoreExact — fréquence réelle du score ET
+    // probabilité implicite du bookmaker — sur le MÊME ensemble de scores
+    // déjà validés par le profil du match. Le filtrage par le profil réel
+    // reste intact et prioritaire : rien n'est retenu sans corroboration.
+    meilleur[fixtureId] = correspondants
+      .slice()
+      .sort((a, b) => scoreScoreExact(b) - scoreScoreExact(a))
+      .slice(0, MAX_SCORES_PAR_MATCH);
   });
   // Les scores les plus probables (cote la plus basse, DANS le profil retenu
   // ci-dessus) d'abord — construction INCRÉMENTALE respectant
@@ -1740,7 +1998,10 @@ function construireFicheScoreExact(pool, plan, options) {
   // déjà pour la fiche normale. CORRIGE le bug du 24/08 : prendre 6 scores
   // exacts d'un coup sans plafond produisait une cote totale de 3473
   // rejetée par Supabase (cote_hors_plage, max 100).
-  const candidats = Object.values(meilleur).sort((a, b) => a.odd - b.odd);
+  // Groupes (un par match), classés par la qualité de leur meilleur candidat.
+  const groupes = Object.values(meilleur)
+    .filter(g => Array.isArray(g) && g.length)
+    .sort((a, b) => scoreScoreExact(b[0]) - scoreScoreExact(a[0]));
 
   // Partie 1/2/4 : "même fiche exacte répétée plusieurs fois → toujours
   // interdit" (contrairement à la limite d'apparition par équipe, cette
@@ -1761,16 +2022,80 @@ function construireFicheScoreExact(pool, plan, options) {
 
   const selections = [];
   let coteTotale = 1.0;
-  for (const b of candidats) {
-    if (selections.length >= (nombreCible || 6)) break;
-    if (selectionsExclues.has(`${b.fixtureId}|${b.market}|${b.pick}`)) continue;
-    // Triés croissant : si celui-ci dépasse déjà le max, les suivants
-    // (plus chers) seraient pires — on arrête plutôt que de sauter au suivant.
-    if (coteTotale * b.odd > cibleMax * 1.05) break;
-    selections.push(b);
-    coteTotale *= b.odd;
-    if (!nombreCible && selections.length >= 3 && coteTotale >= cibleMin) break;
+  // RÉÉCRIT (11/09, demande explicite : "des scores exacts variés selon de
+  // vraies probabilités statistiques"). Deux règles de variation s'ajoutent
+  // à la construction incrémentale existante, sans rien changer aux bornes
+  // du plan ni au minimum structurel de 3 sélections :
+  //   - un même score (ex. 1:1) n'apparaît qu'UNE fois par fiche ;
+  //   - une même cote exacte n'apparaît qu'une fois (assoupli à deux dans la
+  //     seconde passe ci-dessous si la fiche n'atteint pas 3 sélections —
+  //     mieux vaut une légère répétition qu'aucune fiche publiée, principe
+  //     déjà retenu partout ailleurs dans ce bot).
+  const scoresUtilises = new Set();
+  const cotesUtiliseesSE = new Map();
+  const clefCoteSE = odd => Math.round(odd * 100);
+
+  function remplir(maxMemeCote, autoriserScoreRepete, limite) {
+    for (const groupe of groupes) {
+      if (selections.length >= limite) break;
+      for (const b of groupe) {
+        if (selections.indexOf(b) !== -1) continue;
+        if (selectionsExclues.has(`${b.fixtureId}|${b.market}|${b.pick}`)) continue;
+        if (selections.some(x => x.fixtureId === b.fixtureId)) continue; // jamais deux scores sur le même match
+        const lib = libelleScoreExact(b.pick);
+        if (!autoriserScoreRepete && lib && scoresUtilises.has(lib)) continue;
+        const cle = clefCoteSE(b.odd);
+        if ((cotesUtiliseesSE.get(cle) || 0) >= maxMemeCote) continue;
+        // Plus de tri par cote croissante ici : on ne peut donc plus arrêter
+        // au premier dépassement, on saute ce candidat et on continue.
+        if (coteTotale * b.odd > cibleMax * 1.05) continue;
+        selections.push(b);
+        coteTotale *= b.odd;
+        if (lib) scoresUtilises.add(lib);
+        cotesUtiliseesSE.set(cle, (cotesUtiliseesSE.get(cle) || 0) + 1);
+        break;
+      }
+    }
   }
+
+  // CORRIGÉ (11/09, retour explicite de James, deux points distincts) :
+  //
+  //  a) "Pourquoi jamais plus de 3 score exact ? C'est toujours 3 alors que
+  //     le max est 6." — CAUSE TROUVÉE, antérieure à la variation des cotes :
+  //     la boucle contenait `if (!nombreCible && selections.length >= 3 &&
+  //     coteTotale >= cibleMin) break;`. Le cibleMin du plan rang 3 est
+  //     franchi dès 3 scores exacts (3 x ~6.50 = ~274, très au-dessus du
+  //     minimum configuré), donc cette condition était TOUJOURS vraie à la
+  //     3e sélection : la fiche s'arrêtait là pour une raison arithmétique,
+  //     jamais par manque de matchs ni par choix de qualité. Condition
+  //     supprimée — la génération automatique remplit désormais jusqu'à 6
+  //     (le maximum déjà documenté) tant que des matchs corroborés restent.
+  //     Le mode "nombre de matchs" de l'admin (nombreMatchsOverride) est
+  //     inchangé et reste prioritaire.
+  //
+  //  b) "Il faut jamais refuser de créer des score exact, pas d'interdiction
+  //     de création" + "c'est pas un problème d'avoir 3 score 1-1 [si c'est
+  //     le plus fiable], mais toujours répéter cela est mal." — l'unicité du
+  //     score redevient une PRÉFÉRENCE, jamais une interdiction. Trois
+  //     passages successifs, du plus varié au plus permissif ; on s'arrête au
+  //     premier qui donne une fiche publiable. La fiabilité reste ce qui
+  //     classe les candidats (scoreScoreExact), la variation ne fait que
+  //     départager à fiabilité comparable.
+  // Objectif normal : 6 sélections (le maximum documenté) avec des scores
+  // tous différents, ou le nombre exact demandé par l'admin.
+  const CIBLE_SELECTIONS = nombreCible || 6;
+  // Seuil de déclenchement des replis : le minimum structurel de 3, ou le
+  // nombre exact demandé en mode admin. Les replis ne servent QU'À rendre la
+  // fiche publiable — ils ne remontent jamais jusqu'à 6 en répétant des
+  // scores, sinon on retomberait exactement sur le défaut signalé.
+  const SEUIL_REPLI = nombreCible || 3;
+  remplir(1, false, CIBLE_SELECTIONS);
+  // Repli 1 : même score interdit, mais une cote peut revenir deux fois.
+  if (selections.length < SEUIL_REPLI) remplir(2, false, SEUIL_REPLI);
+  // Repli 2, dernier recours : le même score peut revenir (ex. 1:1 sur trois
+  // matchs où il est réellement le plus fiable). Mieux vaut cette fiche
+  // qu'aucune fiche — "jamais d'interdiction de création".
+  if (selections.length < SEUIL_REPLI) remplir(6, true, SEUIL_REPLI);
 
   // En mode "nombre de matchs" : valide dès 3 sélections minimum (règle
   // structurelle jamais assouplie), même si moins que demandé faute de
