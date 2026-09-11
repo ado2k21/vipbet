@@ -7592,8 +7592,32 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      paiement-poll-background (toutes les 3 min) — ce sondage cote client
      n'est qu'un confort pour un retour plus rapide a l'ecran. */
   let pollAutoTimer=null, pollAutoTries=0;
-  const POLL_AUTO_INTERVAL_MS=6000;
-  const POLL_AUTO_MAX_TRIES=50; // ~5 min ; au-dela, seul le filet serveur continue
+  const POLL_AUTO_INTERVAL_MS=6000;      // depart : reactif (un vrai paiement mobile confirme en general en quelques secondes)
+  const POLL_AUTO_INTERVAL_MAX_MS=25000; // plateau : n'ecrase jamais l'API du prestataire pendant tout le delai d'expiration
+  const POLL_AUTO_BACKOFF=1.3;
+  // Filet de securite ABSOLU si jamais autoExpiresAt est absent (ancienne
+  // session locale sauvegardee avant l'ajout de ce champ) : sans lui, une
+  // session orpheline sonderait indefiniment. Largement au-dessus de tout
+  // PLOPPLOP_PENDING_TTL_MIN raisonnable cote serveur.
+  const POLL_AUTO_MAX_TRIES=200;
+
+  function prochainDelaiPollAuto(){
+    return Math.min(POLL_AUTO_INTERVAL_MS*Math.pow(POLL_AUTO_BACKOFF,pollAutoTries),POLL_AUTO_INTERVAL_MAX_MS);
+  }
+
+  /* Le paiement peut-il ENCORE, en toute logique, changer de statut ?
+     L'API du prestataire ne renvoie que trans_status="no" (en attente) ou
+     "ok" (confirme) — aucun etat "annule"/"echoue" distinct n'existe cote
+     prestataire. La SEULE facon de considerer un paiement abandonne (reseau
+     coupe en cours de route, page de paiement jamais remplie) comme un
+     echec est donc l'expiration reelle (expires_at, fixee par le serveur a
+     la creation). On continue de sonder un peu APRES cette echeance —
+     jamais pile dessus — pour laisser le prochain appel a paiement-verify
+     constater lui-meme le depassement et renvoyer 'expire' proprement. */
+  function paiementEncorePossible(){
+    if(!state.autoExpiresAt)return true; // ancienne session sans cette info : le compteur d'essais reste le seul garde-fou
+    return Date.now()<new Date(state.autoExpiresAt).getTime()+20000;
+  }
 
   function arreterPollAuto(){
     if(pollAutoTimer){clearTimeout(pollAutoTimer);pollAutoTimer=null;}
@@ -7640,7 +7664,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   async function appliquerResultatVerifAuto(res){
     if(!res)return;
     if(res.etat==='confirme'){
-      state.autoPaymentId=null;state.autoProviderUrl=null;save();
+      state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;save();
       // Reconstruit l'etat local depuis la VRAIE ligne subscriptions —
       // fonction deja existante et eprouvee (utilisee au retour de
       // connexion apres une action admin), qui gere aussi la fusion
@@ -7666,7 +7690,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // expire / refuse / clos / manuel : tentative definitivement close,
     // sans succes. Deux cas, jamais confondus :
     const etaitChangement=!!state.pendingPlanId;
-    state.autoPaymentId=null;state.autoProviderUrl=null;
+    state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;
     if(etaitChangement){
       // Le plan ACTIF n'a jamais ete touche par cette tentative : la
       // personne garde un acces plein, seul le changement est annule.
@@ -7694,12 +7718,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const res=await verifierPaiementAutoUneFois();
       await appliquerResultatVerifAuto(res);
       const enCours=res&&(res.etat==='attente'||res.etat==='erreur');
-      if(enCours&&pollAutoTries<POLL_AUTO_MAX_TRIES&&state.step===4&&state.autoPaymentId){
+      if(enCours&&paiementEncorePossible()&&pollAutoTries<POLL_AUTO_MAX_TRIES&&state.step===4&&state.autoPaymentId){
         planifierPollAuto();
       }else{
         arreterPollAuto();
       }
-    },POLL_AUTO_INTERVAL_MS);
+    },prochainDelaiPollAuto());
   }
 
   /* Creation reelle de la transaction chez le prestataire. Contrairement
@@ -7752,6 +7776,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     state.payMethod=method;
     state.autoPaymentId=data.payment_id;
+    state.autoExpiresAt=data.expire_a||null;
     state.autoProviderUrl=data.url;
     if(planEnCoursValide){
       state.pendingPlanId=pl.id;
@@ -8069,6 +8094,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
     });
   }
+
+  /* Retour sur cet onglet (la personne revient de la page MonCash/NatCash,
+     ouverte dans un autre onglet) : on verifie tout de suite plutot que
+     d'attendre le prochain passage du backoff (jusqu'a 25s). Couvre
+     exactement le cas "entre sur la page de paiement, ne remplit rien,
+     revient sur le site" — le sondage normal aurait fini par le detecter
+     de toute facon (voir paiementEncorePossible), ceci ne fait qu'accelerer
+     le retour d'information a l'ecran. Anti-rebond : 'visibilitychange' et
+     'focus' peuvent se declencher tous les deux pour un seul retour. */
+  let dernierePriseDeRetour=0;
+  async function verifierAuRetourSurOnglet(){
+    if(!state.autoPaymentId||state.step!==4)return;
+    const maintenant=Date.now();
+    if(maintenant-dernierePriseDeRetour<4000)return;
+    dernierePriseDeRetour=maintenant;
+    const res=await verifierPaiementAutoUneFois();
+    await appliquerResultatVerifAuto(res);
+  }
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')verifierAuRetourSurOnglet();
+  });
+  window.addEventListener('focus',verifierAuRetourSurOnglet);
 
   /* ================= REINITIALISATION DU MOT DE PASSE =================
      Un seul processus, utilise a la fois par "Modpas bliye?" (page de
