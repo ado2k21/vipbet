@@ -1935,11 +1935,19 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 }
 .wiz-paym:hover{border-color:rgba(46,212,127,.45)}
 .wiz-paym.on{border-color:var(--vert-vif);background:#0D1B2E}
+/* AGRANDI (11/09, retour explicite) : le logo doit couvrir toute la pastille,
+   plus de fond blanc visible. Les PNG MonCash/NatCash integrent deja leur
+   propre fond de marque (rouge / orange) jusqu'au bord.
+   Hauteur fixe + largeur automatique (au lieu d'un carre force en
+   object-fit:cover) : le logo MonCash n'est pas parfaitement carre
+   (82x66) — le forcer dans un carre recadrait le bas du mot "Cash".
+   Avec la largeur libre, chaque logo garde ses proportions d'origine et
+   remplit entierement sa pastille, sans aucune marge ni texte coupe. */
 .wiz-paym-ic{
-  flex-shrink:0;width:44px;height:44px;border-radius:12px;background:#FFFFFF;
-  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  flex-shrink:0;height:52px;min-width:52px;border-radius:12px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
 }
-.wiz-paym-ic img{max-width:36px;max-height:26px;width:auto;height:auto;display:block}
+.wiz-paym-ic img{height:100%;width:auto;display:block}
 .wiz-paym-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .wiz-paym-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .wiz-paym-name{font-size:14px;font-weight:700;color:#F4F3ED}
@@ -10308,7 +10316,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // jusqu'a ce que la regle reelle soit connue.
     return Math.min.apply(null,fichesScoreDuJour().map(k=>k.minPlan));
   }
-  function scoresDuJour(){
+  // CORRIGÉ (12/09, retour explicite : "il combine la fiche hier et les
+  // scores exact publié aujourd'hui — c'est critique"). estDuJour ne teste
+  // QUE le statut ('pending'), jamais la date — c'est voulu ailleurs (voir
+  // son commentaire, correctif du 27/08 : une fiche encore en attente ne
+  // doit jamais devenir invisible, quel que soit son jour de jeu). Mais
+  // scoresDuJour() APLATISSAIT les legs de TOUTES les fiches "pending"
+  // trouvées par fichesScoreDuJour() dans UNE SEULE liste, puis scoreCardEl
+  // n'affichait qu'UNE SEULE date (la plus récente) en en-tête : une fiche
+  // score-exact d'hier encore non réglée (règlement en retard, cas déjà vu
+  // avec les 7 "void" du 8 septembre) se retrouvait donc mélangée sous la
+  // date d'aujourd'hui, sans aucune distinction visuelle.
+  // Chaque leg garde MAINTENANT le jour (k.day) de SA fiche d'origine ;
+  // scoresDuJour(jour) et nbScoresDuJour(jour) filtrent sur ce jour précis,
+  // et une carte est générée PAR JOUR DISTINCT (scoreCardEls, plus bas) —
+  // jamais plus une fiche fusionnée avec une autre.
+  function scoresDuJour(jour){
     const out=[];
     // CORRIGÉ (session suivante) : ne filtrait que 'mk_score_l' (l'ancienne
     // valeur écrite par le panneau admin), jamais 'mk_score_exact' (celle
@@ -10316,20 +10339,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // fiche générée par le bot, déclenchant le rendu "verrouillé masqué"
     // même pour un compte Lifetime pleinement autorisé. MARCHES_SCORE_EXACT_DASH
     // (ligne ~8737) existe déjà pour ce cas précis, jamais utilisée ici.
-    fichesScoreDuJour().forEach(k=>{k.legs.forEach(lg=>{if(MARCHES_SCORE_EXACT_DASH.indexOf(lg.market)>-1)out.push(lg);});});
+    fichesScoreDuJour().filter(k=>k.day===jour).forEach(k=>{k.legs.forEach(lg=>{if(MARCHES_SCORE_EXACT_DASH.indexOf(lg.market)>-1)out.push(lg);});});
     return out;
   }
-  const nbScoresDuJour=()=>fichesScoreDuJour().reduce((a,k)=>a+k.scoreCount,0);
+  const nbScoresDuJour=jour=>fichesScoreDuJour().filter(k=>k.day===jour).reduce((a,k)=>a+k.scoreCount,0);
+  // Un jour distinct par fiche score-exact encore en attente, triés du plus
+  // récent au plus ancien (day croissant = plus ancien, voir dayDate ci-dessus).
+  const joursScoreDuJour=()=>Array.from(new Set(fichesScoreDuJour().map(k=>k.day))).sort((a,b)=>a-b);
 
-  function scoreCardEl(){
+  function scoreCardEl(jourSc){
     const besoin=rangScoresDuJour();
     const locked=isExpired()||isPending()||isRejected()||besoin==null||besoin>userRank();
-    const liste=scoresDuJour();
-    const total=nbScoresDuJour();
+    const liste=scoresDuJour(jourSc);
+    const total=nbScoresDuJour(jourSc);
     // Date affichee = celle des fiches concernees en base, pas la date
     // de l'appareil ni une date supposee.
-    const fichesSc=fichesScoreDuJour();
-    const jourSc=fichesSc.length?Math.min.apply(null,fichesSc.map(k=>k.day)):0;
     const el=document.createElement('article');
     el.className='dtk'+(locked?' locked':'');
 
@@ -10403,6 +10427,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     return el;
   }
+  // Une carte par jour distinct trouvé — jamais un seul bloc fusionné.
+  // Cas normal (un seul jour en attente) : renvoie un tableau à un élément,
+  // rendu identique à avant ce correctif.
+  const scoreCardEls=()=>joursScoreDuJour().map(j=>scoreCardEl(j));
 
   function emptyEl(key){
     const d=document.createElement('div');
@@ -10525,9 +10553,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     else{
       list.forEach(k=>wrap.appendChild(ticketEl(k)));
-      if(montreScores)wrap.appendChild(scoreCardEl());
+      // CHANGÉ (12/09) : une carte par jour distinct (voir scoreCardEls),
+      // plus un seul appendChild — sinon les scores de plusieurs jours en
+      // attente resteraient fusionnés dans une carte unique.
+      const cartesScore=montreScores?scoreCardEls():[];
+      cartesScore.forEach(c=>wrap.appendChild(c));
     }
-    document.getElementById('dashCountToday').textContent=t('dash_count').replace('{n}',list.length+(montreScores?1:0));
+    document.getElementById('dashCountToday').textContent=t('dash_count').replace('{n}',list.length+(montreScores?joursScoreDuJour().length:0));
   }
 
   /* ---- Vue : historique ---- */
