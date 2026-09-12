@@ -2211,15 +2211,28 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode, op
     return {
       ticket_id: ticket.id,
       match_label: (nom && nom.label) || `Match ${s.fixtureId}`,
-      match_time: s.matchTimeHaiti,
-      kickoff_at: s.kickoffUtc,
-      league: s.league,
+      // CORRIGÉ (12/09, cause exacte trouvée via bot_run_log : "publication
+      // legs rang 2 → HTTP 400 PGRST102 All object keys must match").
+      // sbInsert sérialise ce tableau avec JSON.stringify(rows) — en
+      // JavaScript, une clé dont la valeur vaut EXACTEMENT `undefined`
+      // disparaît du JSON pour CETTE ligne précise, alors qu'une clé à
+      // `null` y reste. match_time et kickoff_at n'avaient aucun repli :
+      // si un seul leg (typiquement un match passé par le repli BSD, actif
+      // aujourd'hui sur 8 matchs) arrivait avec l'un des deux non défini,
+      // PostgREST recevait un tableau aux colonnes incohérentes et
+      // rejetait TOUT le lot — la fiche entière, pas seulement ce leg.
+      // `|| null` sur les deux comme sur le reste : chaque ligne insérée a
+      // désormais garanti EXACTEMENT le même jeu de clés, quelle que soit
+      // la source (extraction normale, repli BSD, score exact, buteur).
+      match_time: s.matchTimeHaiti || null,
+      kickoff_at: s.kickoffUtc || null,
+      league: s.league || null,
       // Phase 2, section 2 (27/08) : pays du championnat tel que retourné
       // par API-Sports (league.country), jamais une association inventée.
       // null pour les rares cas où l'API ne le fournit pas (jamais bloquant).
       league_country: s.leagueCountry || null,
-      market: s.market,
-      pick: s.pick,
+      market: s.market || null,
+      pick: s.pick || null,
       odd: s.odd,
       position: i + 1,
       fixture_id: s.fixtureId, // bigint en base — jamais convertir en texte
@@ -2228,7 +2241,7 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode, op
       // informatif pour l'admin, jamais lu par le règlement
       // (bot-settle-results.js). classerConfiance(s) tolère un
       // scoreFiabilite absent (repli 1/cote), jamais une erreur ici.
-      confidence_label: classerConfiance(s),
+      confidence_label: classerConfiance(s) || null,
       value_score: s.valueScore != null ? s.valueScore : null,
       real_sample_size: s.echantillonReel != null ? s.echantillonReel : null
     };
