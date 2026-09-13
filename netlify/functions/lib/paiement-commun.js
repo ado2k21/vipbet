@@ -54,7 +54,14 @@ function lireConfig() {
        l'API du prestataire ne renvoyant que "no"/"ok" (voir
        verifierEtConfirmer), ce delai est la SEULE facon de detecter un
        abandon. Reglable sans redeploiement via PLOPPLOP_PENDING_TTL_MIN. */
-    dureeVieMinutes: parseInt(process.env.PLOPPLOP_PENDING_TTL_MIN || '15', 10) || 15
+    dureeVieMinutes: parseInt(process.env.PLOPPLOP_PENDING_TTL_MIN || '15', 10) || 15,
+    /* AJOUT — limitation de debit. Reglable sans redeploiement.
+       Mettre RATE_LIMIT_ACTIF=0 desactive completement le garde-fou si
+       jamais il posait probleme en production. */
+    quotaActif: (process.env.RATE_LIMIT_ACTIF || '1').trim() !== '0',
+    quotaIpMax: parseInt(process.env.RATE_LIMIT_IP_MAX || '30', 10) || 30,
+    quotaUserMax: parseInt(process.env.RATE_LIMIT_USER_MAX || '6', 10) || 6,
+    quotaFenetreSecondes: parseInt(process.env.RATE_LIMIT_FENETRE_S || '60', 10) || 60
   };
   const manquantes = [];
   if (!cfg.supabaseUrl) manquantes.push('SUPABASE_URL');
@@ -167,6 +174,57 @@ async function journaliser(cfg, paymentId, evenement, details) {
   } catch (e) {
     console.error('[paiement] journalisation impossible (' + evenement + ') :', e.message);
   }
+}
+
+/* --------------------------------------------------------------------
+   AJOUT — Limitation de debit
+   ---------------------------------------------------------------------
+   REGLE ABSOLUE : ce garde-fou echoue TOUJOURS EN MODE OUVERT.
+   Si la RPC est absente (migration pas encore passee), si Supabase est
+   lent, si quoi que ce soit echoue, la fonction renvoie « autorise ».
+   Un paiement legitime ne doit JAMAIS etre bloque par le limiteur —
+   le cout d'un faux blocage (une vente perdue, un client qui pense que
+   le site est casse) est bien superieur au cout d'une requete en trop.
+
+   C'est aussi ce qui rend le deploiement sans risque : on peut deployer
+   ce code AVANT de passer la migration SQL, rien ne casse.
+   -------------------------------------------------------------------- */
+async function verifierQuota(cfg, cle, maximum, fenetreSecondes) {
+  if (!cfg.quotaActif) return { autorise: true, ignore: true };
+  if (!cle) return { autorise: true, ignore: true };
+  try {
+    const res = await sbRequete(cfg, '/rest/v1/rpc/consommer_quota', {
+      method: 'POST',
+      timeout: 4000, // court : on ne ralentit jamais un paiement pour un quota
+      body: {
+        p_cle: String(cle).slice(0, 200),
+        p_max: maximum,
+        p_fenetre_secondes: fenetreSecondes
+      }
+    });
+    if (!res || typeof res.ok !== 'boolean') return { autorise: true, ignore: true };
+    return {
+      autorise: res.ok === true,
+      compteur: res.compteur,
+      resteSecondes: res.reste_secondes
+    };
+  } catch (e) {
+    // Fail-open assume : on trace, mais on laisse passer.
+    console.error('[quota] verification impossible (on laisse passer) :', e.message);
+    return { autorise: true, ignore: true, erreur: e.message };
+  }
+}
+
+/* Adresse IP de l'appelant. Netlify fournit x-nf-client-connection-ip ;
+   les autres en-tetes sont des replis. Une IP absente ou falsifiee ne
+   casse rien : verifierQuota laisse simplement passer. */
+function ipAppelant(event) {
+  const h = (event && event.headers) || {};
+  const brut = h['x-nf-client-connection-ip'] ||
+               h['client-ip'] ||
+               (h['x-forwarded-for'] || '').split(',')[0] ||
+               '';
+  return String(brut).trim().slice(0, 64);
 }
 
 /* --------------------------------------------------------------------
@@ -348,6 +406,8 @@ module.exports = {
   sbDelete,
   sbRpc,
   journaliser,
+  verifierQuota,
+  ipAppelant,
   utilisateurDepuisJeton,
   genererReferenceClient,
   genererReferencePrestataire,
