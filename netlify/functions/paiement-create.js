@@ -33,6 +33,25 @@ exports.handler = async function (event) {
     return C.reponseJson(500, { ok: false, code: 'CONFIG_INCOMPLETE' });
   }
 
+  /* ---- AJOUT : garde-fou par adresse IP, AVANT toute autre operation ---
+     Place ici volontairement, avant la verification du jeton : c'est le
+     seul endroit ou il protege contre un jeton invalide envoye en boucle,
+     qui coutait jusqu'ici un appel a /auth/v1/user de Supabase a chaque
+     tentative, sans aucune limite.
+     Plafond large (30/min par defaut) : une personne reelle, meme en
+     reessayant beaucoup, ne l'atteint jamais. En cas d'echec du limiteur,
+     verifierQuota laisse passer (voir son commentaire). */
+  const ip = C.ipAppelant(event);
+  const quotaIp = await C.verifierQuota(
+    cfg, 'create:ip:' + ip, cfg.quotaIpMax, cfg.quotaFenetreSecondes
+  );
+  if (!quotaIp.autorise) {
+    console.warn('[paiement-create] quota IP depasse :', ip, 'compteur=', quotaIp.compteur);
+    return C.reponseJson(429, {
+      ok: false, code: 'TROP_DE_TENTATIVES', reessayer_dans: quotaIp.resteSecondes || 60
+    });
+  }
+
   let corps;
   try {
     corps = JSON.parse(event.body || '{}');
@@ -57,6 +76,25 @@ exports.handler = async function (event) {
     return C.reponseJson(401, { ok: false, code: 'SESSION_INVALIDE' });
   }
   const uid = utilisateur.id;
+
+  /* ---- AJOUT : garde-fou par utilisateur ------------------------------
+     Protege contre une boucle authentifiee : chaque appel coute la RPC
+     d'expiration plus plusieurs SELECT, meme quand la reponse finale est
+     un 409. Plafond volontairement genereux (6/min) : un double-clic, un
+     rechargement de page ou plusieurs essais successifs restent normaux.
+     NOTE : ce plafond s'applique aux APPELS a cette fonction, pas aux
+     paiements. La regle « un seul paiement en attente par personne »
+     (index unique partiel) reste la protection principale et n'est pas
+     modifiee. */
+  const quotaUser = await C.verifierQuota(
+    cfg, 'create:user:' + uid, cfg.quotaUserMax, cfg.quotaFenetreSecondes
+  );
+  if (!quotaUser.autorise) {
+    console.warn('[paiement-create] quota utilisateur depasse :', uid, 'compteur=', quotaUser.compteur);
+    return C.reponseJson(429, {
+      ok: false, code: 'TROP_DE_TENTATIVES', reessayer_dans: quotaUser.resteSecondes || 60
+    });
+  }
 
   try {
     /* ---- Etat du compte ---------------------------------------------- */
