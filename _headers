@@ -1,0 +1,97 @@
+## ============================================================
+##  VIP BETCOTE — en-tetes de securite et de cache (Netlify)
+##  Fichier a placer A LA RACINE du dossier publie (a cote de index.html).
+##  Aucune modification du site : Netlify applique ces en-tetes a la reponse HTTP.
+##  Les domaines listes ci-dessous sont EXACTEMENT ceux que le site utilise deja
+##  (verifies un par un dans index.html) : rien n'est casse, rien n'est bloque.
+## ============================================================
+
+/*
+  ## --- Transport : force HTTPS pendant 2 ans, sous-domaines inclus ---
+  ## Empeche toute interception en clair (attaque de type "SSL strip") sur
+  ## un reseau public, cas frequent en Haiti sur wifi partage / donnees mobiles.
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+
+  ## --- Anti-clickjacking ---
+  ## Personne ne peut charger le site dans une iframe pour piloter les clics
+  ## d'un utilisateur a son insu (ex : faux bouton "payer" superpose).
+  X-Frame-Options: DENY
+
+  ## --- Anti-confusion de type MIME ---
+  ## Le navigateur n'essaie jamais de "deviner" qu'un fichier est du script.
+  X-Content-Type-Options: nosniff
+
+  ## --- Fuite de referent ---
+  ## L'URL du site n'est jamais transmise en clair vers un domaine externe.
+  ## Important : la reference de paiement ne doit jamais fuiter vers un tiers.
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  ## --- Permissions materielles : tout refuse par defaut ---
+  ## Le site n'a besoin ni de camera, ni de micro, ni de geolocalisation.
+  ## Si un script tiers etait un jour compromis, il ne pourrait rien demander.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=()
+
+  ## --- Isolation de la fenetre de paiement ---
+  ## La fenetre MonCash/NatCash ouverte par le site ne peut pas manipuler
+  ## la page d'origine via window.opener.
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: same-site
+
+  ## --- Content-Security-Policy ---
+  ## C'est la protection la plus importante : meme si une faille XSS existait
+  ## quelque part (146 usages de .innerHTML dans le site), un script injecte
+  ## ne pourrait ni s'executer, ni envoyer les donnees vers un serveur pirate.
+  ##
+  ## script-src NE CONTIENT PLUS 'unsafe-inline' : tout le JavaScript vit
+  ## desormais dans app.js. Le navigateur refuse donc d'executer TOUT script
+  ## injecte dans la page. C'est la vraie protection anti-XSS.
+  ## Le bloc JSON-LD (donnees SEO, non executable) est autorise explicitement
+  ## par son empreinte sha256 : s'il est modifie un jour, il faut recalculer
+  ## cette empreinte, sinon les moteurs de recherche ne le liront plus.
+  ##
+  ## style-src garde 'unsafe-inline' : le site utilise 151 attributs style=""
+  ## et 2 blocs <style>. L'injection de style est bien moins dangereuse que
+  ## l'injection de script, et frame-ancestors bloque deja le detournement
+  ## visuel par iframe.
+  ## Domaines Sentry autorises :
+  ##   * js.sentry-cdn.com      = le loader insere dans le <head>
+  ##   * browser.sentry-cdn.com = le vrai SDK, charge ensuite par le loader
+  ##   * *.ingest(.region).sentry.io = l'envoi des rapports d'erreur.
+  ##     Le joker couvre l'identifiant de ton organisation (o1234567) et
+  ##     toutes les regions (us/de). Si tu veux verrouiller davantage,
+  ##     remplace-le un jour par ton domaine d'ingestion exact, visible
+  ##     dans ton DSN complet.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-rVwWhIQ/8p55Lm0rkze71KDxM9uFj4QCggtc1U/YX9E=' https://cdn.jsdelivr.net https://js.sentry-cdn.com https://browser.sentry-cdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://llqifjfcpyddwjkferpn.supabase.co wss://llqifjfcpyddwjkferpn.supabase.co https://plopplop.solutionip.app https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; frame-src https://buy.stripe.com https://plopplop.solutionip.app; form-action 'self' https://buy.stripe.com https://plopplop.solutionip.app; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+
+## ============================================================
+##  CACHE
+## ============================================================
+
+## /index.html et / : PAS declares ici volontairement.
+## netlify.toml declare DEJA Cache-Control pour ces deux chemins (et pour
+## /admin.html), deploye et confirme fonctionnel en production (correctif
+## du 06/09 pour le cache CDN stagnant). Les redeclarer ici aurait cree un
+## conflit : Netlify fusionne netlify.toml et _headers SANS dedupliquer,
+## ce qui aurait pu envoyer DEUX en-tetes Cache-Control en meme temps.
+## Le bloc de securite "/*" plus haut s'applique quand meme a ces pages
+## (et desormais aussi a /admin.html, qui n'avait jusqu'ici aucun en-tete
+## de securite) : seul Cache-Control est laisse a netlify.toml.
+
+## Images externalisees (/assets/) : cache long, elles changent rarement.
+## ATTENTION : les noms ne sont PAS versionnes (pas de hash dans le nom).
+## 'immutable' n'est donc PAS utilise : si tu remplaces une image en gardant
+## le meme nom, les visiteurs verraient l'ancienne pendant un an. Avec 30
+## jours + revalidation, une image remplacee est reprise au plus tard sous
+## 30 jours, et immediatement pour un nouveau visiteur.
+## Si un jour tu versionnes les noms (logo.a1b2c3.webp), tu pourras passer
+## a max-age=31536000, immutable en toute securite.
+/assets/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+  X-Content-Type-Options: nosniff
+
+
+## app.js : meme regle que index.html. Le nom n'est pas versionne, donc on ne
+## met PAS de cache long : un correctif JS doit etre pris en compte tout de
+## suite, sinon un visiteur deja venu garderait l'ancienne logique de paiement.
+/app.js
+  Cache-Control: public, max-age=0, must-revalidate
