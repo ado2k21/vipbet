@@ -1431,6 +1431,37 @@ function construireFiche(pool, plan, options) {
   // qualité réelle prime toujours sur la diversité forcée.
   const MALUS_MARCHE_DEJA_UTILISE = 0.06;
 
+  // ============================================================================
+  // MALUS AMERIQUE DU SUD (15/09, demande explicite de James) — les
+  // championnats sud-americains (hors MLS, qui est nord-americaine malgre
+  // ses clubs a stars) produisent historiquement PEU de buts par match.
+  // James ne veut PAS d'interdiction : juste une preference plus prudente
+  // sur les marches qui supposent beaucoup de buts, quand une alternative
+  // de fiabilite proche existe pour le meme match. Meme philosophie et
+  // meme ordre de grandeur que MALUS_MARCHE_DEJA_UTILISE ci-dessus.
+  //
+  // Marches concernes : plus de 2.5 buts au total, BTTS "Oui", plus de 1.5
+  // buts pour UNE equipe (domicile ou exterieur) — les trois supposent un
+  // match ouvert offensivement, exactement le profil le moins frequent
+  // dans ces championnats.
+  //
+  // Detection par leagueCountry (deja rempli sur chaque candidat du pool,
+  // voir `base` plus haut : league.country tel que retourne par API-Sports,
+  // jamais une association devinee). MLS est nord-americaine (Etats-Unis/
+  // Canada) : explicitement absente de cette liste, comme demande.
+  // ============================================================================
+  const PAYS_AMERIQUE_DU_SUD = [
+    'Argentina', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'Peru',
+    'Bolivia', 'Paraguay', 'Uruguay', 'Venezuela', 'Guyana', 'Suriname'
+  ];
+  const MALUS_PEU_DE_BUTS_SUD_AMERICAIN = 0.05;
+  function estMarcheOffensifRisque(b) {
+    if (b.market === 'mk_btts') return /Oui/i.test(b.pick);
+    if (b.market === 'mk_total_buts') return /^Plus de 2\.5/.test(b.pick);
+    if (b.market === 'mk_total_domicile' || b.market === 'mk_total_exterieur') return /Plus de 1\.5/.test(b.pick);
+    return false;
+  }
+
   let cibleMin = options.cibleMinOverride != null
     ? Number(options.cibleMinOverride)
     : (plan.min_total_odd != null ? Number(plan.min_total_odd) : 1.5);
@@ -1486,6 +1517,10 @@ function construireFiche(pool, plan, options) {
     // appliqué au buteur (déjà régi par son propre système), jamais aux
     // fiches à cote haute (Palier 3+, où le pool est déjà tendu).
     if (cibleMax <= 15 && b.market !== 'mk_buteur' && (marchesUtiliseesJour.get(b.market) || 0) > 0) s -= MALUS_MARCHE_DEJA_UTILISE;
+    // Malus Amérique du Sud (15/09) — s'applique quelle que soit la cible
+    // (contrairement au malus ci-dessus) : le profil offensif d'un
+    // championnat ne dépend pas de la taille de la fiche visée.
+    if (PAYS_AMERIQUE_DU_SUD.includes(b.leagueCountry) && estMarcheOffensifRisque(b)) s -= MALUS_PEU_DE_BUTS_SUD_AMERICAIN;
     s += POIDS_PROGRESSION * Math.log(b.odd);
     return s;
   };
@@ -1896,121 +1931,34 @@ function construireFicheScoreExact(pool, plan, options) {
     return m ? { home: parseInt(m[1], 10), away: parseInt(m[2], 10) } : null;
   }
 
-  // ============================================================================
-  // PROFIL COMPOSITE DU MATCH (13/09) — REMPLACE l'ancien profil() à label
-  // unique. Trois défauts structurels de l'ancienne version, tous constatés
-  // sur les fiches réellement publiées les 11, 12 et 13/09 (100 % perdantes) :
-  //
-  //  1) Il renvoyait UN SEUL label et s'arrêtait au premier trouvé (BTTS,
-  //     sinon Moins, sinon Plus). Un match ayant à la fois BTTS et "Moins de
-  //     2.5 buts" retournait 'BTTS', et l'information "peu de buts" était
-  //     jetée : correspond() n'imposait plus que home>0 && away>0, ce qui
-  //     laisse passer 3:2, 2:3, 4:1.
-  //  2) Il ignorait TOTALEMENT mk_1x2 et mk_double_chance, pourtant déjà
-  //     présents dans le pool pour le même match. C'est la cause directe de
-  //     la contradiction du 13/09 : le bot avait lu "Victoire : Home" sur
-  //     Independiente — San Lorenzo et a quand même choisi 0:1.
-  //  3) correspond() filtrait très peu : 'PEU_DE_BUTS' acceptait tout total
-  //     <= 2, soit six scores distincts (0:0, 1:0, 0:1, 1:1, 2:0, 0:2).
-  //
-  // La version composite lit TOUS les axes disponibles pour ce match — et
-  // uniquement des données DÉJÀ récupérées (aucun appel API, aucun quota
-  // supplémentaire) :
-  //   direction  <- mk_1x2 puis, à défaut, mk_double_chance
-  //   btts       <- mk_btts SAFE
-  //   volumeMax  <- mk_total_buts SAFE "Moins de X"    (total <= floor(X))
-  //   volumeMin  <- mk_total_buts PREMIUM "Plus de X"  (total >= ceil(X))
-  //   homeMax    <- mk_total_domicile "Moins de X"     (buts domicile <= floor(X))
-  //   awayMax    <- mk_total_exterieur "Moins de X"    (buts extérieur <= floor(X))
-  //
-  // CHAQUE AXE EST OPTIONNEL et indépendant : un match n'est JAMAIS écarté
-  // parce qu'il manque un axe. C'est le point capital pour la contrainte
-  // posée par James ("il faut pas causer un problème de manque de match, je
-  // dois toujours avoir une fiche lorsque des matchs sont dispo") — le
-  // composite réduit les SCORES candidats à l'intérieur d'un match, jamais
-  // le nombre de matchs exploitables.
-  // ============================================================================
-  function seuilsMoins(marche, fixtureId, prefixe) {
-    const re = prefixe ? new RegExp('^' + prefixe + '\\s*:\\s*Moins') : /^Moins/;
-    const vals = pool
-      .filter(b => b.fixtureId === fixtureId && b.market === marche && re.test(b.pick))
-      .map(b => { const m = /Moins de ([\d.]+) buts/.exec(String(b.pick)); return m ? parseFloat(m[1]) : null; })
-      .filter(v => v != null);
-    // Le seuil le PLUS BAS est le plus contraignant et donc le plus informatif.
-    return vals.length ? Math.min.apply(null, vals) : null;
+  // PROFIL DU MATCH (25/08, retour de James : "pas toujours 1-1/1-0, selon
+  // des pronostics clairs") — utilise le BTTS et le total buts DÉJÀ
+  // récupérés pour ce même match (aucune donnée nouvelle inventée) pour
+  // orienter le choix du score plutôt que de prendre systématiquement la
+  // cote la plus basse (qui donne presque toujours 1-1/1-0/2-1, quel que
+  // soit le match). Signal faible par nature (peu de matchs ont les deux
+  // marchés), donc on ne l'applique que quand un signal SAFE existe
+  // vraiment ; sinon on retombe honnêtement sur la cote la plus basse.
+  function profil(fixtureId) {
+    const btts = pool.find(b => b.fixtureId === fixtureId && b.market === 'mk_btts' && b.tier === 'SAFE');
+    if (btts) return 'BTTS'; // les deux équipes marquent probablement
+    const under = pool.find(b => b.fixtureId === fixtureId && b.market === 'mk_total_buts'
+      && b.tier === 'SAFE' && /^Moins/.test(b.pick));
+    if (under) return 'PEU_DE_BUTS';
+    const overFort = pool.find(b => b.fixtureId === fixtureId && b.market === 'mk_total_buts'
+      && b.tier === 'PREMIUM' && /^Plus/.test(b.pick));
+    if (overFort) return 'BEAUCOUP_DE_BUTS';
+    return null; // aucun signal fiable pour ce match — repli sur la cote la plus basse
   }
 
-  function profilComposite(fixtureId) {
-    const p = { direction: null, btts: false, volumeMax: null, volumeMin: null, homeMax: null, awayMax: null, reel: false };
-    const dans = m => pool.filter(b => b.fixtureId === fixtureId && b.market === m);
-
-    // Direction — mk_1x2 d'abord (signal fort et non ambigu), sinon double
-    // chance. "12" n'exclut que le nul : aucune direction exploitable, ignoré.
-    const victoire = dans('mk_1x2').find(b => /Victoire\s*:\s*(Home|Away)/i.test(b.pick));
-    if (victoire) {
-      p.direction = /Home/i.test(victoire.pick) ? 'HOME' : 'AWAY';
-      p.reel = true;
-    } else {
-      const dc = dans('mk_double_chance')[0];
-      if (dc) {
-        const val = String(dc.pick).replace('Double chance : ', '').trim();
-        if (val === 'X1') { p.direction = 'NON_AWAY'; p.reel = true; }
-        else if (val === 'X2') { p.direction = 'NON_HOME'; p.reel = true; }
-      }
-    }
-
-    if (dans('mk_btts').some(b => b.tier === 'SAFE' && /Oui/i.test(b.pick))) { p.btts = true; p.reel = true; }
-
-    const under = seuilsMoins('mk_total_buts', fixtureId, null);
-    if (under != null) { p.volumeMax = Math.floor(under); p.reel = true; }
-
-    const over = dans('mk_total_buts')
-      .filter(b => b.tier === 'PREMIUM' && /^Plus/.test(b.pick))
-      .map(b => { const m = /Plus de ([\d.]+) buts/.exec(String(b.pick)); return m ? parseFloat(m[1]) : null; })
-      .filter(v => v != null);
-    if (over.length) { p.volumeMin = Math.ceil(Math.max.apply(null, over)); p.reel = true; }
-
-    const hMax = seuilsMoins('mk_total_domicile', fixtureId, 'Domicile');
-    if (hMax != null) { p.homeMax = Math.floor(hMax); p.reel = true; }
-    const aMax = seuilsMoins('mk_total_exterieur', fixtureId, 'Extérieur');
-    if (aMax != null) { p.awayMax = Math.floor(aMax); p.reel = true; }
-
-    return p;
-  }
-
-  // Un score doit satisfaire TOUS les axes présents. `strict=false` ne
-  // conserve que l'axe direction — c'est le repli intermédiaire utilisé par
-  // la cascade de passes plus bas, jamais le mode normal.
-  function correspondComposite(score, p, strict) {
-    if (!score || !p) return true;
-    if (p.direction) {
-      if (p.direction === 'HOME' && !(score.home > score.away)) return false;
-      if (p.direction === 'AWAY' && !(score.away > score.home)) return false;
-      if (p.direction === 'NON_AWAY' && !(score.home >= score.away)) return false;
-      if (p.direction === 'NON_HOME' && !(score.away >= score.home)) return false;
-    }
-    if (!strict) return true;
+  function correspond(score, prof) {
+    if (!prof || !score) return true;
     const total = score.home + score.away;
-    if (p.btts && !(score.home > 0 && score.away > 0)) return false;
-    if (p.volumeMax != null && total > p.volumeMax) return false;
-    if (p.volumeMin != null && total < p.volumeMin) return false;
-    if (p.homeMax != null && score.home > p.homeMax) return false;
-    if (p.awayMax != null && score.away > p.awayMax) return false;
+    if (prof === 'BTTS') return score.home > 0 && score.away > 0;
+    if (prof === 'PEU_DE_BUTS') return total <= 2;
+    if (prof === 'BEAUCOUP_DE_BUTS') return total >= 3;
     return true;
   }
-
-  // ============================================================================
-  // BANDE DE COTE PRÉFÉRENTIELLE (13/09, point "3c") — les candidats extraits
-  // vont de 4.0 à 15.0 (voir extraireMarchesFoot). Un score coté 12.00 vaut
-  // ~8 % de probabilité implicite : le retenir fait mécaniquement chuter la
-  // fiche entière. La bande 4.0-8.0 garde les scores les plus probables.
-  // C'est une PRÉFÉRENCE de passe, jamais un filtre d'extraction : si la
-  // fiche n'est pas complétable dans la bande, les passes suivantes rouvrent
-  // toute la plage. Aucun match n'est perdu, seul l'ordre de préférence change.
-  // ============================================================================
-  const BANDE_COTE_MIN = 4.0;
-  const BANDE_COTE_MAX = 8.0;
-  const dansBande = b => b.odd >= BANDE_COTE_MIN && b.odd <= BANDE_COTE_MAX;
 
   const parFixture = {};
   // Match déjà utilisé dans une AUTRE fiche publiée aujourd'hui (28/08,
@@ -2031,75 +1979,54 @@ function construireFicheScoreExact(pool, plan, options) {
   // scores les mieux classés étaient déjà pris ailleurs dans la fiche.
   const MAX_SCORES_PAR_MATCH = 5;
   const meilleur = {};
-
-  // ============================================================================
-  // NIVEAUX DE CORROBORATION (13/09) — REMPLACE l'exclusion anticipée du match.
-  //
-  // ANCIEN COMPORTEMENT : un match sans profil (et sans historique suffisant)
-  // était supprimé de `meilleur`, donc définitivement perdu pour la fiche.
-  // C'est ce qui pouvait aboutir à zéro fiche publiable certains jours.
-  //
-  // NOUVEAU : AUCUN match n'est jamais supprimé ici. Chaque candidat reçoit
-  // un niveau, et ce sont les PASSES de remplissage (plus bas) qui décident
-  // jusqu'où descendre. La dernière passe accepte le niveau 4, c'est-à-dire
-  // exactement ce que l'ancien code acceptait en dernier recours — la
-  // garantie demandée par James ("je dois toujours avoir une fiche lorsque
-  // des matchs sont dispo") est donc structurelle, pas espérée.
-  //
-  //   niveau 0 : profil composite complet respecté ET cote dans la bande 4-8
-  //   niveau 1 : profil composite complet respecté, cote hors bande
-  //   niveau 2 : seule la direction (1X2 / double chance) est respectée
-  //   niveau 3 : aucun profil du match, mais VRAI historique mesuré
-  //              (echantillonReel >= SEUIL_MIN_FIABILITE) — c'est le "repli
-  //              historique" du 04/09, désormais isolé (voir maxSansProfil)
-  //   niveau 4 : aucune corroboration — dernier recours absolu
-  //
-  // `_sansProfil` marque les niveaux 3 et 4 : la fiabilité invoquée est celle
-  // du couple championnat+marché, PAS celle de ce score sur ce match précis.
-  // C'est le point "3b" : les passes limitent combien de telles sélections
-  // peuvent entrer dans une même fiche.
-  // ============================================================================
-  function niveauCandidat(b, prof) {
-    const score = parseScore(b.pick);
-    if (prof && prof.reel) {
-      if (correspondComposite(score, prof, true)) return dansBande(b) ? 0 : 1;
-      if (correspondComposite(score, prof, false)) return 2;
-    }
-    // NIVEAU 5 — le score CONTREDIT la direction lue sur ce match (mk_1x2 ou
-    // double chance). C'est exactement le défaut signalé le 13/09 :
-    // "Victoire : 1" d'un côté, "Score exact : 0:1" de l'autre. Ces
-    // candidats sont relégués à l'ultime passe, atteinte uniquement quand
-    // c'est publier ça ou ne rien publier du tout.
-    // MESURÉ sur 3000 pools simulés : les interdire complètement coûtait 92
-    // fiches (3 % des jours perdraient leur fiche score exact) — inacceptable
-    // au regard de la règle "toujours une fiche lorsque des matchs sont
-    // dispo". Les reléguer au dernier rang coûte 0 fiche et supprime les
-    // contradictions dans tous les cas où une alternative existe.
-    if (prof && prof.direction && !correspondComposite(parseScore(b.pick), prof, false)) return 5;
-    const aHistorique = b.tauxReel != null && b.echantillonReel != null
-      && b.echantillonReel >= SEUIL_MIN_FIABILITE;
-    return aHistorique ? 3 : 4;
-  }
-
   Object.entries(parFixture).forEach(([fixtureId, candidats]) => {
-    const prof = profilComposite(Number(fixtureId));
-    meilleur[fixtureId] = candidats
-      .map(b => {
-        const niveau = niveauCandidat(b, prof);
-        return Object.assign({}, b, { _niveau: niveau, _sansProfil: niveau >= 3 });
-      })
-      // Classement : d'abord la qualité de corroboration, puis scoreScoreExact
-      // (fréquence réelle du score + probabilité implicite du bookmaker).
-      .sort((a, b) => (a._niveau - b._niveau) || (scoreScoreExact(b) - scoreScoreExact(a)))
+    candidats.sort((a, b) => a.odd - b.odd); // du moins cher au plus cher
+    const prof = profil(Number(fixtureId));
+    // CORRECTIF (28/08, retour explicite de James : "je ne veux pas du
+    // hasard et toujours des répétitions si ce n'est pas choisi avec des
+    // données réelles") — SANS profil réel (aucun BTTS/totaux déjà validé
+    // pour CE match précis), il n'existe AUCUNE corroboration indépendante
+    // du score choisi : ce n'est alors qu'"le moins cher par défaut", pas
+    // un pronostic fiable. Avant ce correctif, ce cas revenait quand même
+    // au moins cher (correspondants[0]||candidats[0] — et correspond()
+    // retourne toujours vrai quand prof est null, donc ce repli était en
+    // réalité systématique dès qu'aucun signal n'existait), d'où les
+    // scores répétés (2:0, 1:1...) sur des matchs sans lien entre eux.
+    // Le match est maintenant EXCLU plutôt que deviné sans corroboration —
+    // conforme à "jamais forcer, qualité > quantité" déjà établi ailleurs.
+    // CORRIGÉ (session diagnostic, 04/09, retour explicite de James :
+    // "toujours aucun résultat") — la règle du 28/08 ("aucun profil du même
+    // match → exclu") était trop stricte en pratique : elle exige qu'un
+    // AUTRE marché du MÊME match (BTTS/totaux) soit déjà validé, ce qui
+    // n'arrive que sur une fraction des matchs, laissant souvent zéro
+    // candidat au final. AJOUT d'un second type de corroboration, jamais
+    // du hasard non plus : un VRAI historique mesuré (même seuil que
+    // classerConfiance, SEUIL_MIN_FIABILITE réglages settled) pour ce
+    // championnat+marché score-exact précis. Le profil du même match reste
+    // TOUJOURS préféré en premier (plus précis, propre à ce match) ; ce
+    // repli ne s'active que si aucun profil n'existe pour ce match.
+    if (!prof) {
+      const avecHistorique = candidats.filter(c => c.tauxReel != null && c.echantillonReel != null && c.echantillonReel >= SEUIL_MIN_FIABILITE);
+      if (avecHistorique.length) {
+        meilleur[fixtureId] = avecHistorique
+          .sort((a, b) => scoreScoreExact(b) - scoreScoreExact(a))
+          .slice(0, MAX_SCORES_PAR_MATCH);
+      }
+      return;
+    }
+    const correspondants = candidats.filter(c => correspond(parseScore(c.pick), prof));
+    if (!correspondants.length) return; // profil réel mais aucun score ne colle : pareil, on exclut plutôt que de forcer
+    // CHANGÉ (11/09) : `correspondants[0]` (= le moins cher compatible avec le
+    // profil) donnait invariablement 1:1 sur un profil BTTS. Le classement se
+    // fait désormais sur scoreScoreExact — fréquence réelle du score ET
+    // probabilité implicite du bookmaker — sur le MÊME ensemble de scores
+    // déjà validés par le profil du match. Le filtrage par le profil réel
+    // reste intact et prioritaire : rien n'est retenu sans corroboration.
+    meilleur[fixtureId] = correspondants
+      .slice()
+      .sort((a, b) => scoreScoreExact(b) - scoreScoreExact(a))
       .slice(0, MAX_SCORES_PAR_MATCH);
   });
-
-  // NOTE (13/09) : l'ancien corps de ce bloc — qui faisait `return` sans rien
-  // affecter à meilleur[fixtureId] dès qu'aucun profil ni historique n'existait,
-  // supprimant donc le match — a été retiré, pas commenté. Garder du code mort
-  // dans un fichier de 3200 lignes n'apporte rien et risque d'être réactivé par
-  // erreur ; l'historique du dépôt suffit.
-
   // Les scores les plus probables (cote la plus basse, DANS le profil retenu
   // ci-dessus) d'abord — construction INCRÉMENTALE respectant
   // [min_total_odd, max_total_odd] du plan, comme construireFiche le fait
@@ -2124,21 +2051,8 @@ function construireFicheScoreExact(pool, plan, options) {
   // de SÉCURITÉ (le trigger base le refuserait de toute façon), jamais le
   // critère d'arrêt dans ce mode. Comportement PAR COTE (défaut) inchangé
   // quand cette option est absente.
-  // PLAFOND ABAISSÉ À 3 (13/09, décision explicite de James après constat que
-  // 100 % des fiches score exact publiées échouaient). Motif purement
-  // arithmétique, pas un défaut de sélection : chaque sélection score exact
-  // vaut au mieux ~12-16 % de probabilité réelle (1:1, le score le plus
-  // fréquent du football, coté ~6.00). Une fiche de 5 sélections vaut donc
-  // ~0,01 % (1 chance sur 10 000, cote observée 30 240 le 12/09) ; à 3
-  // sélections on remonte à ~0,3 % (1 sur 350), soit ~30x plus de fiches
-  // validées pour une cote qui reste attractive (~250-350).
-  // Le minimum structurel de 3 est INCHANGÉ : min et max coïncident
-  // désormais, la fiche fait exactement 3 sélections ou n'est pas publiée.
-  // Le mode admin "nombre de matchs" est borné au même plafond — demander 5
-  // ou 6 depuis le panneau donne 3 (le libellé "3 à 6" de l'interface admin
-  // est donc devenu trompeur : à corriger côté index.html, hors périmètre ici).
   const nombreCible = options.nombreMatchsOverride != null
-    ? Math.max(3, Math.min(3, Math.round(Number(options.nombreMatchsOverride))))
+    ? Math.max(3, Math.min(6, Math.round(Number(options.nombreMatchsOverride))))
     : null;
 
   const selections = [];
@@ -2156,24 +2070,11 @@ function construireFicheScoreExact(pool, plan, options) {
   const cotesUtiliseesSE = new Map();
   const clefCoteSE = odd => Math.round(odd * 100);
 
-  // niveauMax    : niveau de corroboration le plus bas accepté (voir
-  //                niveauCandidat). 0 = le plus exigeant, 4 = tout accepter.
-  // maxSansProfil: combien de sélections "sans profil du match" (niveaux 3-4)
-  //                peuvent entrer dans la fiche — point "3b". La fiabilité
-  //                invoquée par le repli historique est celle du couple
-  //                championnat+marché, jamais celle de ce score sur ce match :
-  //                en autoriser une seule sur trois garde la majorité de la
-  //                fiche réellement corroborée, sans jamais empêcher la
-  //                publication (la dernière passe relâche cette limite).
-  function remplir(maxMemeCote, autoriserScoreRepete, limite, niveauMax, maxSansProfil) {
-    if (niveauMax == null) niveauMax = 4;
-    if (maxSansProfil == null) maxSansProfil = 99;
+  function remplir(maxMemeCote, autoriserScoreRepete, limite) {
     for (const groupe of groupes) {
       if (selections.length >= limite) break;
       for (const b of groupe) {
         if (selections.indexOf(b) !== -1) continue;
-        if ((b._niveau != null ? b._niveau : 4) > niveauMax) continue;
-        if (b._sansProfil && selections.filter(x => x._sansProfil).length >= maxSansProfil) continue;
         if (selectionsExclues.has(`${b.fixtureId}|${b.market}|${b.pick}`)) continue;
         if (selections.some(x => x.fixtureId === b.fixtureId)) continue; // jamais deux scores sur le même match
         const lib = libelleScoreExact(b.pick);
@@ -2215,57 +2116,21 @@ function construireFicheScoreExact(pool, plan, options) {
   //     premier qui donne une fiche publiable. La fiabilité reste ce qui
   //     classe les candidats (scoreScoreExact), la variation ne fait que
   //     départager à fiabilité comparable.
-  // Objectif normal : 3 sélections (nouveau maximum, voir le commentaire de
-  // nombreCible plus haut) avec des scores tous différents, ou le nombre
-  // exact demandé par l'admin (lui aussi plafonné à 3).
-  // NOTE : le correctif (a) du 11/09 ci-dessus supprimait un arrêt
-  // automatique à 3 sélections pour laisser la fiche monter jusqu'à 6. Cet
-  // arrêt n'est PAS réintroduit : ce n'est plus une condition de cote qui
-  // arrête la fiche (le défaut d'alors), c'est le plafond explicite
-  // CIBLE_SELECTIONS. La fiche s'arrête donc à 3 pour une raison assumée,
-  // jamais par effet de bord arithmétique.
-  const CIBLE_SELECTIONS = nombreCible || 3;
+  // Objectif normal : 6 sélections (le maximum documenté) avec des scores
+  // tous différents, ou le nombre exact demandé par l'admin.
+  const CIBLE_SELECTIONS = nombreCible || 6;
   // Seuil de déclenchement des replis : le minimum structurel de 3, ou le
   // nombre exact demandé en mode admin. Les replis ne servent QU'À rendre la
   // fiche publiable — ils ne remontent jamais jusqu'à 6 en répétant des
   // scores, sinon on retomberait exactement sur le défaut signalé.
   const SEUIL_REPLI = nombreCible || 3;
-  // ============================================================================
-  // CASCADE DE PASSES (13/09) — du plus exigeant au dernier recours. On
-  // s'arrête dès que la fiche atteint SEUIL_REPLI (3). Chaque passe ne fait
-  // qu'AJOUTER aux sélections déjà retenues : une sélection de niveau 0
-  // obtenue en passe 1 reste en place quoi qu'il arrive ensuite.
-  //
-  // GARANTIE DEMANDÉE PAR JAMES ("je dois toujours avoir une fiche lorsque
-  // des matchs sont dispo") : la passe 7 est au moins aussi permissive que
-  // l'ancien dernier recours (niveau 4 = aucune
-  // corroboration exigée, scores et cotes répétables, aucune limite sur le
-  // repli historique). Le nouveau code ne peut donc JAMAIS publier moins de
-  // fiches que l'ancien — au pire exactement autant, au mieux mieux
-  // corroborées. Aucun match n'est écarté en amont (voir niveauCandidat).
-  // ============================================================================
-  // Passe 1 — idéal : profil composite complet ET cote dans la bande 4-8,
-  // aucune sélection sans profil, scores et cotes tous différents.
-  remplir(1, false, CIBLE_SELECTIONS, 0, 0);
-  // Passe 2 — on rouvre toute la plage de cotes (4-15), profil toujours complet.
-  if (selections.length < SEUIL_REPLI) remplir(1, false, CIBLE_SELECTIONS, 1, 0);
-  // Passe 3 — on ne garde que l'axe direction (jamais de score qui contredit
-  // le 1X2 / double chance déjà lu sur ce match).
-  if (selections.length < SEUIL_REPLI) remplir(1, false, CIBLE_SELECTIONS, 2, 0);
-  // Passe 4 — le repli historique entre en jeu, mais UNE seule sélection sur
-  // les trois peut en provenir (point 3b).
-  if (selections.length < SEUIL_REPLI) remplir(2, false, SEUIL_REPLI, 3, 1);
-  // Passe 5 — cote répétable deux fois, toujours au plus une sélection sans profil.
-  if (selections.length < SEUIL_REPLI) remplir(2, false, SEUIL_REPLI, 4, 1);
-  // Passe 6, dernier recours : le même score peut revenir (ex. 1:1 sur trois
-  // matchs où il est réellement le plus fiable) et la limite sur le repli
-  // historique saute. Mieux vaut cette fiche qu'aucune fiche — "jamais
-  // d'interdiction de création". Équivalent exact de l'ancien remplir(6, true).
-  if (selections.length < SEUIL_REPLI) remplir(6, true, SEUIL_REPLI, 4, 99);
-  // Passe 7, ultime — n'accepte les scores qui contredisent la direction du
-  // match (niveau 5) que si la fiche n'est toujours pas complétable autrement.
-  // Sans cette passe, 92 fiches sur 3000 pools simulés disparaissaient.
-  if (selections.length < SEUIL_REPLI) remplir(6, true, SEUIL_REPLI, 5, 99);
+  remplir(1, false, CIBLE_SELECTIONS);
+  // Repli 1 : même score interdit, mais une cote peut revenir deux fois.
+  if (selections.length < SEUIL_REPLI) remplir(2, false, SEUIL_REPLI);
+  // Repli 2, dernier recours : le même score peut revenir (ex. 1:1 sur trois
+  // matchs où il est réellement le plus fiable). Mieux vaut cette fiche
+  // qu'aucune fiche — "jamais d'interdiction de création".
+  if (selections.length < SEUIL_REPLI) remplir(6, true, SEUIL_REPLI);
 
   // En mode "nombre de matchs" : valide dès 3 sélections minimum (règle
   // structurelle jamais assouplie), même si moins que demandé faute de
@@ -2403,9 +2268,20 @@ async function publierFiche(plan, fiche, dateCible, sport, noms, suffixeCode, op
       league_country: s.leagueCountry || null,
       market: s.market || null,
       pick: s.pick || null,
-      odd: s.odd,
+      // CORRIGE (15/09, recurrence du bug PGRST102 du 12/09 malgre le
+      // correctif de l'epoque) : odd et fixture_id restaient les deux SEULS
+      // champs de cet objet sans repli explicite. Le correctif du 12/09
+      // couvrait match_time/kickoff_at/league/etc. mais pas ceux-la — la
+      // meme classe de bug (une cle undefined disparait du JSON pour UNE
+      // seule ligne, PostgREST rejette alors TOUT le lot) pouvait donc
+      // encore se produire par ce chemin, exactement observe le 14/09 sur
+      // une fiche rang 1 ("HTTP 400 PGRST102 All object keys must match").
+      // odd a 0 est refuse par le trigger de validation des cotes de toute
+      // facon (jamais une valeur legitime) : || null ne masque aucun cas
+      // reel, il elimine seulement le trou dans la garantie.
+      odd: (s.odd != null && isFinite(s.odd)) ? s.odd : null,
       position: i + 1,
-      fixture_id: s.fixtureId, // bigint en base — jamais convertir en texte
+      fixture_id: s.fixtureId != null ? s.fixtureId : null, // bigint en base — jamais convertir en texte
       result: null,
       // Session suivante (roadmap "amélioration continue") : purement
       // informatif pour l'admin, jamais lu par le règlement
@@ -3158,12 +3034,6 @@ async function handler(event) {
     { nom: 'Fiche unique (2-15, jour pauvre)', cibleMin: 2, cibleMax: 15, avecRepli: true }
   ];
 
-  // Compte, pour CE run, combien de fiches ont déjà été publiées par rang.
-  // Sert uniquement au suffixe anti-collision ci-dessous. La fiche score
-  // exact est publiée avant cette boucle avec son propre suffixe '-EXACT'
-  // et n'entre donc jamais dans ce compteur — aucun risque de la renommer.
-  const rangsDejaPublies = new Map();
-
   async function tenterEtPublierPalier(palier) {
     const buteursTmp = new Set(buteursUtilises);
     const equipesTmp = new Map(equipesUtilisees);
@@ -3194,86 +3064,49 @@ async function handler(event) {
     fixturesDeCetteFiche.forEach(fid => {
       matchUsageCount.set(fid, (matchUsageCount.get(fid) || 0) + 1);
       fixturesUtiliseesNormales.add(fid);
-      // GARDE-FOU (13/09) — fixturesUtiliseesScoreExact est une COPIE de
-      // fixturesUtiliseesNormales (new Set(...)), pas une référence : sans
-      // cette ligne, un match pris ici n'est JAMAIS visible par
-      // construireFicheScoreExact. C'est exactement ce qui a produit la
-      // contradiction Independiente — San Lorenzo du 13/09 ("Victoire : 1"
-      // en combiné + "Score exact : 0:1" en fiche exacte).
-      // Aujourd'hui le score exact est construit AVANT cette boucle, donc
-      // cette ligne n'a aucun effet sur le comportement courant — elle rend
-      // la contradiction structurellement impossible si l'ordre des blocs
-      // venait à rechanger un jour. Ne jamais la retirer.
-      fixturesUtiliseesScoreExact.add(fid);
     });
     // ÉTIQUETAGE PAR RANG EFFECTIF (inchangé, voir commentaire des règles
     // de partage ci-dessus) : jamais le palier visé, toujours le plafond
     // RÉELLEMENT atteint qui décide.
     const planEtiquette = plans.find(p => p.max_total_odd == null || fiche.coteTotale <= Number(p.max_total_odd)) || plans[0];
-
-    // ========================================================================
-    // SUFFIXE ANTI-COLLISION DE CODE (14/09) — CORRIGE UNE FICHE PERDUE PAR
-    // JOUR DEPUIS AU MOINS LE 06/09.
-    //
-    // Le code d'une fiche vaut `BOT-<date>-<SPORT>-R<rang>` et tickets.code
-    // porte un index UNIQUE. Or DEUX paliers différents produisent
-    // structurellement une cote qui retombe sur le MÊME rang :
-    //   Palier 1 (cible 2-4)   -> cote <= 4.2   -> rang 1 (plafond 15)
-    //   Palier 2 (cible 4-15)  -> cote <= 15.75 -> rang 1 (plafond 15)
-    // (le plafond 1.05 de construireFiche, ligne ~1677, garantit qu'aucune
-    // fiche de palier 2 ne dépasse franchement 15, donc elle ne peut jamais
-    // "monter" au rang 2.)
-    //
-    // Le palier 1 publiait en premier et prenait le code. Le palier 2
-    // construisait ensuite sa fiche avec succès, puis l'INSERT échouait :
-    //   HTTP 409 — Key (code)=(BOT-2026-09-14-FOOT-R1) already exists
-    // visible dans bot_run_log les 06, 07, 11, 12, 13 et 14/09, avec
-    // systématiquement fichesGenerees=4 / fichesPubliees=3. La fiche de cote
-    // 5 à 14 était donc calculée, payée en appels API, puis jetée — c'est la
-    // raison pour laquelle le rang 1 n'affichait jamais que des cotes ~2.
-    //
-    // Le suffixe ne s'applique QUE si ce rang a déjà été publié dans ce run :
-    // le premier ticket d'un rang garde exactement le code historique, donc
-    // aucune fiche existante ne change de nom et aucun doublon rétroactif
-    // n'est créé. Vérifié avant mise en place : ni le dashboard abonné
-    // (titreFicheDash) ni le panneau admin (titreFiche) ne parsent le code —
-    // ils s'appuient sur sport/scoreCount/legsCount/play_date. Le seul
-    // parsing de code du projet est endsWith('-EXACT') ; '-P2' ne finit pas
-    // par '-EXACT', la fiche reste donc traitée comme une fiche normale.
-    // ========================================================================
-    const suffixeAntiCollision = rangsDejaPublies.has(planEtiquette.rank)
-      ? `-P${rangsDejaPublies.get(planEtiquette.rank) + 1}`
-      : '';
-    const okPublication = await publierFiche(planEtiquette, fiche, dateCible, 'foot', noms, suffixeAntiCollision);
-    if (okPublication !== false) {
-      rangsDejaPublies.set(planEtiquette.rank, (rangsDejaPublies.get(planEtiquette.rank) || 0) + 1);
-    }
-    console.log(`[BOT] ${palier.nom} publié : cote ${fiche.coteTotale.toFixed(2)}, étiqueté rang ${planEtiquette.rank}${suffixeAntiCollision}.`);
+    await publierFiche(planEtiquette, fiche, dateCible, 'foot', noms);
+    console.log(`[BOT] ${palier.nom} publié : cote ${fiche.coteTotale.toFixed(2)}, étiqueté rang ${planEtiquette.rank}.`);
     return true;
   }
 
-  // ============================================================================
-  // ORDRE CORRIGÉ (13/09) — CE BLOC ÉTAIT PHYSIQUEMENT PLACÉ APRÈS LA BOUCLE
-  // DES PALIERS alors que son propre commentaire annonçait "SCORE EXACT
-  // D'ABORD... AVANT les fiches classiques". Conséquence réelle observée en
-  // production le 13/09 : Independiente — San Lorenzo publié "Victoire : 1"
-  // (cote 2.05) dans un combiné ET "Score exact : 0:1" (cote 8.50) dans la
-  // fiche exacte du même jour — deux paris mutuellement exclusifs, donc une
-  // des deux fiches perdante d'avance quoi qu'il arrive.
-  //
-  // Le filtre anti-contradiction existait pourtant déjà (fixturesExclues),
-  // mais il ne pouvait rien voir : fixturesUtiliseesScoreExact est une COPIE
-  // de fixturesUtiliseesNormales (new Set(...)), et les matchs consommés par
-  // les fiches normales de CE run n'étaient ajoutés qu'à l'original. Le score
-  // exact ne voyait donc que les matchs des runs PRÉCÉDENTS.
-  //
-  // Le bloc est maintenant exécuté AVANT la boucle des paliers, conformément
-  // à l'intention documentée du 28/08 v6. Effet secondaire VOULU : le score
-  // exact sert en premier sur le pool complet — il n'a jamais MOINS de matchs
-  // disponibles qu'avant, il en a davantage. Ce sont les fiches normales qui
-  // cèdent les matchs réservés (elles reçoivent déjà fixturesExclues:
-  // fixturesUtiliseesScoreExact dans tenterEtPublierPalier).
-  // ============================================================================
+  // Jour pauvre (04/09, clarification explicite de James : "une seule
+  // cote aléatoire... ou deux petites cotes aussi, c'est le bot qui
+  // décide") — jamais un chiffre imposé (ni 7 ni aucun autre), le
+  // résultat dépend uniquement des vraies cotes disponibles ce jour-là
+  // (2, 3, 10, 12... selon le mix de sélections premium/safe réellement
+  // trouvées). Une 2ᵉ fiche (même fourchette 2-15) est tentée seulement
+  // si la 1ère a réussi ET que le pool le permet encore — jamais forcée,
+  // jamais signalée comme une anomalie si elle échoue.
+  const MAX_FICHES_JOUR_PAUVRE = 2;
+  const paliersATenter = jourRiche ? PALIERS_JOUR_RICHE : PALIER_JOUR_PAUVRE;
+  console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter. Effort max toujours actif, vise ${CIBLE_GARANTIE}+ (plafond réel le plus haut des plans, max ${maxSelectionsEffortMax} sélections selon matchs dispo).`);
+  for (const palier of paliersATenter) {
+    const ok = await tenterEtPublierPalier(palier);
+    if (!ok) {
+      console.log(`[BOT] ${palier.nom} non publié (pool insuffisant pour cette cible, ou aucune sélection valide restante).`);
+      // Le palier GARANTI (1 un jour riche, l'unique un jour pauvre) qui
+      // échoue signale un pool vraiment trop pauvre pour tout le reste —
+      // inutile de tenter les paliers suivants dans ce cas précis. Un
+      // palier BONUS (2 ou 3) qui échoue n'arrête jamais les autres :
+      // le palier 3 peut très bien réussir même si le palier 2 a échoué.
+      if (palier.avecRepli) break;
+    }
+  }
+  if (!jourRiche) {
+    // Tentatives supplémentaires jour pauvre, jusqu'à MAX_FICHES_JOUR_PAUVRE
+    // au total (la 1ère déjà tentée ci-dessus) — même fourchette 2-15,
+    // aucun chiffre imposé, jamais un échec traité comme une anomalie.
+    for (let i = 1; i < MAX_FICHES_JOUR_PAUVRE; i++) {
+      const ok = await tenterEtPublierPalier(PALIER_JOUR_PAUVRE[0]);
+      if (!ok) break; // pool épuisé : normal, pas une erreur
+    }
+  }
+
   // SCORE EXACT D'ABORD (28/08 v6, retour explicite de James après le test
   // du 28/08 : la fiche normale du plan 3 avait utilisé jusqu'à 10 matchs
   // avant que son propre score exact ne soit tenté, ne laissant que des
@@ -3336,40 +3169,6 @@ async function handler(event) {
       await publierFiche(planScoreExactRef, ficheExacte, dateCible, 'foot', noms, '-EXACT');
     }
   }
-
-  // Jour pauvre (04/09, clarification explicite de James : "une seule
-  // cote aléatoire... ou deux petites cotes aussi, c'est le bot qui
-  // décide") — jamais un chiffre imposé (ni 7 ni aucun autre), le
-  // résultat dépend uniquement des vraies cotes disponibles ce jour-là
-  // (2, 3, 10, 12... selon le mix de sélections premium/safe réellement
-  // trouvées). Une 2ᵉ fiche (même fourchette 2-15) est tentée seulement
-  // si la 1ère a réussi ET que le pool le permet encore — jamais forcée,
-  // jamais signalée comme une anomalie si elle échoue.
-  const MAX_FICHES_JOUR_PAUVRE = 2;
-  const paliersATenter = jourRiche ? PALIERS_JOUR_RICHE : PALIER_JOUR_PAUVRE;
-  console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter. Effort max toujours actif, vise ${CIBLE_GARANTIE}+ (plafond réel le plus haut des plans, max ${maxSelectionsEffortMax} sélections selon matchs dispo).`);
-  for (const palier of paliersATenter) {
-    const ok = await tenterEtPublierPalier(palier);
-    if (!ok) {
-      console.log(`[BOT] ${palier.nom} non publié (pool insuffisant pour cette cible, ou aucune sélection valide restante).`);
-      // Le palier GARANTI (1 un jour riche, l'unique un jour pauvre) qui
-      // échoue signale un pool vraiment trop pauvre pour tout le reste —
-      // inutile de tenter les paliers suivants dans ce cas précis. Un
-      // palier BONUS (2 ou 3) qui échoue n'arrête jamais les autres :
-      // le palier 3 peut très bien réussir même si le palier 2 a échoué.
-      if (palier.avecRepli) break;
-    }
-  }
-  if (!jourRiche) {
-    // Tentatives supplémentaires jour pauvre, jusqu'à MAX_FICHES_JOUR_PAUVRE
-    // au total (la 1ère déjà tentée ci-dessus) — même fourchette 2-15,
-    // aucun chiffre imposé, jamais un échec traité comme une anomalie.
-    for (let i = 1; i < MAX_FICHES_JOUR_PAUVRE; i++) {
-      const ok = await tenterEtPublierPalier(PALIER_JOUR_PAUVRE[0]);
-      if (!ok) break; // pool épuisé : normal, pas une erreur
-    }
-  }
-
 
   await logFinal();
   return {
