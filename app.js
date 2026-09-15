@@ -2553,6 +2553,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         state.pendingPlanId=pl.id;save();
         payErr.style.display='none';       // le refus ne concerne plus ce plan
         renderRecap();
+        // CORRIGE (15/09, signale par James) : si le formulaire de depot
+        // manuel est deja deroule (state.payMode==='manuel'), changer de
+        // plan ICI ne mettait a jour que le recap du haut — #wizManualAmount
+        // restait fige sur l'ANCIEN montant. La personne pouvait alors
+        // envoyer le mauvais montant reel sur MonCash/NatCash tout en
+        // soumettant un reçu valide. renderManual() relit toujours
+        // planById(state.pendingPlanId||state.planId), donc la revenir
+        // suffit a resynchroniser l'affichage sans dupliquer sa logique.
+        if(state.payMode==='manuel')renderManual();
         planPick.classList.remove('on');
         document.getElementById('wizRecap').style.display='';
       });
