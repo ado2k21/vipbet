@@ -1121,6 +1121,24 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .admdash-row-badge.expire{background:rgba(226,99,79,.13);color:#E2634F}
 .admdash-row-badge.aucun{background:rgba(244,243,237,.06);color:var(--gris)}
 .admdash-row-badge.pending{background:rgba(201,164,76,.14);color:var(--or-clair)}
+.admdash-mode-badge{
+  display:inline-block;font-family:var(--mono);font-size:8.5px;font-weight:800;letter-spacing:.05em;
+  border-radius:6px;padding:1px 6px;text-transform:uppercase;vertical-align:middle;margin:0 2px;
+}
+.admdash-mode-badge.auto{background:rgba(46,212,127,.14);color:var(--vert-vif)}
+.admdash-mode-badge.manuel{background:rgba(201,164,76,.16);color:var(--or-clair)}
+
+/* Apercu image du recu, directement dans le detail admin (14/09) — sans
+   cette miniature, verifier un depot manuel demandait un clic de plus pour
+   ouvrir un nouvel onglet a chaque fois. */
+.adm-proof-apercu{
+  display:block;max-width:100%;max-height:320px;border-radius:10px;margin:0 0 12px;
+  border:1.5px solid var(--ligne);cursor:zoom-in;object-fit:contain;background:#0B1425;
+}
+.adm-proof-chargement{
+  display:flex;align-items:center;justify-content:center;height:140px;border-radius:10px;
+  background:#0B1425;border:1.5px dashed var(--ligne);color:var(--gris);font-size:12.5px;margin-bottom:12px;
+}
 .admdash-row-badge.won{background:rgba(46,212,127,.16);color:var(--vert-vif);font-weight:900}
 .admdash-row-badge.lost{background:rgba(226,99,79,.14);color:#E2634F}
 .admdash-row-badge.suspendu{background:rgba(226,99,79,.16);color:#E2634F}
@@ -1983,6 +2001,100 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 .wiz-paym-sub{font-size:12px;color:var(--gris);line-height:1.35}
 .wiz-paym-chev{flex-shrink:0;color:var(--gris);transition:color .2s,transform .2s}
 .wiz-paym:hover .wiz-paym-chev,.wiz-paym.on .wiz-paym-chev{color:var(--vert-vif);transform:translateX(2px)}
+
+/* ============================================================================
+   DEPOT MANUEL MonCash/NatCash (14/09) — trois niveaux sur la MEME page :
+     1. .wiz-brand    choix de la marque, 2 colonnes horizontales
+     2. .wiz-paym     sous-options auto/manuel (classes deja existantes)
+     3. .wiz-manual   formulaire manuel deroule sur place
+   Aucune nouvelle page, aucun data-step supplementaire : James veut eviter
+   de multiplier les ecrans. Couleurs du site uniquement (--vert-vif pour la
+   selection, --or pour l'action) — jamais le violet de la maquette AyiPay
+   qui a servi de reference d'ergonomie, pas de charte.
+   ============================================================================ */
+.wiz-brands{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.wiz-brand{
+  display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;
+  background:#0B1425;border:1.5px solid var(--ligne);border-radius:var(--r-sm);
+  padding:14px 10px;transition:border-color .2s,background .2s;
+}
+.wiz-brand:hover{border-color:rgba(46,212,127,.45)}
+.wiz-brand.on{border-color:var(--vert-vif);background:#0D1B2E}
+.wiz-brand-ic{height:44px;width:44px;border-radius:11px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.wiz-brand-ic img{height:100%;width:auto;display:block}
+.wiz-brand-name{font-size:13px;font-weight:700;color:#F4F3ED}
+.wiz-brand.on .wiz-brand-name{color:var(--vert-vif)}
+
+/* Sous-options : masquees tant qu'aucune marque n'est choisie. */
+.wiz-submethods[hidden]{display:none}
+.wiz-submethods{display:grid;grid-template-columns:1fr;gap:10px}
+
+/* ---- Formulaire manuel ---- */
+.wiz-manual[hidden]{display:none}
+.wiz-manual{display:block;margin-top:2px}
+.wiz-manual-back{
+  display:inline-flex;align-items:center;gap:6px;background:none;border:0;cursor:pointer;
+  color:var(--vert-vif);font-size:14px;font-weight:700;padding:4px 0;margin-bottom:6px;
+}
+.wiz-manual-back:hover{color:var(--or-clair)}
+.wiz-manual-sub{font-size:13px;color:var(--gris);line-height:1.45;margin:0 0 14px}
+.wiz-qr{
+  display:flex;flex-direction:column;align-items:center;gap:9px;margin-bottom:13px;
+}
+.wiz-qr-box{
+  width:190px;height:190px;border-radius:16px;background:#fff;padding:10px;
+  display:flex;align-items:center;justify-content:center;
+}
+.wiz-qr-box img{width:100%;height:100%;object-fit:contain;display:block}
+/* Etat placeholder tant que James n'a pas fourni le vrai QR. */
+.wiz-qr-box.vide{
+  background:#0B1425;border:1.5px dashed var(--ligne);color:var(--gris);
+  font-size:12px;text-align:center;padding:16px;line-height:1.4;
+}
+.wiz-qr-hint{font-size:12px;color:var(--gris);text-align:center}
+.wiz-kv{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:#0B1425;border:1.5px solid var(--ligne);border-radius:var(--r-sm);
+  padding:12px 14px;margin-bottom:9px;
+}
+.wiz-kv-k{font-size:13px;color:var(--gris);flex-shrink:0}
+.wiz-kv-v{font-size:15px;font-weight:700;color:#F4F3ED;text-align:right;word-break:break-word}
+.wiz-kv-v.montant{color:var(--or-clair)}
+.wiz-copy{
+  background:none;border:0;cursor:pointer;color:var(--vert-vif);padding:2px;flex-shrink:0;
+  display:inline-flex;align-items:center;
+}
+.wiz-copy:hover{color:var(--or-clair)}
+.wiz-copy.ok{color:var(--or)}
+
+/* Zone d'upload — OBLIGATOIRE (demande explicite de James : la capture est
+   la preuve principale, la reference de transaction reste optionnelle). */
+.wiz-drop{
+  display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;
+  background:#0B1425;border:1.5px dashed var(--ligne);border-radius:var(--r-sm);
+  padding:22px 14px;margin-bottom:9px;transition:border-color .2s,background .2s;text-align:center;
+}
+.wiz-drop:hover{border-color:rgba(46,212,127,.45)}
+.wiz-drop.rempli{border-style:solid;border-color:var(--vert-vif);background:#0D1B2E}
+.wiz-drop.invalide{border-color:#E2634F}
+.wiz-drop-ic{color:var(--gris)}
+.wiz-drop.rempli .wiz-drop-ic{color:var(--vert-vif)}
+.wiz-drop-t{font-size:14px;font-weight:700;color:#F4F3ED}
+.wiz-drop-s{font-size:12px;color:var(--gris);line-height:1.4;word-break:break-word}
+.wiz-drop input[type=file]{display:none}
+.wiz-drop-apercu{max-width:150px;max-height:110px;border-radius:9px;display:block;margin-top:4px}
+
+/* Avertissement anti-faux recu (repris de la maquette AyiPay, validé par
+   James). La suspension reste une decision MANUELLE de l'admin : aucun
+   controle automatique n'est fait sur l'image — un controle automatique
+   produirait des faux positifs sur des recus legitimes mal cadres. */
+.wiz-warn{
+  display:flex;gap:10px;align-items:flex-start;
+  background:rgba(226,99,79,.09);border:1.5px solid rgba(226,99,79,.42);
+  border-radius:var(--r-sm);padding:12px 13px;margin:11px 0 13px;
+}
+.wiz-warn-ic{color:#E2634F;flex-shrink:0;margin-top:1px}
+.wiz-warn-t{font-size:12.5px;color:#EDBCB2;line-height:1.45}
 
 /* --- Bouton Stripe + logos --- */
 .wiz-sep{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
@@ -3987,8 +4099,79 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
               <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/></svg>
               <span data-i18n="wiz_p_method">Mwayen peman</span>
             </div>
-            <div class="wiz-pay-methods" id="wizPayMethods"></div>
+            <!-- NIVEAU 1 — choix de la marque (rempli par renderPayBrands). -->
+            <div class="wiz-brands" id="wizPayBrands"></div>
+
+            <!-- NIVEAU 2 — sous-options auto/manuel de la marque choisie
+                 (rempli par renderSubMethods). Masque tant qu'aucune marque
+                 n'est selectionnee. -->
+            <div class="wiz-submethods" id="wizPayMethods" hidden></div>
+
             <span class="field-err" id="wizPayErr" style="display:none" data-i18n="wiz_p_err_method">Chwazi yon mwayen peman</span>
+
+            <!-- NIVEAU 3 — formulaire de depot manuel, deroule SUR PLACE.
+                 Jamais affiche en meme temps que #wizPaySubmit : un seul
+                 bouton d'action visible a la fois (regle explicite de James). -->
+            <div class="wiz-manual" id="wizManual" hidden>
+              <button type="button" class="wiz-manual-back" id="wizManualBack">
+                <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                <span id="wizManualTitle"></span>
+              </button>
+              <p class="wiz-manual-sub" data-i18n="wiz_m_sub">Voye montan an nan kont ki anba a, epi telechaje resi a.</p>
+
+              <div class="wiz-qr">
+                <div class="wiz-qr-box vide" id="wizManualQr"><span data-i18n="wiz_m_qr_soon">QR code la ap vini talè</span></div>
+                <div class="wiz-qr-hint" data-i18n="wiz_m_qr_hint">Eskane QR sa a nan app la pou peye touswit</div>
+              </div>
+
+              <div class="wiz-kv">
+                <span class="wiz-kv-k" data-i18n="wiz_m_number">Nimewo</span>
+                <span class="wiz-kv-v" id="wizManualNumber"></span>
+                <button type="button" class="wiz-copy" id="wizManualCopy" data-i18n-aria="wiz_m_copy" aria-label="Kopye nimewo a">
+                  <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                </button>
+              </div>
+
+              <div class="wiz-kv">
+                <span class="wiz-kv-k" data-i18n="wiz_m_name">Non</span>
+                <span class="wiz-kv-v" id="wizManualName"></span>
+              </div>
+
+              <!-- Montant NON saisissable : il est fixe par le plan choisi.
+                   Un champ libre creerait un ecart possible entre le montant
+                   tape et le montant reellement envoye. -->
+              <div class="wiz-kv">
+                <span class="wiz-kv-k" data-i18n="wiz_m_amount">Montan pou voye</span>
+                <span class="wiz-kv-v montant" id="wizManualAmount"></span>
+              </div>
+
+              <!-- Capture OBLIGATOIRE. -->
+              <label class="wiz-drop" id="wizManualDrop">
+                <span class="wiz-drop-ic" id="wizManualDropIc">
+                  <svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V8"/><path d="m8.5 11.5 3.5-3.5 3.5 3.5"/><path d="M20 16.7A4.5 4.5 0 0 0 17.5 8h-1A7 7 0 1 0 5 15.3"/></svg>
+                </span>
+                <span class="wiz-drop-t" id="wizManualDropT" data-i18n="wiz_m_upload">Telechaje resi a</span>
+                <span class="wiz-drop-s" id="wizManualDropS" data-i18n="wiz_m_upload_sub">Kaptè oswa foto konfimasyon an</span>
+                <img class="wiz-drop-apercu" id="wizManualApercu" alt="" hidden>
+                <input type="file" id="wizManualProof" accept="image/jpeg,image/png,image/webp">
+              </label>
+              <span class="field-err" id="wizManualProofErr" style="display:none"></span>
+
+              <!-- Reference OPTIONNELLE (la capture est la preuve principale). -->
+              <label class="field">
+                <input type="text" id="wizManualRef" autocomplete="off" inputmode="numeric"
+                       data-i18n-ph="wiz_m_ref_ph" placeholder="ID Tranzaksyon an (opsyonèl)">
+              </label>
+
+              <div class="wiz-warn">
+                <span class="wiz-warn-ic">
+                  <svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v5"/><path d="M12 17.5v.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+                </span>
+                <span class="wiz-warn-t" data-i18n="wiz_m_warn">Atansyon : Nenpòt tantativ pou voye fo resi, kaptè ekran modifye oswa jenere pa IA ap antrene sispansyon imedya e definitif kont ou.</span>
+              </div>
+
+              <button type="button" class="btn btn-or authpage-submit" id="wizManualSubmit" data-i18n="wiz_m_submit">Soumèt resi a</button>
+            </div>
 
             <button type="submit" class="btn btn-or authpage-submit" id="wizPaySubmit"></button>
 

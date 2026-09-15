@@ -423,6 +423,27 @@ toast_mail_err_p:"L'e-mail n'a pas pu être envoyé. Réessayez dans un instant.
 plan_changed_lifetime:"Vous avez débloqué l'accès à vie !", dash_menu_exit:"Déconnecter",
 wiz_p_moncash:"MonCash otomatik", wiz_p_natcash:"NatCash otomatik",
 wiz_p_auto_badge:"Recommandé", wiz_p_auto_sub:"Confirmation automatique — moins d'une minute en général",
+wiz_p_brand_moncash:"MonCash", wiz_p_brand_natcash:"NatCash",
+wiz_p_manual_moncash:"MonCash manuel", wiz_p_manual_natcash:"NatCash manuel",
+wiz_p_manual_sub:"Transfert + envoi du reçu — validation par l'administrateur",
+wiz_m_sub:"Envoyez le montant sur le compte ci-dessous, puis téléchargez le reçu.",
+wiz_m_qr_soon:"Le QR code arrive bientôt", wiz_m_qr_hint:"Scannez ce QR dans l'application pour payer tout de suite",
+wiz_m_number:"Numéro", wiz_m_name:"Nom", wiz_m_amount:"Montant à envoyer",
+wiz_m_copy:"Copier le numéro", wiz_m_copied:"Numéro copié",
+wiz_m_upload:"Télécharger le reçu", wiz_m_upload_sub:"Capture ou photo de la confirmation",
+wiz_m_upload_change:"Appuyez pour changer l'image",
+wiz_m_ref_ph:"ID de transaction (optionnel)",
+wiz_m_warn:"Attention : toute tentative d'envoyer un faux reçu, une capture modifiée ou générée par IA entraînera la suspension immédiate et définitive de votre compte.",
+wiz_m_submit:"Soumettre le reçu", wiz_m_sending:"Envoi en cours...",
+wiz_m_err_proof:"Ajoutez la capture du reçu avant de continuer",
+wiz_m_err_type:"Format non accepté — utilisez JPG, PNG ou WebP",
+wiz_m_err_size:"Image trop lourde — 5 Mo maximum",
+wiz_m_err_upload:"L'envoi de l'image a échoué. Réessayez.",
+wiz_m_done_h:"Demande envoyée", wiz_m_done_p:"Votre reçu a bien été reçu. Votre abonnement sera activé dès la vérification du paiement.",
+adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUEL",
+adm_pay_manual_ref:"ID transaction (saisi)",
+adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le reçu",
+adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
 auth_err_nouser:"Aucun compte trouvé avec cet identifiant",
@@ -897,6 +918,27 @@ toast_mail_err_p:"The email couldn't be sent. Please try again in a moment.",
 plan_changed_lifetime:"You have unlocked lifetime access!", dash_menu_exit:"Log out",
 wiz_p_moncash:"MonCash automatic", wiz_p_natcash:"NatCash automatic",
 wiz_p_auto_badge:"Recommended", wiz_p_auto_sub:"Automatic confirmation — usually under a minute",
+wiz_p_brand_moncash:"MonCash", wiz_p_brand_natcash:"NatCash",
+wiz_p_manual_moncash:"MonCash manual", wiz_p_manual_natcash:"NatCash manual",
+wiz_p_manual_sub:"Transfer + upload receipt — reviewed by the administrator",
+wiz_m_sub:"Send the amount to the account below, then upload your receipt.",
+wiz_m_qr_soon:"QR code coming soon", wiz_m_qr_hint:"Scan this QR in the app to pay right away",
+wiz_m_number:"Number", wiz_m_name:"Name", wiz_m_amount:"Amount to send",
+wiz_m_copy:"Copy number", wiz_m_copied:"Number copied",
+wiz_m_upload:"Upload your receipt", wiz_m_upload_sub:"Screenshot or photo of the confirmation",
+wiz_m_upload_change:"Tap to change the image",
+wiz_m_ref_ph:"Transaction ID (optional)",
+wiz_m_warn:"Warning: any attempt to send a fake receipt, an edited or AI-generated screenshot will result in the immediate and permanent suspension of your account.",
+wiz_m_submit:"Submit receipt", wiz_m_sending:"Sending...",
+wiz_m_err_proof:"Add the receipt screenshot before continuing",
+wiz_m_err_type:"Format not accepted — use JPG, PNG or WebP",
+wiz_m_err_size:"Image too large — 5 MB maximum",
+wiz_m_err_upload:"Image upload failed. Please try again.",
+wiz_m_done_h:"Request sent", wiz_m_done_p:"Your receipt was received. Your plan will be activated once the payment is verified.",
+adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUAL",
+adm_pay_manual_ref:"Transaction ID (entered)",
+adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
+adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
 auth_err_nouser:"No account found with these details",
@@ -1371,6 +1413,27 @@ toast_mail_err_p:"Imèl la pa t kapab voye. Tanpri eseye ankò nan yon ti moman.
 plan_changed_lifetime:"Ou debloke aksè a vi a !", dash_menu_exit:"Dekonekte",
 wiz_p_moncash:"MonCash otomatik", wiz_p_natcash:"NatCash otomatik",
 wiz_p_auto_badge:"Rekòmande", wiz_p_auto_sub:"Konfimasyon otomatik — anjeneral mwens pase yon minit",
+wiz_p_brand_moncash:"MonCash", wiz_p_brand_natcash:"NatCash",
+wiz_p_manual_moncash:"MonCash manyèl", wiz_p_manual_natcash:"NatCash manyèl",
+wiz_p_manual_sub:"Transfè + telechaje resi a — administratè a ap verifye l",
+wiz_m_sub:"Voye montan an nan kont ki anba a, epi telechaje resi a.",
+wiz_m_qr_soon:"QR code la ap vini talè", wiz_m_qr_hint:"Eskane QR sa a nan app la pou peye touswit",
+wiz_m_number:"Nimewo", wiz_m_name:"Non", wiz_m_amount:"Montan pou voye",
+wiz_m_copy:"Kopye nimewo a", wiz_m_copied:"Nimewo a kopye",
+wiz_m_upload:"Telechaje resi a", wiz_m_upload_sub:"Kaptè oswa foto konfimasyon an",
+wiz_m_upload_change:"Peze pou chanje imaj la",
+wiz_m_ref_ph:"ID Tranzaksyon an (opsyonèl)",
+wiz_m_warn:"Atansyon : Nenpòt tantativ pou voye fo resi, kaptè ekran modifye oswa jenere pa IA ap antrene sispansyon imedya e definitif kont ou.",
+wiz_m_submit:"Soumèt resi a", wiz_m_sending:"N ap voye...",
+wiz_m_err_proof:"Mete kaptè resi a anvan ou kontinye",
+wiz_m_err_type:"Fòma sa a pa aksepte — sèvi ak JPG, PNG oswa WebP",
+wiz_m_err_size:"Imaj la twò lou — 5 Mo maksimòm",
+wiz_m_err_upload:"Nou pa t ka voye imaj la. Eseye ankò.",
+wiz_m_done_h:"Demann nan voye", wiz_m_done_p:"Nou resevwa resi ou a. Abònman ou ap aktive kou nou fin verifye peman an.",
+adm_pay_mode_auto:"OTOMATIK", adm_pay_mode_manual:"MANYÈL",
+adm_pay_manual_ref:"ID tranzaksyon (antre)",
+adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
+adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
 auth_err_nouser:"Nou pa jwenn okenn kont ak idantifyan sa a",
@@ -1894,7 +1957,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      'none' = jamais paye ; 'pending' = paiement soumis, en attente de
      validation admin ; 'confirmed' = valide par un admin (ou passerelle
      automatique) ; 'rejected' = refuse par un admin, raison obligatoire. */
-  const blank=()=>({step:1,started:false,fullname:'',email:'',site:'paryajpam',pass:null,planId:null,pendingPlanId:null,pendingRef:null,emailVerified:false,paid:false,payStatus:'none',payMethod:null,code:null,startedAt:null,ref:null,startDate:null,endDate:null});
+  const blank=()=>({step:1,started:false,fullname:'',email:'',site:'paryajpam',pass:null,planId:null,pendingPlanId:null,pendingRef:null,emailVerified:false,paid:false,payStatus:'none',payMethod:null,payMode:null,code:null,startedAt:null,ref:null,startDate:null,endDate:null});
   let state=store.read()||blank();
   const save=()=>store.write(state);
 
@@ -2500,34 +2563,138 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   /* CHEVRON reutilise tel quel par les deux cartes — defini une fois. */
   const PAYM_CHEVRON='<svg class="wiz-paym-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
 
-  function renderPayMethods(){
-    /* Mise a jour des libelles au changement de langue : la carte contient
-       maintenant plusieurs <span>, donc on vise chaque element par sa
-       classe (avant : querySelector('span'), qui attrapait le premier et
-       aurait ecrase la pastille du logo). */
-    if(payWrap.children.length){
-      [...payWrap.children].forEach(c=>{
-        const m=METHODS.find(x=>x.id===c.dataset.method);
-        if(!m)return;
-        const nom=c.querySelector('.wiz-paym-name');
-        const badge=c.querySelector('.wiz-paym-badge');
-        const sub=c.querySelector('.wiz-paym-sub');
-        const img=c.querySelector('.wiz-paym-ic img');
-        if(nom)nom.textContent=t(m.labelKey);
-        if(badge)badge.textContent=t('wiz_p_auto_badge');
-        if(sub)sub.textContent=t('wiz_p_auto_sub');
-        if(img)img.alt=t(m.labelKey);
+  /* ==========================================================================
+     SELECTEUR DE PAIEMENT A TROIS NIVEAUX (14/09, demande explicite de James,
+     ergonomie inspiree de l'interface AyiPay qu'il a montree en capture) :
+
+       niveau 1  .wiz-brands   MonCash | NatCash        (2 colonnes)
+       niveau 2  #wizPayMethods  auto (Recommande) | manuel
+       niveau 3  #wizManual      formulaire de depot manuel, SUR PLACE
+
+     REGLES DE VISIBILITE, toutes verifiees par majVisibilitePaiement() :
+       - un seul bouton d'action visible a la fois : #wizPaySubmit
+         (« Payer {montant} ») OU #wizManualSubmit (« Soumettre le recu »),
+         JAMAIS les deux (regle explicite de James) ;
+       - le formulaire manuel ne s'affiche que si mode === 'manuel' ;
+       - changer de marque pendant que le formulaire manuel est ouvert le
+         GARDE ouvert et ne fait que reactualiser nom/logo/numero/QR
+         (demande explicite : « user peut passer de une a autre toujours
+         avec les meme configuration »).
+
+     state.payMethod  reste 'moncash'|'natcash' — c'est ce qui part en base
+                      dans payments.method, contrainte CHECK inchangee.
+     state.payMode    'auto'|'manuel' — cote navigateur uniquement. En base,
+                      c'est `provider IS NULL` qui distingue le manuel, car
+                      cette colonne est neutralisee par le trigger pour tout
+                      appelant hors service_role (donc infalsifiable ici).
+     ========================================================================== */
+
+  /* Coordonnees de depot manuel — PLACEHOLDERS. James fournira les vrais
+     numeros, noms de compte et QR plus tard ; une seule ligne a changer par
+     marque, plus le fichier QR a deposer dans assets/. */
+  const DEPOT_MANUEL={
+    moncash:{ numero:'+509 0000 0000', nom:'À REMPLIR', qr:'' },
+    natcash:{ numero:'+509 0000 0000', nom:'À REMPLIR', qr:'' }
+  };
+
+  const brandWrap=document.getElementById('wizPayBrands');
+  const manualWrap=document.getElementById('wizManual');
+  const manualTitle=document.getElementById('wizManualTitle');
+  const manualNumber=document.getElementById('wizManualNumber');
+  const manualName=document.getElementById('wizManualName');
+  const manualAmount=document.getElementById('wizManualAmount');
+  const manualQr=document.getElementById('wizManualQr');
+  const manualDrop=document.getElementById('wizManualDrop');
+  const manualProof=document.getElementById('wizManualProof');
+  const manualProofErr=document.getElementById('wizManualProofErr');
+  const manualApercu=document.getElementById('wizManualApercu');
+  const manualRef=document.getElementById('wizManualRef');
+  const manualSubmit=document.getElementById('wizManualSubmit');
+  const manualCopy=document.getElementById('wizManualCopy');
+
+  /* Fichier retenu pour l'envoi. Volontairement hors de `state` : un File
+     n'est pas serialisable en JSON, il ne doit jamais partir dans save(). */
+  let manualFichier=null;
+
+  const MANUAL_TYPES=['image/jpeg','image/png','image/webp'];
+  const MANUAL_MAX=5*1024*1024;   /* doit rester aligne sur file_size_limit
+                                     du bucket payment-proofs (5 Mo) */
+
+  function majVisibilitePaiement(){
+    const manuel=(state.payMode==='manuel')&&!!state.payMethod;
+    manualWrap.hidden=!manuel;
+    /* Un seul bouton a la fois — jamais les deux. */
+    paySubmit.style.display=manuel?'none':'';
+    payWrap.hidden=!state.payMethod;
+  }
+
+  function renderPayBrands(){
+    const marques=METHODS.map(m=>({id:m.id,sel:m.sel,key:'wiz_p_brand_'+m.id}));
+    if(brandWrap.children.length){
+      [...brandWrap.children].forEach(el=>{
+        const mk=marques.find(x=>x.id===el.dataset.brand);
+        if(!mk)return;
+        const nom=el.querySelector('.wiz-brand-name');
+        const img=el.querySelector('.wiz-brand-ic img');
+        if(nom)nom.textContent=t(mk.key);
+        if(img)img.alt=t(mk.key);
       });
       return;
     }
-    METHODS.forEach(m=>{
-      const src=document.querySelector(m.sel);
+    marques.forEach(mk=>{
+      const src=document.querySelector(mk.sel);
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='wiz-brand';
+      b.dataset.brand=mk.id;
+      b.innerHTML='<span class="wiz-brand-ic">'+(src?'<img src="'+src.src+'" alt="">':'')+'</span>'+
+                  '<span class="wiz-brand-name"></span>';
+      b.querySelector('.wiz-brand-name').textContent=t(mk.key);
+      const img=b.querySelector('.wiz-brand-ic img');
+      if(img)img.alt=t(mk.key);
+      b.addEventListener('click',()=>{
+        const avant=state.payMethod;
+        state.payMethod=mk.id;
+        /* Changer de marque pendant que le formulaire manuel est ouvert ne
+           le referme PAS : on reste en mode manuel et on reactualise juste
+           les coordonnees. C'est la demande explicite de James. */
+        if(!avant||state.payMode!=='manuel')state.payMode=null;
+        save();
+        payErr.style.display='none';
+        renderPayBrands();
+        renderSubMethods();
+        majEtatMarques();
+        if(state.payMode==='manuel')renderManual();
+        majVisibilitePaiement();
+      });
+      brandWrap.appendChild(b);
+    });
+  }
+
+  function majEtatMarques(){
+    [...brandWrap.children].forEach(el=>el.classList.toggle('on',el.dataset.brand===state.payMethod));
+    [...payWrap.children].forEach(el=>el.classList.toggle('on',el.dataset.mode===state.payMode));
+  }
+
+  /* Niveau 2 — reconstruit a chaque changement de marque (les libelles
+     dependent de la marque choisie : « MonCash manuel » vs « NatCash
+     manuel »). */
+  function renderSubMethods(){
+    payWrap.innerHTML='';
+    if(!state.payMethod)return;
+    const mid=state.payMethod;
+    const src=document.querySelector((METHODS.find(m=>m.id===mid)||{}).sel||'');
+    const options=[
+      {mode:'auto',   nameKey:'wiz_p_'+mid,          badge:t('wiz_p_auto_badge'), subKey:'wiz_p_auto_sub'},
+      {mode:'manuel', nameKey:'wiz_p_manual_'+mid,   badge:'',                    subKey:'wiz_p_manual_sub'}
+    ];
+    options.forEach(o=>{
       const b=document.createElement('button');
       b.type='button';
       b.className='wiz-paym';
-      b.dataset.method=m.id;
+      b.dataset.mode=o.mode;
       b.innerHTML=
-        '<span class="wiz-paym-ic">'+(src?'<img src="'+src.src+'" alt="'+t(m.labelKey)+'">':'')+'</span>'+
+        '<span class="wiz-paym-ic">'+(src?'<img src="'+src.src+'" alt="">':'')+'</span>'+
         '<span class="wiz-paym-txt">'+
           '<span class="wiz-paym-line">'+
             '<span class="wiz-paym-name"></span>'+
@@ -2535,19 +2702,99 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           '</span>'+
           '<span class="wiz-paym-sub"></span>'+
         '</span>'+PAYM_CHEVRON;
-      /* textContent plutot que de l'interpolation dans innerHTML : les
-         libelles viennent des traductions, jamais injectes en HTML brut. */
-      b.querySelector('.wiz-paym-name').textContent=t(m.labelKey);
-      b.querySelector('.wiz-paym-badge').textContent=t('wiz_p_auto_badge');
-      b.querySelector('.wiz-paym-sub').textContent=t('wiz_p_auto_sub');
+      /* textContent, jamais d'interpolation dans innerHTML : les libelles
+         viennent des traductions, ils ne sont jamais injectes en HTML brut. */
+      b.querySelector('.wiz-paym-name').textContent=t(o.nameKey);
+      const badge=b.querySelector('.wiz-paym-badge');
+      if(o.badge)badge.textContent=o.badge; else badge.remove();
+      b.querySelector('.wiz-paym-sub').textContent=t(o.subKey);
+      const img=b.querySelector('.wiz-paym-ic img');
+      if(img)img.alt=t(o.nameKey);
       b.addEventListener('click',()=>{
-        state.payMethod=m.id;save();
-        [...payWrap.children].forEach(c=>c.classList.toggle('on',c.dataset.method===m.id));
+        state.payMode=o.mode;save();
         payErr.style.display='none';
+        majEtatMarques();
+        if(o.mode==='manuel')renderManual();
+        majVisibilitePaiement();
       });
       payWrap.appendChild(b);
     });
   }
+
+  /* Niveau 3 — remplit le formulaire manuel avec les coordonnees de la
+     marque courante. Appele aussi au changement de marque : le formulaire
+     reste ouvert, seul son contenu change. */
+  function renderManual(){
+    const mid=state.payMethod;
+    if(!mid)return;
+    const dep=DEPOT_MANUEL[mid]||{};
+    manualTitle.textContent=t('wiz_p_manual_'+mid);
+    manualNumber.textContent=dep.numero||'—';
+    manualName.textContent=dep.nom||'—';
+    const pl=planById(state.pendingPlanId||state.planId);
+    manualAmount.textContent=pl?money(pl.prix)+' HTG':'—';
+    /* QR : image seulement si James en a fourni une, sinon etat « bientot ».
+       On ne fabrique jamais de QR cote client. */
+    if(dep.qr){
+      manualQr.classList.remove('vide');
+      manualQr.innerHTML='';
+      const im=document.createElement('img');
+      im.src=dep.qr;im.alt='QR '+t('wiz_p_brand_'+mid);
+      manualQr.appendChild(im);
+    }else{
+      manualQr.classList.add('vide');
+      manualQr.textContent=t('wiz_m_qr_soon');
+    }
+    manualSubmit.textContent=t('wiz_m_submit');
+  }
+
+  /* --- Copie du numero --- */
+  if(manualCopy)manualCopy.addEventListener('click',async()=>{
+    const txt=(manualNumber.textContent||'').trim();
+    if(!txt||txt==='—')return;
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(txt);
+      else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+      manualCopy.classList.add('ok');
+      setTimeout(()=>manualCopy.classList.remove('ok'),1400);
+      if(window.VB_toast)window.VB_toast('wiz_m_copied','');
+    }catch(e){}
+  });
+
+  /* --- Selection de la capture (OBLIGATOIRE) --- */
+  function resetApercuManuel(){
+    manualFichier=null;
+    manualDrop.classList.remove('rempli','invalide');
+    manualApercu.hidden=true;
+    if(manualApercu.src&&manualApercu.src.indexOf('blob:')===0)URL.revokeObjectURL(manualApercu.src);
+    manualApercu.removeAttribute('src');
+    document.getElementById('wizManualDropT').textContent=t('wiz_m_upload');
+    document.getElementById('wizManualDropS').textContent=t('wiz_m_upload_sub');
+    manualProofErr.style.display='none';
+  }
+
+  function erreurManuelle(cle){
+    manualProofErr.textContent=t(cle);
+    manualProofErr.style.display='block';
+    manualDrop.classList.add('invalide');
+  }
+
+  if(manualProof)manualProof.addEventListener('change',()=>{
+    const f=manualProof.files&&manualProof.files[0];
+    resetApercuManuel();
+    if(!f)return;
+    /* Les deux controles sont refaits cote serveur par le bucket
+       (allowed_mime_types + file_size_limit) : ceux-ci ne sont qu'un
+       confort d'affichage, jamais la seule barriere. */
+    if(MANUAL_TYPES.indexOf(f.type)===-1){manualProof.value='';erreurManuelle('wiz_m_err_type');return;}
+    if(f.size>MANUAL_MAX){manualProof.value='';erreurManuelle('wiz_m_err_size');return;}
+    manualFichier=f;
+    manualDrop.classList.add('rempli');
+    manualApercu.src=URL.createObjectURL(f);
+    manualApercu.hidden=false;
+    document.getElementById('wizManualDropT').textContent=f.name;
+    document.getElementById('wizManualDropS').textContent=t('wiz_m_upload_change');
+  });
 
   function renderStep3(){
     // Le message de refus ne survit jamais a une visite : il est efface
@@ -2564,11 +2811,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     renderRecap();
     renderPlanPick();
-    renderPayMethods();
+    /* Selecteur a trois niveaux (14/09) : marques, puis sous-options
+       auto/manuel, puis formulaire manuel. renderPayMethods() n'existe plus
+       — elle melangeait les deux premiers niveaux. */
+    renderPayBrands();
+    renderSubMethods();
+    if(state.payMode==='manuel')renderManual();
+    majEtatMarques();
+    majVisibilitePaiement();
     renderStripeLogos();
     planPick.classList.remove('on');
     document.getElementById('wizRecap').style.display='';
-    [...payWrap.children].forEach(c=>c.classList.toggle('on',c.dataset.method===state.payMethod));
   }
 
   /* Logos affiches sous le bouton Stripe : Stripe, Carte bancaire, PayPal */
@@ -2610,7 +2863,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      {ok:true} en cas de succes reel, ou {ok:true, hors_ligne:true,
      erreur:'...'} si l'ecriture cote serveur a echoue — pour affichage
      honnete a l'ecran, au lieu d'un "succes" silencieux mensonger. */
-  async function syncAbonnementSupabase(){
+  /* `options.manuel` = {reference, proofPath} pour un depot manuel ; absent
+     pour tout autre parcours (Stripe, automatique). */
+  async function syncAbonnementSupabase(options){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return {ok:true,hors_ligne:true,erreur:'Supabase indisponible (script non charge)'};
     try{
@@ -2659,11 +2914,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         starts_at:state.startDate, expires_at:state.endDate
       }).select('id').single();
       if(subErr)return {ok:true,hors_ligne:true,erreur:'subscriptions: '+(subErr.message||JSON.stringify(subErr))};
-      const {error:payErr}=await sb.from('payments').insert({
+      /* Depot manuel (14/09) : deux colonnes additionnelles, toutes deux
+         NULL pour un paiement Stripe ou automatique. `provider` reste NULL
+         ici quoi qu'il arrive (le trigger payments_protect_provider_cols la
+         neutralise pour tout appelant hors service_role), c'est precisement
+         ce qui rend ce depot invisible au poller et a l'expiration
+         automatique — il attend la validation admin, sans limite de temps. */
+      const infosManuelles=(options&&options.manuel)?{
+        manual_transaction_ref:options.manuel.reference||null,
+        manual_proof_path:options.manuel.proofPath||null
+      }:{};
+      const {error:payErr}=await sb.from('payments').insert(Object.assign({
         user_id:uid, subscription_id:subData?subData.id:null, plan_id:planAEcrire,
         amount_htg:pl?pl.prix:0, method:state.payMethod,
         status:'pending', reference:refAEcrire
-      });
+      },infosManuelles));
       if(payErr){
         // L'index unique partiel en base a refusé un second paiement
         // 'pending' pour ce compte (course concurrente : deux onglets, ou
@@ -2980,7 +3245,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     showStep(4);
   }
 
-  async function completePayment(method,fenetreAuto){
+  /* `optsManuel` = {reference, proofPath} pour un depot manuel, absent
+     sinon. Transmis tel quel a syncAbonnementSupabase : tout le reste du
+     parcours (verification de renouvellement, fermeture de l'ancien
+     abonnement, notifications, passage a l'etape 4) est RIGOUREUSEMENT
+     identique a celui de Stripe — le depot manuel n'est qu'une variante de
+     paiement en attente de validation admin, pas un parcours a part. */
+  async function completePayment(method,fenetreAuto,optsManuel){
     if(sessionPerimee){
       // CORRIGE (bug signale par James, capture d'ecran about:blank) :
       // pour MonCash/NatCash, l'onglet vide est deja ouvert (geste de clic,
@@ -3047,7 +3318,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        activation) : ce chemin n'ecrit jamais rien lui-meme dans Supabase
        et ne genere jamais de reference localement, contrairement au bloc
        Stripe/manuel ci-dessous. Voir lancerPaiementAutomatique(). */
-    if(PAIEMENT_AUTO_METHODS.includes(method)){
+    /* CORRECTIF CRITIQUE (14/09) : cette condition ne testait QUE la
+       methode ('moncash'/'natcash'), jamais optsManuel. Un depot MANUEL
+       MonCash/NatCash aurait donc ete aiguille vers lancerPaiementAutomatique
+       — la creation d'une VRAIE transaction PLOP PLOP — au lieu du chemin
+       d'ecriture directe partage avec Stripe. Sans le controle "!optsManuel"
+       ci-dessous, le dépôt manuel ignorait purement et simplement la preuve
+       et la reference fournies. Rien de ce qui suit (auto REEL) ne doit
+       jamais s'executer quand optsManuel est present. */
+    if(PAIEMENT_AUTO_METHODS.includes(method)&&!optsManuel){
       await lancerPaiementAutomatique({method,pl,planCible,planEnCoursValide,ancienPlan,wasRenew,fenetreAuto});
       return;
     }
@@ -3130,7 +3409,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        "pending", et effacait a tort le changement pourtant bien demande.
        Attendre ici (quelques centaines de ms tout au plus) elimine cette
        course a la racine, plutot que de la contourner. */
-    const resSync=await syncAbonnementSupabase();
+    const resSync=await syncAbonnementSupabase(optsManuel?{manuel:optsManuel}:null);
     if(resSync&&resSync.dejaEnAttente){
       // L'insertion a été refusée en base (index unique partiel) : une
       // demande était déjà en attente. On aligne l'état local sur cette
@@ -3158,9 +3437,96 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     showStep(4);
   }
 
+  /* ==========================================================================
+     SOUMISSION DU DEPOT MANUEL (14/09)
+     --------------------------------------------------------------------------
+     Ordre volontaire : l'image part AVANT l'ecriture en base. Si l'upload
+     echoue, aucune ligne `payments` n'est creee — donc pas de demande
+     orpheline sans preuve, et l'index unique partiel
+     idx_un_seul_paiement_pending_par_user n'est pas consomme pour rien
+     (sinon la personne serait bloquee sans pouvoir reessayer).
+
+     Le chemin du fichier commence par {user_id}/ : c'est exactement ce
+     qu'exige la policy storage « upload sa propre preuve », personne ne
+     peut deposer dans le dossier d'un autre.
+
+     Le bouton est desactive pendant tout l'envoi : sans ca, un double-appui
+     sur mobile creerait deux uploads et deux tentatives d'insertion.
+     ========================================================================== */
+  if(manualSubmit)manualSubmit.addEventListener('click',async()=>{
+    if(manualSubmit.disabled)return;
+    if(!state.payMethod){payErr.textContent=t('wiz_p_err_method');payErr.style.display='block';return;}
+    /* Capture OBLIGATOIRE — regle explicite de James. La reference reste
+       optionnelle : la capture est la preuve principale. */
+    if(!manualFichier){erreurManuelle('wiz_m_err_proof');manualDrop.scrollIntoView({behavior:'smooth',block:'center'});return;}
+
+    manualSubmit.disabled=true;
+    const libelleInitial=manualSubmit.textContent;
+    manualSubmit.textContent=t('wiz_m_sending');
+    manualProofErr.style.display='none';
+
+    try{
+      const sb=window.VB_getSupabase&&window.VB_getSupabase();
+      let uid=state.supabaseUserId;
+      if(sb&&!uid){
+        const {data:sessionData}=await sb.auth.getSession();
+        uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
+      }
+      if(!sb||!uid){
+        /* Sans session, la policy storage refuserait de toute facon
+           l'upload : on echoue tout de suite avec un message clair plutot
+           que de laisser partir une requete vouee a un 403. */
+        erreurManuelle('wiz_m_err_upload');
+        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel','session absente a la soumission');
+        return;
+      }
+
+      const ext=(manualFichier.type==='image/png')?'png':(manualFichier.type==='image/webp')?'webp':'jpg';
+      const chemin=uid+'/'+state.payMethod+'-'+Date.now()+'.'+ext;
+      const {error:upErr}=await sb.storage.from('payment-proofs')
+        .upload(chemin,manualFichier,{contentType:manualFichier.type,upsert:false});
+      if(upErr){
+        erreurManuelle('wiz_m_err_upload');
+        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel_upload',upErr.message||JSON.stringify(upErr));
+        return;
+      }
+
+      const reference=(manualRef&&manualRef.value||'').trim().slice(0,120)||null;
+      /* A partir d'ici, exactement le meme chemin que Stripe : aucune
+         duplication de la logique de renouvellement/notification/etape 4. */
+      await completePayment(state.payMethod,null,{reference:reference,proofPath:chemin});
+      resetApercuManuel();
+      if(manualRef)manualRef.value='';
+    }catch(e){
+      erreurManuelle('wiz_m_err_upload');
+      if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel',e&&e.message);
+    }finally{
+      manualSubmit.disabled=false;
+      manualSubmit.textContent=libelleInitial;
+    }
+  });
+
+  /* Retour : referme le formulaire, laisse le choix auto/manuel visible.
+     La marque reste selectionnee — on ne remonte que d'un cran. */
+  if(document.getElementById('wizManualBack'))
+    document.getElementById('wizManualBack').addEventListener('click',()=>{
+      state.payMode=null;save();
+      resetApercuManuel();
+      if(manualRef)manualRef.value='';
+      majEtatMarques();
+      majVisibilitePaiement();
+    });
+
   f3.addEventListener('submit',ev=>{
     ev.preventDefault();
     if(!state.payMethod){payErr.textContent=t('wiz_p_err_method');payErr.style.display='block';return;}
+    /* Garde-fou (14/09) : en mode manuel, #wizPaySubmit est masque et c'est
+       #wizManualSubmit qui agit. Ce return couvre le cas ou la soumission du
+       <form> serait declenchee autrement que par le bouton — typiquement la
+       touche Entree dans le champ « ID de transaction ». Sans lui, appuyer
+       sur Entree lancerait le paiement AUTOMATIQUE alors que la personne
+       remplit le formulaire manuel. */
+    if(state.payMode==='manuel')return;
     payErr.style.display='none';
     /* MonCash/NatCash : l'URL du prestataire n'est connue qu'apres un
        appel serveur (async). La fenetre doit donc s'ouvrir ICI, de facon
@@ -7393,7 +7759,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(paysCache)return paysCache;
     try{
       const {data,error}=await sb.from('payments')
-        .select('id,user_id,subscription_id,plan_id,amount_htg,method,status,reference,confirmed_at,confirmed_by,created_at')
+        /* provider/manual_* ajoutes le 14/09 : sans eux dans ce select
+           explicite, l'admin ne verrait jamais la reference saisie ni la
+           preuve d'un depot manuel. `provider` sert a distinguer un depot
+           manuel (NULL) d'un paiement automatique (renseigne cote serveur). */
+        .select('id,user_id,subscription_id,plan_id,amount_htg,method,status,reference,confirmed_at,confirmed_by,created_at,provider,manual_transaction_ref,manual_proof_path')
         .order('created_at',{ascending:false}).limit(300);
       paysCache=(!error&&data)?data:[];
     }catch(e){
@@ -7420,10 +7790,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     list.innerHTML=filtres.map(p=>{
       const u=usersById[p.user_id];
       const nom=u?(u.username||u.email):p.user_id;
+      /* Badge AUTO/MANUEL (14/09, demande explicite de James : "Admin doit
+         identifier un paiement manuel lorsque affiche dans le Dashboard
+         admin"). Visible directement dans la LISTE, pas seulement une fois
+         le detail ouvert — c'est bien ce qui a ete demande. `provider IS
+         NULL` sur moncash/natcash = depot manuel (voir le choix de
+         conception dans syncAbonnementSupabase). Stripe n'a jamais de
+         provider PLOP PLOP : pas de badge pour lui, ce serait toujours
+         "MANUEL" et n'apporterait aucune information. */
+      const estMoncashNatcash=(p.method==='moncash'||p.method==='natcash');
+      const badgeMode=estMoncashNatcash?
+        ' <span class="admdash-mode-badge '+(p.provider?'auto':'manuel')+'">'+
+        t(p.provider?'adm_pay_mode_auto':'adm_pay_mode_manual')+'</span>':'';
       return '<button type="button" class="admdash-row" data-pid="'+p.id+'">'+
         '<span class="admdash-row-av">'+(p.plan_id||'?').toUpperCase().slice(0,2)+'</span>'+
         '<span class="admdash-row-tx"><b>'+nom+'</b><span>'+(p.amount_htg||0)+' HTG · '+
-        (p.method||'—')+' · '+fmt(p.created_at)+'</span></span>'+
+        (p.method||'—')+badgeMode+' · '+fmt(p.created_at)+'</span></span>'+
         '<span class="admdash-row-badge '+(badgeCls[p.status]||'aucun')+'">'+t(badgeLbl[p.status]||'adm_badge_none')+'</span>'+
         '</button>';
     }).join('');
@@ -7449,6 +7831,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!p){box.innerHTML='<div class="admdash-empty">'+t('adm_pay_empty')+'</div>';return;}
     const u=users.find(x=>x.id===p.user_id);
     const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    /* Echappement HTML (14/09) — manual_transaction_ref est la SEULE valeur
+       de cette vue saisie librement par un utilisateur ; tout le reste vient
+       de colonnes contraintes (uuid, enum, montant) ou de traductions. Ce
+       detail etant construit par innerHTML, l'inserer brut permettrait a un
+       abonne d'executer du script dans le navigateur de l'admin. */
+    const echapper=s=>String(s==null?'':s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     const methodLbl={moncash:'MonCash',natcash:'NatCash',stripe:'Stripe (Carte/PayPal)'};
     const statusLbl={pending:t('adm_pay_f_pending'),confirmed:t('adm_pay_f_confirmed'),failed:t('adm_pay_f_rejected'),refunded:t('adm_pay_f_refunded')};
 
@@ -7477,13 +7867,36 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<dl class="wiz-done-sum" style="margin-top:16px">'+
         '<div><dt>'+t('adm_pay_plan')+'</dt><dd>'+(p.plan_id||'—').toUpperCase()+'</dd></div>'+
         '<div><dt>'+t('adm_pay_amount')+'</dt><dd>'+(p.amount_htg||0)+' HTG</dd></div>'+
-        '<div><dt>'+t('adm_pay_method')+'</dt><dd>'+(methodLbl[p.method]||p.method||'—')+'</dd></div>'+
+        /* Depot manuel (14/09) : `provider IS NULL` sur moncash/natcash =
+           l'utilisateur a transfere lui-meme et a joint un recu. Le badge
+           evite de confondre avec un paiement deja verifie par PLOP PLOP. */
+        '<div><dt>'+t('adm_pay_method')+'</dt><dd>'+(methodLbl[p.method]||p.method||'—')+
+          ((p.method==='moncash'||p.method==='natcash')?
+            ' <span class="wiz-paym-badge" style="background:'+(p.provider?'var(--vert-vif)':'var(--or)')+'">'+
+            t(p.provider?'adm_pay_mode_auto':'adm_pay_mode_manual')+'</span>':'')+'</dd></div>'+
         '<div><dt>'+t('adm_pay_ref')+'</dt><dd>'+(p.reference||'—')+'</dd></div>'+
+        (p.manual_transaction_ref?
+          '<div><dt>'+t('adm_pay_manual_ref')+'</dt><dd>'+echapper(p.manual_transaction_ref)+'</dd></div>':'')+
         '<div><dt>'+t('adm_pay_date')+'</dt><dd>'+fmt(p.created_at)+'</dd></div>'+
         '<div><dt>'+t('adm_pay_status')+'</dt><dd>'+statusLbl[p.status]+'</dd></div>'+
         (p.status==='confirmed'&&p.confirmed_at?
           '<div><dt>'+t('adm_pay_confirmed_at')+'</dt><dd>'+fmt(p.confirmed_at)+'</dd></div>':'')+
       '</dl>'+
+      /* Preuve d'un depot manuel (14/09, demande explicite de James :
+         "trouve les infos avec image" — l'image doit etre visible
+         directement dans le detail, pas seulement accessible par un clic
+         supplementaire). Le bucket payment-proofs est PRIVE, donc aucun
+         <img src> direct n'est possible (401/400 garanti) : un espace
+         reserve est affiche immediatement, puis rempli par une vraie URL
+         signee juste apres l'insertion HTML (voir le bloc juste apres
+         admBox.innerHTML= plus bas). Un clic sur la miniature l'ouvre en
+         plein ecran dans un nouvel onglet — utile sur un petit ecran mobile
+         ou une miniature reste illisible. */
+      (p.manual_proof_path?
+        '<div class="admdash-section-h">'+t('adm_pay_proof_h')+'</div>'+
+        '<div class="adm-proof-chargement" id="admProofSlot" data-proof="'+echapper(p.manual_proof_path)+'">'+
+          t('adm_k_loading')+'</div>'
+        :'')+
       (p.status==='failed'&&raisonRefus?
         '<div class="admdash-section-h">'+t('adm_pay_reason_h')+'</div>'+
         '<div class="admdash-hist"><div class="admdash-hist-row"><dd>'+raisonRefus+'</dd></div></div>'
@@ -7500,6 +7913,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<button type="button" class="btn btn-reject" id="admPayRefuser" style="flex:1"'+(u&&u.suspended_at?' disabled':'')+'>'+t('adm_pay_refuser')+'</button>'+
         '</div><div id="admPayActionErr" class="field-err" style="display:none;margin-top:8px"></div>'
         :'');
+
+    /* Chargement automatique de la miniature du recu (14/09) — juste apres
+       l'insertion HTML, jamais avant : #admProofSlot n'existe pas encore
+       tant que innerHTML n'est pas execute. L'URL signee expire (5 min) :
+       elle est generee a chaque ouverture du detail, jamais mise en cache,
+       pour ne jamais servir un lien deja perime. */
+    const slotPreuve=document.getElementById('admProofSlot');
+    if(slotPreuve){
+      const chemin=slotPreuve.dataset.proof;
+      (async()=>{
+        try{
+          const {data,error}=await sb.storage.from('payment-proofs').createSignedUrl(chemin,300);
+          if(error||!data||!data.signedUrl){slotPreuve.textContent=t('adm_pay_proof_err');return;}
+          const im=document.createElement('img');
+          im.className='adm-proof-apercu';
+          im.alt=t('adm_pay_proof_h');
+          im.src=data.signedUrl;
+          im.addEventListener('click',()=>window.open(data.signedUrl,'_blank','noopener,noreferrer'));
+          slotPreuve.replaceWith(im);
+        }catch(e){slotPreuve.textContent=t('adm_pay_proof_err');}
+      })();
+    }
 
     if(p.status==='pending'&&!(u&&u.suspended_at)){
       document.getElementById('admPayValider').addEventListener('click',async function(){
