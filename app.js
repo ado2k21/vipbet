@@ -2620,6 +2620,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const manualRef=document.getElementById('wizManualRef');
   const manualSubmit=document.getElementById('wizManualSubmit');
   const manualCopy=document.getElementById('wizManualCopy');
+  /* Masques avec le sélecteur auto/manuel quand le formulaire manuel est
+     ouvert (14/09 -> corrigé 16/09, demande explicite de James apres
+     capture d'ecran : le choix auto/manuel ET l'option Stripe restaient
+     visibles au-dessus du formulaire deroule, créant un encombrement
+     visuel). Le bouton retour (#wizManualBack) reste le SEUL chemin pour
+     les faire réapparaître. */
+  const stripeSep=document.getElementById('wizStripeSep');
+  const stripeBtn=document.getElementById('wizStripeBtn');
+  const stripeLogos=document.getElementById('wizStripeLogos');
 
   /* Fichier retenu pour l'envoi. Volontairement hors de `state` : un File
      n'est pas serialisable en JSON, il ne doit jamais partir dans save(). */
@@ -2634,7 +2643,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     manualWrap.hidden=!manuel;
     /* Un seul bouton a la fois — jamais les deux. */
     paySubmit.style.display=manuel?'none':'';
-    payWrap.hidden=!state.payMethod;
+    /* CORRIGE (16/09, demande explicite de James) : payWrap (les cartes
+       auto/manuel) restait visible AU-DESSUS du formulaire deroule — ne
+       dependait que de state.payMethod, jamais de state.payMode. Masque
+       desormais des que le manuel est ouvert, exactement comme le reste
+       du choix de methode. Le bouton retour (#wizManualBack) est le seul
+       moyen de les faire reapparaitre (voir son gestionnaire de clic). */
+    payWrap.hidden=!state.payMethod||manuel;
+    /* Stripe (bouton + logos + separateur "oswa") : meme logique — un
+       moyen de paiement alternatif n'a pas sa place pendant qu'un depot
+       manuel MonCash/NatCash est en cours de saisie. */
+    if(stripeSep)stripeSep.hidden=manuel;
+    if(stripeBtn)stripeBtn.hidden=manuel;
+    if(stripeLogos)stripeLogos.hidden=manuel;
   }
 
   function renderPayBrands(){
