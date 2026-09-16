@@ -367,6 +367,10 @@ async function handler(event) {
   // que par une génération manuelle précédente le même jour, pas seulement
   // celle en cours.
   const marchesUtiliseesJour = new Map();
+  // Defaut explicite (voir meme commentaire cote bot-generate-tickets-
+  // background.js) : une lecture qui echoue degrade vers "non bloque",
+  // jamais vers un blocage de la generation manuelle.
+  let buteurDejaUtiliseAujourdhuiAilleurs = false;
   try {
     const legsExistants = await sbSelect('ticket_legs',
       `select=fixture_id,market,pick,tickets!inner(play_date,sport)&tickets.play_date=eq.${playDate}&tickets.sport=eq.${sport}`);
@@ -374,6 +378,14 @@ async function handler(event) {
       selectionsExclues.add(cleSelection(l)); fixturesExclues.add(l.fixture_id);
       marchesUtiliseesJour.set(l.market, (marchesUtiliseesJour.get(l.market) || 0) + 1);
     });
+    // GARDE-FOU CROISE AUTO/MANUEL (15/09, demande explicite de James :
+    // "pas de deux buteurs dans un même jour de génération auto ou
+    // manuel") — couvre ici le cas où le bot AUTOMATIQUE (ou une
+    // génération manuelle précédente) a déjà publié un buteur aujourd'hui,
+    // avant que cette génération manuelle ne s'exécute.
+    if (sport === 'foot') {
+      buteurDejaUtiliseAujourdhuiAilleurs = legsExistants.some(l => l.market === 'mk_buteur');
+    }
   } catch (e) {
     // Non bloquant : au pire on revient au comportement sans protection
     // cross-run, jamais une raison de bloquer une génération manuelle.
@@ -477,7 +489,8 @@ async function handler(event) {
     const essai = construireFiche(poolFoot, planPartage, {
       buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, marchesUtiliseesJour: marchesTmp,
       selectionsExclues, fixturesExclues, nbMatchsDisponibles,
-      cibleMinOverride: cible, cibleMaxOverride: cible
+      cibleMinOverride: cible, cibleMaxOverride: cible,
+      buteurBloqueAutreFiche: buteurDejaUtiliseAujourdhuiAilleurs
     });
     const dernierPalier = cible === paliersCascade[paliersCascade.length - 1];
     // Palier retenu si : la cote atteinte s'approche vraiment de CE
