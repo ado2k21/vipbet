@@ -102,7 +102,7 @@ wiz_btn_verify:"Vérifier",
 wiz_p_h:"Activez votre abonnement", wiz_p_sub:"Vérifiez votre plan puis choisissez votre moyen de paiement.",
 wiz_p_total:"Total à payer", wiz_p_change:"Changer de plan",
 wiz_p_method:"Moyen de paiement", wiz_p_err_method:"Choisissez un moyen de paiement",
-wiz_p_phone:"Votre numéro de compte", wiz_p_pay:"Payer {amount} HTG",
+wiz_p_phone:"Votre numéro de compte", wiz_p_pay:"Payer {amount} HTG", wiz_p_pay_loading:"Ouverture du paiement…",
 wiz_p_secure:"Paiement sécurisé — aucune donnée bancaire n'est conservée",
 wiz_d_h:"Votre abonnement est actif", wiz_d_sub:"Votre compte est prêt. Vous pouvez accéder aux fiches VIP.",
 wiz_d_plan:"Plan", wiz_d_start:"Date de début", wiz_d_end:"Date d'expiration", wiz_d_ref:"Référence",
@@ -597,7 +597,7 @@ wiz_btn_verify:"Verify",
 wiz_p_h:"Activate your plan", wiz_p_sub:"Check your plan, then choose a payment method.",
 wiz_p_total:"Total due", wiz_p_change:"Change plan",
 wiz_p_method:"Payment method", wiz_p_err_method:"Choose a payment method",
-wiz_p_phone:"Your account number", wiz_p_pay:"Pay {amount} HTG",
+wiz_p_phone:"Your account number", wiz_p_pay:"Pay {amount} HTG", wiz_p_pay_loading:"Opening payment…",
 wiz_p_secure:"Secure payment — no banking data is stored",
 wiz_d_h:"Your plan is active", wiz_d_sub:"Your account is ready. You can now access the VIP picks.",
 wiz_d_plan:"Plan", wiz_d_start:"Start date", wiz_d_end:"Expiry date", wiz_d_ref:"Reference",
@@ -1092,7 +1092,7 @@ wiz_btn_verify:"Verifye",
 wiz_p_h:"Aktive abònman ou", wiz_p_sub:"Verifye plan ou epi chwazi mwayen peman an.",
 wiz_p_total:"Total a peye", wiz_p_change:"Chanje plan",
 wiz_p_method:"Mwayen peman", wiz_p_err_method:"Chwazi yon mwayen peman",
-wiz_p_phone:"Nimewo kont ou", wiz_p_pay:"Peye {amount} HTG",
+wiz_p_phone:"Nimewo kont ou", wiz_p_pay:"Peye {amount} HTG", wiz_p_pay_loading:"N ap ouvri peman an…",
 wiz_p_secure:"Peman sekirize — nou pa konsève okenn done bankè",
 wiz_d_h:"Abònman ou aktive", wiz_d_sub:"Kont ou prè. Ou ka jwenn fich VIP yo kounye a.",
 wiz_d_plan:"Plan", wiz_d_start:"Dat kòmansman", wiz_d_end:"Dat ekspirasyon", wiz_d_ref:"Referans",
@@ -3192,9 +3192,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      le VRAI montant et une reference prestataire jamais exposee ici — voir
      netlify/functions/paiement-create.js. */
   async function lancerPaiementAutomatique({method,pl,planCible,planEnCoursValide,ancienPlan,wasRenew,fenetreAuto}){
+    /* AJOUTE (17/09) : etat de chargement explicite sur le bouton pendant
+       l'appel serveur (~1-3s). Avant, la page vide ouverte a part jouait
+       ce role malgre elle ; sans elle (navigation meme onglet desormais),
+       plus aucun signe visuel n'indiquait qu'un clic avait ete pris en
+       compte — risque de double-soumission par une personne qui croit
+       n'avoir rien declenche. Restaure sur chaque chemin d'echec ;
+       jamais restaure sur le succes puisque la page navigue alors ailleurs. */
+    const libelleInitial=paySubmit.textContent;
+    paySubmit.disabled=true;
+    paySubmit.textContent=t('wiz_p_pay_loading');
+    function restaurerBoutonPayer(){
+      paySubmit.disabled=false;
+      paySubmit.textContent=libelleInitial;
+    }
     const token=await getAccessTokenWizard();
     if(!token){
       fermerFenetreAuto(fenetreAuto);
+      restaurerBoutonPayer();
       if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('err_action_unavailable_p'));
       return;
     }
@@ -3210,6 +3225,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     if(!data||data.ok!==true||!data.url){
       fermerFenetreAuto(fenetreAuto);
+      restaurerBoutonPayer();
       const code=data&&data.code;
       if(code==='PAIEMENT_DEJA_EN_ATTENTE'){
         state.payStatus='pending';
@@ -3226,15 +3242,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     // Succes : la ligne pending existe deja cote serveur, avec le VRAI
     // montant protege par le trigger de base (jamais ecrit ni lisible
-    // depuis ce navigateur). On redirige vers la page du prestataire dans
-    // la fenetre deja ouverte au moment du clic (voir l'ecouteur 'submit'
-    // plus bas) — sinon, un window.open() ici serait bloque sur mobile
-    // puisqu'on est apres un 'await'.
+    // depuis ce navigateur).
+    // CORRIGE (17/09) : navigation de l'onglet ACTUEL vers la page du
+    // prestataire, plus jamais une fenetre separee. window.location.href
+    // n'est pas concerne par le blocage des popups mobiles qui visait
+    // specifiquement window.open() — c'est une navigation, pas une
+    // ouverture de fenetre. `fenetreAuto` est conserve en parametre pour
+    // ne casser aucun appelant existant, mais n'est plus jamais peuple
+    // (voir l'ecouteur 'submit') : cette branche reste un filet inerte,
+    // jamais executee, au cas ou un chemin plus ancien la fournirait
+    // encore un jour.
     if(fenetreAuto){
       try{fenetreAuto.location.href=data.url;}catch(e){}
       surveillerFermetureFenetre(fenetreAuto);
     }
-    else{try{window.open(data.url,'_blank','noopener');}catch(e){}}
+    else{
+      try{window.location.href=data.url;}catch(e){}
+    }
 
     state.payMethod=method;
     state.autoPaymentId=data.payment_id;
@@ -3558,16 +3582,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        remplit le formulaire manuel. */
     if(state.payMode==='manuel')return;
     payErr.style.display='none';
-    /* MonCash/NatCash : l'URL du prestataire n'est connue qu'apres un
-       appel serveur (async). La fenetre doit donc s'ouvrir ICI, de facon
-       synchrone dans le geste de soumission — un window.open() place
-       apres un 'await' est bloque par les navigateurs mobiles (meme regle
-       deja appliquee au bouton Stripe juste en dessous). */
-    let fenetreAuto=null;
-    if(PAIEMENT_AUTO_METHODS.includes(state.payMethod)){
-      try{fenetreAuto=window.open('','_blank');}catch(e){fenetreAuto=null;}
-    }
-    completePayment(state.payMethod,fenetreAuto);
+    /* CORRIGE (17/09, demande explicite de James : rester sur le meme
+       onglet plutot que d'ouvrir un nouvel onglet vide (about:blank)
+       pendant l'appel serveur). L'ancien mecanisme ouvrait une fenetre
+       VIDE de facon synchrone ici (unique moyen d'echapper au bloqueur de
+       popup mobile pour un window.open() place apres un 'await'), puis la
+       redirigeait une fois l'URL du prestataire connue — d'ou la page
+       blanche visible pendant l'attente reseau.
+       window.location.href (navigation de l'onglet ACTUEL, pas une
+       nouvelle fenetre) n'est PAS soumis a cette meme regle de bloqueur :
+       aucune fenetre a pre-ouvrir, donc plus de page vide. Voir
+       lancerPaiementAutomatique plus haut pour la navigation elle-meme.
+       Compromis assume : l'onglet VIP BETCOTE est remplace par la page du
+       prestataire, il n'y a donc plus de retour "instantane" automatique
+       des la confirmation — revenir sur vipbet.netlify.app recharge l'etat
+       reel (paiement confirme ou toujours en attente), exactement comme
+       pour quelqu'un qui aurait ferme puis rouvert le site. Le sondeur
+       planifie cote serveur reste le filet de securite reel, inchange. */
+    completePayment(state.payMethod,null);
   });
 
   /* ===== Paiement par carte (Stripe) — flux v134 restaure (choix explicite
