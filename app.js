@@ -10900,6 +10900,27 @@ tenterRestaurationSession();
 window.addEventListener('load',tenterRestaurationSession);
 window.VB_tenterRestaurationSession=tenterRestaurationSession;
 
+/* AJOUTE (bug signale par James : retour de MonCash/NatCash affiche encore
+   l'etape 3 au lieu de l'etape 4). Cause reelle : Safari mobile (et la
+   plupart des navigateurs) ne recharge pas toujours cette page depuis zero
+   quand on revient en arriere depuis digicelgroup.com — il la RESTAURE
+   depuis le cache arriere-avant (bfcache), exactement telle qu'elle etait
+   figee au moment du depart. Dans ce cas, AUCUN evenement 'load' ne se
+   redeclenche (le script entier ne se re-execute pas), donc
+   tenterRestaurationSession() ne tourne jamais une seconde fois — la page
+   reste visuellement figee sur l'etape 3 (dernier ecran affiche avant la
+   navigation, puisque showStep(4) n'est jamais appele avant de partir, voir
+   lancerPaiementAutomatique). Seul l'evenement 'pageshow' avec
+   event.persisted=true signale ce cas precis. On y reinitialise
+   dejaRestaure pour autoriser une nouvelle tentative, et on rappelle
+   exactement la meme fonction (memes verifications de session, meme
+   routage etape 4 / dashboard) — aucune logique dupliquee. */
+window.addEventListener('pageshow',(ev)=>{
+  if(!ev.persisted)return;
+  dejaRestaure=false;
+  tenterRestaurationSession();
+});
+
 /* ---------- Retour depuis la page de paiement Stripe ----------
    Stripe peut renvoyer la personne sur le site apres un paiement reussi
    (adresse de redirection configuree dans chaque Payment Link :
