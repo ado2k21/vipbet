@@ -699,6 +699,18 @@ function filtrerCandidatsJour(fixturesJour, dateCible) {
     if (!['NS', 'TBD'].includes(fixture.status.short)) return;
 
     noms[fixture.id] = {
+      // AJOUTE (17/09, correction du bug "Match undefined") : ce champ
+      // manquait alors que tous les autres identifiants du match etaient
+      // deja presents. extraireMarchesBSD lit infosFixture.fixtureId pour
+      // construire chaque candidat BSD (voir son `base` plus bas) — sans
+      // cette ligne, TOUTE selection issue du repli BSD recevait
+      // fixtureId=undefined, qui se propageait jusqu'a l'affichage final
+      // ("Match undefined" constate par James en capture d'ecran) et
+      // jusqu'au regroupement par match (candidatsParMatch groupe par
+      // fixtureId+marche : plusieurs matchs BSD auraient pu fusionner sous
+      // la meme cle "undefined|mk_btts", corrompant la selection au-dela
+      // du seul probleme d'affichage).
+      fixtureId: fixture.id,
       label: `${f.teams.home.name} — ${f.teams.away.name}`,
       statut: fixture.status.short,
       kickoffUtc: fixture.date,
@@ -3354,7 +3366,35 @@ async function handler(event) {
       // Étiquetage FIXE au rang 3 (jamais recalculé selon la cote) — c'est
       // ce qui garantit le partage systématique 3+4 via la cascade, peu
       // importe la cote atteinte.
-      await publierFiche(planScoreExactRef, ficheExacte, dateCible, 'foot', noms, '-EXACT');
+      //
+      // REPRISE ANTI-COLLISION (17/09) — CORRIGE UNE FICHE SCORE EXACT
+      // PERDUE CONSTATEE EN BASE LE 17/09 :
+      //   fichesGenerees: 4, fichesPubliees: 2, erreur "publication ticket
+      //   rang 3 : ... BOT-2026-09-17-FOOT-R3-EXACT already exists".
+      //
+      // Le suffixe '-EXACT' etait jusqu'ici FIXE, sans echappatoire — au
+      // contraire des fiches normales (rang 1/2/3), qui ont deja un
+      // suffixe -P2/-P3 depuis le correctif du 14/09 (rangsDejaPublies).
+      // Si deux executions du bot se chevauchent (deux declenchements
+      // Netlify proches, ou un run normal + un run manuel le meme jour),
+      // la SECONDE a toujours echoue silencieusement sur cette ligne
+      // precise, meme si sa propre fiche etait par ailleurs valide.
+      //
+      // Meme logique que les rangs normaux : on retente avec un suffixe
+      // incremental UNIQUEMENT si la publication a echoue, jusqu'a 5
+      // tentatives (tres large marge — un chevauchement de plus de 2 runs
+      // le meme jour n'a jamais ete observe). `stats.erreurs.length`
+      // avant/apres distingue un succes (rien ajoute) d'un echec.
+      let publieExact = false;
+      for (let tentative = 1; tentative <= 5 && !publieExact; tentative++) {
+        const suffixe = tentative === 1 ? '-EXACT' : `-EXACT-${tentative}`;
+        const nbErreursAvant = stats.erreurs.length;
+        await publierFiche(planScoreExactRef, ficheExacte, dateCible, 'foot', noms, suffixe);
+        publieExact = stats.erreurs.length === nbErreursAvant;
+        if (!publieExact && tentative < 5) {
+          console.log(`[BOT] Score exact : collision de code sur le suffixe ${suffixe}, nouvelle tentative.`);
+        }
+      }
     }
   }
 

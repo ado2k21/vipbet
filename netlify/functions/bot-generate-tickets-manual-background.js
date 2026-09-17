@@ -256,6 +256,11 @@ async function handler(event) {
     if (minutesJour < minDebut || minutesJour > minFin) return;
     if (!['NS', 'TBD'].includes(fixture.status.short)) return;
     noms[fixture.id] = {
+      // AJOUTE (17/09) : meme correctif que bot-generate-tickets-
+      // background.js, meme bug ("Match undefined" sur les selections
+      // issues du repli BSD) — ce fichier construit son PROPRE objet noms{}
+      // en parallele, avec exactement le meme oubli copie a l'identique.
+      fixtureId: fixture.id,
       label: `${f.teams.home.name} — ${f.teams.away.name}`,
       statut: fixture.status.short,
       kickoffUtc: fixture.date,
