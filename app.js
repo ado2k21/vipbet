@@ -2094,6 +2094,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       nd.classList.toggle('done',order.indexOf(k)<pos);
       nd.classList.toggle('on',k===noeud);
     });
+    /* AJOUTE (demande explicite de James) : plus jamais de stepper visible
+       a l'etape 4 — ni en premiere souscription (openAuth), ni en
+       renouvellement (openRenew). Le stepper guide pendant le PARCOURS
+       (Kont -> Peman) ; une fois au resultat (Aksè), il n'apporte plus
+       rien et peut donner l'impression, a une personne qui a deja un
+       compte/Dashboard, de revivre une inscription. Le calcul ci-dessus
+       reste utile pour les etapes 1/3 : on le garde tel quel et on masque
+       juste la barre a la toute fin, seulement pour n===4. */
+    if(n===4)bar.style.visibility='hidden';
     if(n===1&&submitBtn)submitBtn.textContent=t('wiz_btn_next1');
     if(n===3){renderStep3();armPaymentTimeout();demarrerSyncPlansWizard();}
     else{disarmPaymentTimeout();arreterSyncPlansWizard();}
@@ -3123,7 +3132,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   async function appliquerResultatVerifAuto(res){
     if(!res)return;
     if(res.etat==='confirme'){
-      state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;save();
+      state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;state.autoWasRenew=null;save();
       // Reconstruit l'etat local depuis la VRAIE ligne subscriptions —
       // fonction deja existante et eprouvee (utilisee au retour de
       // connexion apres une action admin), qui gere aussi la fusion
@@ -3149,7 +3158,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // expire / refuse / clos / manuel : tentative definitivement close,
     // sans succes. Deux cas, jamais confondus :
     const etaitChangement=!!state.pendingPlanId;
-    state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;
+    state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;state.autoWasRenew=null;
     if(etaitChangement){
       // Le plan ACTIF n'a jamais ete touche par cette tentative : la
       // personne garde un acces plein, seul le changement est annule.
@@ -3264,6 +3273,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     state.autoPaymentId=data.payment_id;
     state.autoExpiresAt=data.expire_a||null;
     state.autoProviderUrl=data.url;
+    /* AJOUTE (bug tres grave signale par James : stepper "Kont/Peman/Aksè"
+       reaffiche a une personne qui a deja acces au Dashboard, au retour
+       d'un renouvellement/changement de plan). Sans ce flag, le retour ne
+       savait pas si la personne venait du wizard d'inscription complet ou
+       du renouvellement depuis le Dashboard (openRenew, sans stepper) — et
+       VB_openAuthWizardStep4 rouvrait TOUJOURS en mode inscription
+       complete. Lu par VB_openAuthWizardStep4 plus bas dans le fichier. */
+    state.autoWasRenew=wasRenew;
     if(planEnCoursValide){
       state.pendingPlanId=pl.id;
       state.pendingRef=data.reference;
@@ -4372,7 +4389,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     closeBtn.hidden=!!renew;
   }
 
-  function openRenew(from){
+  function openRenew(from,forceStep){
     fillLogos();
     modeWizard.classList.remove('pwreset');
     renewMode=true;
@@ -4391,7 +4408,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.body.style.overflow='hidden';
     showMode('wizard');
     modeWizard.classList.add('renew');
-    showStep(3);
+    /* AJOUTE : forceStep permet a VB_openAuthWizardStep4 de rouvrir
+       directement sur l'etape 4 (retour d'un paiement auto en attente)
+       plutot que sur l'etape 3 par defaut — meme chrome sans stepper. */
+    showStep(forceStep||3);
     const c=document.getElementById('authpageClose');
     if(c)c.focus();
   }
@@ -4574,11 +4594,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      redirection meme onglet (voir tenterRestaurationSession plus bas) pour
      savoir s'il faut rouvrir l'etape 4 du wizard plutot que le dashboard. */
   window.VB_paiementAutoEnAttente=()=>state.payStatus==='pending'&&!!state.autoPaymentId&&PAIEMENT_AUTO_METHODS.includes(state.payMethod);
-  /* AJOUTE : rouvre l'auth/wizard directement sur l'etape 4 (meme chemin
-     que guardDashboard : openAuth('wizard',from,4)) — reutilise showStep(4)
-     donc renderStep4() + demarrerPollAuto() demarrent normalement, exactement
-     comme si l'etape 4 n'avait jamais ete quittee. */
-  window.VB_openAuthWizardStep4=()=>openAuth('wizard',null,4);
+  /* CORRIGE (bug tres grave signale par James, capture d'ecran : stepper
+     "Kont/Peman/Aksè" reaffiche a une personne qui avait DEJA acces au
+     Dashboard, au retour d'un renouvellement/changement de plan). Avant,
+     cette fonction passait TOUJOURS par openAuth (mode inscription
+     complete, avec stepper) — correct pour une premiere souscription
+     jamais terminee, mais faux pour un renouvellement : la personne a
+     deja un compte et un Dashboard, elle ne doit plus jamais revoir
+     l'ecran de creation de compte. state.autoWasRenew (pose dans
+     lancerPaiementAutomatique au moment de la creation du paiement)
+     distingue les deux cas et route vers openRenew (meme chrome que le
+     clic "renouveler" depuis le Dashboard, sans stepper), en lui passant
+     4 comme etape forcee au lieu de son defaut 3. */
+  window.VB_openAuthWizardStep4=()=>{
+    if(state.autoWasRenew)openRenew(null,4);
+    else openAuth('wizard',null,4);
+  };
   /* CORRECTIF (acces automatique apres action admin) : au chargement de
      la page (F5, pas une nouvelle connexion), quelqu'un dont l'inscription
      est terminee mais qui n'a localement jamais eu de plan (paid=false)
