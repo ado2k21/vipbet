@@ -13,7 +13,7 @@
      loading="lazy" et des dimensions explicites : rien d'autre a faire.
      Si tu renommes un jour le fichier, change AUSSI cette ligne, sinon
      le navigateur telechargerait une image pour rien. -->
-<link rel="preload" as="image" href="assets/hero-banner.webp" fetchpriority="high">
+<link rel="preload" as="image" href="assets/hero-winner.webp" fetchpriority="high">
 
 <!-- ============== Sentry (rapport d'erreurs) ==============
      Place tot dans le <head> pour capter les erreurs qui surviennent
@@ -436,7 +436,7 @@ nav{
 /* meme taille que .sim2-title ("ESEYE DEMO SA GAD VALÈ KOB OU K FÈ").
    Le selecteur est volontairement plus specifique que ".hero h1",
    qui imposait sinon 36-62px a ce titre. */
-.hero h1.h2-why{
+.hero h2.h2-why{
   font-family:var(--display);letter-spacing:.01em;font-weight:850;text-transform:uppercase;
   font-size:clamp(25px,3.9vw,33px);line-height:1.06;
   color:#F4F3ED;margin-bottom:16px;max-width:640px;
@@ -998,7 +998,7 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   section{padding:40px 0}
   .hero{padding:0 0 56px}
   .h2-title{font-size:clamp(36px,10.4vw,46px)}
-  .hero h1.h2-why{font-size:clamp(24px,6.8vw,30px);margin-bottom:12px;max-width:none}
+  .hero h2.h2-why{font-size:clamp(24px,6.8vw,30px);margin-bottom:12px;max-width:none}
   .h2-sub{font-size:15.5px;margin-bottom:30px}
   .h2-cta{margin-bottom:36px}
   .h2-cta .btn{flex:1;min-width:0;padding:15px 14px;font-size:13px}
@@ -1300,39 +1300,244 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
 }
 </style>
 
-<style id="hero-banner-css">
-/* ===== BANNIERE HERO (image fournie, jamais modifiee ni recadree) ===== */
-.hero-banner{
-  display:block;
-  width:100%;            /* bord a bord : aucun max-width, aucun .wrap */
-  margin:0;              /* zero marge : colle au header, zero espace lateral */
-  padding:0;
-  line-height:0;         /* supprime l espace fantome sous l image inline */
-  font-size:0;
-  border:0;              /* plus de filet : rien ne separe l image du header */
-  border-radius:0;       /* plus d angles arrondis : plein ecran franc */
-  box-shadow:none;
-  background:#030617;
+<style id="hero-v2-css">
+/* ============================================================
+   HERO V2 — bloc de conversion "au premier regard"
+   ------------------------------------------------------------
+   Tout est code (texte reel, pas de texte grave dans une image) :
+   le titre reste net sur tous les ecrans, il est traduit par
+   data-i18n, et il est lu par Google. Seul le sujet photo
+   (l'homme qui celebre) reste une image : assets/hero-winner.webp,
+   detoure en fondu pour se poser sur le fond #030617 du site.
+   Palette : uniquement les variables du site (vert / or / nuit).
+   ============================================================ */
+.hv{
+  position:relative;isolation:isolate;overflow:hidden;
+  padding:clamp(20px,3.6vw,48px) 0 clamp(18px,2.6vw,30px);
+}
+
+/* ---------- Decor de fond (zero image, zero requete) ---------- */
+.hv-bg{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.hv-bg::before{            /* halo vert derriere le gagnant */
+  content:'';position:absolute;right:-8%;top:-18%;
+  width:min(780px,86vw);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%,
+    rgba(23,168,96,.44),rgba(23,168,96,.15) 44%,transparent 70%);
+}
+.hv-bg::after{             /* lueur douce sous le bloc de texte */
+  content:'';position:absolute;left:-22%;bottom:-46%;
+  width:min(640px,86vw);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,rgba(46,212,127,.13),transparent 66%);
+}
+.hv-dots{                  /* trame de points, rappel de la maquette */
+  position:absolute;left:0;top:14%;width:210px;height:250px;opacity:.55;
+  background-image:radial-gradient(rgba(46,212,127,.55) 1.2px,transparent 1.3px);
+  background-size:14px 14px;
+  -webkit-mask-image:linear-gradient(112deg,#000,transparent 70%);
+          mask-image:linear-gradient(112deg,#000,transparent 70%);
+}
+.hv-arcs{
+  position:absolute;right:-6%;top:-14%;height:128%;width:min(560px,50%);opacity:.55;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 46%);
+          mask-image:linear-gradient(90deg,transparent,#000 46%);
+}
+
+/* ---------- Grille ---------- */
+.hv-in{
+  display:grid;align-items:center;
+  grid-template-columns:minmax(0,1.03fr) minmax(0,.97fr);
+  grid-template-areas:"copy visual" "act visual";
+  column-gap:clamp(16px,3vw,44px);row-gap:clamp(14px,1.8vw,22px);
+}
+.hv-copy{grid-area:copy;align-self:end;min-width:0}
+.hv-act{grid-area:act;align-self:start;min-width:0}
+.hv-visual{grid-area:visual;min-width:0}
+
+/* ---------- Accroche ---------- */
+.hv-eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:7px 14px 7px 11px;border-radius:999px;
+  border:1px solid rgba(46,212,127,.28);background:rgba(23,168,96,.10);
+  font-family:var(--mono);font-size:10.5px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:#7EE6AF;
+  margin:0 0 16px;
+}
+.hv-eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--vert-vif);animation:pulse 2s infinite}
+
+/* Titre : selecteur volontairement plus specifique que ".hero h1" */
+.hero h1.hv-title{
+  font-family:var(--display);font-weight:850;text-transform:uppercase;
+  font-size:clamp(33px,5vw,60px);line-height:.98;letter-spacing:-.005em;
+  margin:0 0 16px;color:#F4F3ED;
+}
+.hv-title span{display:block}
+.hv-l2,.hv-l3{
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;
+  width:fit-content;
+}
+.hv-l2{background-image:linear-gradient(96deg,#3FE894,#1FBB6C 52%,#0F8F52)}
+.hv-l3{background-image:linear-gradient(96deg,#F6E4B0,#C9A44C 48%,#E8CE8A)}
+.hv-title{filter:drop-shadow(0 6px 22px rgba(0,0,0,.45))}
+
+.hv-sub{
+  font-size:clamp(14.5px,1.35vw,16.5px);line-height:1.6;color:#B7C2CE;
+  max-width:520px;margin:0 0 16px;
+}
+.hv-sub b{color:#F4F3ED;font-weight:700}
+
+/* ---------- Ligne "cotes" : logos des bookmakers ---------- */
+.hv-books{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0}
+.hv-books-lab{
+  font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:#7C8B9C;
+}
+.hv-book{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:5px 11px 5px 6px;border-radius:999px;
+  background:rgba(244,243,237,.05);border:1px solid rgba(244,243,237,.10);
+  font-size:12.5px;font-weight:700;color:#DCE4EC;white-space:nowrap;
+}
+.hv-book img{width:20px;height:20px;border-radius:50%;object-fit:cover;display:block}
+
+/* ---------- Actions ---------- */
+.hv-cta{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 14px}
+.hv-cta .btn{padding:15px 26px;font-size:14.5px;font-weight:800;letter-spacing:.04em;border-radius:12px}
+.hv-btn-main{
+  background:linear-gradient(120deg,var(--or-clair),var(--or) 62%,#B8912F);
+  color:#1E1503;
+  box-shadow:0 1px 0 rgba(255,255,255,.34) inset,0 12px 30px rgba(201,164,76,.26);
+}
+.hv-btn-main:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.hv-btn-2{
+  background:rgba(244,243,237,.04);color:#F4F3ED;
+  border:1px solid rgba(244,243,237,.20);
+}
+.hv-btn-2:hover{border-color:var(--vert-vif);color:var(--vert-vif)}
+
+/* Garantie : l'offre, juste sous le bouton, la ou la decision se prend */
+.hv-guar{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 14px;border-radius:13px;
+  border:1px solid rgba(201,164,76,.32);
+  background:linear-gradient(120deg,rgba(201,164,76,.12),rgba(201,164,76,.03));
+  max-width:520px;
+}
+.hv-guar svg{color:var(--or-clair);flex-shrink:0}
+.hv-guar-t{
+  display:block;font-family:var(--display);font-weight:850;font-size:13px;
+  letter-spacing:.1em;color:#F2C14E;text-transform:uppercase;line-height:1.2;
+}
+.hv-guar-s{display:block;font-size:12.5px;line-height:1.35;color:#C6CFD9;margin-top:2px}
+
+/* ---------- Visuel : le gagnant ---------- */
+.hv-visual{position:relative;justify-self:center;width:100%;max-width:580px}
+.hv-img{
+  display:block;width:100%;height:auto;
+  filter:drop-shadow(0 30px 60px rgba(0,0,0,.55));
+}
+/* Mini fiche gagnante posee sur le visuel : la preuve du produit */
+.hv-ticket{
+  position:absolute;left:0;bottom:8%;width:min(204px,48%);
+  padding:11px 13px;border-radius:14px;
+  background:linear-gradient(165deg,rgba(14,23,40,.94),rgba(6,13,26,.92));
+  border:1px solid rgba(46,212,127,.30);
+  box-shadow:0 18px 38px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.03) inset;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  animation:hvFloat 6s ease-in-out infinite;
+}
+.hv-tk-top{
+  display:flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:#7EE6AF;margin-bottom:7px;
+}
+.hv-tk-top i{width:6px;height:6px;border-radius:50%;background:var(--vert-vif);animation:pulse 2s infinite}
+.hv-tk-mk{display:block;font-size:12.5px;font-weight:600;color:#DCE4EC;line-height:1.3}
+.hv-tk-mk b{color:#F4F3ED;font-weight:800}
+.hv-tk-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-top:9px;padding-top:9px;border-top:1px dashed rgba(244,243,237,.14);
+}
+.hv-tk-odd{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--or-clair)}
+.hv-tk-won{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 9px;border-radius:999px;
+  border:1px solid rgba(46,212,127,.5);color:#3FE894;
+  font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+}
+@keyframes hvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+/* ---------- Les 4 etapes ---------- */
+.hv-steps{
+  position:relative;margin-top:clamp(18px,2.6vw,34px);
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));list-style:none;
+  padding:clamp(18px,2.3vw,26px) clamp(10px,1.8vw,20px) clamp(20px,2.5vw,28px);
+  border:1px solid rgba(244,243,237,.10);border-radius:20px;
+  background:linear-gradient(180deg,rgba(14,23,40,.88),rgba(8,16,32,.62));
+  box-shadow:0 22px 50px rgba(0,0,0,.34);
   overflow:hidden;
 }
-.hero-banner img{
-  display:block;
-  width:100%;            /* l image occupe 100% de la largeur de la fenetre */
-  height:auto;           /* ratio 1536x822 preserve : aucun recadrage */
-  max-width:none;        /* autorise l elargissement au dela de 1536px */
-  margin:0;
-  padding:0;
-  border:0;
-  vertical-align:top;
+.hv-steps::after{           /* filet lumineux vert, comme la maquette */
+  content:'';position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:min(460px,72%);height:2px;
+  background:linear-gradient(90deg,transparent,rgba(46,212,127,.9),transparent);
 }
-/* le contenu du Hero reprend sa respiration sous la banniere */
-.hero2{row-gap:40px;padding-top:64px}
+.hv-step{
+  position:relative;display:flex;flex-direction:column;align-items:center;
+  text-align:center;gap:11px;padding:0 6px;min-width:0;
+}
+.hv-step b{
+  display:grid;place-items:center;width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(150deg,#2ED47F,#149B59);
+  color:#03210F;font-family:var(--display);font-size:17px;font-weight:850;
+  box-shadow:0 0 0 5px rgba(46,212,127,.10),0 8px 20px rgba(23,168,96,.34);
+}
+.hv-step span{font-size:13px;line-height:1.35;color:#C6CFD9;font-weight:600;text-wrap:balance}
+.hv-step:not(:last-child)::after{   /* liaison pointillee entre les etapes */
+  content:'';position:absolute;top:20px;left:calc(50% + 28px);right:calc(-50% + 28px);
+  border-top:2px dotted rgba(244,243,237,.22);
+}
+
+/* ---------- Responsive ---------- */
 @media (max-width:900px){
-  .hero2{padding-top:48px}
+  .hv-in{
+    grid-template-columns:1fr;
+    grid-template-areas:"copy" "visual" "act";
+    row-gap:clamp(14px,3.4vw,22px);
+  }
+  .hv-copy,.hv-act{align-self:auto}
+  .hv-visual{max-width:min(440px,90%);margin:0 auto}
+  .hv-sub{max-width:580px}
+  .hv-guar{max-width:none}
+  .hv-arcs{display:none}
+  .hv-dots{width:140px;height:170px;top:6%;opacity:.35}
 }
 @media (max-width:640px){
-  .hero2{padding-top:36px}
+  .hero h1.hv-title{font-size:clamp(31px,9vw,42px);margin-bottom:12px}
+  .hv-eyebrow{font-size:9.5px;letter-spacing:.13em;margin-bottom:13px}
+  .hv-sub{font-size:14.5px;margin-bottom:13px}
+  .hv-books{gap:7px}
+  .hv-book{font-size:11.5px;padding:4px 9px 4px 5px}
+  .hv-book img{width:18px;height:18px}
+  .hv-cta{gap:10px}
+  .hv-cta .btn{flex:1 1 100%;width:100%;padding:15px 16px;font-size:14px}
+  .hv-ticket{width:min(176px,56%);padding:9px 11px;bottom:6%}
+  .hv-tk-mk{font-size:11.5px}
+  .hv-tk-odd{font-size:14px}
+  .hv-steps{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 6px;border-radius:16px}
+  .hv-step:not(:last-child)::after{display:none}
+  .hv-step b{width:34px;height:34px;font-size:15px}
+  .hv-step span{font-size:12px}
 }
+@media (max-width:360px){
+  .hv-ticket{width:min(150px,54%)}
+}
+@media (prefers-reduced-motion:reduce){
+  .hv-ticket{animation:none}
+}
+
+/* le contenu du Hero reprend sa respiration sous le bloc d'accroche */
+.hero2{row-gap:40px;padding-top:clamp(34px,4.4vw,56px)}
 
 /* ---------- ACCORDEONS INTEGRES DANS LES SECTIONS ---------- */
 .sec-acc{margin:-6px 0 28px}
@@ -3372,19 +3577,107 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
 <!-- HERO (maquette mobile pixel-perfect) -->
 <header class="hero" id="top">
 
-  <!-- BANNIERE HERO : plein ecran, bord a bord, collee au header -->
-  <div class="hero-banner">
-    <img src="assets/hero-banner.webp"
-         alt="VIPBETCOTE — jwenn fich ak betcote gratis pou jwe ParyajPam, ParyajLakay ak 1xBet : pronostik foutbòl, NBA ak skò egzat"
-         width="1716" height="917"
-         decoding="async" fetchpriority="high">
-  </div>
+  <!-- ============================================================
+       HERO V2 : accroche + offre + 4 etapes + gagnant
+       Le texte n'est plus grave dans une image : il reste net sur
+       tous les ecrans, il est traduit (data-i18n) et indexe.
+       ============================================================ -->
+  <div class="hv">
+
+    <div class="hv-bg" aria-hidden="true">
+      <span class="hv-dots"></span>
+      <svg class="hv-arcs" viewBox="0 0 520 780" fill="none" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="hvArc" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2ED47F" stop-opacity="0"/>
+            <stop offset=".42" stop-color="#2ED47F" stop-opacity=".7"/>
+            <stop offset="1" stop-color="#17A860" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M30 -40C235 130 315 420 245 800" stroke="url(#hvArc)" stroke-width="2"/>
+        <path d="M108 -60C330 118 420 430 338 820" stroke="url(#hvArc)" stroke-width="3"/>
+        <path d="M188 -70C430 108 520 440 448 830" stroke="url(#hvArc)" stroke-width="1.4" opacity=".65"/>
+      </svg>
+    </div>
+
+    <div class="wrap hv-in">
+
+      <div class="hv-copy">
+
+        <p class="hv-eyebrow"><i></i><span data-i18n="hero_badge">EKSPÈ AN LIY &nbsp;•&nbsp; +42 PRONOSTIK JODI A</span></p>
+
+        <h1 class="hv-title">
+          <span class="hv-l1" data-i18n="hv_t1">RESEVWA</span>
+          <span class="hv-l2" data-i18n="hv_t2">PI BON FICH</span>
+          <span class="hv-l3" data-i18n="hv_t3">POU PARYE</span>
+        </h1>
+
+        <p class="hv-sub" data-i18n="hv_sub">Fich ak kòt verifye chak jou, prepare pa ekspè ki gen <b>6 an eksperyans</b>. Ou resevwa yo dirèk sou telefòn ou, ou parye, ou genyen.</p>
+
+        <div class="hv-books">
+          <span class="hv-books-lab" data-i18n="hv_books">Cote</span>
+          <span class="hv-book"><img src="assets/paryajpam.webp" width="96" height="83" alt="" loading="lazy" decoding="async">ParyajPam</span>
+          <span class="hv-book"><img src="assets/paryajlakay.webp" width="96" height="96" alt="" loading="lazy" decoding="async">ParyajLakay</span>
+          <span class="hv-book"><img src="assets/1xbet.webp" width="96" height="96" alt="" loading="lazy" decoding="async">1xBet</span>
+        </div>
+
+      </div><!-- /hv-copy -->
+
+      <div class="hv-visual">
+        <img class="hv-img" src="assets/hero-winner.webp"
+             width="662" height="586"
+             alt="Yon moun ki fèk genyen paryaj li ak yon fich VIPBETCOTE sou telefòn li"
+             fetchpriority="high" decoding="async">
+
+        <div class="hv-ticket" aria-hidden="true">
+          <span class="hv-tk-top"><i></i><span data-i18n="hv_chip_lab">FICH JODI A</span></span>
+          <span class="hv-tk-mk"><span data-i18n="hv_chip_mk">Skò egzat</span> · <b>1:1</b></span>
+          <span class="hv-tk-foot">
+            <span class="hv-tk-odd">5.50</span>
+            <span class="hv-tk-won" data-i18n="tick_won">GENYEN</span>
+          </span>
+        </div>
+      </div><!-- /hv-visual -->
+
+      <div class="hv-act">
+        <div class="hv-cta">
+          <button type="button" class="btn hv-btn-main" data-auth-open="signup">
+            <span data-i18n="hero_cta1">KÒMANSE KOUNYE A</span>
+            <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M12 5l7 7-7 7"/></svg>
+          </button>
+          <a class="btn hv-btn-2" href="#tickets" data-i18n="hv_cta2">Wè fich ki genyen yo</a>
+        </div>
+
+        <div class="hv-guar">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2.6 20 6v6.1c0 4.6-3.2 7.9-8 9.3-4.8-1.4-8-4.7-8-9.3V6l8-3.4Z"/>
+            <path d="m8.6 12.2 2.3 2.3 4.5-4.6"/>
+          </svg>
+          <span>
+            <b class="hv-guar-t" data-i18n="stat_garanti">GARANTI</b>
+            <span class="hv-guar-s" data-i18n="stat_garanti_lab">RANBOUSMAN SIW PA GENYEN 1 FWA</span>
+          </span>
+        </div>
+      </div><!-- /hv-act -->
+
+    </div><!-- /hv-in -->
+
+    <div class="wrap">
+      <ol class="hv-steps">
+        <li class="hv-step"><b>1</b><span data-i18n="hv_s1">Kreye yon kont</span></li>
+        <li class="hv-step"><b>2</b><span data-i18n="hv_s2">Chwazi yon abònman</span></li>
+        <li class="hv-step"><b>3</b><span data-i18n="hv_s3">Resevwa fich pou parye yo</span></li>
+        <li class="hv-step"><b>4</b><span data-i18n="hv_s4">Parye epi genyen</span></li>
+      </ol>
+    </div>
+
+  </div><!-- /hv -->
 
   <div class="wrap hero2">
 
     <div class="hero2-left">
 
-    <h1 class="h2-why" data-i18n="hero_why">POUKISA'W DWE ENSKRI NAN VIPBETCOTE??</h1>
+    <h2 class="h2-why" data-i18n="hero_why">POUKISA'W DWE ENSKRI NAN VIPBETCOTE??</h2>
 
     <p class="h2-sub" data-i18n="hero_sub">La plus grande plateforme de pronostics qui vous aide à gagner sur ParyajPam, ParyajLakay et 1xBet. Nous avons 6 ans d'expérience. Si vous voulez arrêter de perdre votre argent, choisissez un plan ci-dessous dès maintenant.</p>
 
