@@ -101,7 +101,7 @@ wiz_v_noreceive:"Vous ne l'avez pas reçu ?", wiz_v_resend:"Renvoyer le code",
 wiz_btn_verify:"Vérifier",
 wiz_p_h:"Activez votre abonnement", wiz_p_sub:"Vérifiez votre plan puis choisissez votre moyen de paiement.",
 wiz_p_total:"Total à payer", wiz_p_change:"Changer de plan",
-wiz_p_method:"Moyen de paiement", wiz_p_err_method:"Choisissez un moyen de paiement",
+wiz_p_method:"Moyen de paiement", wiz_p_err_method:"Choisissez un moyen de paiement", wiz_p_err_mode:"Choisissez automatique ou manuel avant de payer",
 wiz_p_phone:"Votre numéro de compte", wiz_p_pay:"Payer {amount} HTG", wiz_p_pay_loading:"Ouverture du paiement…",
 wiz_p_secure:"Paiement sécurisé — aucune donnée bancaire n'est conservée",
 wiz_d_h:"Votre abonnement est actif", wiz_d_sub:"Votre compte est prêt. Vous pouvez accéder aux fiches VIP.",
@@ -596,7 +596,7 @@ wiz_v_noreceive:"Didn't get it?", wiz_v_resend:"Resend the code",
 wiz_btn_verify:"Verify",
 wiz_p_h:"Activate your plan", wiz_p_sub:"Check your plan, then choose a payment method.",
 wiz_p_total:"Total due", wiz_p_change:"Change plan",
-wiz_p_method:"Payment method", wiz_p_err_method:"Choose a payment method",
+wiz_p_method:"Payment method", wiz_p_err_method:"Choose a payment method", wiz_p_err_mode:"Choose automatic or manual before paying",
 wiz_p_phone:"Your account number", wiz_p_pay:"Pay {amount} HTG", wiz_p_pay_loading:"Opening payment…",
 wiz_p_secure:"Secure payment — no banking data is stored",
 wiz_d_h:"Your plan is active", wiz_d_sub:"Your account is ready. You can now access the VIP picks.",
@@ -1091,7 +1091,7 @@ wiz_v_noreceive:"Ou pa resevwa l?", wiz_v_resend:"Voye l ankò",
 wiz_btn_verify:"Verifye",
 wiz_p_h:"Aktive abònman ou", wiz_p_sub:"Verifye plan ou epi chwazi mwayen peman an.",
 wiz_p_total:"Total a peye", wiz_p_change:"Chanje plan",
-wiz_p_method:"Mwayen peman", wiz_p_err_method:"Chwazi yon mwayen peman",
+wiz_p_method:"Mwayen peman", wiz_p_err_method:"Chwazi yon mwayen peman", wiz_p_err_mode:"Chwazi otomatik oswa manyèl anvan ou peye",
 wiz_p_phone:"Nimewo kont ou", wiz_p_pay:"Peye {amount} HTG", wiz_p_pay_loading:"N ap ouvri peman an…",
 wiz_p_secure:"Peman sekirize — nou pa konsève okenn done bankè",
 wiz_d_h:"Abònman ou aktive", wiz_d_sub:"Kont ou prè. Ou ka jwenn fich VIP yo kounye a.",
@@ -3291,12 +3291,33 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ref:state.ref
     });
     if(!wasRenew&&window.VB_countSignup)window.VB_countSignup();
+    /* CORRIGE (bug signale par James, capture d'ecran "Peman ap verifye"
+       affiche avant la vraie page MonCash) : PAS de showStep(4) ici. Cet
+       appel date de l'ancienne architecture a fenetre popup separee, ou le
+       tab principal restait ouvert et affichait l'etape 4 (avec sondage)
+       pendant que le paiement se deroulait dans le popup. Depuis le passage
+       a la navigation meme onglet (17/09), window.location.href a ete
+       declenche juste au-dessus : cette page va etre remplacee par celle du
+       prestataire dans l'instant qui suit, mais le JS continue de s'executer
+       jusque-la (une affectation de location.href ne stoppe rien). Appeler
+       showStep(4) ici peint donc l'ecran "Peman ap verifye" sur CETTE page,
+       visible pendant le court delai reseau avant que digicelgroup.com ne
+       charge reellement — exactement le flash signale. state.step=4 et tout
+       l'etat necessaire restent sauvegardes juste au-dessus : au retour sur
+       le site (nouvelle visite/chargement de page, puisque la navigation a
+       reellement quitte le site), tenterRestaurationSession() lit cet etat
+       et rouvre l'etape 4 du wizard (voir VB_paiementAutoEnAttente /
+       VB_openAuthWizardStep4 plus bas dans le fichier) — jamais avant, donc
+       jamais ce flash, mais toujours apres, donc rien n'est saute. Les
+       toasts ci-dessous (changement/renouvellement de plan) ne sont pas
+       concernes : ils ne se declenchent que si ancienPlan est deja defini,
+       jamais sur une premiere souscription comme celle capturee dans le
+       bug. */
     if(ancienPlan&&ancienPlan!==pl.id){
       if(window.VB_toast)window.VB_toast('plan_changed_h',t(pl.id==='p4'?'plan_changed_lifetime':'plan_changed_p')+' '+t('wiz_auto_pending_note'));
     }else if(ancienPlan){
       if(window.VB_toast)window.VB_toast('renew_success_h',t('renew_success_p')+' '+t('wiz_auto_pending_note'));
     }
-    showStep(4);
   }
 
   /* `optsManuel` = {reference, proofPath} pour un depot manuel, absent
@@ -3574,6 +3595,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   f3.addEventListener('submit',ev=>{
     ev.preventDefault();
     if(!state.payMethod){payErr.textContent=t('wiz_p_err_method');payErr.style.display='block';return;}
+    /* AJOUTE (bug signale par James) : choisir la marque (MonCash/NatCash)
+       ne choisit PAS un mode — state.payMode reste null tant que la
+       personne n'a pas explicitement clique "otomatik" ou "manyèl" (voir
+       renderPayBrands : payMode est remis a null a chaque changement de
+       marque). Sans ce garde-fou, cliquer "Payer" sans avoir choisi de
+       sous-option tombait dans la branche par defaut ci-dessous et
+       lancait quand meme le paiement AUTOMATIQUE — la personne n'avait
+       jamais reellement fait ce choix. */
+    if(!state.payMode){payErr.textContent=t('wiz_p_err_mode');payErr.style.display='block';return;}
     /* Garde-fou (14/09) : en mode manuel, #wizPaySubmit est masque et c'est
        #wizManualSubmit qui agit. Ce return couvre le cas ou la soumission du
        <form> serait declenchee autrement que par le bouton — typiquement la
@@ -3670,7 +3700,31 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         const lien=document.getElementById('wizAutoOpenLink');
         if(lien)lien.href=state.autoProviderUrl||'#';
         renderStatutPaiementAuto('attente');
-        if(!pollAutoTimer)demarrerPollAuto();
+        if(!pollAutoTimer){
+          /* AJOUTE (bug signale par James : risque de paiement rempli 2
+             fois) : le lien "Ouvri paj peman an" devenait actif des cette
+             ligne, mais la premiere verification automatique n'a lieu
+             qu'apres le premier delai du backoff (jusqu'a 6s, voir
+             prochainDelaiPollAuto). Une personne qui revient sur cette page
+             juste APRES avoir deja termine son paiement voyait donc ce lien
+             cliquable pendant ces quelques secondes, avant que le vrai
+             statut (deja confirme) ne soit connu — risque de rouvrir la
+             meme page prestataire et de repayer une seconde fois. On
+             verifie donc immediatement, sans attendre ce premier delai, et
+             on neutralise le lien le temps de cette verification :
+             appliquerResultatVerifAuto() bascule vers le dashboard si
+             deja confirme (le lien devient alors sans objet), sinon
+             reactive normalement le lien pour un paiement reellement
+             encore en attente. Le sondage programme (demarrerPollAuto,
+             backoff normal) continue en parallele pour les verifications
+             suivantes, inchange. */
+          if(lien)lien.style.pointerEvents='none';
+          verifierPaiementAutoUneFois().then(res=>{
+            appliquerResultatVerifAuto(res);
+            if(lien)lien.style.pointerEvents='';
+          });
+          demarrerPollAuto();
+        }
       }else{
         arreterPollAuto();
       }
@@ -4514,6 +4568,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // paiement au moins tente) — jamais base sur une simple presence de
   // donnees locales sans verification.
   window.VB_dashboardReady=()=>requiredStep(state)===4;
+  /* AJOUTE : detecte un paiement automatique MonCash/NatCash cree mais pas
+     encore confirme (createur : lancerPaiementAutomatique, avant la
+     navigation vers le prestataire). Sert au retour sur le site apres la
+     redirection meme onglet (voir tenterRestaurationSession plus bas) pour
+     savoir s'il faut rouvrir l'etape 4 du wizard plutot que le dashboard. */
+  window.VB_paiementAutoEnAttente=()=>state.payStatus==='pending'&&!!state.autoPaymentId&&PAIEMENT_AUTO_METHODS.includes(state.payMethod);
+  /* AJOUTE : rouvre l'auth/wizard directement sur l'etape 4 (meme chemin
+     que guardDashboard : openAuth('wizard',from,4)) — reutilise showStep(4)
+     donc renderStep4() + demarrerPollAuto() demarrent normalement, exactement
+     comme si l'etape 4 n'avait jamais ete quittee. */
+  window.VB_openAuthWizardStep4=()=>openAuth('wizard',null,4);
   /* CORRECTIF (acces automatique apres action admin) : au chargement de
      la page (F5, pas une nouvelle connexion), quelqu'un dont l'inscription
      est terminee mais qui n'a localement jamais eu de plan (paid=false)
@@ -10802,8 +10867,21 @@ async function tenterRestaurationSession(){
     if(window.VB_dashboardReady&&window.VB_dashboardReady()){
       const st=window.VB_getState&&window.VB_getState();
       const emailLocal=(st&&st.email||'').trim().toLowerCase();
-      if(emailLocal&&emailLocal===emailSession&&window.VB_openDash){
-        window.VB_openDash();
+      if(emailLocal&&emailLocal===emailSession){
+        /* AJOUTE : retour sur le site apres la redirection meme onglet
+           vers MonCash/NatCash (voir lancerPaiementAutomatique). Tant que
+           le paiement n'est pas confirme, on rouvre l'etape 4 du wizard
+           (titre "en cours de verification", Plan/Dates/Reference, boite
+           de sondage automatique) plutot que le dashboard directement —
+           c'est cet ecran, pas le dashboard, qui porte le sondage client
+           (demarrerPollAuto) et la verification immediate au retour sur
+           l'onglet. Une fois confirme, appliquerResultatVerifAuto() prend
+           le relais normalement (voir plus haut dans le fichier). */
+        if(window.VB_paiementAutoEnAttente&&window.VB_paiementAutoEnAttente()&&window.VB_openAuthWizardStep4){
+          window.VB_openAuthWizardStep4();
+        }else if(window.VB_openDash){
+          window.VB_openDash();
+        }
       }
     }else if(window.VB_reprendreApresAdmin){
       /* CORRECTIF : quelqu'un dont l'inscription est terminee mais qui n'a
