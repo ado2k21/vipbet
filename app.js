@@ -5592,9 +5592,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{
       const g=await chargerReglesPlans();
       const r=await chargerRangServeur();
-      const d=await chargerDateInscription();
+      const p=await chargerPeriodesPlan();
       const f=await chargerFichesReelles();
-      bouge=!!(g||r||d||f);
+      bouge=!!(g||r||p||f);
     }catch(e){}
     if(bouge||forcer)renderAll();
     return bouge;
@@ -5726,11 +5726,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
 
     // 4. Fiches du jour reellement accessibles avec le plan actif
-    const dispo=DATA.tickets.filter(k=>estDuJour(k)&&k.minPlan<=userRank()).length;
+    const dispo=DATA.tickets.filter(k=>estDuJour(k)&&accessibleTk(k)).length;
     if(dispo>0)out.push({id:'today'+dispo,type:'new',texte:t('notif_today').replace('{n}',dispo),ts:Date.now()});
 
     // 5. Dernier resultat gagnant de l'historique
-    const won=DATA.tickets.filter(k=>k.status==='won'&&k.minPlan<=userRank())
+    const won=DATA.tickets.filter(k=>k.status==='won'&&accessibleTk(k))
                           .sort((a,b)=>a.day-b.day)[0];
     // CORRIGÉ (retour explicite de James, 04/09) : affichait auparavant le
     // code technique brut de la fiche (ex. "BOT-2026-09-02-FOOT-R3-EXACT")
@@ -5777,10 +5777,118 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const isPending=()=>!!(window.VB_isPending&&window.VB_isPending());
   const isRejected=()=>!!(window.VB_isRejected&&window.VB_isRejected());
 
-  function ticketEl(tk){
-    // Abonnement expire : TOUTES les fiches sont verrouillees,
-    // quel que soit le plan detenu.
-    const locked=isExpired()||isPending()||isRejected()||tk.minPlan>userRank();
+  /* AJOUTE (18/09, demande explicite de James) : toutes les fiches
+     basketball restent accessibles a tous les plans (min_plan_rank=1 deja
+     le cas en base pour absolument toutes, verifie — aucun changement
+     necessaire de ce cote). Nouvelle regle distincte, purement cote
+     affichage : une fiche basketball dont la cote totale depasse 15 est
+     desormais MASQUEE pour le plan Starter (rang 1) specifiquement — la
+     fiche reste visible et comptee (elle existe), seul son contenu reste
+     cache, exactement le meme traitement visuel que le verrouillage par
+     plan deja en place pour le foot. Rangs 2/3/4 jamais concernes. */
+  /* Primitive commune (18/09) : "cette fiche est-elle accessible a QUELQU'UN
+     ayant ce rang precis" -- jamais lie a userRank() directement, pour
+     pouvoir tester aussi bien le rang ACTUEL (vue en direct) que le rang
+     qui etait actif a une date passee (historique par periode, plus bas).
+     Inclut la regle basketball >15 masquee pour le Starter (rang 1). */
+  const accessibleParRang=(tk,rangADate)=>{
+    if(tk.sport==='basket'&&totalOdd(tk)>15&&rangADate===1)return false;
+    return tk.minPlan<=rangADate;
+  };
+  const basketMasqueeRang1=tk=>tk.sport==='basket'&&totalOdd(tk)>15&&userRank()===1;
+  // Reutilise partout ou "cette fiche est-elle reellement accessible
+  // maintenant" est teste — jamais seulement minPlan<=userRank() en dur,
+  // pour que la regle basketball ci-dessus s'applique partout a la fois
+  // (KPI, onglets, verrouillage des cartes) sans jamais diverger.
+  const accessibleTk=k=>accessibleParRang(k,userRank());
+
+  /* ---- Periodes de plan CONFIRMEES (18/09, demande explicite de James :
+     "l'historique d'un user ne supprime jamais, et ne compte plus pour cet
+     user quand il n'a plus de plan actif, jusqu'a un nouveau plan") ----
+     Remplace l'ancien filtre a une seule date-cheville (dateInscriptionUser,
+     ci-dessus) par un vrai calcul par PERIODE : chaque periode de plan
+     confirmee (payments.status='confirmed' -> subscriptions, exactement la
+     meme source que renderSubHistory plus bas, jamais une deuxieme
+     requete redondante en esprit) est retenue avec son rang et ses dates
+     reelles. Une fiche compte dans l'historique si sa date tombe DANS une
+     de ces periodes ET que le rang de CETTE periode y donnait acces --
+     jamais le rang actuel. Les trous entre deux periodes (plan expire puis
+     renouvele plus tard) sont naturellement exclus puisqu'aucune periode
+     ne les couvre ; RIEN n'est jamais supprime, chaque periode passee
+     reste comptee pour ses propres dates, meme apres une expiration
+     suivie d'un renouvellement. Se relit a CHAQUE passage de
+     rafraichirFiches (voir le commentaire de chargerPeriodesPlan
+     ci-dessous, contrairement a rangScoreMin/dateInscriptionUser qui,
+     eux, ne changent jamais en cours de session). */
+  let periodesPlanUser=null;
+  async function chargerPeriodesPlan(){
+    // CORRIGÉ (relecture, même bug que chargerRangServeur corrige avant lui) :
+    // pas de garde "deja charge" ici — contrairement a dateInscriptionUser
+    // ou rangScoreMin (des faits stables qui ne changent jamais), les
+    // periodes de plan CHANGENT en cours de session des qu'un paiement se
+    // confirme. rafraichirFiches() est deja rappelee a ce moment precis
+    // (voir son propre commentaire) : sans relecture ici, la periode tout
+    // juste confirmee n'aurait jamais rejoint l'historique avant un
+    // rechargement complet de la page. Se relit donc a chaque passage
+    // (toutes les 45s comme le reste), et ne signale un changement
+    // (retour true) que si la liste a reellement bouge.
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return false;
+    try{
+      let uid=(getState()&&getState().supabaseUserId)||null;
+      if(!uid){
+        const {data:sessionData}=await sb.auth.getSession();
+        uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
+      }
+      if(!uid)return false;
+      const {data:paysData,error:errPays}=await sb.from('payments')
+        .select('subscription_id,plan_id').eq('user_id',uid).eq('status','confirmed');
+      if(errPays)throw errPays;
+      const subIds=Array.from(new Set((paysData||[]).filter(p=>p.subscription_id).map(p=>p.subscription_id)));
+      let nouvelles=[];
+      if(subIds.length){
+        const {data:subsData,error:errSubs}=await sb.from('subscriptions')
+          .select('id,plan_id,starts_at,expires_at').in('id',subIds);
+        if(errSubs)throw errSubs;
+        nouvelles=(subsData||[]).map(s=>({
+          rang:rank[s.plan_id]||0,
+          debut:s.starts_at?partsHaiti(new Date(s.starts_at)).iso:null,
+          fin:s.expires_at?partsHaiti(new Date(s.expires_at)).iso:null   // null = jamais expire (Lifetime)
+        })).filter(p=>p.debut&&p.rang>0);
+      }
+      const avant=JSON.stringify(periodesPlanUser);
+      periodesPlanUser=nouvelles;
+      return avant!==JSON.stringify(nouvelles);
+    }catch(e){return false;}
+  }
+  /* Une fiche compte dans l'historique/stats si AU MOINS UNE periode
+     confirmee la couvre (date + rang de CETTE periode, jamais le rang
+     actuel) -- voir le commentaire de chargerPeriodesPlan ci-dessus.
+     periodesPlanUser===null (jamais charge/panne) : jamais false par
+     defaut, renvoie true pour ne pas tronquer a tort un historique reel
+     avant meme d'avoir pu verifier (meme prudence que dateInscriptionUser
+     ci-dessus). periodesPlanUser===[] (aucune periode confirmee trouvee) :
+     false pour toutes, cas normal d'un compte jamais payé.*/
+  function ficheEtaitAccessible(tk){
+    if(periodesPlanUser==null)return true;
+    return periodesPlanUser.some(p=>
+      tk.playDate>=p.debut&&(!p.fin||tk.playDate<=p.fin)&&accessibleParRang(tk,p.rang));
+  }
+
+  function ticketEl(tk,dejaMeritee){
+    // Abonnement expire, OU fiche hors plan, OU basketball >15 masque
+    // pour le Starter (voir basketMasqueeRang1 ci-dessus) : verrouillee.
+    // AJOUTE (18/09, bug signale par James) : dejaMeritee=true bypass le
+    // verrou par rang ACTUEL — reserve a l'historique, ou ficheEtaitAccessible
+    // a deja etabli que cette fiche precise etait accessible pendant une
+    // periode de plan passee (potentiellement superieure au rang actuel).
+    // Sans ca, un plan redescendu (ou une periode passee a rang plus
+    // eleve suivie d'un plan actuel inferieur) affichait a tort verrouillee,
+    // dans l'historique, une fiche que la personne avait deja pleinement
+    // le droit de voir a l'epoque — l'historique ne doit JAMAIS masquer ce
+    // qui lui appartient reellement, seulement omettre ce qui ne lui
+    // appartient pas (deja gere en amont par ficheEtaitAccessible).
+    const locked=!dejaMeritee&&(isExpired()||isPending()||isRejected()||tk.minPlan>userRank()||basketMasqueeRang1(tk));
     const el=document.createElement('article');
     el.className='dtk'+(locked?' locked':'');
 
@@ -6128,7 +6236,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Les fiches 100 % "score exact" ont leur propre carte : on ne les
     // compte pas deux fois dans la LISTE affichee des fiches du jour.
     const todays=DATA.tickets.filter(k=>estDuJour(k)&&!estFicheScore(k));
-    const visible=todays.filter(k=>k.minPlan<=userRank());
+    const visible=todays.filter(k=>accessibleTk(k));
     const legs=visible.reduce((a,k)=>a+k.legs.length,0);
     const best=visible.length?Math.max.apply(null,visible.map(totalOdd)):0;
     // CHANGÉ (31/08 v2, demande explicite de James) : le CHIFFRE des KPI
@@ -6139,7 +6247,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // qu'une fois dans la liste elle-même. Ce comptage-ci est distinct de
     // "todays"/"visible" (qui restent, eux, la base de la liste rendue).
     const todaysTout=DATA.tickets.filter(k=>estDuJour(k));
-    const visibleTout=todaysTout.filter(k=>k.minPlan<=userRank());
+    const visibleTout=todaysTout.filter(k=>accessibleTk(k));
     // CHANGÉ (31/08, demande explicite de James : "le nombre de fiches
     // disponibles reste toujours affiché, toujours synchronisé avec le
     // nombre total de fiches disponibles, mais les fiches restent
@@ -6156,7 +6264,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       kpi(todaysTout.length-visibleTout.length,'dash_k_locked');
 
     const f=filters.today;
-    /* "Fich lòt plan" : les fiches que le plan ACTIF ne couvre pas.
+    /* "Fich lòt plan" : les fiches que le plan ACTIF ne couvre pas (y
+       compris desormais une fiche basketball masquee pour le Starter —
+       accessibleTk() couvre les deux cas a la fois).
        Elles restent masquees (le verrouillage est gere par ticketEl),
        avec le nom du plan requis affiche dessous.
        CHANGÉ (31/08, demande explicite de James : "les fiches masquées
@@ -6168,11 +6278,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        L'onglet "Fich lòt plan" reste inchangé : il ne montre QUE les
        fiches hors plan, c'est sa raison d'être. */
     const list=(f.sport==='other')
-      ? todays.filter(k=>k.minPlan>userRank())
+      ? todays.filter(k=>!accessibleTk(k))
       : todays.filter(k=>(f.sport==='all'||k.sport===f.sport));
     // Le Lifetime couvre tout : la categorie n'a plus d'objet pour lui
     const btnOther=document.getElementById('dashFbtnOther');
-    const rienDAutre=todays.every(k=>k.minPlan<=userRank())&&
+    const rienDAutre=todays.every(k=>accessibleTk(k))&&
       (rangScoresDuJour()==null||rangScoresDuJour()<=userRank());
     btnOther.hidden=rienDAutre;
     if(rienDAutre&&f.sport==='other'){
@@ -6229,11 +6339,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       document.getElementById('dashCountHist').textContent=t('dash_count').replace('{n}',0);
       return;
     }
-    // Jamais l'historique d'avant l'inscription (voir chargerDateInscription
-    // ci-dessus) — si la date n'a pas pu etre determinee, aucun filtre
-    // n'est applique plutot que de risquer un historique tronque a tort.
-    const done=DATA.tickets.filter(k=>k.status!=='pending'
-      &&(dateInscriptionUser==null||k.playDate>=dateInscriptionUser));
+    // CHANGÉ (18/09, demande explicite de James) : remplace l'ancien
+    // filtre a une seule date-cheville (dateInscriptionUser) par le calcul
+    // par periode de plan confirmee (voir ficheEtaitAccessible plus haut)
+    // — une fiche ne compte que si une periode de plan reellement active a
+    // sa date en donnait l'acces, jamais seulement "publiee apres
+    // l'inscription". Couvre aussi la regle basketball >15/Starter.
+    const done=DATA.tickets.filter(k=>k.status!=='pending'&&ficheEtaitAccessible(k));
     const won=done.filter(k=>k.status==='won').length;
     const rate=done.length?Math.round(won/done.length*100):0;
     document.getElementById('dashKpisHist').innerHTML=
@@ -6247,7 +6359,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const wrap=document.getElementById('dashListHist');
     wrap.innerHTML='';
     if(!list.length){wrap.appendChild(emptyEl(etatFiches==='erreur'?'dash_empty_err':'dash_empty_hist'));}
-    else list.forEach(k=>wrap.appendChild(ticketEl(k)));
+    else list.forEach(k=>wrap.appendChild(ticketEl(k,true)));
     document.getElementById('dashCountHist').textContent=t('dash_count').replace('{n}',list.length);
   }
 
@@ -6275,10 +6387,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     if(bySportWrap)bySportWrap.style.display='';
     if(msgWrap)msgWrap.innerHTML='';
-    // Meme regle que renderHistory : jamais de performance calculee sur
-    // des fiches publiees avant l'inscription de l'utilisateur.
-    const done=DATA.tickets.filter(k=>k.status!=='pending'
-      &&(dateInscriptionUser==null||k.playDate>=dateInscriptionUser));
+    // Meme regle que renderHistory (18/09) : calcul par periode de plan
+    // confirmee, plus l'ancienne date-cheville unique.
+    const done=DATA.tickets.filter(k=>k.status!=='pending'&&ficheEtaitAccessible(k));
     const won=done.filter(k=>k.status==='won');
     const rate=done.length?Math.round(won.length/done.length*100):0;
     const avgOdd=done.length?(done.reduce((a,k)=>a+totalOdd(k),0)/done.length):0;
