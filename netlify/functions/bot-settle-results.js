@@ -366,6 +366,37 @@ function evaluerLeg(leg, golHome, golAway, buteurs) {
   }
 }
 
+// Relance ciblée (18/09, bug signalé par James : LDU Quito-Palmeiras du
+// 16/09, voidée à tort alors que le vrai score 90 minutes existait bel et
+// bien chez API-Sports — juste pas encore renvoyé par l'appel en BLOC du
+// jour au moment du passage). Un seul appel /fixtures?id=X sur CETTE
+// fixture précise, indépendant du lot groupé de la date — interroge
+// l'API une seconde fois, spécifiquement pour ce match, avant d'abandonner
+// définitivement. Coût : au plus un appel par match encore bloqué le
+// lendemain, jamais en boucle sur tout le lot du jour — négligeable sur
+// le quota. Même logique de fiabilité que parFixture plus bas : jamais un
+// repli sur goals (qui inclurait la prolongation) pour un match AET/PEN.
+async function retenterFixtureUnique(fixtureId) {
+  try {
+    const reponse = await apiSportsGet('/fixtures', { id: fixtureId });
+    const f = reponse[0];
+    if (!f || !f.fixture) return null;
+    const statut = f.fixture.status && f.fixture.status.short;
+    const ft = f.score && f.score.fulltime;
+    const ftFiable = ft && ft.home != null && ft.away != null;
+    const alleeEnProlongation = statut === 'AET' || statut === 'PEN';
+    return {
+      statut,
+      golHome: ftFiable ? ft.home : (f.goals && f.goals.home),
+      golAway: ftFiable ? ft.away : (f.goals && f.goals.away),
+      scoreFiable: !alleeEnProlongation || ftFiable
+    };
+  } catch (e) {
+    stats.erreurs.push(`fixtures?id=${fixtureId} (relance ciblée) : ${e.message}`);
+    return null;
+  }
+}
+
 // ============================================================================
 // 6. RÈGLEMENT D'UNE DATE (tous les tickets pending dont play_date = dateIso)
 // ============================================================================
@@ -634,6 +665,12 @@ async function reglerDate(dateIso) {
 
     let toutesResolues = true;
     const ecouler = joursEcoules(dateIso); // 0 = aujourd'hui, 1 = hier, etc.
+    // Le règlement tourne toutes les heures (schedule '0 10-23 * * *') :
+    // sans ce garde-fou, retenterFixtureUnique() se redéclencherait à
+    // CHAQUE passage tant qu'un match reste bloqué le même jour (jusqu'à
+    // 14 fois), au lieu d'une seule fois comme prévu — coûteux et inutile
+    // sur le quota. 10h UTC = première heure de la fenêtre planifiée.
+    const premierPassageDuJour = new Date().getUTCHours() === 10;
 
     for (const leg of legs) {
       if (leg.result) continue; // déjà réglé lors d'un passage précédent
@@ -655,23 +692,60 @@ async function reglerDate(dateIso) {
       } else if (info && STATUTS_ANNULES.includes(info.statut)) {
         nouveauResultat = 'void';
       } else if (info && STATUTS_TERMINES.includes(info.statut) && !info.scoreFiable) {
-        // Match AET/PEN terminé mais fulltime absent de la réponse
-        // API-Sports : on refuse de deviner avec le score final (qui
-        // inclurait la prolongation) — sauf si le filet de sécurité 23h59
-        // se déclenche déjà (ecouler>=1), auquel cas on ne bloque jamais
-        // indéfiniment un leg dont l'API ne complétera peut-être jamais
-        // fulltime. Entre les deux (match d'aujourd'hui, données encore
-        // incomplètes) : reste en attente, un prochain passage réessaiera.
+        // Match AET/PEN terminé mais fulltime absent du lot groupé du
+        // jour. CORRIGÉ (18/09) : avant de voider, une relance ciblée sur
+        // cette fixture précise (voir retenterFixtureUnique) — parfois
+        // l'API renvoie enfin un fulltime fiable à l'appel individuel
+        // alors que le lot groupé ne l'avait pas. Si ça échoue encore,
+        // un jour de grâce SUPPLÉMENTAIRE (ecouler>=2 au lieu de 1) avant
+        // d'abandonner en 'void' — jamais indéfiniment bloqué, mais
+        // jamais abandonné après une seule tentative non plus.
         if (ecouler >= 1) {
-          nouveauResultat = 'void';
+          const retente = premierPassageDuJour ? await retenterFixtureUnique(leg.fixture_id) : null;
+          if (retente && retente.scoreFiable) {
+            let buteursRetente = buteursPourLog;
+            if (leg.market === 'mk_buteur') {
+              if (!(leg.fixture_id in cacheButeurs)) {
+                cacheButeurs[leg.fixture_id] = await recupererButeurs(leg.fixture_id);
+              }
+              buteursRetente = cacheButeurs[leg.fixture_id];
+            }
+            buteursPourLog = buteursRetente || null;
+            nouveauResultat = evaluerLeg(leg, retente.golHome, retente.golAway, buteursRetente);
+          } else if (ecouler >= 2) {
+            nouveauResultat = 'void';
+          } else {
+            stats.erreurs.push(`fixture ${leg.fixture_id} : AET/PEN sans fulltime fiable même après relance ciblée, leg ${leg.id} laissé en attente (1 jour de grâce supplémentaire)`);
+          }
         } else {
           stats.erreurs.push(`fixture ${leg.fixture_id} : AET/PEN sans score fulltime fiable, leg ${leg.id} laissé en attente`);
         }
       } else if (ecouler >= 1) {
-        // Règle des 23h59 Haïti : match sans statut final le lendemain de
-        // sa date de jeu (introuvable dans /fixtures, ou statut bloqué en
-        // NS/TBD/LIVE anormalement longtemps) → void, jamais bloquant.
-        nouveauResultat = 'void';
+        // Règle des 23h59 Haïti : match introuvable dans /fixtures, ou
+        // statut bloqué en NS/TBD/LIVE anormalement longtemps. CORRIGÉ
+        // (18/09) : même relance ciblée qu'au-dessus avant d'abandonner —
+        // un match absent du lot groupé peut très bien être présent à
+        // l'appel individuel (limite de pagination ou décalage de fuseau
+        // sur l'appel en bloc, par exemple). Void seulement si la relance
+        // échoue ENCORE le jour suivant (ecouler>=2).
+        const retente = premierPassageDuJour ? await retenterFixtureUnique(leg.fixture_id) : null;
+        if (retente && STATUTS_TERMINES.includes(retente.statut) && retente.scoreFiable) {
+          let buteursRetente = null;
+          if (leg.market === 'mk_buteur') {
+            if (!(leg.fixture_id in cacheButeurs)) {
+              cacheButeurs[leg.fixture_id] = await recupererButeurs(leg.fixture_id);
+            }
+            buteursRetente = cacheButeurs[leg.fixture_id];
+          }
+          buteursPourLog = buteursRetente;
+          nouveauResultat = evaluerLeg(leg, retente.golHome, retente.golAway, buteursRetente);
+        } else if (retente && STATUTS_ANNULES.includes(retente.statut)) {
+          nouveauResultat = 'void';
+        } else if (ecouler >= 2) {
+          nouveauResultat = 'void';
+        } else {
+          stats.erreurs.push(`fixture ${leg.fixture_id} : introuvable/statut bloqué même après relance ciblée, leg ${leg.id} laissé en attente (1 jour de grâce supplémentaire)`);
+        }
       }
 
       if (nouveauResultat === null) {
