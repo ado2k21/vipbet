@@ -1179,23 +1179,22 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
-        // AJOUTÉ (11/09, correctif répétition de cotes) : "Moins de 2.5
-        // buts" — marché réellement proposé sur paryajpam.com, déjà présent
-        // dans la MÊME réponse /odds (id 5), donc aucun coût de quota
-        // supplémentaire. Il occupe naturellement la plage 1.30–2.00, celle
-        // qui manquait le plus au pool : sans lui, les seules alternatives
-        // "totaux" étaient Over 1.5 / Under 4.5 (toutes deux collées au
-        // plancher 1.20–1.25 sur la majorité des matchs). Contrepartie
-        // logique de "Plus de 2.5 buts" déjà géré juste au-dessus, et
-        // estContradictoire() traite déjà correctement Plus/Moins sur un
-        // même seuil (voir contredictionPlusMoins).
-        if (c >= 1.30 && c <= 2.00 && v.value === 'Under 2.5') {
-          trouvees.push({
-            fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
-            pick: 'Moins de 2.5 buts', odd: c, tier: c <= 1.60 ? 'SAFE' : 'PREMIUM',
-            kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
-          });
-        }
+        // RETIRÉ (18/09, demande explicite de James, capture d'écran d'une
+        // fiche avec "TOTAL GÒL : Moins de 2.5 buts") : ce bloc, ajouté le
+        // 11/09, poussait "Moins de 2.5 buts" sur le match ENTIER (plage
+        // 1.30-2.00). James ne veut plus jamais ce choix précis — "Plus de
+        // 2.5 buts" (bloc juste au-dessus) N'EST PAS concerné et reste
+        // inchangé, de même que "Moins de 3.5 buts" et le total par équipe.
+        // Bloc conservé en commentaire, jamais supprimé physiquement,
+        // pour qu'une réintroduction future n'ait qu'à décommenter plutôt
+        // que ré-écrire depuis zéro s'il fallait un jour y revenir.
+        // if (c >= 1.30 && c <= 2.00 && v.value === 'Under 2.5') {
+        //   trouvees.push({
+        //     fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_total_buts',
+        //     pick: 'Moins de 2.5 buts', odd: c, tier: c <= 1.60 ? 'SAFE' : 'PREMIUM',
+        //     kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
+        //   });
+        // }
       });
     }
     // BTTS (id 8, "Both Teams Score") — profil safe/premium selon la cote
