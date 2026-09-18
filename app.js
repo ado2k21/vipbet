@@ -446,7 +446,7 @@ adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le
 adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
-auth_err_nouser:"Aucun compte trouvé avec cet identifiant",
+auth_err_nouser:"Email ou mot de passe incorrect",
 auth_taken_h:"Cette adresse e-mail est déjà enregistrée",
 auth_taken_sub:"Un compte existe déjà avec cet e-mail. Rendez-vous sur la page de connexion pour y accéder.",
 auth_suspended_h:"Compte suspendu",
@@ -941,7 +941,7 @@ adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
-auth_err_nouser:"No account found with these details",
+auth_err_nouser:"Incorrect email or password",
 auth_taken_h:"This email address is already registered",
 auth_taken_sub:"An account already exists with this email. Head to the login page to sign in.",
 auth_suspended_h:"Account suspended",
@@ -1436,7 +1436,7 @@ adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
-auth_err_nouser:"Nou pa jwenn okenn kont ak idantifyan sa a",
+auth_err_nouser:"Imèl oswa modpas pa kòrèk",
 auth_taken_h:"Imèl sa a deja anrejistre",
 auth_taken_sub:"Gen yon kont ki deja gen imèl sa a. Ale nan paj koneksyon an pou w antre.",
 auth_suspended_h:"Kont sispann",
@@ -6764,7 +6764,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       window.VB_syncPayStatus().then(changed=>{
         // Un plan qui vient de changer donne acces a d'autres fiches :
         // on relit la base, on ne se contente pas de re-afficher.
-        if(changed)rafraichirFiches(true);
+        if(changed){
+          rafraichirFiches(true);
+          /* CORRIGE (bug signale par James, capture d'ecran : "Ap tann
+             validasyon" restait affiche sur l'ecran Abonman m alors que
+             l'admin venait de retirer le plan cote serveur, deja confirme
+             correct en base). VB_syncPayStatus() corrige bien `state` en
+             memoire, mais sans cet appel, l'ecran Abonman m (renderSub)
+             n'etait jamais repeint avec la correction — seules les fiches
+             l'etaient. renderSub() lit `state` en direct a chaque appel,
+             donc ce seul ajout suffit : pas de nouvelle logique. */
+          renderSub();
+        }
       });
     }
     // Fiches : toujours relues depuis la base a l'ouverture (elles sont
@@ -6830,7 +6841,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     resyncTimer=setInterval(()=>{
       if(!dash.classList.contains('open')){arreterResyncPeriodique();return;}
       if(window.VB_syncPayStatus){
-        window.VB_syncPayStatus().then(changed=>{ if(changed)rafraichirFiches(true); });
+        window.VB_syncPayStatus().then(changed=>{
+          if(changed){rafraichirFiches(true);renderSub();}
+        });
       }
       // Publication, modification, suppression ou changement de statut
       // d'une fiche cote Admin : visible ici sans rien fermer ni recharger.
