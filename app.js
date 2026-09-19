@@ -5791,11 +5791,31 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      pouvoir tester aussi bien le rang ACTUEL (vue en direct) que le rang
      qui etait actif a une date passee (historique par periode, plus bas).
      Inclut la regle basketball >15 masquee pour le Starter (rang 1). */
+  /* PRECISION (19/09, demande de James : "si une fiche est deja publiee,
+     elle reste visible jusqu'a la nouvelle publication") : la regle
+     basketball >15 ne s'applique qu'aux fiches dont le jour de jeu est
+     >= BASKET15_MASQUE_DES, c'est-a-dire aux publications a venir. Les
+     fiches DEJA publiees (jour de jeu anterieur) gardent l'ancien
+     comportement : visibles pour le Starter, et comptees dans son
+     historique. Une seule condition, reutilisee partout ci-dessous, pour
+     que l'affichage, les compteurs, l'historique et le texte du verrou ne
+     divergent jamais. Pour changer la date d'entree en vigueur : modifier
+     cette seule constante (jour de jeu = celui de la fiche, pas celui de
+     sa generation ; le bot publie le soir pour le lendemain). */
+  const BASKET15_MASQUE_DES='2026-09-20';
+  const basketHautCote=tk=>tk.sport==='basket'&&totalOdd(tk)>15&&String(tk.playDate||'')>=BASKET15_MASQUE_DES;
   const accessibleParRang=(tk,rangADate)=>{
-    if(tk.sport==='basket'&&totalOdd(tk)>15&&rangADate===1)return false;
+    if(basketHautCote(tk)&&rangADate===1)return false;
     return tk.minPlan<=rangADate;
   };
-  const basketMasqueeRang1=tk=>tk.sport==='basket'&&totalOdd(tk)>15&&userRank()===1;
+  const basketMasqueeRang1=tk=>basketHautCote(tk)&&userRank()===1;
+  /* AJOUTE (19/09) : rang de plan REELLEMENT requis pour voir une fiche.
+     Une fiche basketball a cote >15 est masquee pour le Starter (rang 1) :
+     afficher "Plan 1" comme plan requis serait faux (le Plan 1 ne la voit
+     pas non plus) — le vrai minimum est le rang 2. Sert uniquement au
+     TEXTE du verrou (nom du plan + bouton), jamais a la decision de
+     verrouiller (accessibleParRang/locked, inchanges). */
+  const rangRequis=tk=>Math.max(tk.minPlan||1,basketHautCote(tk)?2:1);
   // Reutilise partout ou "cette fiche est-elle reellement accessible
   // maintenant" est teste — jamais seulement minPlan<=userRank() en dur,
   // pour que la regle basketball ci-dessus s'applique partout a la fois
@@ -5841,21 +5861,53 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
       }
       if(!uid)return false;
+      /* REECRIT (19/09, regle explicite de James : "un plan retire par l'admin
+         met l'historique en pause, un plan active par l'admin le fait
+         continuer"). Une periode = un abonnement REELLEMENT actif :
+           - soit paye ET confirme (payments.status='confirmed') ;
+           - soit attribue par l'admin : AUCUN paiement lie et statut
+             different de 'pending' (verifie en base : tous les
+             abonnements sans paiement sont des attributions admin).
+         Un abonnement dont les paiements ne sont que 'failed'/'pending'
+         n'a jamais ete actif : ignore.
+         FIN de periode = la plus proche entre l'expiration nominale
+         (expires_at) et la fin REELLE (ended_at, posee par la base des
+         qu'un abonnement passe a 'cancelled' : retrait admin, remplacement
+         par un autre plan... voir le declencheur subscriptions_ended_at).
+         Sources lisibles par l'utilisateur lui-meme, aucune nouvelle
+         table. Avant ce correctif, un plan retire par l'admin comptait
+         jusqu'a sa date nominale, et un plan attribue par l'admin (sans
+         paiement) ne comptait pas du tout. */
       const {data:paysData,error:errPays}=await sb.from('payments')
-        .select('subscription_id,plan_id').eq('user_id',uid).eq('status','confirmed');
+        .select('subscription_id,status').eq('user_id',uid);
       if(errPays)throw errPays;
-      const subIds=Array.from(new Set((paysData||[]).filter(p=>p.subscription_id).map(p=>p.subscription_id)));
-      let nouvelles=[];
-      if(subIds.length){
-        const {data:subsData,error:errSubs}=await sb.from('subscriptions')
-          .select('id,plan_id,starts_at,expires_at').in('id',subIds);
-        if(errSubs)throw errSubs;
-        nouvelles=(subsData||[]).map(s=>({
-          rang:rank[s.plan_id]||0,
-          debut:s.starts_at?partsHaiti(new Date(s.starts_at)).iso:null,
-          fin:s.expires_at?partsHaiti(new Date(s.expires_at)).iso:null   // null = jamais expire (Lifetime)
-        })).filter(p=>p.debut&&p.rang>0);
+      const statutsParSub={};
+      (paysData||[]).forEach(y=>{
+        if(!y.subscription_id)return;
+        (statutsParSub[y.subscription_id]=statutsParSub[y.subscription_id]||[]).push(y.status);
+      });
+      let subsRes=await sb.from('subscriptions')
+        .select('id,plan_id,status,starts_at,expires_at,ended_at').eq('user_id',uid);
+      if(subsRes.error){
+        // Repli : colonne ended_at absente (base non migree) — jamais un
+        // historique masque a cause de ca, seulement la fin nominale.
+        subsRes=await sb.from('subscriptions')
+          .select('id,plan_id,status,starts_at,expires_at').eq('user_id',uid);
       }
+      if(subsRes.error)throw subsRes.error;
+      const nouvelles=(subsRes.data||[]).filter(sub=>{
+        if(!sub.plan_id||!sub.starts_at)return false;
+        const st=statutsParSub[sub.id];
+        if(st&&st.length)return st.indexOf('confirmed')>-1;
+        return sub.status!=='pending';
+      }).map(sub=>{
+        const finsMs=[sub.expires_at,sub.ended_at].filter(Boolean).map(x=>new Date(x).getTime()).filter(x=>isFinite(x));
+        return {
+          rang:rank[sub.plan_id]||0,
+          debut:partsHaiti(new Date(sub.starts_at)).iso,
+          fin:finsMs.length?partsHaiti(new Date(Math.min.apply(null,finsMs))).iso:null   // null = jamais expire (Lifetime)
+        };
+      }).filter(pr=>pr.debut&&pr.rang>0);
       const avant=JSON.stringify(periodesPlanUser);
       periodesPlanUser=nouvelles;
       return avant!==JSON.stringify(nouvelles);
@@ -5874,6 +5926,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     return periodesPlanUser.some(p=>
       tk.playDate>=p.debut&&(!p.fin||tk.playDate<=p.fin)&&accessibleParRang(tk,p.rang));
   }
+
+  /* AJOUTE (19/09, regle explicite de James : "l'utilisateur ne perd JAMAIS
+     son historique, meme apres des mois sans plan actif ; il est seulement
+     en pause et reprend avec un nouveau plan"). Vrai des qu'au moins UNE
+     periode de plan confirmee existe pour ce compte : l'historique et les
+     statistiques de ces periodes passees restent alors TOUJOURS visibles,
+     avec ou sans plan actif. Faux (jamais paye, ou periodes pas encore
+     lues) : le message "plan actif requis" reste affiche, jamais de
+     chiffres pour quelqu'un qui n'a jamais eu de plan. */
+  const aDejaEuUnPlan=()=>Array.isArray(periodesPlanUser)&&periodesPlanUser.length>0;
 
   function ticketEl(tk,dejaMeritee){
     // Abonnement expire, OU fiche hors plan, OU basketball >15 masque
@@ -6024,7 +6086,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const exp=isExpired();
       const pend=isPending();
       // Nom du plan requis, lu depuis le catalogue existant (aucune duplication)
-      const needPlan=(window.VB_planById?window.VB_planById('p'+tk.minPlan):null);
+      const needPlan=(window.VB_planById?window.VB_planById('p'+rangRequis(tk)):null);
       const needName=needPlan?String(window.VB_planLabel(needPlan)).replace(/<[^>]*>/g,''):'';
       const icon=pend
         ?'<svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'
@@ -6110,7 +6172,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     const head=document.createElement('div');
     head.className='dtk-head';
-    head.innerHTML='<span class="dtk-sport foot">'+t('mk_score_l').toUpperCase()+'</span>'+
+    head.innerHTML='<span class="dtk-sport score">'+t('mk_score_l').toUpperCase()+'</span>'+
       '<span class="dtk-date">'+dateLongueDash(dayDate(jourSc).toISOString().slice(0,10))+' — '+t('dash_kind_exact')+'</span>'+
       '<span class="dtk-res pending">'+t('dash_st_pending')+'</span>';
     el.appendChild(head);
@@ -6238,7 +6300,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const todays=DATA.tickets.filter(k=>estDuJour(k)&&!estFicheScore(k));
     const visible=todays.filter(k=>accessibleTk(k));
     const legs=visible.reduce((a,k)=>a+k.legs.length,0);
-    const best=visible.length?Math.max.apply(null,visible.map(totalOdd)):0;
+    // CORRIGE (19/09, "gros probleme" signale par James) : "Pi bon cote"
+    // restait a "—" pour tout compte sans plan actif (visible est alors
+    // vide). Meme principe que le compteur "Fich disponib" (31/08) : sans
+    // aucune fiche accessible, on montre la meilleure cote du jour parmi
+    // TOUTES les fiches (cote deja visible sur chaque carte verrouillee,
+    // jamais les selections). Un compte avec des fiches accessibles garde
+    // exactement son comportement d'avant (meilleure cote de SES fiches).
+    const best=visible.length?Math.max.apply(null,visible.map(totalOdd)):(todays.length?Math.max.apply(null,todays.map(totalOdd)):0);
     // CHANGÉ (31/08 v2, demande explicite de James) : le CHIFFRE des KPI
     // "Fiches disponibles"/"Fiches verrouillées", lui, doit compter TOUTE
     // fiche en cours du jour sans exception -- fiche normale + score exact
@@ -6329,7 +6398,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const stH=getState();
     const life=!!(window.VB_isLifetime&&window.VB_isLifetime());
     const planActif=life||!!(stH&&stH.paid&&stH.payStatus==='confirmed'&&stH.planId&&!isExpired());
-    if(!planActif){
+    // CORRIGE (19/09) : le blocage ne vaut plus que pour un compte qui n'a
+    // JAMAIS eu de plan confirme. Un compte dont le plan a expire (ou a
+    // ete retire) garde tout l'historique de ses periodes passees — voir
+    // aDejaEuUnPlan ci-dessus. L'historique est "en pause" (aucune fiche
+    // nouvelle ne s'ajoute hors periode, voir ficheEtaitAccessible) et
+    // reprend tout seul avec un nouveau plan confirme.
+    if(!planActif&&!aDejaEuUnPlan()){
       document.getElementById('dashKpisHist').innerHTML=
         kpi('—','dash_k_played')+kpi('—','dash_k_won','green')+
         kpi('—','dash_k_lost')+kpi('—%','dash_k_rate','gold');
@@ -6376,7 +6451,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const planActifStats=lifeStats||!!(stStats&&stStats.paid&&stStats.payStatus==='confirmed'&&stStats.planId&&!isExpired());
     const bySportWrap=document.getElementById('dashStatsBySportWrap');
     const msgWrap=document.getElementById('dashStatsMsgWrap');
-    if(!planActifStats){
+    // CORRIGE (19/09) : meme regle que renderHistory — jamais masque pour
+    // un compte qui a deja eu au moins une periode de plan confirmee.
+    if(!planActifStats&&!aDejaEuUnPlan()){
       document.getElementById('dashKpisStats').innerHTML=
         kpi('—%','dash_k_rate','green')+kpi('—','dash_k_played')+
         kpi('—','dash_k_avgodd','gold')+kpi('—%','dash_k_avgconf');

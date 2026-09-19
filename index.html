@@ -2538,8 +2538,15 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   font-family:var(--mono);font-size:9.5px;font-weight:800;letter-spacing:.1em;
   border-radius:999px;padding:4px 8px;border:1px solid;
 }
-.dtk-sport.foot{color:var(--vert-vif);border-color:rgba(46,212,127,.4);background:rgba(46,212,127,.09)}
-.dtk-sport.nba{color:#E8A24C;border-color:rgba(232,162,76,.4);background:rgba(232,162,76,.09)}
+/* Couleurs des badges de sport (19/09, demande de James) : deux couleurs
+   vives, distinctes du vert (gagne), du rouge (perdu) et de l'or (en
+   attente) utilises par .dtk-res. FOOTBALL = bleu vif #38B6FF,
+   BASKETBALL = violet vif #C77DFF. .basket (valeur reelle en base) et
+   .nba (ancienne valeur) partagent le meme style. .score = badge de la
+   carte "Scores exacts", garde son vert d'origine. */
+.dtk-sport.foot{color:#38B6FF;border-color:rgba(56,182,255,.55);background:rgba(56,182,255,.13)}
+.dtk-sport.basket,.dtk-sport.nba{color:#C77DFF;border-color:rgba(199,125,255,.55);background:rgba(199,125,255,.13)}
+.dtk-sport.score{color:var(--vert-vif);border-color:rgba(46,212,127,.4);background:rgba(46,212,127,.09)}
 .dtk-date{font-family:var(--mono);font-size:11.5px;color:var(--gris)}
 .dtk-res{
   margin-left:auto;font-family:var(--mono);font-size:9.5px;font-weight:800;letter-spacing:.09em;
