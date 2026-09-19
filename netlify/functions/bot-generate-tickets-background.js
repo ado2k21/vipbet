@@ -3390,8 +3390,48 @@ async function handler(event) {
         const nbErreursAvant = stats.erreurs.length;
         await publierFiche(planScoreExactRef, ficheExacte, dateCible, 'foot', noms, suffixe);
         publieExact = stats.erreurs.length === nbErreursAvant;
-        if (!publieExact && tentative < 5) {
-          console.log(`[BOT] Score exact : collision de code sur le suffixe ${suffixe}, nouvelle tentative.`);
+        if (!publieExact) {
+          // CORRIGE (19/09) : DOUBLE FICHE SCORE EXACT (6 sélections au
+          // lieu de 3) constatée en base le 19/09 — BOT-...-R3-EXACT et
+          // BOT-...-R3-EXACT-2 créées à 7 secondes d'intervalle, avec des
+          // scores différents pour le même match. Cause : deux exécutions
+          // simultanées passaient toutes deux la protection
+          // dejaGenereAujourdhui (vérification puis action, non atomique) ;
+          // la seconde échouait sur le code '-EXACT' (contrainte d'unicité
+          // en base) et la reprise anti-collision du 17/09 republiait alors
+          // sa PROPRE fiche sous '-EXACT-2'.
+          // Désormais : un échec de publication ne déclenche une nouvelle
+          // tentative QUE si aucune fiche score exact automatique n'existe
+          // déjà en base pour cette date. Sinon, c'est qu'un autre run l'a
+          // publiée — on s'arrête (règle : maximum 3 sélections score exact
+          // automatiques par jour). La contrainte d'unicité sur le code
+          // reste l'arbitre atomique. Les fiches manuelles (préfixe ADM...)
+          // ne sont pas concernées : elles ne passent pas par cette boucle.
+          let exactDejaEnBase = false;
+          let verifEchouee = false;
+          try {
+            const existantes = await sbSelect(
+              'tickets',
+              `select=id&play_date=eq.${dateCible}&code=like.BOT-${dateCible}-FOOT-R3-EXACT*&limit=1`
+            );
+            exactDejaEnBase = !!(existantes && existantes.length);
+          } catch (e) {
+            // Vérification impossible : dans le doute, on ne republie PAS
+            // (mieux vaut zéro fiche en double qu'une deuxième fiche).
+            stats.erreurs.push('verif_exact_existant: ' + e.message);
+            exactDejaEnBase = true;
+            verifEchouee = true;
+          }
+          if (exactDejaEnBase) {
+            console.log(`[BOT] Score exact : une fiche existe déjà pour ${dateCible} (autre exécution simultanée) — pas de seconde fiche.`);
+            // Le run perdant n'a rien publié : son erreur de collision est
+            // attendue, on la retire pour ne pas polluer bot_run_log.
+            if (!verifEchouee) stats.erreurs.length = nbErreursAvant;
+            break;
+          }
+          if (tentative < 5) {
+            console.log(`[BOT] Score exact : échec de publication sur le suffixe ${suffixe}, nouvelle tentative.`);
+          }
         }
       }
     }
