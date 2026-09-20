@@ -218,7 +218,9 @@ async function envoyer(sujet, lignes, courtes) {
   // texte court (l'URL est limitée en longueur) — le détail complet reste dans l'email.
   if (process.env.WHATSAPP_PHONE && process.env.WHATSAPP_APIKEY) {
     try {
-      const court = `${sujet}\n\n${texteCourt}`.slice(0, 1000);
+      // CallMeBot supprime l'apostrophe droite (« qu'un » devient « quun ») : on la remplace par
+      // l'apostrophe typographique, affichée correctement par WhatsApp.
+      const court = `${sujet}\n\n${texteCourt}`.slice(0, 1000).replace(/'/g, '\u2019');
       const url = 'https://api.callmebot.com/whatsapp.php?phone=' + encodeURIComponent(process.env.WHATSAPP_PHONE) +
         '&text=' + encodeURIComponent(court) + '&apikey=' + encodeURIComponent(process.env.WHATSAPP_APIKEY);
       const r = await fetchAvecDelai(url, { method: 'GET' }, 15000);
