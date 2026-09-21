@@ -7,10 +7,15 @@
  * un message dès qu'un problème apparaît, puis un message "Rétabli" quand il
  * disparaît. Problèmes surveillés :
  *   - API_BLOQUEE_FOOT / _BASKET : le fournisseur de données refuse les appels
- *   - QUOTA_FOOT_BAS / _BASKET_BAS : 10 requêtes ou moins restantes
- *   - FICHES_MANQUANTES : aucune publication pour demain (dès 20h30 Haïti)
- *                         ou pour aujourd'hui (dès 6h00 Haïti)
- *   - REGLEMENT_BLOQUE : éléments sans résultat 6 h après l'heure de début
+ *   - QUOTA_FOOT_BAS / _BASKET_BAS : compteur interne presque plein OU 10 requêtes
+ *                         ou moins restantes chez le fournisseur (par service)
+ *   - PUB_MANQUANTE_A / _B : aucune publication du service pour demain (dès 20h30
+ *                         Haïti) ou pour aujourd'hui (dès 6h00), avec la CAUSE
+ *                         (aucun passage, compteur plein, API, erreur, rien trouvé)
+ *   - REGLEMENT_BLOQUE_A / _B : éléments sans résultat 6 h après l'heure de début,
+ *                         avec le plus ancien et la date d'annulation automatique
+ * Un message "Rétabli" confirme la fin de chaque problème (ex. « publications
+ * présentes pour le 21/09 »).
  *
  * TEXTES NEUTRES (demande explicite) : aucun message n'indique le domaine
  * d'activité. Vocabulaire employé : "API", "service A" (= premier service),
@@ -63,6 +68,11 @@ const TITRES = {
   API_BLOQUEE_BASKET: 'Problème API (service B)',
   QUOTA_FOOT_BAS: 'Quota API (service A)',
   QUOTA_BASKET_BAS: 'Quota API (service B)',
+  PUB_MANQUANTE_A: 'Publications (service A)',
+  PUB_MANQUANTE_B: 'Publications (service B)',
+  REGLEMENT_BLOQUE_A: 'Calcul des résultats (service A)',
+  REGLEMENT_BLOQUE_B: 'Calcul des résultats (service B)',
+  // anciens noms (compatibilité)
   FICHES_MANQUANTES: 'Publications manquantes',
   REGLEMENT_BLOQUE: 'Calcul des résultats'
 };
@@ -149,30 +159,93 @@ function messageApi(l) {
 function messageAutre(l) {
   const i = l.infos || {};
   const t = l.type;
+  const S = i.service ? `service ${i.service}` : 'service';
+
+  // --- Quota (par service) : compteur interne OU requêtes restantes chez le fournisseur ---
   if (t === 'QUOTA_FOOT_BAS' || t === 'QUOTA_BASKET_BAS') {
-    const titre = 'Quota API presque épuisé' + svc(i);
-    const corps = `Il reste ${i.restant != null ? i.restant : '?'} requête(s) sur ${i.limite || 100} aujourd'hui (remise à zéro à minuit UTC = 20h00 Haïti).`;
+    if (l.cause === 'INTERNE') {
+      const titre = `Compteur interne presque plein (${S})`;
+      const c1 = `Le compteur interne du ${S} est à ${i.interne != null ? i.interne : '?'}/${i.interne_max != null ? i.interne_max : '?'} appels aujourd'hui.`;
+      const c2 = `Arrivé au maximum, les publications automatiques de ce service s'arrêtent jusqu'à la remise à zéro (minuit UTC = 20h00 Haïti).`;
+      const act = 'Si le compteur monte trop vite, plusieurs sites Netlify exécutent les mêmes tâches en parallèle : vérifie la liste de tes sites.';
+      return { titre, lignes: [titre, '', c1, c2, '', act], courtes: [c1, c2, 'Action : vérifier qu\'un seul site Netlify exécute les tâches automatiques.'] };
+    }
+    const titre = `Quota API presque épuisé (${S})`;
+    const corps = `Il reste ${i.restant != null ? i.restant : '?'} requête(s) sur ${i.limite || 100} chez le fournisseur (remise à zéro à minuit UTC = 20h00 Haïti).`;
     const act = 'Évite les traitements manuels d\'ici là, pour garder des requêtes au calcul des résultats.';
     return { titre, lignes: [titre, '', corps, act], courtes: [corps, act] };
   }
+
+  // --- Publications manquantes (par service), avec la cause précise ---
+  if (t === 'PUB_MANQUANTE_A' || t === 'PUB_MANQUANTE_B') {
+    const titre = `Publications manquantes (${S})`;
+    const base = `Aucune publication du ${S} pour le ${i.date_cible || '?'}.`;
+    const dp = i.dernier_passage ? `dernier passage : ${i.dernier_passage}` : '';
+    let cause, action, court;
+    switch (l.cause) {
+      case 'AUCUN_PASSAGE':
+        cause = `Aucun passage automatique depuis plus de 12 h${dp ? ' (' + dp + ', heure Haïti)' : ''} : la tâche ne tourne plus.`;
+        action = 'Vérifie dans Netlify > Functions que la tâche porte le badge « Scheduled », le dernier déploiement et le fichier netlify.toml.';
+        court = 'Action : vérifier Netlify > Functions (Scheduled) et le dernier déploiement.';
+        break;
+      case 'QUOTA_INTERNE':
+        cause = `Cause : le compteur interne est plein${i.interne != null ? ' (' + i.interne + '/' + i.interne_max + ')' : ''}, la génération s'est arrêtée pour protéger la limite du fournisseur.${dp ? ' Dernier passage : ' + i.dernier_passage + '.' : ''}`;
+        action = 'Elle reprendra après la remise à zéro (minuit UTC = 20h00 Haïti). Si ça se répète, plusieurs sites Netlify consomment le même quota en parallèle.';
+        court = 'Elle reprendra à 20h00 Haïti (remise à zéro).';
+        break;
+      case 'API':
+        cause = `Cause : le fournisseur a refusé les appels${i.derniere_erreur_heure ? ' (dernier refus : ' + i.derniere_erreur_heure + ', heure Haïti)' : ''}. Voir l'alerte API.`;
+        action = 'Corrige d\'abord l\'API, puis relance la génération depuis le relais habituel.';
+        court = 'Action : corriger l\'API, puis relancer la génération.';
+        break;
+      case 'INCONNUE': {
+        const err = assainir(i.derniere_erreur).slice(0, 120);
+        cause = `Cause : le dernier passage a signalé une erreur non classée${i.derniere_erreur_heure ? ' (' + i.derniere_erreur_heure + ', heure Haïti)' : ''}${err ? ' : « ' + err + ' »' : ''}.`;
+        action = 'Regarde les logs Netlify de la tâche de génération.';
+        court = 'Action : regarder les logs Netlify de la tâche de génération.';
+        break;
+      }
+      case 'AUCUN_ELEMENT':
+        cause = `Le dernier passage${i.dernier_passage ? ' (' + i.dernier_passage + ', heure Haïti)' : ''} n'a signalé aucune erreur mais n'a rien publié (éléments trouvés : ${i.matchs_trouves !== '' && i.matchs_trouves != null ? i.matchs_trouves : '0'}).`;
+        action = 'Causes possibles : rien à publier ce jour-là, ou une protection anti-doublon qui croit qu\'une publication existe déjà. Regarde les logs Netlify du dernier passage.';
+        court = 'Action : regarder les logs Netlify du dernier passage (rien à publier, ou protection anti-doublon ?).';
+        break;
+      default:
+        cause = `Dernier passage automatique : ${i.dernier_passage || 'inconnu'}.`;
+        action = 'Regarde les logs Netlify de la tâche de génération.';
+        court = 'Action : regarder les logs Netlify.';
+    }
+    return { titre, lignes: [titre, '', base, cause, '', action], courtes: [base, cause, court] };
+  }
+
+  // --- Calcul des résultats bloqué (par service) ---
+  if (t === 'REGLEMENT_BLOQUE_A' || t === 'REGLEMENT_BLOQUE_B') {
+    const titre = `Calcul des résultats bloqué (${S})`;
+    const jours = Number(i.nb_jours) > 1 ? ` (sur ${i.nb_jours} jours)` : '';
+    const c1 = `${i.nb != null ? i.nb : '?'} élément(s) sans résultat plus de 6 h après l'heure de début${jours}.`;
+    const c2 = i.plus_ancien ? `Le plus ancien a débuté le ${i.plus_ancien} (heure Haïti).` : '';
+    const c3 = i.echeance ? `Annulation automatique au plus tôt le ${i.echeance} si le fournisseur ne donne aucun résultat.` : '';
+    const a1 = 'Le calcul repasse chaque heure. Vérifie qu\'aucune alerte API n\'est active, puis regarde les logs Netlify de la fonction de calcul des résultats.';
+    const a2 = 'Si le quota du fournisseur était épuisé, les résultats seront calculés après la remise à zéro (20h00 Haïti).';
+    return {
+      titre,
+      lignes: [titre, '', c1, c2, c3, '', a1, a2].filter((x, idx, a) => x !== '' || a[idx - 1] !== ''),
+      courtes: [c1, c2, c3, 'Action : vérifier l\'alerte API et les logs Netlify du calcul des résultats.'].filter(Boolean)
+    };
+  }
+
+  // --- Anciens noms (compatibilité) ---
   if (t === 'FICHES_MANQUANTES') {
     const titre = 'Publications manquantes' + svc(i);
     const corps = `Aucune publication pour le ${i.date_cible || '?'}.`;
-    const errBrut = String(i.derniere_erreur || '');
-    const refusApi = /suspend|request limit|rate limit|api key|application key|unauthori|forbidden|HTTP 40[13]|HTTP 429/i.test(errBrut);
-    const err = refusApi ? '' : assainir(errBrut);
-    const dernier = refusApi
-      ? 'Dernier passage automatique : refus du fournisseur API (voir l\'alerte API).'
-      : (err ? `Dernier passage automatique, erreur : ${err.slice(0, 120)}` : 'Dernier passage automatique : aucune erreur enregistrée.');
-    const act = 'Les abonnés risquent de ne pas avoir leurs contenus à l\'heure. Corrige d\'abord l\'API si une alerte API est active, puis relance la génération depuis le relais habituel.';
-    return { titre, lignes: [titre, '', corps, dernier, '', act], courtes: [corps, dernier, 'Action : corriger l\'API si besoin, puis relancer la génération.'] };
+    const act = 'Corrige d\'abord l\'API si une alerte API est active, puis relance la génération depuis le relais habituel.';
+    return { titre, lignes: [titre, '', corps, '', act], courtes: [corps, 'Action : corriger l\'API si besoin, puis relancer la génération.'] };
   }
   if (t === 'REGLEMENT_BLOQUE') {
     const titre = 'Calcul des résultats bloqué';
     const corps = `${i.nb != null ? i.nb : '?'} élément(s) sans résultat plus de 6 h après l'heure de début (le plus ancien : ${i.plus_ancien || '-'}, heure Haïti).`;
     const a1 = 'Le calcul repasse chaque heure ; une annulation automatique n\'a lieu qu\'après 2 jours.';
-    const a2 = 'Regarde les logs Netlify de la fonction de calcul des résultats (ligne « erreurs ») et vérifie si une alerte API est active.';
-    return { titre, lignes: [titre, '', corps, '', a1, a2], courtes: [corps, a1] };
+    return { titre, lignes: [titre, '', corps, '', a1], courtes: [corps, a1] };
   }
   const titre = TITRES[t] || 'Alerte système';
   const corps = assainir(l.detail);
@@ -299,7 +372,7 @@ async function handler(event) {
       if (l.probleme) {
         // Un CHANGEMENT de cause (ex. suspendu -> limite du jour) est un nouveau problème :
         // la clé du verrou inclut la cause pour qu'il soit signalé tout de suite.
-        const cle = (estApi && l.cause) ? `${l.type}:${l.cause}` : l.type;
+        const cle = l.cause ? `${l.type}:${l.cause}` : l.type;
         const doitEnvoyer = await rpc('alert_claim', { p_type: cle, p_detail: l.detail });
         if (!doitEnvoyer) { bilan.push(`${cle}: actif (déjà signalé)`); continue; }
         const m = construire(l);
@@ -313,7 +386,11 @@ async function handler(event) {
         const etaitActif = await rpc('alert_resolve', { p_type: l.type });
         if (etaitActif) {
           const titre = TITRES[l.type] || 'Alerte système';
-          await envoyer(`✅ Alerte système — Rétabli : ${titre}`, [`${titre} : le problème n'est plus détecté.`]);
+          const i = l.infos || {};
+          let ligne = `${titre} : le problème n'est plus détecté.`;
+          if (/^PUB_MANQUANTE_/.test(l.type) && i.date_cible) ligne = `${titre} : publications présentes pour le ${i.date_cible}.`;
+          if (/^REGLEMENT_BLOQUE_/.test(l.type)) ligne = `${titre} : plus aucun élément en attente de résultat depuis plus de 6 h.`;
+          await envoyer(`✅ Alerte système — Rétabli : ${titre}`, [ligne]);
           bilan.push(`${l.type}: rétabli`);
         }
       }

@@ -2400,9 +2400,16 @@ function construireFicheScoreExact(pool, plan, options) {
 
 async function dejaGenereAujourdhui(dateCible) {
   try {
+    // CORRIGÉ (20/09) : la vérification ne regardait que le préfixe de code BOT-*, SANS
+    // le sport. Or le bot basketball publie AUSSI des codes BOT-...-BASKET-... : dès que
+    // la fiche basketball d'une date était publiée (19h Haïti), ce bot football croyait
+    // "déjà généré" et s'arrêtait en silence, sans erreur ni fiche (constaté le 20/09 :
+    // 0 match trouvé, erreurs vides, aucune fiche football pour le 21/09). La vérification
+    // est maintenant limitée aux fiches FOOTBALL (le bot basketball, lui, filtre déjà
+    // sur son propre sport). Les fiches manuelles (préfixe ADM) restent ignorées.
     const data = await sbSelect(
       'tickets',
-      `select=id&play_date=eq.${dateCible}&code=like.BOT-*&limit=1`
+      `select=id&play_date=eq.${dateCible}&sport=eq.foot&code=like.BOT-*&limit=1`
     );
     return !!(data && data.length);
   } catch (e) {
