@@ -68,6 +68,8 @@ const TITRES = {
   API_BLOQUEE_BASKET: 'Problème API (service B)',
   QUOTA_FOOT_BAS: 'Quota API (service A)',
   QUOTA_BASKET_BAS: 'Quota API (service B)',
+  API_SITE_OBSOLETE_A: 'Ancienne clé API (service A)',
+  API_SITE_OBSOLETE_B: 'Ancienne clé API (service B)',
   PUB_MANQUANTE_A: 'Publications (service A)',
   PUB_MANQUANTE_B: 'Publications (service B)',
   REGLEMENT_BLOQUE_A: 'Calcul des résultats (service A)',
@@ -174,6 +176,15 @@ function messageAutre(l) {
     const corps = `Il reste ${i.restant != null ? i.restant : '?'} requête(s) sur ${i.limite || 100} chez le fournisseur (remise à zéro à minuit UTC = 20h00 Haïti).`;
     const act = 'Évite les traitements manuels d\'ici là, pour garder des requêtes au calcul des résultats.';
     return { titre, lignes: [titre, '', corps, act], courtes: [corps, act] };
+  }
+
+  // --- Site resté sur une ancienne clé : des exécutions refusées ALORS QUE d'autres réussissent ---
+  if (t === 'API_SITE_OBSOLETE_A' || t === 'API_SITE_OBSOLETE_B') {
+    const titre = `Ancienne clé API sur un site (${S})`;
+    const c1 = 'Certaines exécutions automatiques sont refusées par le fournisseur alors que d\'autres fonctionnent au même moment : le service marche, mais un ou plusieurs sites Netlify utilisent une ancienne clé (compte refusé ou clé absente).';
+    const c2 = `Dernier refus : ${i.dernier_refus || '?'} (heure Haïti) — ${i.refus_30h != null ? i.refus_30h : '?'} refus sur les dernières 30 h ; ${i.succes_simultanes != null ? i.succes_simultanes : '?'} exécution(s) réussie(s) au même moment.`;
+    const a1 = 'Plusieurs sites Netlify exécutent les mêmes tâches (plusieurs exécutions à chaque passage), ce qui consomme aussi le quota plusieurs fois. Garde UN SEUL site actif et supprime les autres, ou mets la clé valide sur chacun puis redéploie.';
+    return { titre, lignes: [titre, '', c1, c2, '', a1], courtes: [c1, c2, 'Action : garder un seul site Netlify actif (ou la clé valide partout), puis redéployer.'] };
   }
 
   // --- Publications manquantes (par service), avec la cause précise ---
