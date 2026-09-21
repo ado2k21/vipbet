@@ -296,7 +296,14 @@ adm_fiche_draft:"brouillon", adm_fiche_legs:"match(s)",
 adm_fiche_st_pending:"En cours", adm_fiche_st_won:"Gagné", adm_fiche_st_lost:"Perdu",
 adm_fiche_kind_normal:"Cote normal", adm_fiche_kind_exact:"Score exact", adm_fiche_kind_basket:"Basketball",
 adm_fiche_src_bot:"BOT", adm_fiche_src_admin:"ADMIN",
-adm_fiches_tab_day:"Du jour", adm_fiches_tab_hist:"Historique",
+adm_fiches_tab_day:"Du jour", adm_fiches_tab_hist:"Historique", adm_fiches_tab_stats:"Statistiques",
+adm_fiches_st_total:"Total", adm_fiches_st_foot:"Football", adm_fiches_st_basket:"Basketball",
+adm_fiches_st_won:"Gagnées", adm_fiches_st_lost:"Perdues", adm_fiches_st_rate:"Taux de réussite",
+adm_fiches_st_line:"{s} réglée(s) · {p} en cours",
+adm_fiches_st_note:"Fiches publiées avec leur résultat réel, selon les filtres choisis.",
+adm_fiches_st_period:"Période", adm_fiches_st_p7:"7 jours", adm_fiches_st_p30:"30 jours", adm_fiches_st_pcustom:"Personnalisé",
+adm_fiches_st_from:"Du", adm_fiches_st_to:"Au", adm_fiches_st_type:"Type",
+adm_fiches_st_t_normal:"Fiches normales", adm_fiches_st_t_exact:"Score exact",
 adm_fiches_f_all:"Tous", adm_fiches_f_pending:"En cours", adm_fiches_f_won:"Gagnés", adm_fiches_f_lost:"Perdus",
 adm_fiches_hist_empty:"Aucune fiche dans l'historique pour ce filtre.",
 adm_fiches_load_more:"Charger plus",
@@ -791,7 +798,14 @@ adm_fiche_draft:"draft", adm_fiche_legs:"match(es)",
 adm_fiche_st_pending:"In progress", adm_fiche_st_won:"Won", adm_fiche_st_lost:"Lost",
 adm_fiche_kind_normal:"Standard odds", adm_fiche_kind_exact:"Correct score", adm_fiche_kind_basket:"Basketball",
 adm_fiche_src_bot:"BOT", adm_fiche_src_admin:"ADMIN",
-adm_fiches_tab_day:"Today", adm_fiches_tab_hist:"History",
+adm_fiches_tab_day:"Today", adm_fiches_tab_hist:"History", adm_fiches_tab_stats:"Statistics",
+adm_fiches_st_total:"Total", adm_fiches_st_foot:"Football", adm_fiches_st_basket:"Basketball",
+adm_fiches_st_won:"Won", adm_fiches_st_lost:"Lost", adm_fiches_st_rate:"Success rate",
+adm_fiches_st_line:"{s} settled · {p} in progress",
+adm_fiches_st_note:"Published slips with their real result, according to the selected filters.",
+adm_fiches_st_period:"Period", adm_fiches_st_p7:"7 days", adm_fiches_st_p30:"30 days", adm_fiches_st_pcustom:"Custom",
+adm_fiches_st_from:"From", adm_fiches_st_to:"To", adm_fiches_st_type:"Type",
+adm_fiches_st_t_normal:"Regular slips", adm_fiches_st_t_exact:"Exact score",
 adm_fiches_f_all:"All", adm_fiches_f_pending:"In progress", adm_fiches_f_won:"Won", adm_fiches_f_lost:"Lost",
 adm_fiches_hist_empty:"No slips in history for this filter.",
 adm_fiches_load_more:"Load more",
@@ -1286,7 +1300,14 @@ adm_fiche_draft:"bouyon", adm_fiche_legs:"match",
 adm_fiche_st_pending:"An kou", adm_fiche_st_won:"Genyen", adm_fiche_st_lost:"Pèdi",
 adm_fiche_kind_normal:"Kòt nòmal", adm_fiche_kind_exact:"Eskò egzak", adm_fiche_kind_basket:"Basketball",
 adm_fiche_src_bot:"BOT", adm_fiche_src_admin:"ADMIN",
-adm_fiches_tab_day:"Jodi a", adm_fiches_tab_hist:"Istorik",
+adm_fiches_tab_day:"Jodi a", adm_fiches_tab_hist:"Istorik", adm_fiches_tab_stats:"Estatistik",
+adm_fiches_st_total:"Total", adm_fiches_st_foot:"Foutbòl", adm_fiches_st_basket:"Basketball",
+adm_fiches_st_won:"Genyen", adm_fiches_st_lost:"Pèdi", adm_fiches_st_rate:"To reyisit",
+adm_fiches_st_line:"{s} regle · {p} an kou",
+adm_fiches_st_note:"Fich ki pibliye ak rezilta reyèl yo, dapre filt ou chwazi yo.",
+adm_fiches_st_period:"Peryòd", adm_fiches_st_p7:"7 jou", adm_fiches_st_p30:"30 jou", adm_fiches_st_pcustom:"Pèsonalize",
+adm_fiches_st_from:"De", adm_fiches_st_to:"Jiska", adm_fiches_st_type:"Tip",
+adm_fiches_st_t_normal:"Fich nòmal", adm_fiches_st_t_exact:"Skò egzak",
 adm_fiches_f_all:"Tout", adm_fiches_f_pending:"An kou", adm_fiches_f_won:"Genyen", adm_fiches_f_lost:"Pèdi",
 adm_fiches_hist_empty:"Pa gen fich nan istorik la pou filt sa a.",
 adm_fiches_load_more:"Chaje plis",
@@ -9286,7 +9307,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        - onglet Historique avec filtres Tous/En cours/Gagnes/Perdus
        - origine BOT/ADMIN et derniere synchronisation du bot
      ============================================================ */
-  let admFichesTab='day';          // 'day' | 'hist'
+  let admFichesTab='day';          // 'day' | 'hist' | 'stats' (onglet Statistiques, 20/09)
   let admFichesStatut='all';       // 'all' | 'pending' | 'won' | 'lost' (les 2 onglets, 27/08)
   // Filtre "Tout" retiré de l'onglet "Jodi a" (28/08, demande explicite de
   // James) : sur le jour courant, seuls "An kou"/"Genyen"/"Pèdi" ont un
@@ -9461,12 +9482,112 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       t('adm_fiches_sync_next').replace('{d}',dateLongue(jourProchain)+' · 17:00');
   }
 
+  /* ---- Onglet « Estatistik » (20/09, demande explicite de James) : nombre de fiches
+     GAGNÉES / PERDUES — TOTAL, puis FOOTBALL et BASKETBALL distincts — dans UNE seule option.
+     Compte les fiches PUBLIÉES (celles que voient les abonnés) par statut réel ; 'nba' est
+     l'ancienne valeur de sport, comptée avec le basketball. Uniquement des compteurs côté
+     serveur (count exact, head) : aucune ligne rapatriée, aucune écriture. ---- */
+  const ADMF_STATS_SPORTS={foot:['foot'],basket:['basket','nba']};
+  // Filtres de l'onglet Statistiques (20/09, demande explicite de James : « ajoute filtres ») :
+  //  - PÉRIODE : tout / 7 derniers jours / 30 derniers jours / personnalisée (du… au…), sur le
+  //    JOUR DE JEU de la fiche (play_date, heure d'Haïti) ;
+  //  - TYPE : tout / fiches normales / score exact. Une fiche score exact = score_legs_count>0
+  //    (même règle que estFicheScoreExact plus haut ; vérifié en base le 20/09 : 19 fiches
+  //    exactes, aucune manquée, aucune fausse, aucune fiche mélangée).
+  // Les filtres s'appliquent aux 3 cartes (Total, Football, Basketball) à la fois.
+  let admStatsPeriode='all';        // 'all' | '7' | '30' | 'custom'
+  let admStatsType='all';           // 'all' | 'normal' | 'exact'
+  let admStatsDu='',admStatsAu='';  // bornes de la période personnalisée (AAAA-MM-JJ)
+  function admfIsoMoinsJours(iso,n){
+    const d=new Date(iso+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-n);
+    return d.toISOString().slice(0,10);
+  }
+  function admfAppliquerFiltresStats(req){
+    const aujourdhui=dateAujourdhui();
+    if(admStatsPeriode==='7')req=req.gte('play_date',admfIsoMoinsJours(aujourdhui,6));
+    else if(admStatsPeriode==='30')req=req.gte('play_date',admfIsoMoinsJours(aujourdhui,29));
+    else if(admStatsPeriode==='custom'){
+      let du=admStatsDu,au=admStatsAu;
+      if(du&&au&&du>au){const x=du;du=au;au=x;}   // bornes inversées : jamais un résultat vide inexpliqué
+      if(du)req=req.gte('play_date',du);
+      if(au)req=req.lte('play_date',au);
+    }
+    if(admStatsType==='normal')req=req.eq('score_legs_count',0);
+    else if(admStatsType==='exact')req=req.gt('score_legs_count',0);
+    return req;
+  }
+  function admfMajAffichageStats(){
+    // Sur l'onglet Statistiques, on masque tout ce qui concerne UNE date (date, filtres,
+    // synchro, boutons de création/génération) : jamais un contrôle sans effet à l'écran.
+    const st=admFichesTab==='stats';
+    const dateEl=document.getElementById('admFichesDate');
+    [dateEl&&dateEl.closest('label'),
+     document.getElementById('admFichesFilters'),document.getElementById('admFichesSync'),
+     document.getElementById('admFichesNew'),document.getElementById('admFicheGenererBtn'),
+     document.getElementById('admFicheGenererExactBtn'),document.getElementById('admFicheGenererBasketBtn')
+    ].forEach(el=>{if(el)el.style.display=st?'none':'';});
+    const fs=document.getElementById('admFichesStatsFilters');
+    if(fs)fs.style.display=st?'':'none';
+    const cu=document.getElementById('admStatsCustom');
+    if(cu)cu.style.display=(st&&admStatsPeriode==='custom')?'':'none';
+  }
+  function admfCalculerStats(c){
+    const bloc=x=>{
+      const won=x.won||0,lost=x.lost||0,pending=x.pending||0,reglees=won+lost;
+      return {won,lost,pending,reglees,taux:reglees?Math.round(won/reglees*1000)/10:null};
+    };
+    const somme=k=>((c.foot&&c.foot[k])||0)+((c.basket&&c.basket[k])||0);
+    return {
+      total:bloc({won:somme('won'),lost:somme('lost'),pending:somme('pending')}),
+      foot:bloc(c.foot||{}),basket:bloc(c.basket||{})
+    };
+  }
+  function admfCarteStatsHtml(titre,b){
+    const taux=b.taux==null?'—':String(b.taux).replace('.',',')+' %';
+    return '<div class="admf-stat-card">'+
+      '<div class="admf-stat-title">'+stripTags(titre)+'</div>'+
+      '<div class="admf-stat-row">'+
+        '<div class="admf-stat"><b class="gagne">'+b.won+'</b><span>'+stripTags(t('adm_fiches_st_won'))+'</span></div>'+
+        '<div class="admf-stat"><b class="perdu">'+b.lost+'</b><span>'+stripTags(t('adm_fiches_st_lost'))+'</span></div>'+
+        '<div class="admf-stat"><b class="taux">'+taux+'</b><span>'+stripTags(t('adm_fiches_st_rate'))+'</span></div>'+
+      '</div>'+
+      '<div class="admf-stat-foot">'+stripTags(t('adm_fiches_st_line').replace('{s}',b.reglees).replace('{p}',b.pending))+'</div>'+
+    '</div>';
+  }
+  async function admfRenderStats(body,sb){
+    body.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
+    try{
+      const jobs=[];
+      ['foot','basket'].forEach(sp=>['won','lost','pending'].forEach(st=>{
+        const q=admfAppliquerFiltresStats(sb.from('tickets').select('id',{count:'exact',head:true})
+          .eq('published',true).in('sport',ADMF_STATS_SPORTS[sp]).eq('status',st));
+        jobs.push(q.then(r=>({sp,st,r})));
+      }));
+      const rs=await Promise.all(jobs);
+      const c={foot:{},basket:{}};
+      rs.forEach(x=>{
+        if(x.r.error)throw x.r.error;
+        c[x.sp][x.st]=x.r.count||0;
+      });
+      const st=admfCalculerStats(c);
+      body.innerHTML=
+        admfCarteStatsHtml(t('adm_fiches_st_total'),st.total)+
+        admfCarteStatsHtml(t('adm_fiches_st_foot'),st.foot)+
+        admfCarteStatsHtml(t('adm_fiches_st_basket'),st.basket)+
+        '<div class="admf-stat-note">'+stripTags(t('adm_fiches_st_note'))+'</div>';
+    }catch(e){
+      body.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';
+    }
+  }
+
   async function renderFiches(){
     const dateInput=document.getElementById('admFichesDate');
     if(!dateInput.value)dateInput.value=dateAujourdhui();
     const body=document.getElementById('admFichesBody');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){body.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+    admfMajAffichageStats();
+    if(admFichesTab==='stats'){await admfRenderStats(body,sb);return;}
     body.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
     majSyncBot();
     try{
@@ -9609,6 +9730,35 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       admFichesFiltrePlanRang=null; // le récap cliquable n'existe que sur "Du jour" — jamais un filtre fantôme sur l'Historique
       document.querySelectorAll('#admFichesTabs [data-ftab]').forEach(x=>x.classList.toggle('is-on',x===b));
       majFiltresJodiA();
+      renderFiches();
+    });
+  });
+  // Filtres de l'onglet Statistiques (période / type / dates personnalisées)
+  document.querySelectorAll('#admStatsPeriodChips [data-speriod]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      admStatsPeriode=b.dataset.speriod;
+      if(admStatsPeriode==='custom'){
+        // Valeurs par défaut lisibles : les 30 derniers jours, jamais deux champs vides.
+        if(!admStatsAu)admStatsAu=dateAujourdhui();
+        if(!admStatsDu)admStatsDu=admfIsoMoinsJours(admStatsAu,29);
+        const du=document.getElementById('admStatsFrom'),au=document.getElementById('admStatsTo');
+        if(du)du.value=admStatsDu;if(au)au.value=admStatsAu;
+      }
+      document.querySelectorAll('#admStatsPeriodChips [data-speriod]').forEach(x=>x.classList.toggle('is-on',x===b));
+      renderFiches();
+    });
+  });
+  document.querySelectorAll('#admStatsTypeChips [data-stype]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      admStatsType=b.dataset.stype;
+      document.querySelectorAll('#admStatsTypeChips [data-stype]').forEach(x=>x.classList.toggle('is-on',x===b));
+      renderFiches();
+    });
+  });
+  ['admStatsFrom','admStatsTo'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('change',()=>{
+      if(id==='admStatsFrom')admStatsDu=el.value;else admStatsAu=el.value;
       renderFiches();
     });
   });

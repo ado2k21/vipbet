@@ -1151,6 +1151,30 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   cursor:pointer;transition:all .18s ease;font-family:inherit;
 }
 .admf-tab.is-on{background:rgba(201,164,76,.14);border-color:rgba(201,164,76,.4);color:var(--or-clair)}
+/* ---- Onglet Statistiques du module Fiches (20/09) : cartes Total / Football / Basketball ---- */
+.admf-stat-card{
+  background:linear-gradient(158deg,rgba(46,212,127,.05),rgba(3,8,23,0) 60%),#0B1425;
+  border:1px solid var(--ligne);border-radius:var(--r-md);padding:15px 16px;margin-bottom:12px;
+}
+.admf-stat-title{
+  font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--or-clair);margin-bottom:12px;
+}
+.admf-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.admf-stat{min-width:0}
+.admf-stat b{display:block;font-family:var(--display);font-weight:800;font-size:26px;line-height:1.1;color:#F4F3ED}
+.admf-stat b.gagne{color:var(--vert-vif)}
+.admf-stat b.perdu{color:#E2634F}
+.admf-stat b.taux{color:var(--or-clair)}
+.admf-stat span{
+  display:block;margin-top:6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--gris);line-height:1.35;
+}
+.admf-stat-foot{margin-top:12px;padding-top:10px;border-top:1px solid var(--ligne);font-size:12px;color:var(--gris)}
+.admf-stat-note{font-size:11.5px;color:var(--gris);text-align:center;margin:4px 0 8px}
+.admf-stat-lbl{margin-top:4px;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.admf-stat-custom{display:flex;gap:10px;margin:10px 0 4px}
+.admf-stat-custom .field{flex:1;min-width:0;margin:0}
 .admf-filters{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px}
 .admf-chip{
   padding:6px 13px;border-radius:999px;border:1px solid rgba(244,243,237,.09);
@@ -4926,6 +4950,26 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
       <div class="admf-tabs" id="admFichesTabs">
         <button type="button" class="admf-tab is-on" data-ftab="day" data-i18n="adm_fiches_tab_day">Jodi a</button>
         <button type="button" class="admf-tab" data-ftab="hist" data-i18n="adm_fiches_tab_hist">Istorik</button>
+        <button type="button" class="admf-tab" data-ftab="stats" data-i18n="adm_fiches_tab_stats">Estatistik</button>
+      </div>
+      <div id="admFichesStatsFilters" style="display:none">
+        <div class="admf-stat-lbl" data-i18n="adm_fiches_st_period">Peryòd</div>
+        <div class="admf-filters" id="admStatsPeriodChips" style="margin-top:6px">
+          <button type="button" class="admf-chip is-on" data-speriod="all" data-i18n="adm_fiches_f_all">Tout</button>
+          <button type="button" class="admf-chip" data-speriod="7" data-i18n="adm_fiches_st_p7">7 jou</button>
+          <button type="button" class="admf-chip" data-speriod="30" data-i18n="adm_fiches_st_p30">30 jou</button>
+          <button type="button" class="admf-chip" data-speriod="custom" data-i18n="adm_fiches_st_pcustom">Pèsonalize</button>
+        </div>
+        <div id="admStatsCustom" class="admf-stat-custom" style="display:none">
+          <label class="field"><span class="field-lbl" data-i18n="adm_fiches_st_from">De</span><input type="date" id="admStatsFrom"></label>
+          <label class="field"><span class="field-lbl" data-i18n="adm_fiches_st_to">Jiska</span><input type="date" id="admStatsTo"></label>
+        </div>
+        <div class="admf-stat-lbl" data-i18n="adm_fiches_st_type">Tip</div>
+        <div class="admf-filters" id="admStatsTypeChips" style="margin:6px 0 16px">
+          <button type="button" class="admf-chip is-on" data-stype="all" data-i18n="adm_fiches_f_all">Tout</button>
+          <button type="button" class="admf-chip" data-stype="normal" data-i18n="adm_fiches_st_t_normal">Fich nòmal</button>
+          <button type="button" class="admf-chip" data-stype="exact" data-i18n="adm_fiches_st_t_exact">Skò egzak</button>
+        </div>
       </div>
       <label class="field"><span class="field-lbl" data-i18n="adm_fiches_date_lbl">Dat</span>
         <input type="date" id="admFichesDate"></label>
