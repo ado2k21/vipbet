@@ -26,7 +26,12 @@
  *
  * ANTI-SPAM et ANTI-DOUBLON : la base (alert_claim / alert_resolve) décide
  * qui envoie, de façon atomique. Un problème qui dure est rappelé toutes les
- * 3 heures maximum. Après un envoi raté : nouvel essai dans 30 minutes.
+ * 3 heures maximum (24 h pour « ancienne clé API »). Après un envoi raté :
+ * nouvel essai dans 30 minutes.
+ * ANTI-COPIES : (1) UN SEUL message par passage, même si plusieurs alertes se
+ * déclenchent ensemble (les alertes « ancienne clé » A et B sont fusionnées) ;
+ * (2) UN SEUL canal par message : WhatsApp, puis email si WhatsApp échoue, puis
+ * Telegram. Seul le test d'envoi (relais ?test=1) essaie tous les canaux.
  *
  * Variables Netlify :
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   (déjà présentes)
@@ -268,6 +273,54 @@ function construire(l) {
 }
 
 // ---------------------------------------------------------------------------
+// Regroupement : UN SEUL message par passage, même si plusieurs alertes se
+// déclenchent ensemble. Les deux alertes "ancienne clé" (services A et B), qui
+// disent la même chose, sont fusionnées en une seule.
+// ---------------------------------------------------------------------------
+function messageObsoleteFusionne(ls) {
+  const tries = ls.slice().sort((a, b) => (a.type < b.type ? -1 : 1));
+  const titre = 'Ancienne clé API sur un site (services A et B)';
+  const c1 = 'Certaines exécutions automatiques sont refusées par le fournisseur alors que d\'autres fonctionnent au même moment : les services marchent, mais un ou plusieurs sites Netlify utilisent une ancienne clé (compte refusé ou clé absente).';
+  const details = tries.map(l => {
+    const i = l.infos || {};
+    return `Service ${i.service || '?'} — dernier refus : ${i.dernier_refus || '?'} (heure Haïti) ; ${i.refus_30h != null ? i.refus_30h : '?'} refus sur 30 h ; ${i.succes_simultanes != null ? i.succes_simultanes : '?'} exécution(s) réussie(s) au même moment.`;
+  });
+  const a1 = 'Plusieurs sites Netlify exécutent les mêmes tâches (plusieurs exécutions à chaque passage), ce qui consomme aussi le quota plusieurs fois. Garde UN SEUL site actif et supprime les autres, ou mets la clé valide sur chacun puis redéploie.';
+  return {
+    titre,
+    lignes: [titre, '', c1].concat(details, ['', a1]),
+    courtes: [c1].concat(details, ['Action : garder un seul site Netlify actif (ou la clé valide partout), puis redéployer.'])
+  };
+}
+
+// Retourne { sujet, lignes, courtes } pour un lot d'alertes (ls = lignes de alert_check).
+function grouperAlertes(ls) {
+  const obsoletes = ls.filter(l => /^API_SITE_OBSOLETE_/.test(l.type));
+  const autres = ls.filter(l => !/^API_SITE_OBSOLETE_/.test(l.type));
+  const items = autres.map(construire);
+  if (obsoletes.length >= 2) items.push(messageObsoleteFusionne(obsoletes));
+  else if (obsoletes.length === 1) items.push(construire(obsoletes[0]));
+
+  if (items.length === 1) {
+    return { sujet: `🚨 Alerte système — ${items[0].titre}`, lignes: items[0].lignes, courtes: items[0].courtes };
+  }
+  const sujet = `🚨 Alertes système (${items.length})`;
+  let lignes = [];
+  items.forEach((m, k) => {
+    if (k > 0) lignes.push('', '————————', '');
+    lignes = lignes.concat(m.lignes);
+  });
+  // Version courte (WhatsApp, limitée en longueur) : blocs complets si ça tient, sinon résumés.
+  let courtes = [];
+  items.forEach((m, k) => { courtes.push(`${k + 1}) ${m.titre}`, ...m.courtes, ''); });
+  if (`${sujet}\n\n${courtes.join('\n')}`.length > 950) {
+    courtes = items.map((m, k) => `${k + 1}) ${m.titre} : ${String(m.courtes[0] || '').slice(0, 140)}`);
+    courtes.push('Détails complets : email ou logs Netlify.');
+  }
+  return { sujet, lignes, courtes };
+}
+
+// ---------------------------------------------------------------------------
 // Envoi
 // ---------------------------------------------------------------------------
 function echapper(s) {
@@ -293,52 +346,69 @@ async function rpc(nom, args) {
   return r.json();
 }
 
-// Retourne { email, telegram, whatsapp } — chacun bool, ou null = canal non configuré.
-async function envoyer(sujet, lignes, courtes) {
-  const texte = lignes.join('\n');
-  const texteCourt = (courtes && courtes.length) ? courtes.join('\n') : texte;
-  const html = '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#111">' +
-    lignes.map(l => `<p style="margin:0 0 10px">${echapper(l)}</p>`).join('') + '</div>';
-  const res = { email: null, telegram: null, whatsapp: null };
-
-  if (process.env.RESEND_API_KEY && process.env.ALERT_EMAIL) {
-    try {
+// Canaux, dans l'ordre de priorité : WhatsApp, email, Telegram.
+// Chaque fonction retourne true/false (envoi réussi ou non) ; l'appelant sait
+// déjà, via canalConfigure(), si le canal est configuré.
+const CANAUX = [
+  {
+    nom: 'whatsapp',
+    configure: () => !!(process.env.WHATSAPP_PHONE && process.env.WHATSAPP_APIKEY),
+    async envoyer(sujet, lignes, courtes) {
+      // CallMeBot : requête GET, texte court. Il supprime l'apostrophe droite : on la remplace.
+      const texteCourt = (courtes && courtes.length) ? courtes.join('\n') : lignes.join('\n');
+      const court = `${sujet}\n\n${texteCourt}`.slice(0, 1000).replace(/'/g, '\u2019');
+      const url = 'https://api.callmebot.com/whatsapp.php?phone=' + encodeURIComponent(process.env.WHATSAPP_PHONE) +
+        '&text=' + encodeURIComponent(court) + '&apikey=' + encodeURIComponent(process.env.WHATSAPP_APIKEY);
+      const r = await fetchAvecDelai(url, { method: 'GET' }, 15000);
+      if (!r.ok) console.log('[ALERTE] WhatsApp HTTP', r.status);
+      return r.ok;
+    }
+  },
+  {
+    nom: 'email',
+    configure: () => !!(process.env.RESEND_API_KEY && process.env.ALERT_EMAIL),
+    async envoyer(sujet, lignes) {
+      const html = '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#111">' +
+        lignes.map(l => `<p style="margin:0 0 10px">${echapper(l)}</p>`).join('') + '</div>';
       const r = await fetchAvecDelai('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: process.env.ALERT_FROM || 'Alertes système <contact@mail.vipbetcote.com>',
           to: [process.env.ALERT_EMAIL],
-          subject: sujet, html, text: texte
+          subject: sujet, html, text: lignes.join('\n')
         })
       });
-      res.email = r.ok;
       if (!r.ok) console.log('[ALERTE] email HTTP', r.status, (await r.text()).slice(0, 200));
-    } catch (e) { res.email = false; console.log('[ALERTE] email erreur', e.message); }
-  }
-
-  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
-    try {
+      return r.ok;
+    }
+  },
+  {
+    nom: 'telegram',
+    configure: () => !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+    async envoyer(sujet, lignes, courtes) {
+      const texteCourt = (courtes && courtes.length) ? courtes.join('\n') : lignes.join('\n');
       const r = await fetchAvecDelai(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text: `${sujet}\n\n${texteCourt}`.slice(0, 3900) })
       });
-      res.telegram = r.ok;
-    } catch (e) { res.telegram = false; console.log('[ALERTE] Telegram erreur', e.message); }
+      return r.ok;
+    }
   }
+];
 
-  // WhatsApp via CallMeBot : requête GET, texte court (URL limitée en longueur).
-  // CallMeBot supprime l'apostrophe droite : on la remplace par l'apostrophe typographique.
-  if (process.env.WHATSAPP_PHONE && process.env.WHATSAPP_APIKEY) {
-    try {
-      const court = `${sujet}\n\n${texteCourt}`.slice(0, 1000).replace(/'/g, '\u2019');
-      const url = 'https://api.callmebot.com/whatsapp.php?phone=' + encodeURIComponent(process.env.WHATSAPP_PHONE) +
-        '&text=' + encodeURIComponent(court) + '&apikey=' + encodeURIComponent(process.env.WHATSAPP_APIKEY);
-      const r = await fetchAvecDelai(url, { method: 'GET' }, 15000);
-      res.whatsapp = r.ok;
-      if (!r.ok) console.log('[ALERTE] WhatsApp HTTP', r.status);
-    } catch (e) { res.whatsapp = false; console.log('[ALERTE] WhatsApp erreur', e.message); }
+// Retourne { email, telegram, whatsapp } : true = envoyé, false = échec,
+// null = canal non configuré OU non essayé (un canal précédent avait réussi).
+// ANTI-COPIES : par défaut on s'arrête au PREMIER canal qui réussit (les suivants
+// ne servent que de secours). tousLesCanaux = true (test d'envoi) essaie tout.
+async function envoyer(sujet, lignes, courtes, tousLesCanaux) {
+  const res = { email: null, telegram: null, whatsapp: null };
+  for (const c of CANAUX) {
+    if (!c.configure()) continue;
+    try { res[c.nom] = await c.envoyer(sujet, lignes, courtes); }
+    catch (e) { res[c.nom] = false; console.log(`[ALERTE] ${c.nom} erreur`, e.message); }
+    if (res[c.nom] === true && !tousLesCanaux) break;
   }
   return res;
 }
@@ -351,10 +421,7 @@ async function handler(event) {
     .filter(k => !process.env[k]);
   const testAutorise = qs.test === '1' && process.env.BOT_TEST_TOKEN && qs.token === process.env.BOT_TEST_TOKEN;
 
-  const canalOk = (process.env.RESEND_API_KEY && process.env.ALERT_EMAIL) ||
-                  (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) ||
-                  (process.env.WHATSAPP_PHONE && process.env.WHATSAPP_APIKEY);
-  if (!canalOk) manquantes.push('un canal d\'envoi (WHATSAPP_PHONE + WHATSAPP_APIKEY, ou ALERT_EMAIL + RESEND_API_KEY, ou TELEGRAM_*)');
+  if (!CANAUX.some(c => c.configure())) manquantes.push('un canal d\'envoi (WHATSAPP_PHONE + WHATSAPP_APIKEY, ou ALERT_EMAIL + RESEND_API_KEY, ou TELEGRAM_*)');
   if (manquantes.length) {
     const msg = 'Configuration incomplète. Variables manquantes : ' + manquantes.join(', ');
     console.log('[ALERTE]', msg);
@@ -362,10 +429,11 @@ async function handler(event) {
   }
 
   if (testAutorise) {
+    // Le test essaie TOUS les canaux configurés, pour vérifier chacun.
     const r = await envoyer('✅ Alerte système — test', [
       'Ce message confirme que les alertes fonctionnent.',
       'Tu recevras un message de ce type dès qu\'un problème sera détecté.'
-    ]);
+    ], null, true);
     return { statusCode: 200, body: JSON.stringify({ test: true, envoi: r }) };
   }
 
@@ -377,8 +445,10 @@ async function handler(event) {
   }
 
   const bilan = [];
+  const aEnvoyer = [];   // { cle, l } : alertes gagnées ce passage (verrou pris)
+  const retablis = [];   // lignes "Rétabli"
+
   for (const l of (lignes || [])) {
-    const estApi = l.type.indexOf('API_BLOQUEE_') === 0;
     try {
       if (l.probleme) {
         // Un CHANGEMENT de cause (ex. suspendu -> limite du jour) est un nouveau problème :
@@ -386,13 +456,7 @@ async function handler(event) {
         const cle = l.cause ? `${l.type}:${l.cause}` : l.type;
         const doitEnvoyer = await rpc('alert_claim', { p_type: cle, p_detail: l.detail });
         if (!doitEnvoyer) { bilan.push(`${cle}: actif (déjà signalé)`); continue; }
-        const m = construire(l);
-        const r = await envoyer(`🚨 Alerte système — ${m.titre}`, m.lignes, m.courtes);
-        if (!envoiReussi(r)) {
-          // Envoi raté : nouvel essai dans 30 minutes (on ne martèle pas le service de messagerie).
-          await rpc('alert_retry_later', { p_type: cle });
-          bilan.push(`${cle}: ENVOI ÉCHOUÉ, nouvel essai dans 30 min`);
-        } else bilan.push(`${cle}: alerte envoyée`);
+        aEnvoyer.push({ cle, l });
       } else {
         const etaitActif = await rpc('alert_resolve', { p_type: l.type });
         if (etaitActif) {
@@ -401,8 +465,7 @@ async function handler(event) {
           let ligne = `${titre} : le problème n'est plus détecté.`;
           if (/^PUB_MANQUANTE_/.test(l.type) && i.date_cible) ligne = `${titre} : publications présentes pour le ${i.date_cible}.`;
           if (/^REGLEMENT_BLOQUE_/.test(l.type)) ligne = `${titre} : plus aucun élément en attente de résultat depuis plus de 6 h.`;
-          await envoyer(`✅ Alerte système — Rétabli : ${titre}`, [ligne]);
-          bilan.push(`${l.type}: rétabli`);
+          retablis.push({ type: l.type, titre, ligne });
         }
       }
     } catch (e) {
@@ -410,10 +473,46 @@ async function handler(event) {
       bilan.push(`${l.type}: erreur ${e.message}`);
     }
   }
+
+  // --- UN SEUL message pour toutes les alertes de ce passage ---
+  if (aEnvoyer.length) {
+    try {
+      const m = grouperAlertes(aEnvoyer.map(x => x.l));
+      const r = await envoyer(m.sujet, m.lignes, m.courtes);
+      if (!envoiReussi(r)) {
+        // Envoi raté sur tous les canaux : nouvel essai dans 30 minutes (on ne martèle pas la messagerie).
+        for (const x of aEnvoyer) {
+          try { await rpc('alert_retry_later', { p_type: x.cle }); } catch (e) { console.log('[ALERTE] retry_later', e.message); }
+        }
+        bilan.push(`${aEnvoyer.map(x => x.cle).join(', ')}: ENVOI ÉCHOUÉ, nouvel essai dans 30 min`);
+      } else bilan.push(`${aEnvoyer.map(x => x.cle).join(', ')}: alerte envoyée (1 message)`);
+    } catch (e) {
+      console.log('[ALERTE] envoi groupé :', e.message);
+      for (const x of aEnvoyer) {
+        try { await rpc('alert_retry_later', { p_type: x.cle }); } catch (_) { /* rien */ }
+      }
+      bilan.push(`envoi groupé erreur ${e.message}`);
+    }
+  }
+
+  // --- UN SEUL message "Rétabli" pour tous les problèmes résolus de ce passage ---
+  if (retablis.length) {
+    try {
+      const sujet = retablis.length === 1
+        ? `✅ Alerte système — Rétabli : ${retablis[0].titre}`
+        : `✅ Alertes système — Rétabli (${retablis.length})`;
+      await envoyer(sujet, retablis.map(x => x.ligne));
+      bilan.push(`${retablis.map(x => x.type).join(', ')}: rétabli`);
+    } catch (e) {
+      console.log('[ALERTE] envoi rétabli :', e.message);
+      bilan.push(`rétabli erreur ${e.message}`);
+    }
+  }
+
   console.log('[ALERTE] bilan :', bilan.join(' | ') || 'RAS');
   return { statusCode: 200, body: JSON.stringify({ ok: true, bilan }) };
 }
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports._interne = { assainir, construire, TITRES };
+module.exports._interne = { assainir, construire, TITRES, grouperAlertes, envoyer };
