@@ -1393,6 +1393,66 @@ function estContradictoire(marketA, pickA, marketB, pickB) {
   return false;
 }
 
+/**
+ * COMPATIBILITÉ AVEC UN SCORE EXACT (20/09, demande explicite de James : les fiches
+ * normales et la fiche score exact PEUVENT partager les mêmes matchs, mais JAMAIS de
+ * contradiction — ex. score exact 2:0 pour l'équipe 1 dans une fiche, et « Victoire
+ * équipe 2 » / « X2 » sur le même match dans une fiche normale : c'est LA chose à contrôler).
+ * Règle : une sélection normale n'est acceptée sur un match qui a un score exact que si elle
+ * serait VRAIE avec ce score (home:away). On évalue le vrai résultat de chaque marché
+ * (1X2, double chance, les deux équipes marquent, total de buts, total par équipe).
+ * Tout marché non reconnu est refusé : sans certitude, jamais de mélange. Ne lève jamais
+ * d'exception (une erreur = refus, jamais un plantage de la génération).
+ */
+function pickCompatibleAvecScore(market, pick, home, away) {
+  try {
+    const p = String(pick || '').trim();
+    const h = Number(home), a = Number(away), total = h + a;
+    if (!isFinite(h) || !isFinite(a)) return false;
+    const seuilPlusMoins = texte => {
+      const m = /(Plus|Moins) de ([\d.]+) buts/i.exec(texte);
+      return m ? { plus: m[1].toLowerCase() === 'plus', x: parseFloat(m[2]) } : null;
+    };
+    switch (market) {
+      case 'mk_1x2': {
+        const v = p.replace(/^Victoire\s*:\s*/i, '').trim().toLowerCase();
+        if (v === 'home') return h > a;
+        if (v === 'away') return a > h;
+        if (v === 'draw' || v === 'nul') return h === a;
+        return false;
+      }
+      case 'mk_double_chance': {
+        const v = p.replace(/^Double chance\s*:\s*/i, '').trim().toUpperCase();
+        if (v === 'X1' || v === '1X') return h >= a;     // domicile ou nul
+        if (v === 'X2' || v === '2X') return a >= h;     // extérieur ou nul
+        if (v === '12') return h !== a;                  // pas de nul
+        return false;
+      }
+      case 'mk_btts': {
+        if (/oui\s*$/i.test(p)) return h > 0 && a > 0;
+        if (/non\s*$/i.test(p)) return h === 0 || a === 0;
+        return false;
+      }
+      case 'mk_total_buts': {
+        const t = seuilPlusMoins(p);
+        return t ? (t.plus ? total > t.x : total < t.x) : false;
+      }
+      case 'mk_total_domicile': {
+        const t = seuilPlusMoins(p);
+        return t ? (t.plus ? h > t.x : h < t.x) : false;
+      }
+      case 'mk_total_exterieur': {
+        const t = seuilPlusMoins(p);
+        return t ? (t.plus ? a > t.x : a < t.x) : false;
+      }
+      default:
+        return false;
+    }
+  } catch (e) {
+    return false;
+  }
+}
+
 function construireFiche(pool, plan, options) {
   options = options || {};
   const buteursUtilises = options.buteursUtilises || new Set();
@@ -1410,6 +1470,10 @@ function construireFiche(pool, plan, options) {
   // pour une fiche unique) : exclusion totale du match si fourni,
   // comportement inchangé pour bot-generate-tickets-manual.js.
   const fixturesExclues = options.fixturesExclues || new Set();
+  // Scores exacts déjà retenus AUJOURD'HUI dans la fiche score exact de ce run (Map
+  // fixtureId -> [{home, away}]). Une sélection normale n'est acceptée sur ces matchs que si
+  // elle est compatible avec le score exact (voir pickCompatibleAvecScore).
+  const scoresExactsParFixture = options.scoresExactsParFixture || null;
   // REMPLACE l'ancienne exclusion totale du match pour le bot automatique
   // (28/08 v2, retour explicite de James : "même match dans jusqu'à 2
   // fiches normales, c'est normal, tant que ce n'est pas contradictoire —
@@ -1786,6 +1850,12 @@ function construireFiche(pool, plan, options) {
     if (matchsUtilises.has(bet.fixtureId)) return false; // anti-corrélation : jamais 2 legs du même match dans LA MÊME fiche
     // Legacy (génération manuelle uniquement, voir plus haut) : exclusion totale si fournie.
     if (fixturesExclues.has(bet.fixtureId)) return false;
+    // Partage autorisé avec la fiche score exact (20/09) — MAIS jamais de contradiction :
+    // la sélection doit rester vraie avec CHAQUE score exact retenu pour ce match.
+    if (scoresExactsParFixture && scoresExactsParFixture.has(bet.fixtureId)) {
+      const scores = scoresExactsParFixture.get(bet.fixtureId) || [];
+      if (!scores.every(sc => pickCompatibleAvecScore(bet.market, bet.pick, sc.home, sc.away))) return false;
+    }
     // Plafond de 2 fiches normales par match (28/08 v2) — à ce stade,
     // bet.fixtureId n'est PAS encore dans matchsUtilises (sinon la ligne
     // ci-dessus aurait déjà bloqué), donc l'accepter compterait comme une
@@ -2407,9 +2477,13 @@ async function dejaGenereAujourdhui(dateCible) {
     // 0 match trouvé, erreurs vides, aucune fiche football pour le 21/09). La vérification
     // est maintenant limitée aux fiches FOOTBALL (le bot basketball, lui, filtre déjà
     // sur son propre sport). Les fiches manuelles (préfixe ADM) restent ignorées.
+    // 20/09 : « déjà généré » = une fiche NORMALE existe. Une fiche score exact SEULE (ex. 21/09 :
+    // passage interrompu, ou ancienne règle) ne bloque plus : le bot peut compléter avec la fiche
+    // normale visible par tous les plans. Un 2e score exact n'est jamais recréé (contrôle des
+    // « -EXACT » existants plus bas) ; les cotes déjà lues sont en cache (peu d'appels API).
     const data = await sbSelect(
       'tickets',
-      `select=id&play_date=eq.${dateCible}&sport=eq.foot&code=like.BOT-*&limit=1`
+      `select=id&play_date=eq.${dateCible}&sport=eq.foot&code=like.BOT-*&code=not.like.*-EXACT*&limit=1`
     );
     return !!(data && data.length);
   } catch (e) {
@@ -3162,6 +3236,11 @@ async function handler(event) {
   const selectionsParFixture = new Map();
   const matchUsageCount = new Map();
   const fixturesUtiliseesNormales = new Set();
+  // 20/09 : scores exacts DÉJÀ publiés aujourd'hui (fiche score exact d'un passage précédent
+  // ou génération manuelle) — lus dans la même requête que ci-dessous, sans appel réseau de
+  // plus. Ils alimentent scoresExactsParFixture : une fiche normale ne contredit jamais un
+  // score exact déjà en ligne.
+  const scoresExactsExistants = [];
   // Defaut explicite AVANT le try : si la lecture echoue avant d'assigner
   // la vraie valeur plus bas, ce degrade vers "non bloque" (comportement
   // le moins surprenant, coherent avec le reste de ce bloc qui ne bloque
@@ -3181,6 +3260,7 @@ async function handler(event) {
     const fichesParFixture = new Map(); // fixtureId -> Set(ticket_id), fiches normales uniquement
     legsExistants.forEach(l => {
       selectionsExclues.add(cleSelection(l));
+      if (l.market === 'mk_score_exact') scoresExactsExistants.push({ fixtureId: l.fixture_id, pick: l.pick });
       // Une fiche "-EXACT" ne compte jamais dans le plafond des 2 fiches
       // normales par match, et n'alimente jamais la détection de
       // contradiction entre fiches normales (marché différent par nature).
@@ -3206,6 +3286,19 @@ async function handler(event) {
   // exact continue de les éviter, même s'il passe désormais en premier au
   // sein de CE run.
   const fixturesUtiliseesScoreExact = new Set(fixturesUtiliseesNormales);
+  // 20/09 : les fiches NORMALES ne cèdent plus leurs matchs à la fiche score exact. Elles
+  // gardent leur propre exclusion (matchs déjà pris par une fiche normale, ce run ou une
+  // exécution précédente du jour), SANS les matchs du score exact, et contrôlent la
+  // contradiction score par score (scoresExactsParFixture, rempli plus bas).
+  const fixturesExclusesNormales = new Set(fixturesUtiliseesNormales);
+  const scoresExactsParFixture = new Map();
+  scoresExactsExistants.forEach(x => {
+    const sc = /(\d+):(\d+)/.exec(String(x.pick));
+    if (!sc) return;
+    const liste = scoresExactsParFixture.get(x.fixtureId) || [];
+    liste.push({ home: parseInt(sc[1], 10), away: parseInt(sc[2], 10) });
+    scoresExactsParFixture.set(x.fixtureId, liste);
+  });
 
   // ============================================================================
   // ÉCHELLE DE PALIERS PAR JOUR (04/09, refonte complète demandée par James
@@ -3251,6 +3344,19 @@ async function handler(event) {
   // ============================================================================
   const SEUIL_JOUR_RICHE = 8; // matchs utilisables distincts — ajustable si besoin
   const jourRiche = nbMatchsDisponibles >= SEUIL_JOUR_RICHE;
+  // 20/09 (demande explicite de James) : un jour PAUVRE en matchs, on publie UNE fiche
+  // normale (cote 2-15, visible par les 4 plans) et PAS de fiche score exact — « plus
+  // professionnel » qu'un score exact bâti sur 3-4 matchs. Passer à true pour rétablir
+  // le score exact aussi les jours pauvres.
+  const SCORE_EXACT_JOUR_PAUVRE = false;
+  // 20/09 (précision de James : « ce principe est seulement pour les jours pauvres ») : le
+  // partage des matchs avec un score exact (et le contrôle de contradiction) ne s'applique
+  // QU'AUX JOURS PAUVRES. Un jour normal (riche), le comportement d'avant est inchangé : la
+  // fiche score exact réserve ses matchs, les fiches normales ne les utilisent pas. Passer
+  // PARTAGE_SCORE_EXACT_JOUR_RICHE à true pour autoriser aussi le partage les jours riches
+  // (toujours avec contrôle de contradiction).
+  const PARTAGE_SCORE_EXACT_JOUR_RICHE = false;
+  const partageAvecScoreExact = !jourRiche || PARTAGE_SCORE_EXACT_JOUR_RICHE;
 
   // MODIFIÉ (06/09, demande explicite de James) : AVANT, cette garantie
   // n'était tentée qu'à partir de 20 matchs disponibles — retour explicite
@@ -3351,7 +3457,10 @@ async function handler(event) {
   // 100 — la contrainte "maximum toujours strict, jamais exemptable"
   // documentée jusqu'ici ne s'applique qu'aux fiches classiques.
   const planScoreExactRef = plans.find(p => p.includes_exact_score);
-  if (planScoreExactRef) {
+  if (planScoreExactRef && !jourRiche && !SCORE_EXACT_JOUR_PAUVRE) {
+    console.log(`[BOT] Jour pauvre (${nbMatchsDisponibles} matchs utilisables < ${SEUIL_JOUR_RICHE}) : pas de fiche score exact, une fiche normale visible par tous les plans à la place.`);
+  }
+  if (planScoreExactRef && (jourRiche || SCORE_EXACT_JOUR_PAUVRE)) {
     const ficheExacte = construireFicheScoreExact(poolFoot, planScoreExactRef, {
       selectionsExclues, fixturesExclues: fixturesUtiliseesScoreExact,
       cibleMaxOverride: 99999 // aucun plafond réel pour le score exact automatique
@@ -3368,6 +3477,12 @@ async function handler(event) {
       ficheExacte.selections.forEach(s => {
         selectionsExclues.add(`${s.fixtureId}|${s.market}|${s.pick}`);
         fixturesUtiliseesScoreExact.add(s.fixtureId);
+        const sc = /(\d+):(\d+)/.exec(String(s.pick));
+        if (sc) {
+          const liste = scoresExactsParFixture.get(s.fixtureId) || [];
+          liste.push({ home: parseInt(sc[1], 10), away: parseInt(sc[2], 10) });
+          scoresExactsParFixture.set(s.fixtureId, liste);
+        }
       });
       // Étiquetage FIXE au rang 3 (jamais recalculé selon la cote) — c'est
       // ce qui garantit le partage systématique 3+4 via la cascade, peu
@@ -3460,7 +3575,9 @@ async function handler(event) {
     // donc le palier réellement visé n'est jamais celui du rang 1.
     const fiche = construireFiche(poolFoot, plans[0], {
       buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
-      fixturesExclues: fixturesUtiliseesScoreExact, nbMatchsDisponibles, marchesUtiliseesJour,
+      fixturesExclues: partageAvecScoreExact ? fixturesExclusesNormales : fixturesUtiliseesScoreExact,
+      scoresExactsParFixture: partageAvecScoreExact ? scoresExactsParFixture : null,
+      nbMatchsDisponibles, marchesUtiliseesJour,
       cibleMinOverride: palier.cibleMin, cibleMaxOverride: palier.cibleMax,
       pousserVersCibleMax: palier.pousserVersCibleMax || false,
       maxSelectionsOverride: palier.maxSelectionsOverride,
@@ -3490,6 +3607,7 @@ async function handler(event) {
       // structurellement impossible si l'ordre des blocs venait à
       // rechanger un jour. Ne jamais la retirer.
       fixturesUtiliseesScoreExact.add(fid);
+      fixturesExclusesNormales.add(fid); // comportement inchangé entre fiches normales (un match = une fiche normale par run)
     });
     // ÉTIQUETAGE PAR RANG EFFECTIF (inchangé, voir commentaire des règles
     // de partage ci-dessus) : jamais le palier visé, toujours le plafond
@@ -3530,7 +3648,7 @@ async function handler(event) {
   // trouvées). Une 2ᵉ fiche (même fourchette 2-15) est tentée seulement
   // si la 1ère a réussi ET que le pool le permet encore — jamais forcée,
   // jamais signalée comme une anomalie si elle échoue.
-  const MAX_FICHES_JOUR_PAUVRE = 2;
+  const MAX_FICHES_JOUR_PAUVRE = 1; // 20/09 : « une seule cote qui partage avec tous les plans » (demande de James)
   const paliersATenter = jourRiche ? PALIERS_JOUR_RICHE : PALIER_JOUR_PAUVRE;
   console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter. Effort max toujours actif, vise ${CIBLE_GARANTIE}+ (plafond réel le plus haut des plans, max ${maxSelectionsEffortMax} sélections selon matchs dispo).`);
   for (const palier of paliersATenter) {
@@ -3591,6 +3709,7 @@ module.exports.extraireMarchesFoot = extraireMarchesFoot;
 module.exports.extraireMarchesBSD = extraireMarchesBSD;
 module.exports.construireFiche = construireFiche;
 module.exports.construireFicheScoreExact = construireFicheScoreExact;
+module.exports.pickCompatibleAvecScore = pickCompatibleAvecScore;
 module.exports.publierFiche = publierFiche;
 module.exports.ALLOWED_LEAGUES_FOOT = ALLOWED_LEAGUES_FOOT;
 module.exports.TOP_LEAGUES_FOOT = TOP_LEAGUES_FOOT;

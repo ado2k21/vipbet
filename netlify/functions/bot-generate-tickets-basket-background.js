@@ -242,6 +242,9 @@ const stats = {
   candidatsExamines: 0,
   poolFinal: 0,
   fichesPubliees: 0,
+  methodeFiche: null, // AJOUTÉ (20/09) : 'optimisee' | 'classique'
+  nbSelectionsPossibles: null, // AJOUTÉ (20/09) : nombres de sélections envisageables, ex. [3,4,5] (le tirage choisit)
+  cibleTirage: null, // AJOUTÉ (20/09) : cote cible tirée pour le jour (5 à 25), transparence pure
   cibleAtteinte: null, // AJOUTÉ (06/09) : palier de cote réellement atteint par la cascade, transparence pure, jamais utilisé pour décider
   erreurs: []
 };
@@ -253,6 +256,9 @@ function resetStatsBasket() {
   stats.candidatsExamines = 0;
   stats.poolFinal = 0;
   stats.fichesPubliees = 0;
+  stats.methodeFiche = null;
+  stats.nbSelectionsPossibles = null;
+  stats.cibleTirage = null;
   stats.cibleAtteinte = null;
   stats.erreurs = [];
   // Diagnostic (31/08 v4, demande explicite de James après un log réel
@@ -452,7 +458,50 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
 const CIBLE_MAX_BASKET = 25;
 const MAX_SELECTIONS_BASKET = 10;
 
-function construireFicheBasket(pool, cibleMaxOverride) {
+// COTE CIBLE DU JOUR (20/09, demande explicite de James : « une seule cote basketball par
+// jour, cote max 25, pas une grosse cote et ALÉATOIRE — une cote différente tous les jours,
+// ça peut être 6 / 20 / 10 / 5 / 7 / 9 / 14… »). AVANT : le bot visait TOUJOURS 25 (8 à 10
+// sélections, une fiche presque toujours perdante : constaté 2 gagnées sur 13). MAINTENANT :
+// chaque jour tire un entier entre CIBLE_MIN_JOUR_BASKET et CIBLE_MAX_BASKET (5 à 25), et la
+// cascade existante vise CETTE cote (puis redescend par paliers si le pool ne le permet pas).
+// Le tirage est déterministe pour une date donnée (même cote si le bot repasse le même jour
+// ou tourne sur plusieurs sites Netlify — jamais deux fiches de cotes différentes), mais varie
+// d'un jour à l'autre. Une cote basse (5-9) = 3-4 sélections ; une cote haute (20-25) = 8-10.
+const CIBLE_MIN_JOUR_BASKET = 5;
+const COTE_MIN_BASKET_OPT = 1.19; // même plancher de cote par sélection que l'extraction (COTE_MIN_BASKET)
+function hash32Basket(texte) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < texte.length; i++) { h ^= texte.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+function pseudoAleatoireBasket(graine) { // mulberry32 : suite pseudo-aléatoire reproductible
+  let a = graine | 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function tirerCibleDuJourBasket(dateCible) {
+  const r = pseudoAleatoireBasket(hash32Basket('basket-cible-' + String(dateCible)))();
+  return CIBLE_MIN_JOUR_BASKET + Math.floor(r * (CIBLE_MAX_BASKET - CIBLE_MIN_JOUR_BASKET + 1));
+}
+
+// ============================================================================
+// RÈGLE « PAS DE COTES IDENTIQUES RÉPÉTÉES » (20/09, demande explicite de James : « il ne faut pas
+// que le bot choisisse des lignes de cote identique pour une fiche, par exemple 1.20 quatre ou
+// cinq fois »). Même règle que le football (MAX_MEME_COTE_PAR_FICHE, 11/09) : jamais plus de 2
+// sélections à la MÊME cote exacte (comparée en centièmes) dans une fiche. Elle ne fait jamais
+// perdre un match : si le meilleur pick d'un match répète déjà une cote, le bot prend un AUTRE pick
+// du même match (autre marché) ; et si vraiment rien n'est possible, l'ancienne méthode reste le
+// dernier recours (une fiche existe toujours).
+// ============================================================================
+const MAX_MEME_COTE_PAR_FICHE_BASKET = 2;
+const cleCoteBasket = odd => Math.round(odd * 100);
+
+// Ancienne construction gloutonne, INCHANGÉE (dernier recours + comportement historique).
+function construireFicheBasketClassique(pool, cibleMaxOverride) {
   // Plafond personnalisable (session suivante, génération manuelle avec
   // les mêmes options que le foot) — 25 par défaut (passage automatique
   // 19h00), ou la cote max choisie par l'admin en génération manuelle.
@@ -500,6 +549,225 @@ function construireFicheBasket(pool, cibleMaxOverride) {
     debugMeilleuresCotes: candidats.slice(0, 6).map(b => ({ gameId: b.gameId, market: b.market, odd: b.odd, score: score(b) })),
     debugCibleMax: cibleMax
   };
+}
+
+// Construction gloutonne AVEC la règle des cotes répétées : un seul pick par match (le meilleur
+// qui respecte la règle), triés par fiabilité, jamais plus de 'limite' sélections à la même cote.
+function construireFicheBasketVarie(pool, cibleMax, limite) {
+  const score = b => (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd) + (b.projectionConfirmee ? 0.05 : 0);
+  const parMatch = new Map();
+  pool.forEach(b => { if (!parMatch.has(b.gameId)) parMatch.set(b.gameId, []); parMatch.get(b.gameId).push(b); });
+  const matchs = Array.from(parMatch.values());
+  matchs.forEach(l => l.sort((a, c) => score(c) - score(a)));
+  matchs.sort((a, c) => score(c[0]) - score(a[0]));
+  const selections = [];
+  const compte = new Map();
+  let coteTotale = 1.0;
+  for (const cands of matchs) {
+    if (selections.length >= MAX_SELECTIONS_BASKET) break;
+    // premier pick de CE match qui tient sous le plafond ET ne répète pas trop une cote
+    const b = cands.find(x => coteTotale * x.odd <= cibleMax * 1.05 && (compte.get(cleCoteBasket(x.odd)) || 0) < limite);
+    if (!b) continue;
+    selections.push(b);
+    compte.set(cleCoteBasket(b.odd), (compte.get(cleCoteBasket(b.odd)) || 0) + 1);
+    coteTotale *= b.odd;
+  }
+  const confiance = selections.length
+    ? Math.round(100 * selections.reduce((sum, x) => sum + 1 / x.odd, 0) / selections.length) : 0;
+  return {
+    selections,
+    coteTotale: Math.round(coteTotale * 100) / 100,
+    confiance,
+    valide: selections.length >= 2 && coteTotale <= cibleMax * 1.05,
+    debugMatchsDistincts: matchs.length,
+    debugCibleMax: cibleMax
+  };
+}
+
+// Point d'entrée UNIQUE (génération automatique ET manuelle) : version « variée » d'abord, ancienne
+// méthode seulement si elle ne peut pas former de combiné (moins de 2 sélections).
+function construireFicheBasket(pool, cibleMaxOverride, options) {
+  const cibleMax = (cibleMaxOverride != null && isFinite(cibleMaxOverride)) ? cibleMaxOverride : CIBLE_MAX_BASKET;
+  const limite = (options && options.maxMemeCote != null) ? options.maxMemeCote : MAX_MEME_COTE_PAR_FICHE_BASKET;
+  if (!isFinite(limite)) return construireFicheBasketClassique(pool, cibleMax);
+  const varie = construireFicheBasketVarie(pool, cibleMax, limite);
+  return varie.valide ? varie : construireFicheBasketClassique(pool, cibleMax);
+}
+
+// ============================================================================
+// FICHE AVEC LE MOINS DE SÉLECTIONS POSSIBLE (20/09, demande explicite de James : « il n'y a
+// pas de nombre de sélections exact pour la fiche, mais il faut éviter trop de combinés — par
+// exemple 5 équipes pour une cote de 4 — la seule objectif, c'est de gagner »).
+// AVANT : le constructeur glouton empilait les sélections les plus sûres (cotes 1,2-1,4) jusqu'à
+// atteindre la cote cible, donc BEAUCOUP de sélections (7-8 pour une cote de 10). Or une fiche ne
+// gagne que si TOUTES ses sélections passent, et chaque sélection perd un peu de chance (marge du
+// bookmaker + écart constaté sur nos propres fiches : ~9 % de moins que la probabilité annoncée
+// par la cote). Plus il y a de sélections, plus cette perte se cumule.
+// MAINTENANT (génération AUTOMATIQUE uniquement ; le manuel garde construireFicheBasket) : parmi
+// toutes les combinaisons d'au plus 1 pick par match dont la cote totale tombe dans la fourchette
+// visée, le bot choisit celle qui a la MEILLEURE CHANCE ESTIMÉE DE GAGNER :
+//     chance = produit sur les sélections de ( probabilité estimée x FACTEUR_MARGE )
+// La probabilité estimée est la même que celle utilisée jusqu'ici pour trier (scoreFiabilite :
+// mélange probabilité de la cote + réussite observée par championnat et marché). Le facteur de
+// marge (0,91 par sélection, mesuré sur 67 sélections réglées) rend chaque sélection
+// supplémentaire coûteuse : à cote égale, moins de sélections = plus de chances. Aucun nombre de
+// sélections imposé : 2 pour une petite cote si des cotes ~2,0 existent, plus pour une grande.
+// Garde-fous : minimum 2 sélections (un combiné), maximum MAX_SELECTIONS_BASKET, une seule pick
+// par match, cote par sélection plafonnée (pas d'outsiders : favorite-longshot bias), et si aucune
+// combinaison ne convient le bot retombe sur l'ancienne méthode (jamais « pas de fiche » de plus).
+// Interrupteur : FICHE_BASKET_MOINS_DE_SELECTIONS = false rétablit exactement l'ancien comportement.
+// ============================================================================
+const FICHE_BASKET_MOINS_DE_SELECTIONS = true;
+const COTE_MAX_SELECTION_OPTIMISEE = 2.2;   // pas d'outsiders au-delà
+const FACTEUR_MARGE_PAR_SELECTION = 0.91;   // réussite observée / probabilité annoncée (66 % vs ~72 %)
+const LIMITE_NOEUDS_OPTIMISATION = 300000;  // borne de calcul : jamais un temps d'exécution incontrôlé
+
+function probaSelectionBasket(b) {
+  const p = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd) + (b.projectionConfirmee ? 0.05 : 0);
+  return Math.min(0.97, Math.max(0.05, p));
+}
+
+// NOMBRE DE SÉLECTIONS ALÉATOIRE (20/09, précision de James : « je ne veux pas de chose exacte,
+// c'est toujours aléatoire pour le nombre de matchs dans une fiche »). Le bot ne prend PAS
+// toujours la combinaison au nombre de sélections minimal : il calcule, pour chaque nombre de
+// sélections k possible, la meilleure combinaison dans la fourchette de cote, puis TIRE AU HASARD
+// k parmi [kMin ; kMin + 2] (kMin = le plus petit nombre de sélections qui permet d'atteindre la
+// cote). Limite contre le trop-combiné : au plus « kMin + 2 » ET une cote moyenne d'au moins 1,45
+// par sélection (jamais 5 équipes pour une cote de 4). Poids du tirage : 40 % / 35 % / 25 % (un peu plus de chances pour les fiches courtes,
+// qui gagnent plus souvent, mais aucun nombre n'est jamais garanti). Le tirage est déterministe pour
+// une date donnée (même nombre si le bot repasse ou tourne sur plusieurs sites), varie d'un jour à l'autre.
+const POIDS_NB_SELECTIONS = [0.40, 0.35, 0.25];   // kMin, kMin+1, kMin+2
+const ECART_MAX_NB_SELECTIONS = 2;
+// Limite contre le trop-combiné : la cote MOYENNE par sélection ne descend pas sous ce seuil
+// (ex. « 5 équipes pour une cote de 4 » = 1,32 par équipe est refusé ; 3 équipes pour une cote de 4,
+// ou 4 équipes pour une cote de 5, restent possibles). Si le pool du jour l'exige, kMin passe
+// toujours : on ne bloque jamais la fiche.
+const COTE_MOYENNE_MIN_PAR_SELECTION = 1.45;
+
+function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
+  const n = jeux.length;
+  let best = null, noeuds = 0;
+  function meilleurQue(chance, cote) {
+    if (!best) return true;
+    if (chance > best.chance * (1 + 1e-9)) return true;
+    if (chance < best.chance * (1 - 1e-9)) return false;
+    return Math.abs(cote - cible) < Math.abs(best.cote - cible);
+  }
+  const compte = new Map();                                        // cote (centièmes) -> nb de sélections déjà choisies
+  function explorer(i, cote, chance, choix) {
+    if (++noeuds > LIMITE_NOEUDS_OPTIMISATION) return;
+    const restants = k - choix.length;
+    if (restants === 0) {
+      if (cote >= bas && cote <= haut && meilleurQue(chance, cote)) best = { chance, cote, selections: choix.slice() };
+      return;
+    }
+    if (n - i < restants) return;                                   // pas assez de matchs restants
+    let maxP = cote;                                                // meilleure cote atteignable avec les 'restants' plus grosses cotes
+    for (let t = 0; t < restants; t++) maxP *= jeux[i + t][0].odd;
+    if (maxP < bas) return;                                         // fourchette inatteignable
+    if (cote * Math.pow(COTE_MIN_BASKET_OPT, restants) > haut) return; // même avec les plus petites cotes, on dépasse
+    // Borne haute SÛRE de la chance finale (voir plus haut) : (KAPPA*F)^restants * cote/bas.
+    if (best && KF < 1 && chance * (cote / bas) * Math.pow(KF, restants) < best.chance * (1 - 1e-9)) return;
+    for (const b of jeux[i]) {
+      const c = cote * b.odd;
+      if (c > haut) continue;
+      const cle = cleCoteBasket(b.odd);
+      if ((compte.get(cle) || 0) >= maxMeme) continue;              // jamais plus de 'maxMeme' sélections à la même cote
+      compte.set(cle, (compte.get(cle) || 0) + 1);
+      choix.push(b);
+      explorer(i + 1, c, chance * probaSelectionBasket(b) * FACTEUR_MARGE_PAR_SELECTION, choix);
+      choix.pop();
+      compte.set(cle, compte.get(cle) - 1);
+    }
+    explorer(i + 1, cote, chance, choix);                           // ne pas prendre ce match
+  }
+  explorer(0, 1, 1, []);
+  return best;
+}
+
+function tirerNbSelectionsBasket(ksValides, rnd) {
+  const candidats = ksValides.slice(0, POIDS_NB_SELECTIONS.length);
+  const poids = candidats.map((k, i) => POIDS_NB_SELECTIONS[i]);
+  const total = poids.reduce((a, c) => a + c, 0);
+  let r = (typeof rnd === 'function' ? rnd() : Math.random()) * total;
+  for (let i = 0; i < candidats.length; i++) { r -= poids[i]; if (r <= 0) return candidats[i]; }
+  return candidats[candidats.length - 1];
+}
+
+function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme) {
+  if (maxMeme == null) maxMeme = MAX_MEME_COTE_PAR_FICHE_BASKET;
+  const bas = cible * fractionBasse, haut = cible * 1.05;
+  const parMatch = new Map();
+  pool.forEach(b => {
+    if (!(b.odd >= COTE_MIN_BASKET_OPT && b.odd <= COTE_MAX_SELECTION_OPTIMISEE)) return;
+    if (!parMatch.has(b.gameId)) parMatch.set(b.gameId, []);
+    parMatch.get(b.gameId).push(b);
+  });
+  const jeux = Array.from(parMatch.values());
+  jeux.forEach(l => l.sort((a, c) => c.odd - a.odd));
+  jeux.sort((a, c) => c[0].odd - a[0].odd);
+  if (jeux.length < 2) return null;
+  // KAPPA = plus grand produit (chance x cote) parmi les sélections éligibles ; KF = KAPPA x marge.
+  let KAPPA = 0;
+  jeux.forEach(l => l.forEach(b => { KAPPA = Math.max(KAPPA, probaSelectionBasket(b) * b.odd); }));
+  const KF = KAPPA * FACTEUR_MARGE_PAR_SELECTION;
+
+  // Meilleure combinaison pour chaque nombre de sélections possible, en partant du plus petit.
+  const parK = {};
+  let kMin = null;
+  const kMaxAbsolu = Math.min(MAX_SELECTIONS_BASKET, jeux.length);
+  const kMaxCoteMoyenne = Math.floor(Math.log(cible) / Math.log(COTE_MOYENNE_MIN_PAR_SELECTION));
+  for (let k = 2; k <= kMaxAbsolu; k++) {
+    // jamais trop de combiné : au plus kMin+2 sélections ET cote moyenne >= 1,45 par sélection
+    // (sauf si kMin lui-même est déjà au-delà : la fiche doit toujours pouvoir exister).
+    if (kMin !== null && k > Math.max(kMin, Math.min(kMin + ECART_MAX_NB_SELECTIONS, kMaxCoteMoyenne))) break;
+    const c = meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme);
+    if (c) { parK[k] = c; if (kMin === null) kMin = k; }
+  }
+  if (kMin === null) return null;
+  const ksValides = Object.keys(parK).map(Number).sort((a, c) => a - c);
+  const kChoisi = tirerNbSelectionsBasket(ksValides, rnd);
+  const meilleur = parK[kChoisi];
+  const selections = meilleur.selections;
+  const coteTotale = Math.round(meilleur.cote * 100) / 100;
+  return {
+    selections,
+    coteTotale,
+    confiance: Math.round(100 * selections.reduce((sum, b) => sum + 1 / b.odd, 0) / selections.length),
+    valide: selections.length >= 2 && coteTotale <= cible * 1.05,
+    chanceEstimee: meilleur.chance,
+    kMin, kChoisi, ksPossibles: ksValides,
+    debugCibleMax: cible
+  };
+}
+
+// Cascade de paliers (100/85/70/50/30/15 % de la cote cible, jamais sous 2) — INCHANGÉE dans son
+// principe (06/09) ; extraite en fonction pour être testable et réutilisée par le handler.
+function cascadeFicheBasket(pool, cibleNominale, rnd) {
+  const paliers = [1, 0.85, 0.7, 0.5, 0.3, 0.15]
+    .map(frac => Math.max(2, Math.round(cibleNominale * frac * 100) / 100))
+    .filter((v, i, arr) => arr.indexOf(v) === i); // dédoublonne les paliers qui convergent vers la même valeur
+  let fiche = null, cibleRetenue = null, methode = 'classique';
+  for (const cible of paliers) {
+    // 20/09 : d'abord la combinaison avec le MOINS de sélections / la meilleure chance de gain
+    // (fourchette 93-105 % de la cote visée, puis 85-105 %), sinon l'ancienne méthode gloutonne.
+    let essai = null, methodeEssai = 'classique';
+    if (FICHE_BASKET_MOINS_DE_SELECTIONS) {
+      // règle des cotes répétées : d'abord max 2 identiques, puis (si rien) max 3, jamais plus
+      essai = construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 2) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 2)
+           || construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 3) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 3);
+      if (essai) methodeEssai = 'optimisee';
+    }
+    if (!essai) essai = construireFicheBasket(pool, cible);
+    const dernierPalier = cible === paliers[paliers.length - 1];
+    // Palier retenu si la cote atteinte s'approche vraiment de CE palier (>=85 % de sa valeur) ;
+    // sur le tout dernier palier, on accepte le meilleur résultat valide même en dessous.
+    if (essai.valide && (essai.coteTotale >= cible * 0.85 || dernierPalier)) {
+      fiche = essai; cibleRetenue = cible; methode = methodeEssai;
+      break;
+    }
+  }
+  return { fiche, cibleRetenue, paliers, methode };
 }
 
 async function handler(event) {
@@ -688,28 +956,21 @@ async function handler(event) {
   // silencieusement en dessous de ce qui était réellement possible.
   // Aucun nouveau chemin de construction : construireFicheBasket() reste
   // strictement identique, seul le nombre d'appels change.
-  const paliersCascadeBasket = [1, 0.85, 0.7, 0.5, 0.3, 0.15]
-    .map(frac => Math.max(2, Math.round(CIBLE_MAX_BASKET * frac * 100) / 100))
-    .filter((v, i, arr) => arr.indexOf(v) === i); // dédoublonne les paliers qui convergent vers la même valeur
-
-  let fiche = null, cibleRetenueBasket = null;
-  for (const cible of paliersCascadeBasket) {
-    const essai = construireFicheBasket(poolBasketFiltre, cible);
-    const dernierPalier = cible === paliersCascadeBasket[paliersCascadeBasket.length - 1];
-    // Même règle d'acceptation que le manuel : palier retenu si la cote
-    // atteinte s'approche vraiment de CE palier (≥85% de sa valeur) —
-    // sinon on redescend encore. Sur le tout dernier palier (le plus
-    // permissif), on accepte le meilleur résultat valide obtenu même en
-    // dessous de 85%, plutôt que de finir sans rien alors qu'une vraie
-    // combinaison existe.
-    if (essai.valide && (essai.coteTotale >= cible * 0.85 || dernierPalier)) {
-      fiche = essai; cibleRetenueBasket = cible;
-      break;
-    }
-  }
+  // 20/09 : la cascade vise la COTE CIBLE DU JOUR (tirée entre 5 et 25, voir
+  // tirerCibleDuJourBasket) au lieu du plafond fixe de 25.
+  const cibleDuJour = tirerCibleDuJourBasket(dateCible);
+  stats.cibleTirage = cibleDuJour;
+  console.log(`[BOT-BASKET] Cote cible du jour tirée pour ${dateCible} : ${cibleDuJour}`);
+  // Le NOMBRE de sélections est aussi tiré au hasard (voir POIDS_NB_SELECTIONS), graine = la date.
+  const hasardNbSelections = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
+  const cascadeBasket = cascadeFicheBasket(poolBasketFiltre, cibleDuJour, hasardNbSelections);
+  const paliersCascadeBasket = cascadeBasket.paliers;
+  let fiche = cascadeBasket.fiche, cibleRetenueBasket = cascadeBasket.cibleRetenue;
+  stats.methodeFiche = cascadeBasket.methode; // 'optimisee' (peu de sélections) ou 'classique' — transparence pure
+  if (cascadeBasket.fiche && cascadeBasket.fiche.ksPossibles) stats.nbSelectionsPossibles = cascadeBasket.fiche.ksPossibles;
   // Transparence (même principe que le manuel) — n'influence jamais la
   // décision, uniquement visible dans bot_run_log pour comprendre le
-  // résultat obtenu vs le plafond nominal de 25.
+  // résultat obtenu vs la cote cible tirée pour ce jour.
   stats.cibleAtteinte = cibleRetenueBasket;
 
   if (!fiche) {
@@ -768,6 +1029,13 @@ module.exports.construireFicheBasket = construireFicheBasket;
 module.exports.BASKET_MIN_HOUR = BASKET_MIN_HOUR;
 module.exports.BASKET_MAX_MINUTES = BASKET_MAX_MINUTES;
 module.exports.CIBLE_MAX_BASKET = CIBLE_MAX_BASKET;
+module.exports.CIBLE_MIN_JOUR_BASKET = CIBLE_MIN_JOUR_BASKET;
+module.exports.tirerCibleDuJourBasket = tirerCibleDuJourBasket;
+module.exports.construireFicheBasket = construireFicheBasket;
+module.exports.cascadeFicheBasket = cascadeFicheBasket;
+module.exports.construireFicheBasketOptimisee = construireFicheBasketOptimisee;
+module.exports.construireFicheBasketClassique = construireFicheBasketClassique;
+module.exports.construireFicheBasketVarie = construireFicheBasketVarie;
 module.exports.stats = stats;
 module.exports.resetStatsBasket = resetStatsBasket;
 module.exports.logFinal = logFinal;
