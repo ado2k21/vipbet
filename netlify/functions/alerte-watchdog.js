@@ -430,9 +430,9 @@ async function handler(event) {
 
   if (testAutorise) {
     // Le test essaie TOUS les canaux configurés, pour vérifier chacun.
-    const r = await envoyer('✅ Alerte système — test', [
-      'Ce message confirme que les alertes fonctionnent.',
-      'Tu recevras un message de ce type dès qu\'un problème sera détecté.'
+    const r = await envoyer('✅ test des alertes', [
+      'Ce message confirme que les alertes admin fonctionnent.',
+      'Tu recevras un message de ce type dès qu\'un problème (pai bloquée, bet manquantes, règlement bloqué...) sera détecté.'
     ], null, true);
     return { statusCode: 200, body: JSON.stringify({ test: true, envoi: r }) };
   }
