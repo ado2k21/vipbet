@@ -3457,6 +3457,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // elle ne va que dans pendingRef.
     const nouvelleRef='VB-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000);
 
+    /* CORRECTIF (bug signale par James, capture "Peman an ap verifye" avec
+       reference introuvable en base) : tout ce qui suit ecrit l'etat local
+       de facon OPTIMISTE, AVANT la confirmation reelle par syncAbonnementSupabase.
+       Si cette confirmation echoue (resSync.hors_ligne, plus bas), il faut
+       pouvoir tout annuler — sinon la personne se retrouve avec un ecran de
+       confirmation et un acces Dashboard bases sur une reference qui n'a
+       jamais ete ecrite cote serveur. Snapshot pris ICI, avant la moindre
+       mutation, jamais apres. */
+    const avantEcriture={
+      payMethod:state.payMethod,pendingPlanId:state.pendingPlanId,pendingRef:state.pendingRef,
+      ref:state.ref,planId:state.planId,paid:state.paid,payStatus:state.payStatus,
+      startDate:state.startDate,endDate:state.endDate,step:state.step,started:state.started
+    };
+    const accountAvant=accounts.find(state.email.trim().toLowerCase());
+
     if(planEnCoursValide){
       // Le plan actif ne bouge pas : seul le CHANGEMENT est enregistre,
       // separement, en attente de confirmation. state.ref reste intact,
@@ -3544,8 +3559,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
     if(resSync&&resSync.hors_ligne){
+      // CORRECTIF : plus jamais d'ecran de confirmation quand rien n'a
+      // reellement ete ecrit en base. On annule TOUT ce qui a ete pose de
+      // facon optimiste plus haut (state ET l'entree accounts), la personne
+      // reste sur le formulaire (jamais showStep(4)), et peut reessayer —
+      // exactement comme si l'echec s'etait produit avant la moindre
+      // mutation.
+      Object.assign(state,avantEcriture);
+      save();
+      if(accountAvant)accounts.put(accountAvant);
+      else accounts.put({
+        email:state.email.trim().toLowerCase(),pass:state.pass,
+        fullname:state.fullname,site:state.site,
+        emailVerified:true,paid:false,payStatus:'none',
+        planId:null,payMethod:null,startDate:null,endDate:null,ref:null
+      });
       if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('paiement_sync',resSync.erreur);
       if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('err_action_unavailable_p'));
+      return;
     }
     showStep(4);
   }
@@ -3705,7 +3736,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const pl=planById(enAttenteChangement?state.pendingPlanId:state.planId);
     const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
     const pend=enAttenteChangement||state.payStatus==='pending';
-    const methodeAuto=PAIEMENT_AUTO_METHODS.includes(state.payMethod);
+    // CORRECTIF : state.payMethod ('moncash'/'natcash') ne distingue pas
+    // auto/manuel — sans state.payMode!=='manuel', un depot MANUEL affichait
+    // a tort le texte "confirmation automatique" (methodeAuto se basait
+    // uniquement sur la methode, jamais sur le sous-mode choisi).
+    const methodeAuto=PAIEMENT_AUTO_METHODS.includes(state.payMethod)&&state.payMode!=='manuel';
     const ic=document.getElementById('wizDoneIc');
     ic.classList.toggle('is-pending',pend);
     ic.innerHTML=pend
