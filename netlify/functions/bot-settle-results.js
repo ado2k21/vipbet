@@ -611,7 +611,7 @@ async function infoBSDPourLeg(fixtureId, dateIso) {
 // et seulement si l'appariement est strict (voir trouverEvenementParNoms) ET
 // que le match est terminé avec un score à 90 minutes sûr. Jamais de void par
 // cette voie, jamais de buteur. Sinon null → la sélection reste en attente.
-async function infoBSDParNoms(leg, dateIso) {
+async function infoBSDParNoms(leg, dateIso, accepterAnnule) {
   if (!BSD_API_KEY || leg.market === 'mk_buteur') return null;
   const morceaux = String(leg.match_label || '').split(' — ');
   if (morceaux.length !== 2) return null;
@@ -630,8 +630,75 @@ async function infoBSDParNoms(leg, dateIso) {
   const ev = bsdRelais.trouverEvenementParNoms({ evenements, home: morceaux[0], away: morceaux[1], kickoffIso: leg.kickoff_at });
   if (!ev) return null;
   const res = bsdRelais.resultatDepuisEvenementBSD(ev);
-  if (!res || res.statut !== 'FT') return null;
-  return Object.assign({}, res, { parNoms: true, bsdId: ev.id });
+  if (!res) return null;
+  if (res.statut !== 'FT' && !(accepterAnnule && (res.statut === 'CANC' || res.statut === 'PST'))) return null;
+  return Object.assign({}, res, { parNoms: true, bsdId: ev.id, scoreTexte: ev.home_score + '-' + ev.away_score });
+}
+
+
+// ============================================================================
+// RATTRAPAGE BSD D'UNE DATE (30/09) — sur demande uniquement (?diag=bsd-rattrapage,
+// jamais automatique). Fiches FOOT encore « pending » dont des sélections ont été
+// mises en void à tort pendant une panne d'API-Sports. Chaque sélection est
+// recalculée d'après BSD (appariement strict par noms, score 90 min sûr).
+// RÈGLE : tout ou rien PAR FICHE. Si une seule sélection de la fiche ne peut pas
+// être confirmée (match introuvable/ambigu/prolongation/pas terminé/buteur), la
+// fiche entière reste INTACTE. Un match que BSD confirme reporté/annulé reste void.
+// appliquer=false (défaut) : rien n'est écrit, seulement le rapport.
+// ============================================================================
+async function rattraperDateBSD(dateIso, appliquer) {
+  const rapport = { date: dateIso, appliquer: appliquer === true, fiches: [] };
+  if (!BSD_API_KEY) { rapport.erreur = 'BSD_API_KEY absente'; return rapport; }
+  resetCacheBSD();
+  const tickets = await sbSelect('tickets', `select=id,code,play_date,sport&status=eq.pending&sport=eq.foot&play_date=eq.${dateIso}`);
+  for (const t of tickets) {
+    const legs = await sbSelect('ticket_legs', `select=id,fixture_id,market,pick,result,match_label,kickoff_at&ticket_id=eq.${t.id}&order=position.asc`);
+    const fiche = { code: t.code, selections: [], complete: true, ecrit: false };
+    const nouveaux = [];
+    for (const leg of legs) {
+      const ligne = { match: leg.match_label, marche: leg.market, pick: leg.pick, avant: leg.result };
+      if (leg.fixture_id < 0) { ligne.raison = 'match BSD (géré par le règlement normal)'; fiche.complete = false; fiche.selections.push(ligne); continue; }
+      let info = null;
+      try { info = await infoBSDParNoms(leg, dateIso, true); } catch (e) { ligne.raison = 'erreur BSD: ' + e.message; }
+      if (!info) { ligne.raison = ligne.raison || 'BSD : aucun match sûr (introuvable, ambigu, pas terminé ou prolongation)'; fiche.complete = false; fiche.selections.push(ligne); continue; }
+      ligne.bsdId = info.bsdId; ligne.scoreBSD = info.scoreTexte;
+      let res = null;
+      if (info.statut === 'FT') res = evaluerLeg(leg, info.golHome, info.golAway, undefined);
+      else res = 'void'; // reporté/annulé confirmé par BSD
+      if (res === null) { ligne.raison = 'marché non évaluable automatiquement'; fiche.complete = false; fiche.selections.push(ligne); continue; }
+      ligne.apres = res; ligne.statutBSD = info.statut;
+      fiche.selections.push(ligne);
+      nouveaux.push({ leg, res, info });
+    }
+    if (fiche.complete) {
+      const finals = legs.map(l => { const n = nouveaux.find(x => x.leg.id === l.id); return n ? n.res : l.result; });
+      const aPerdu = finals.includes('lost'), aGagne = finals.includes('won');
+      const estExact = String(t.code || '').endsWith('-EXACT');
+      fiche.statutFinal = (!aPerdu && !aGagne) ? 'pending (tout void)' : estExact ? (aGagne ? 'won' : 'lost') : (aPerdu ? 'lost' : 'won');
+      if (appliquer === true && (aPerdu || aGagne)) {
+        for (const n of nouveaux) {
+          if (n.leg.result === n.res) continue;
+          await sbUpdate('ticket_legs', n.leg.id, { result: n.res, settled_at: new Date().toISOString() });
+          await enregistrerValidationLog({
+            scope: 'leg', fixture_id: n.leg.fixture_id, ticket_id: t.id, ticket_code: t.code, leg_id: n.leg.id,
+            market: n.leg.market, pick: n.leg.pick,
+            actual_result: n.info.statut === 'FT' ? `Score temps réglementaire ${n.info.scoreTexte} (BSD)` : `Match ${n.info.statut} (BSD)`,
+            statistic_used: `rattrapage BSD, appariement strict par noms, id BSD ${n.info.bsdId}`,
+            source: 'bsd', status_before: n.leg.result, status_after: n.res
+          });
+        }
+        await sbUpdate('tickets', t.id, { status: fiche.statutFinal, settled_at: new Date().toISOString() });
+        await enregistrerValidationLog({
+          scope: 'ticket', fixture_id: null, ticket_id: t.id, ticket_code: t.code, leg_id: null, market: null, pick: null,
+          actual_result: `rattrapage BSD : ${finals.filter(x => x === 'won').length} won / ${finals.filter(x => x === 'lost').length} lost / ${finals.filter(x => x === 'void').length} void`,
+          statistic_used: 'rattrapage BSD (toutes les sélections confirmées)', source: 'bsd', status_before: 'pending', status_after: fiche.statutFinal
+        });
+        fiche.ecrit = true;
+      }
+    }
+    rapport.fiches.push(fiche);
+  }
+  return rapport;
 }
 
 // ============================================================================
@@ -1278,4 +1345,5 @@ async function handler(event) {
 }
 
 module.exports.handler = handler;
+module.exports.rattraperDateBSD = rattraperDateBSD;
 module.exports.config = config;

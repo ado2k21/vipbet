@@ -444,6 +444,16 @@ async function handler(event) {
   // RELAIS BSD (30/09) : aperçu de ce que le relais fournirait si API-Sports
   // était indisponible — AUCUN appel API-Sports, AUCUNE écriture en base.
   // ?diag=bsd-relais[&date=AAAA-MM-JJ][&id=<id BSD>] (id : lit le résultat d'un match).
+  // RATTRAPAGE BSD (30/09) : ?diag=bsd-rattrapage&date=AAAA-MM-JJ  → RAPPORT SEULEMENT.
+  // Ajouter &appliquer=1 pour écrire (fiche par fiche, seulement si TOUTES ses sélections sont confirmées).
+  if (modeTest && event.queryStringParameters.diag === 'bsd-rattrapage') {
+    const qs = event.queryStringParameters;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(qs.date || '')) return { statusCode: 400, body: 'date=AAAA-MM-JJ requise' };
+    const reglement = require('./bot-settle-results.js');
+    const rapport = await reglement.rattraperDateBSD(qs.date, qs.appliquer === '1');
+    return { statusCode: 200, body: JSON.stringify(rapport, null, 2) };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'bsd-relais') {
     if (!BSD_API_KEY) return { statusCode: 500, body: 'BSD_API_KEY manquante (variable Netlify).' };
     const bsdRelais = require('./lib/bsd-relais.js');
