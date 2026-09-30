@@ -126,15 +126,23 @@ function trierTicketsAReglerSelonLegs(tickets, legsRows) {
   });
   const aTraiter = [];
   const besoinApiIds = new Set();
+  const besoinBsdIds = new Set();
   (tickets || []).forEach(t => {
     const legs = parTicket.get(t.id) || [];
     const aLegSansResultat = legs.some(l => !l.result);
     const aLegDecisive = legs.some(l => l.result === 'won' || l.result === 'lost');
     if (!aLegSansResultat && !aLegDecisive) return; // tout void (ou aucune leg) : rien à faire automatiquement
     aTraiter.push(t);
-    if (aLegSansResultat) besoinApiIds.add(t.id);
+    // Relais BSD : sur une fiche FOOT, un fixture_id négatif = match BSD (réglé
+    // via BSD, jamais via API-Sports). Sur le basket, négatif = The Odds API :
+    // reste compté comme besoin API comme avant.
+    const estFoot = t.sport !== 'basket';
+    const sansResultat = legs.filter(l => !l.result);
+    const nbBsd = sansResultat.filter(l => estFoot && Number(l.fixture_id) < 0).length;
+    if (sansResultat.length - nbBsd > 0) besoinApiIds.add(t.id);
+    if (nbBsd > 0) besoinBsdIds.add(t.id);
   });
-  return { aTraiter, besoinApiIds };
+  return { aTraiter, besoinApiIds, besoinBsdIds };
 }
 
 module.exports = {
