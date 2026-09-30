@@ -78,6 +78,10 @@ const BBS_API_KEY = process.env.BBS_API_KEY || '';
 const BBS_HOST = 'api.bigballsdata.com';
 const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
 
+// Garde-fous quota (30/09, suite à l'audit) : seuils, détection des erreurs
+// API, verrou anti-chevauchement. Aucune logique de génération ici.
+const garde = require('./lib/quota-guard.js');
+
 // Bzzoiro Sports Data / "BSD" (25/08, demande explicite de James) — 2e
 // source INDÉPENDANTE d'API-Football, utilisée en complément, jamais en
 // remplacement (voir point 18 de son cahier des charges : ne rien casser
@@ -366,7 +370,15 @@ async function sbRpc(name, params) {
 // basketball. Marge de sécurité réduite à 3 (au lieu de 5) : assez pour
 // absorber un diagnostic ponctuel (?diag=...) le même jour sans jamais
 // cogner le vrai mur à 100.
-const QUOTA_MAX_JOUR = 97;
+// CHANGÉ (30/09, audit de l'intégration API-Sports) : 97 → 80. Le compteur
+// est PARTAGÉ avec le règlement des résultats (plafond 95 de son côté) : la
+// génération s'arrête donc à 80, et les ~15-20 appels restants sont réservés
+// au règlement et aux diagnostics — jamais ils ne peuvent être affamés, et
+// jamais le total ne s'approche des 100 du plan gratuit. Une génération
+// normale consomme ~50 appels (relevé api_quota_usage), donc cette coupure
+// ne la gêne pas. Ce seuil s'ajoute à la coupure sur le VRAI quota restant
+// (voir enregistrerQuotaReel) et à l'arrêt sur 429 / quota / suspension.
+const QUOTA_MAX_JOUR = 80;
 let quotaInterneEpuise = false; // drapeau local au run : une fois vrai, plus aucun appel tenté
 
 async function verifierEtIncrementerQuota(contexte) {
@@ -404,6 +416,15 @@ async function enregistrerQuotaReel(resp) {
     const remaining = resp.headers.get('x-ratelimit-requests-remaining');
     const limite = resp.headers.get('x-ratelimit-requests-limit');
     if (remaining === null || limite === null) return;
+    // COUPURE SUR LE VRAI QUOTA (30/09) : le compteur interne ne voit pas les
+    // appels des autres fonctions (règlement, autre site éventuel...). L'en-tête
+    // API-Sports, lui, dit ce qui reste RÉELLEMENT. Sous la réserve, la
+    // génération s'arrête (le repli BSD prend le relais pour les candidats
+    // restants, voir la boucle du handler). Une valeur illisible ne coupe jamais.
+    if (!quotaInterneEpuise && garde.resteReelSousReserve(remaining, garde.RESERVE_REEL_GENERATION)) {
+      quotaInterneEpuise = true;
+      stats.erreurs.push(`[COUPURE QUOTA RÉEL] il ne reste que ${remaining}/${limite} requêtes API-Sports aujourd'hui (réserve ${garde.RESERVE_REEL_GENERATION}) — arrêt des appels de génération.`);
+    }
     await sbRpc('record_real_api_quota', {
       p_provider: 'api-sports-football',
       p_remaining: parseInt(remaining, 10),
@@ -499,6 +520,14 @@ function resetStats() {
   stats.poolFinal = null;
   stats.bsd = { actif: false, evenementsRecuperes: 0, correspondances: 0, repliTente: 0, repliReussi: 0, erreur: null };
   stats.erreurs = [];
+  // 30/09 : ces drapeaux vivent au niveau du module. Sur un conteneur Netlify
+  // « chaud » réutilisé d'une invocation à l'autre, un drapeau resté vrai
+  // bloquait TOUS les appels API-Sports des passages suivants sans le dire
+  // (même piège que celui décrit plus haut pour stats).
+  quotaInterneEpuise = false;
+  compteur429Consecutifs = 0;
+  verrouCle = null;
+  verrouDetenteur = null;
 }
 function rejeter(raison) {
   stats.matchsRejetes++;
@@ -518,6 +547,37 @@ async function logFinal() {
   } catch (e) {
     console.log('[BOT] échec écriture bot_run_log:', e.message);
   }
+  await libererVerrouGeneration(); // 30/09 : libère le verrou anti-chevauchement (no-op si non détenu)
+}
+
+// VERROU ANTI-CHEVAUCHEMENT (30/09, audit) : un passage peut durer ~9-10 min
+// (85 appels espacés de 6,5s) alors que le cron repart toutes les 15 min — et
+// une fiche n'est publiée qu'à la FIN. Deux passages pouvaient donc tourner en
+// même temps sur la même date, chacun appelant l'API à son rythme : le débit
+// doublait (429) et les appels étaient dupliqués. Le verrou (RPC atomique
+// try_acquire_bot_lock, une ligne par date) garantit un seul passage à la fois,
+// y compris entre deux sites Netlify qui partageraient ce même Supabase. Si le
+// verrou est injoignable (RPC absente, panne), on continue COMME AVANT.
+let verrouCle = null;
+let verrouDetenteur = null;
+async function acquerirVerrouGeneration(dateCible) {
+  const cle = `gen-foot:${dateCible}`;
+  const detenteur = garde.nouveauDetenteur('foot');
+  const r = await garde.acquerirVerrou(sbRpc, cle, detenteur, garde.TTL_VERROU_SECONDES);
+  if (!r.acquis) return false;
+  if (r.indisponible) {
+    stats.erreurs.push(`verrou_indisponible: ${r.raison} — passage poursuivi sans verrou.`);
+    return true;
+  }
+  verrouCle = cle;
+  verrouDetenteur = detenteur;
+  return true;
+}
+async function libererVerrouGeneration() {
+  if (!verrouCle) return;
+  const cle = verrouCle, detenteur = verrouDetenteur;
+  verrouCle = null; verrouDetenteur = null;
+  await garde.libererVerrou(sbRpc, cle, detenteur);
 }
 
 // ============================================================================
@@ -554,6 +614,14 @@ async function apiSportsGetRaw(host, path, params) {
     // Maintenant aussi remonté dans stats.erreurs, donc visible dans tous
     // les diagnostics ET dans le corps de réponse final du bot.
     stats.erreurs.push(`API-Sports ${host}${path}${/request limit|reached the.*limit/i.test(messagesErreur.join(' ')) ? ' [QUOTA JOURNALIER DÉPASSÉ]' : ''}: ${messagesErreur.join(' | ')}`);
+    // COUPURE (30/09) : quota journalier atteint ou compte suspendu → inutile
+    // d'envoyer d'autres requêtes pendant ce passage (chacune échouerait de
+    // la même façon et ne ferait qu'ajouter du bruit côté API-Sports).
+    const genre = garde.classerErreurApi(messagesErreur);
+    if ((genre === 'quota' || genre === 'suspendu') && !quotaInterneEpuise) {
+      quotaInterneEpuise = true;
+      stats.erreurs.push(`[COUPURE API] ${genre === 'suspendu' ? 'compte/clé refusé par API-Sports' : 'quota journalier atteint'} — arrêt des appels API-Sports pour ce passage.`);
+    }
   }
   return data;
 }
@@ -579,7 +647,11 @@ async function lireCache(cle) {
     const rows = await sbSelect('api_fixtures_cache', `select=payload,fetched_at&provider=eq.api-sports-football&cle=eq.${encodeURIComponent(cle)}&limit=1`);
     if (rows && rows.length) {
       const age = Date.now() - new Date(rows[0].fetched_at).getTime();
-      if (age >= 0 && age < CACHE_TTL_MS) return rows[0].payload;
+      // 30/09 : un marqueur « match sans cote » a une durée de vie plus courte
+      // (2h) qu'une vraie réponse (6h) — une cote peut apparaître plus tard.
+      if (garde.estMarqueurSansCote(rows[0].payload)) {
+        if (garde.marqueurSansCoteEncoreValable(age)) return rows[0].payload;
+      } else if (age >= 0 && age < CACHE_TTL_MS) return rows[0].payload;
     }
   } catch (e) { /* jamais bloquant — repli sur l'appel réel */ }
   return null;
@@ -621,6 +693,22 @@ function attendre(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Échecs de DÉBIT (429 / « too many requests ») consécutifs de ce passage.
+// Remis à zéro par resetStats() ET après chaque vrai succès.
+let compteur429Consecutifs = 0;
+async function gererEchecDebit(contexte) {
+  compteur429Consecutifs++;
+  if (compteur429Consecutifs >= garde.MAX_429_CONSECUTIFS) {
+    if (!quotaInterneEpuise) {
+      quotaInterneEpuise = true;
+      stats.erreurs.push(`[COUPURE 429] ${compteur429Consecutifs} refus de débit consécutifs (${contexte}) — arrêt des appels API-Sports pour ce passage.`);
+    }
+    return;
+  }
+  stats.erreurs.push(`[PAUSE 429] ${contexte} — pause de ${Math.round(garde.PAUSE_APRES_429_MS / 1000)}s avant de continuer.`);
+  await attendre(garde.PAUSE_APRES_429_MS);
+}
+
 async function recupererCoteParFixture(fixtureId, essai) {
   essai = essai || 1;
   // Cache (voir lireCache/ecrireCache plus haut) — uniquement vérifié au
@@ -628,6 +716,10 @@ async function recupererCoteParFixture(fixtureId, essai) {
   // vide/périmé au 1er essai, le revérifier ne changerait rien).
   if (essai === 1) {
     const enCache = await lireCache(`odds:${fixtureId}`);
+    // 30/09 : marqueur « match sans cote » encore valable (2h) → pas d'appel,
+    // pas de quota consommé ; le repli BSD de l'appelant s'applique comme
+    // avant (résultat null = « aucune cote Bet365 »).
+    if (garde.estMarqueurSansCote(enCache)) return null;
     if (enCache) return enCache;
   }
   // Suivi de quota (29/08) : vérifié avant CHAQUE appel /odds — c'est ici
@@ -656,6 +748,11 @@ async function recupererCoteParFixture(fixtureId, essai) {
     }
     if (!resp.ok) {
       stats.erreurs.push(`foot/odds(fixture=${fixtureId}): HTTP ${resp.status}`);
+      // COUPURE SUR 429 (30/09) : le réessai de 15s a échoué aussi. Une pause
+      // plus longue (la fenêtre « par minute » se vide) puis on continue ; au
+      // 2e échec consécutif on ARRÊTE tous les appels de ce passage — inutile
+      // de marteler l'API, le repli BSD prend le relais pour le reste.
+      if (resp.status === 429) await gererEchecDebit(`foot/odds(fixture=${fixtureId})`);
       return null;
     }
     const data = await resp.json();
@@ -665,9 +762,29 @@ async function recupererCoteParFixture(fixtureId, essai) {
       // HTTP 200 mais quota dépassé, response vide, seul data.errors le
       // révèle. Absorbé silencieusement avant ce correctif.
       stats.erreurs.push(`foot/odds(fixture=${fixtureId})${/request limit|reached the.*limit/i.test(messagesErreur.join(' ')) ? ' [QUOTA JOURNALIER DÉPASSÉ]' : ''}: ${messagesErreur.join(' | ')}`);
+      const genre = garde.classerErreurApi(messagesErreur);
+      if (genre === 'quota' || genre === 'suspendu') {
+        if (!quotaInterneEpuise) {
+          quotaInterneEpuise = true;
+          stats.erreurs.push(`[COUPURE API] ${genre === 'suspendu' ? 'compte/clé refusé par API-Sports' : 'quota journalier atteint'} — arrêt des appels API-Sports pour ce passage.`);
+        }
+      } else if (genre === 'debit') {
+        await gererEchecDebit(`foot/odds(fixture=${fixtureId})`);
+      }
+      // Quota / suspension / débit : réponse inutilisable, jamais mise en cache
+      // ni lue comme « sans cote ». Une AUTRE erreur (non classée) garde
+      // exactement le comportement d'avant : on utilise ce que la réponse
+      // contient (voir plus bas), simplement sans jamais poser de marqueur.
+      if (genre) return null;
+    } else {
+      compteur429Consecutifs = 0; // un vrai succès remet le compteur à zéro
     }
     const resultat = (data.response && data.response[0]) || null;
     if (resultat) await ecrireCache(`odds:${fixtureId}`, resultat); // jamais mis en cache un resultat vide -- une prochaine tentative doit pouvoir reessayer un vrai appel
+    // 30/09 : réponse VALIDE (sans aucune erreur) mais vide = ce match n'a pas de
+    // cote Bet365. On le note 2h pour que les passages de secours du même soir
+    // ne repaient pas un appel par match sans cote (jusqu'à ~5 passages × 85 appels).
+    else if (!(messagesErreur && messagesErreur.length)) await ecrireCache(`odds:${fixtureId}`, garde.MARQUEUR_SANS_COTE);
     return resultat;
   } catch (e) {
     stats.erreurs.push(`foot/odds(fixture=${fixtureId}): ${e.message}`);
@@ -3053,6 +3170,16 @@ async function handler(event) {
     stats.doublonsDetectes = true;
     await logFinal();
     return { statusCode: 200, body: `Fiches déjà générées pour ${dateCible} — abandon.` };
+  }
+
+  // --- Verrou anti-chevauchement (30/09) : voir acquerirVerrouGeneration.
+  // Placé APRÈS le contrôle « déjà généré » (gratuit, sans API) et AVANT le
+  // moindre appel API-Sports. Si une autre exécution tourne déjà pour cette
+  // date, on sort sans rien appeler ; le prochain passage du cron reprendra.
+  if (!(await acquerirVerrouGeneration(dateCible))) {
+    stats.erreurs.push(`passage_ignore: une autre exécution de génération foot est déjà en cours pour ${dateCible}.`);
+    await logFinal();
+    return { statusCode: 200, body: `Une génération est déjà en cours pour ${dateCible} — abandon (aucun appel API-Sports).` };
   }
 
   // --- Plans réels (cotes cible par rang) ---
