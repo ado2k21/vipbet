@@ -70,6 +70,11 @@ const ODDS_API_HOST = 'api.the-odds-api.com';
 const { oddsApiIdVersEntier, estIdOddsApi } = require('./lib/id-source.js');
 // Garde-fous quota (30/09, suite à l'audit) — voir lib/quota-guard.js.
 const garde = require('./lib/quota-guard.js');
+// Relais BSD (30/09) : règlement des sélections foot dont le match vient de BSD
+// (fixture_id négatif sur une fiche foot). Voir lib/bsd-relais.js.
+const bsdRelais = require('./lib/bsd-relais.js');
+const BSD_API_KEY = (process.env.BSD_API_KEY || '').trim();
+const BSD_HOST = 'sports.bzzoiro.com';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -197,6 +202,7 @@ function resetStats() {
   stats.appelsApiSports = { foot: 0, basket: 0 };
   stats.ticketsSansRienARegler = 0;
   stats.datesSansAppelApi = 0;
+  stats.bsd = { legsExaminees: 0, legsResolues: 0 };
   stats.erreurs = [];
 }
 function logFinal() {
@@ -550,6 +556,8 @@ function evaluerLeg(leg, golHome, golAway, buteurs) {
 // le quota. Même logique de fiabilité que parFixture plus bas : jamais un
 // repli sur goals (qui inclurait la prolongation) pour un match AET/PEN.
 async function retenterFixtureUnique(fixtureId) {
+  // Relais BSD : un id négatif n'existe pas chez API-Sports — aucun appel.
+  if (Number(fixtureId) < 0) return null;
   try {
     const reponse = await apiSportsGet('/fixtures', { id: fixtureId });
     const f = reponse[0];
@@ -568,6 +576,34 @@ async function retenterFixtureUnique(fixtureId) {
     stats.erreurs.push(`fixtures?id=${fixtureId} (relance ciblée) : ${e.message}`);
     return null;
   }
+}
+
+// ============================================================================
+// RELAIS BSD (30/09) — résultat d'un match BSD (fixture_id foot négatif).
+// null = inconnu/pas terminé/incertain → la sélection reste EN ATTENTE
+// (jamais void, jamais deviné). Détail par id d'abord, sinon liste de la date
+// (une seule lecture par date et par passage).
+// ============================================================================
+let cacheBSD = { parId: new Map(), scanParDate: new Map() };
+function resetCacheBSD() { cacheBSD = { parId: new Map(), scanParDate: new Map() }; }
+
+async function infoBSDPourLeg(fixtureId, dateIso) {
+  if (!BSD_API_KEY) return null;
+  const id = -Number(fixtureId);
+  if (!Number.isSafeInteger(id) || id <= 0) return null;
+  if (!cacheBSD.parId.has(id)) {
+    let ev = await bsdRelais.recupererEvenementParId({ cle: BSD_API_KEY, hote: BSD_HOST, id });
+    if (!ev) {
+      if (!cacheBSD.scanParDate.has(dateIso)) {
+        const r = await bsdRelais.recupererEvenementsParDate({ cle: BSD_API_KEY, hote: BSD_HOST, dateIso });
+        if (r.erreur) stats.erreurs.push(`BSD liste(${dateIso}): ${r.erreur}`);
+        cacheBSD.scanParDate.set(dateIso, r.carte);
+      }
+      ev = cacheBSD.scanParDate.get(dateIso).get(id) || null;
+    }
+    cacheBSD.parId.set(id, ev ? bsdRelais.resultatDepuisEvenementBSD(ev) : null);
+  }
+  return cacheBSD.parId.get(id);
 }
 
 // ============================================================================
@@ -826,16 +862,18 @@ async function reglerDate(dateIso) {
   // du 26/09 : ~48 appels/jour, non comptés). On lit donc d'abord les legs
   // en base (gratuit) et on n'appelle API-Sports que s'il reste une leg SANS
   // résultat. Les fiches concernées gardent exactement le même traitement.
+  let besoinBsdIds = null; // relais BSD : tickets foot ayant une leg BSD en attente
   let besoinApiIds = null; // null = lecture impossible → comportement d'avant (tout traiter, appeler l'API)
   try {
     const ids = tickets.map(t => t.id);
     const legsRows = await sbSelect('ticket_legs',
-      `select=ticket_id,result&ticket_id=in.(${ids.join(',')})&limit=5000`);
+      `select=ticket_id,result,fixture_id&ticket_id=in.(${ids.join(',')})&limit=5000`);
     const tri = garde.trierTicketsAReglerSelonLegs(tickets, legsRows);
     stats.ticketsSansRienARegler += tickets.length - tri.aTraiter.length;
     stats.ticketsToutVoid += tickets.length - tri.aTraiter.length; // même statistique qu'avant : fiche 100% void en attente admin
     tickets = tri.aTraiter;
     besoinApiIds = tri.besoinApiIds;
+    besoinBsdIds = tri.besoinBsdIds;
   } catch (e) {
     stats.erreurs.push(`pré-lecture legs(${dateIso}): ${e.message} — traitement complet comme avant`);
   }
@@ -859,15 +897,22 @@ async function reglerDate(dateIso) {
   // finalisées à partir des résultats déjà en base).
   const besoinApiFoot = besoinApiPour(ticketsFoot);
   if (!besoinApiFoot) stats.datesSansAppelApi++;
-  const fixturesJour = besoinApiFoot ? await recupererFixturesDate(dateIso) : [];
+  let fixturesJour = besoinApiFoot ? await recupererFixturesDate(dateIso) : [];
+  let apiFootEnEchec = false;
   if (fixturesJour === null) {
     // 30/09 : l'appel a ÉCHOUÉ (suspension, quota, réseau) — on ne sait RIEN
     // des matchs. Avant, [] était substitué et la règle des 23h59 voidait les
     // sélections de plus de 2 jours comme si les matchs avaient disparu.
     // Maintenant : rien n'est modifié, tout reste « en attente » jusqu'à ce
     // qu'API-Sports réponde de nouveau.
-    stats.ticketsEnAttente += ticketsFoot.length;
-    return;
+    // Relais BSD : seules les fiches ayant une sélection BSD en attente
+    // continuent (via BSD) ; les sélections API-Sports restent en attente.
+    if (!(besoinBsdIds && ticketsFoot.some(t => besoinBsdIds.has(t.id)))) {
+      stats.ticketsEnAttente += ticketsFoot.length;
+      return;
+    }
+    apiFootEnEchec = true;
+    fixturesJour = [];
   }
   // Index rapide fixture_id → {statut, golHome, golAway, scoreFiable}
   //
@@ -934,7 +979,13 @@ async function reglerDate(dateIso) {
     for (const leg of legs) {
       if (leg.result) continue; // déjà réglé lors d'un passage précédent
 
-      const info = parFixture[leg.fixture_id];
+      let info = parFixture[leg.fixture_id];
+      // Relais BSD : fiche foot + fixture_id négatif = match BSD.
+      const estLegBSD = Number(leg.fixture_id) < 0;
+      if (estLegBSD && !info) {
+        stats.bsd.legsExaminees++;
+        info = await infoBSDPourLeg(leg.fixture_id, dateIso) || undefined;
+      }
       let nouveauResultat = null;
 
       let buteursPourLog = null; // section 23 : trace la donnée réelle utilisée, si applicable
@@ -979,6 +1030,11 @@ async function reglerDate(dateIso) {
         } else {
           stats.erreurs.push(`fixture ${leg.fixture_id} : AET/PEN sans score fulltime fiable, leg ${leg.id} laissé en attente`);
         }
+      } else if (estLegBSD) {
+        // Relais BSD : résultat BSD absent/pas terminé/incertain → on attend.
+        // JAMAIS la règle des 23h59 (pas de void sur simple absence de donnée).
+      } else if (apiFootEnEchec) {
+        // API-Sports a échoué pendant ce passage : on ne sait rien, on attend.
       } else if (ecouler >= 1) {
         // Règle des 23h59 Haïti : match introuvable dans /fixtures, ou
         // statut bloqué en NS/TBD/LIVE anormalement longtemps. CORRIGÉ
@@ -1022,6 +1078,7 @@ async function reglerDate(dateIso) {
           settled_at: new Date().toISOString()
         });
         stats.legsMisAJour[nouveauResultat]++;
+        if (estLegBSD) stats.bsd.legsResolues++;
         leg.result = nouveauResultat; // reflète localement pour le calcul du ticket ci-dessous
 
         // Section 23 du cahier des charges (27/08) : une ligne de log par
@@ -1046,7 +1103,7 @@ async function reglerDate(dateIso) {
           statistic_used: !info
             ? 'aucune donnée fixture pour cette date'
             : `statut=${info.statut} fulltime_fiable=${info.scoreFiable}`,
-          source: 'api-sports',
+          source: estLegBSD ? 'bsd' : 'api-sports',
           status_before: null,
           status_after: nouveauResultat
         });
@@ -1131,6 +1188,7 @@ async function reglerDate(dateIso) {
 
 async function handler(event) {
   resetStats();
+  resetCacheBSD();
 
   const jetonTest = process.env.BOT_TEST_TOKEN || '';
   const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';

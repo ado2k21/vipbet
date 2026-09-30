@@ -81,6 +81,9 @@ const BOOKMAKER_ID = 8; // Bet365 — référence large et stable
 // Garde-fous quota (30/09, suite à l'audit) : seuils, détection des erreurs
 // API, verrou anti-chevauchement. Aucune logique de génération ici.
 const garde = require('./lib/quota-guard.js');
+// Relais BSD (30/09) : liste des matchs depuis BSD UNIQUEMENT quand API-Sports
+// ne peut pas fournir /fixtures (suspension ou quota). Voir lib/bsd-relais.js.
+const bsdRelais = require('./lib/bsd-relais.js');
 
 // Bzzoiro Sports Data / "BSD" (25/08, demande explicite de James) — 2e
 // source INDÉPENDANTE d'API-Football, utilisée en complément, jamais en
@@ -380,6 +383,9 @@ async function sbRpc(name, params) {
 // (voir enregistrerQuotaReel) et à l'arrêt sur 429 / quota / suspension.
 const QUOTA_MAX_JOUR = 80;
 let quotaInterneEpuise = false; // drapeau local au run : une fois vrai, plus aucun appel tenté
+// Relais BSD : vrai seulement si /fixtures a ÉCHOUÉ (erreur réseau/HTTP, quota, suspension).
+// Une vraie réponse « aucun match » ne l'active JAMAIS.
+let fixturesEnEchec = false;
 
 async function verifierEtIncrementerQuota(contexte) {
   if (quotaInterneEpuise) return false;
@@ -519,12 +525,14 @@ function resetStats() {
   stats.doublonsDetectes = false;
   stats.poolFinal = null;
   stats.bsd = { actif: false, evenementsRecuperes: 0, correspondances: 0, repliTente: 0, repliReussi: 0, erreur: null };
+  stats.relaisBSD = null;
   stats.erreurs = [];
   // 30/09 : ces drapeaux vivent au niveau du module. Sur un conteneur Netlify
   // « chaud » réutilisé d'une invocation à l'autre, un drapeau resté vrai
   // bloquait TOUS les appels API-Sports des passages suivants sans le dire
   // (même piège que celui décrit plus haut pour stats).
   quotaInterneEpuise = false;
+  fixturesEnEchec = false;
   compteur429Consecutifs = 0;
   verrouCle = null;
   verrouDetenteur = null;
@@ -680,9 +688,12 @@ async function recupererFixturesJour(dateCible) {
     const data = await apiSportsGetRaw(FOOT_HOST, '/fixtures', { date: dateCible, timezone: TZ_HAITI });
     const reponse = data.response || [];
     if (reponse.length) await ecrireCache(cle, reponse); // jamais mis en cache un resultat vide -- une prochaine tentative doit pouvoir reessayer un vrai appel
+    // Relais BSD : réponse vide ACCOMPAGNÉE d'une erreur API (quota, suspension...) = échec.
+    if (!reponse.length && garde.messagesErreur(data.errors).length) fixturesEnEchec = true;
     return reponse;
   } catch (e) {
     stats.erreurs.push('foot/fixtures(jour): ' + e.message);
+    fixturesEnEchec = true;
     return [];
   }
 }
@@ -3203,7 +3214,42 @@ async function handler(event) {
   }
 
   // --- Fixtures du jour (1 seul appel, aucune restriction championnat/saison) ---
-  const fixturesJour = await recupererFixturesJour(dateCible);
+  let fixturesJour = await recupererFixturesJour(dateCible);
+
+  // --- RELAIS BSD (30/09) : API-Sports n'a PAS pu répondre (suspension, quota,
+  // erreur) → la liste des matchs vient de BSD, au même format. Jamais activé
+  // quand API-Sports répond, même avec zéro match. Tout ce qui suit (filtres,
+  // marchés, construction, publication) est INCHANGÉ.
+  let relaisBSDActif = false;
+  let evenementsRelaisParId = null;
+  let evenementsRelais = [];
+  stats.relaisBSD = { actif: false, declenche: false };
+  if (!fixturesJour.length && fixturesEnEchec && BSD_API_KEY) {
+    stats.relaisBSD.declenche = true;
+    try {
+      const rel = await bsdRelais.recupererFixturesRelais({ cle: BSD_API_KEY, hote: BSD_HOST, dateCible });
+      stats.relaisBSD.pages = rel.pages;
+      stats.relaisBSD.evenementsLus = rel.total;
+      stats.relaisBSD.evenementsDuJour = rel.evenements.length;
+      stats.relaisBSD.mode = rel.mode;
+      stats.relaisBSD.matchsNonCommences = rel.fixtures.length;
+      if (rel.erreur) stats.relaisBSD.erreur = rel.erreur;
+      if (rel.fixtures.length) {
+        relaisBSDActif = true;
+        stats.relaisBSD.actif = true;
+        fixturesJour = rel.fixtures;
+        evenementsRelais = rel.evenements;
+        evenementsRelaisParId = new Map(rel.evenements.map(ev => [-ev.id, ev]));
+        // Plus aucun appel API-Sports pendant ce passage : la boucle /odds
+        // s'arrête aussitôt et chaque candidat passe par le repli BSD.
+        quotaInterneEpuise = true;
+        console.log(`[BOT] Relais BSD activé : ${rel.fixtures.length} match(s) non commencé(s) (API-Sports indisponible).`);
+      }
+    } catch (e) {
+      stats.relaisBSD.erreur = e.message;
+      stats.erreurs.push('relais BSD: ' + e.message);
+    }
+  }
   stats.matchsTrouves = fixturesJour.length;
 
   if (!fixturesJour.length) {
@@ -3228,7 +3274,10 @@ async function handler(event) {
   // buts, mk_btts — voir extraireMarchesBSD pour ce qui n'est jamais couvert.
   let evenementsBSD = [];
   stats.bsd.actif = !!BSD_API_KEY;
-  if (BSD_API_KEY) {
+  if (relaisBSDActif) {
+    evenementsBSD = evenementsRelais; // déjà lus (paginés) par le relais : pas de second appel
+    stats.bsd.evenementsRecuperes = evenementsBSD.length;
+  } else if (BSD_API_KEY) {
     evenementsBSD = await recupererEvenementsBSD(dateCible);
     stats.bsd.evenementsRecuperes = evenementsBSD.length;
   }
@@ -3237,7 +3286,8 @@ async function handler(event) {
     const infos = noms[c.fixtureId];
     if (!infos) return;
     stats.bsd.repliTente++;
-    const evt = trouverEvenementBSD(infos.label, evenementsBSD);
+    // Relais : l'évènement est connu par son id exact (jamais d'appariement flou).
+    const evt = (evenementsRelaisParId && evenementsRelaisParId.get(c.fixtureId)) || trouverEvenementBSD(infos.label, evenementsBSD);
     if (!evt) return;
     const picks = extraireMarchesBSD(evt, dateCible, infos, c.prioritaire);
     if (picks.length) {

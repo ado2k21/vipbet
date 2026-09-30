@@ -441,6 +441,48 @@ async function handler(event) {
     }, null, 2) };
   }
 
+  // RELAIS BSD (30/09) : aperçu de ce que le relais fournirait si API-Sports
+  // était indisponible — AUCUN appel API-Sports, AUCUNE écriture en base.
+  // ?diag=bsd-relais[&date=AAAA-MM-JJ][&id=<id BSD>] (id : lit le résultat d'un match).
+  if (modeTest && event.queryStringParameters.diag === 'bsd-relais') {
+    if (!BSD_API_KEY) return { statusCode: 500, body: 'BSD_API_KEY manquante (variable Netlify).' };
+    const bsdRelais = require('./lib/bsd-relais.js');
+    const qs = event.queryStringParameters;
+    if (qs.id) {
+      const idB = parseInt(qs.id, 10);
+      const ev = await bsdRelais.recupererEvenementParId({ cle: BSD_API_KEY, hote: 'sports.bzzoiro.com', id: idB });
+      return { statusCode: 200, body: JSON.stringify({
+        id: idB, detailDisponible: !!ev,
+        status: ev && ev.status, period: ev && ev.period,
+        score: ev ? `${ev.home_score}-${ev.away_score}` : null,
+        resultatInterprete: bsdRelais.resultatDepuisEvenementBSD(ev)
+      }, null, 2) };
+    }
+    const dateR = qs.date || dateCibleDemainHaiti();
+    const rel = await bsdRelais.recupererFixturesRelais({ cle: BSD_API_KEY, hote: 'sports.bzzoiro.com', dateCible: dateR });
+    const parLigue = {};
+    rel.evenements.forEach(e => {
+      const lg = e.league || {};
+      const cle = `${bsdRelais.idLigueAPISports(lg)} <- ${lg.id} ${lg.name} (${lg.country})`;
+      parLigue[cle] = (parLigue[cle] || 0) + 1;
+    });
+    resetStats();
+    const { candidats, noms } = filtrerCandidatsJour(rel.fixtures, dateR);
+    return { statusCode: 200, body: JSON.stringify({
+      date: dateR, mode: rel.mode, pages: rel.pages, erreur: rel.erreur,
+      evenementsLusAuTotal: rel.total, evenementsDeLaFenetre: rel.evenements.length,
+      matchsNonCommences: rel.fixtures.length,
+      candidatsRetenus: candidats.length,
+      championnatsRetenus: [...new Set(candidats.map(c => noms[c.fixtureId].league.name + ' (' + noms[c.fixtureId].league.country + ')'))],
+      championnatsEcartes: stats.championnatsVus,
+      parLigue,
+      echantillon: rel.evenements.slice(0, 8).map(e => ({
+        id: e.id, match: `${e.home_team} — ${e.away_team}`, date: e.event_date, status: e.status,
+        odds_home: e.odds_home, odds_away: e.odds_away, over15: e.odds_over_15, over25: e.odds_over_25, btts: e.odds_btts_yes
+      }))
+    }, null, 2) };
+  }
+
   if (modeTest && event.queryStringParameters.diag === 'bsd') {
     if (!BSD_API_KEY) return { statusCode: 500, body: 'BSD_API_KEY manquante (variable Netlify).' };
     const dateBsd = event.queryStringParameters.date || partsHaiti(new Date()).iso;
