@@ -83,6 +83,9 @@ const {
   dateCibleDemainHaiti, publierFiche, attendre, API_SPORTS_KEY, BASKET_HOST,
   recupererFiabiliteMarches, annoterPoolAvecFiabilite
 } = bot;
+// Encodage id The Odds API (chaîne hexadécimale) -> entier négatif compatible
+// avec ticket_legs.fixture_id (bigint). Module partagé avec le règlement.
+const { oddsApiIdVersEntier } = require('./lib/id-source.js');
 
 // ============================================================================
 // SUIVI DE QUOTA BASKETBALL — même principe que le foot (voir
@@ -189,7 +192,7 @@ async function apiSportsGetBasketRaw(path, params) {
 const ODDS_API_KEY = (process.env.ODDS_API_KEY || '').trim();
 const ODDS_API_HOST = 'api.the-odds-api.com';
 let _sourceBasketActuelle = 'api-sports'; // trace pour recupererCoteParMatchBasket, jamais lue ailleurs
-let _cacheOddsApiBasket = new Map(); // gameId (id The Odds API) -> oddsItem à la forme API-Sports
+let _cacheOddsApiBasket = new Map(); // gameId ENTIER NÉGATIF (id The Odds API encodé, voir lib/id-source.js) -> oddsItem à la forme API-Sports
 
 // Mêmes en-têtes de quota qu'API-Sports (x-requests-*, jamais x-ratelimit-*
 // chez ce fournisseur) — même mécanisme générique record_real_api_quota,
@@ -215,7 +218,15 @@ async function enregistrerQuotaReelOddsApi(resp) {
 // de champs exacts, pour ne rien changer au reste du fichier.
 function evenementOddsApiVersFormatApiSports(ev) {
   return {
-    id: ev.id, // id The Odds API (chaîne), jamais comparé à un id API-Sports (sources jamais mélangées dans un même passage)
+    // CRITIQUE (30/09, second correctif) : ticket_legs.fixture_id est un
+    // BIGINT en base. L'id The Odds API est une chaîne hexadécimale que
+    // Postgres refuse d'insérer (22P02) — la fiche aurait été perdue à la
+    // publication. On l'encode donc ici, à la source, en entier NÉGATIF
+    // (voir lib/id-source.js) : tout le reste du pipeline (noms[], candidats,
+    // anti-doublon, publication, règlement) le traite comme n'importe quel
+    // id numérique, sans aucune autre modification. Les ids API-Sports sont
+    // toujours positifs, donc jamais de collision entre les deux sources.
+    id: oddsApiIdVersEntier(ev.id),
     date: ev.commence_time,
     status: { short: 'NS' }, // /odds ne renvoie jamais un match déjà commencé ou terminé, uniquement à venir
     teams: {
@@ -318,9 +329,25 @@ async function recupererMatchsBasketJourOddsApi(dateCible) {
     const minutesJour = h.heureNum * 60 + h.minuteNum;
     if (minutesJour < BASKET_MIN_HOUR * 60 || minutesJour > BASKET_MAX_MINUTES) return;
 
+    // Id encodé en entier (voir evenementOddsApiVersFormatApiSports). Un id
+    // illisible n'est jamais publié : mieux vaut écarter ce match que
+    // risquer une insertion refusée par la base qui ferait perdre la fiche.
+    const idNumerique = oddsApiIdVersEntier(ev.id);
+    if (idNumerique === null) {
+      stats.erreurs.push(`odds-api basket: id de match illisible ("${String(ev.id).slice(0, 12)}…"), match écarté`);
+      return;
+    }
+    // Collision de l'encodage (probabilité négligeable, 2^52 valeurs) : on
+    // garde le premier match et on écarte le second plutôt que d'en
+    // mélanger deux sous le même identifiant.
+    if (_cacheOddsApiBasket.has(idNumerique)) {
+      stats.erreurs.push(`odds-api basket: collision d'identifiant encodé (${idNumerique}), second match écarté`);
+      return;
+    }
+
     const oddsItem = evenementOddsApiVersOddsItem(ev);
     if (!oddsItem) return; // aucune cote exploitable pour ce match, jamais un candidat cassé plus loin dans le pipeline
-    _cacheOddsApiBasket.set(ev.id, oddsItem);
+    _cacheOddsApiBasket.set(idNumerique, oddsItem);
     resultats.push(evenementOddsApiVersFormatApiSports(ev));
   });
   return resultats;

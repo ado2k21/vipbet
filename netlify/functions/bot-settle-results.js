@@ -64,6 +64,11 @@ const BASKET_HOST = 'v1.basketball.api-sports.io';
 const ODDS_API_KEY = (process.env.ODDS_API_KEY || '').trim();
 const ODDS_API_HOST = 'api.the-odds-api.com';
 
+// Encodage id The Odds API -> entier négatif (colonne ticket_legs.fixture_id
+// = bigint) — MÊME module que côté génération, pour que les deux côtés
+// calculent toujours exactement la même valeur pour un même match.
+const { oddsApiIdVersEntier, estIdOddsApi } = require('./lib/id-source.js');
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -266,15 +271,13 @@ async function recupererMatchsBasketDate(dateIso) {
   }
 }
 
-// CRITIQUE (30/09) — distingue un fixture_id The Odds API (toujours une
-// chaîne hexadécimale, jamais purement numérique) d'un fixture_id API-Sports
-// (toujours un entier, ex: 511550) — API-Sports n'a JAMAIS utilisé autre
-// chose qu'un entier comme identifiant de match, donc le simple format de la
-// valeur suffit à choisir la bonne source de règlement sans colonne
-// supplémentaire en base ni ambiguïté possible entre les deux espaces d'ID.
-function estIdOddsApi(fixtureId) {
-  return !/^\d+$/.test(String(fixtureId));
-}
+// CRITIQUE (30/09) — distingue un fixture_id The Odds API d'un fixture_id
+// API-Sports. La colonne ticket_legs.fixture_id est un BIGINT : l'id hexadécimal
+// d'Odds API y est stocké encodé en entier NÉGATIF (voir lib/id-source.js),
+// alors qu'API-Sports n'a JAMAIS utilisé autre chose qu'un entier POSITIF
+// (ex: 511550). Le signe suffit donc à choisir la bonne source de règlement,
+// sans colonne supplémentaire en base ni ambiguïté possible entre les deux
+// espaces d'identifiants. estIdOddsApi() est importée de ce module partagé.
 
 // Session suivante (30/09) — pendant basketball via The Odds API (voir
 // ODDS_API_KEY plus haut). Un seul appel par date à régler, même principe
@@ -597,13 +600,18 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
   // CRITIQUE (30/09) — fusion de la source The Odds API, UNIQUEMENT si au
   // moins un fixture_id pariés ce jour-là en a besoin (voir besoinOddsApi
   // ci-dessus). Les identifiants des deux sources ne se chevauchent JAMAIS
-  // (entier vs hexadécimal), donc aucun risque d'écraser une entrée
-  // API-Sports existante dans parGame.
+  // (entier positif pour API-Sports, entier négatif pour Odds API), donc
+  // aucun risque d'écraser une entrée API-Sports existante dans parGame.
+  // Chaque évènement /scores/ est indexé par le MÊME encodage que celui
+  // calculé à la génération : c'est ce qui permet de retrouver le score à
+  // partir du seul fixture_id lu en base.
   if (besoinOddsApi) {
     const matchsJourOdds = await recupererMatchsBasketDateOddsApi(dateIso);
     matchsJourOdds.forEach(ev => {
       if (!ev || !ev.id) return;
-      parGame[ev.id] = Object.assign(evenementOddsApiScoreVersInfo(ev), { source: 'odds-api-basketball' });
+      const idNumerique = oddsApiIdVersEntier(ev.id);
+      if (idNumerique === null) return; // id illisible : jamais un score rattaché au mauvais match
+      parGame[idNumerique] = Object.assign(evenementOddsApiScoreVersInfo(ev), { source: 'odds-api-basketball' });
     });
   }
 
