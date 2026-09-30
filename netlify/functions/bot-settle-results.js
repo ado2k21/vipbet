@@ -64,6 +64,13 @@ const BASKET_HOST = 'v1.basketball.api-sports.io';
 const ODDS_API_KEY = (process.env.ODDS_API_KEY || '').trim();
 const ODDS_API_HOST = 'api.the-odds-api.com';
 
+// Encodage id The Odds API -> entier négatif (colonne ticket_legs.fixture_id
+// = bigint) — MÊME module que côté génération, pour que les deux côtés
+// calculent toujours exactement la même valeur pour un même match.
+const { oddsApiIdVersEntier, estIdOddsApi } = require('./lib/id-source.js');
+// Garde-fous quota (30/09, suite à l'audit) — voir lib/quota-guard.js.
+const garde = require('./lib/quota-guard.js');
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -173,6 +180,9 @@ const stats = {
   ticketsToutVoid: 0,  // toutes selections 'void' : décision manuelle admin, jamais de verdict inventé
   legsMisAJour: { won: 0, lost: 0, void: 0 },
   appelsEvents: 0,     // appels /fixtures/events pour vérifier un buteur
+  appelsApiSports: { foot: 0, basket: 0 }, // 30/09 : appels réellement envoyés à API-Sports par ce passage
+  ticketsSansRienARegler: 0, // 30/09 : fiches 100% void (attente admin) — plus aucun appel API pour elles
+  datesSansAppelApi: 0,      // 30/09 : dates traitées sans aucun appel API-Sports (rien à régler)
   erreurs: []
 };
 function resetStats() {
@@ -184,6 +194,9 @@ function resetStats() {
   stats.ticketsToutVoid = 0;
   stats.legsMisAJour = { won: 0, lost: 0, void: 0 };
   stats.appelsEvents = 0;
+  stats.appelsApiSports = { foot: 0, basket: 0 };
+  stats.ticketsSansRienARegler = 0;
+  stats.datesSansAppelApi = 0;
   stats.erreurs = [];
 }
 function logFinal() {
@@ -194,34 +207,101 @@ function logFinal() {
 // 4. APPELS API-SPORTS
 // ============================================================================
 
+// ============================================================================
+// SUIVI DE QUOTA DU RÈGLEMENT (30/09, audit) — jusqu'ici ce fichier appelait
+// API-Sports SANS jamais rien compter : le règlement tourne CHAQUE HEURE (24
+// passages/jour) et pouvait à lui seul consommer des dizaines de requêtes que
+// le compteur ne voyait pas. Même RPC que la génération (increment_api_quota)
+// et même compteur par produit (foot / basket), avec un plafond plus HAUT (95)
+// que la génération (80/75) : le règlement passe toujours après elle, ses
+// requêtes sont les dernières à sacrifier. Plafond atteint → l'appel n'est PAS
+// envoyé et les fiches restent « en attente » (jamais voidées, voir plus bas).
+// ============================================================================
+const QUOTA_MAX_REGLEMENT = 95;
+
+async function sbRpc(name, params) {
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/${name}`;
+  const resp = await fetch(url, { method: 'POST', headers: sbHeaders(), body: JSON.stringify(params || {}) });
+  if (!resp.ok) throw new Error(`Supabase RPC ${name} → HTTP ${resp.status} : ${await resp.text()}`);
+  const texte = await resp.text();
+  if (!texte) return null;
+  const data = JSON.parse(texte);
+  return Array.isArray(data) ? data[0] : data;
+}
+
+// Lève une erreur si le plafond du règlement est atteint ; un incident du
+// SUIVI lui-même (Supabase indisponible) ne bloque jamais le règlement.
+async function verifierQuotaReglement(provider, contexte) {
+  try {
+    const r = await sbRpc('increment_api_quota', { p_provider: provider, p_max: QUOTA_MAX_REGLEMENT });
+    if (r && r.quota_restant <= 0) {
+      throw new Error(`quota interne épuisé (${r.call_count}/${r.quota_max}) — appel évité : ${contexte}`);
+    }
+  } catch (e) {
+    if (/quota interne épuisé/.test(e.message)) throw e;
+    stats.erreurs.push(`suivi_quota_reglement: ${e.message}`);
+  }
+}
+
+// Vrai quota restant, lu dans les en-têtes (même mécanisme que la génération).
+async function enregistrerQuotaReelReglement(provider, resp) {
+  try {
+    const remaining = resp.headers.get('x-ratelimit-requests-remaining');
+    const limite = resp.headers.get('x-ratelimit-requests-limit');
+    if (remaining === null || limite === null) return;
+    await sbRpc('record_real_api_quota', { p_provider: provider, p_remaining: parseInt(remaining, 10), p_limit: parseInt(limite, 10) });
+  } catch (e) {
+    stats.erreurs.push(`suivi_quota_reel_reglement: ${e.message}`);
+  }
+}
+
+// Lit la réponse d'API-Sports ; une erreur — HTTP non-2xx OU champ `errors`
+// renseigné (API-Sports répond souvent 200 même compte suspendu ou quota
+// dépassé, avec response=[]) — LÈVE une exception. Avant le 30/09 ce dernier
+// cas passait pour « aucun match », et le règlement en concluait que le match
+// avait disparu : voir la règle des 23h59, qui voidait alors la sélection.
+async function lireReponseApiSports(resp, libelle) {
+  if (!resp.ok) throw new Error(`${libelle} → HTTP ${resp.status}`);
+  const data = await resp.json();
+  const messages = garde.messagesErreur(data.errors);
+  if (messages.length) throw new Error(`${libelle} → ${messages.join(' | ')}`);
+  return data.response || [];
+}
+
 async function apiSportsGet(path, params) {
+  await verifierQuotaReglement('api-sports-football', `${FOOT_HOST}${path}`);
   const url = new URL(`https://${FOOT_HOST}${path}`);
   Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+  stats.appelsApiSports.foot++;
   const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
-  if (!resp.ok) throw new Error(`API-Sports ${path} → HTTP ${resp.status}`);
-  const data = await resp.json();
-  return data.response || [];
+  await enregistrerQuotaReelReglement('api-sports-football', resp);
+  return lireReponseApiSports(resp, `API-Sports ${path}`);
 }
 
 // Session suivante (règlement basketball) — même principe, hôte différent.
 async function apiSportsGetBasket(path, params) {
+  await verifierQuotaReglement('api-sports-basketball', `${BASKET_HOST}${path}`);
   const url = new URL(`https://${BASKET_HOST}${path}`);
   Object.entries(params || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+  stats.appelsApiSports.basket++;
   const resp = await fetch(url.toString(), { headers: { 'x-apisports-key': API_SPORTS_KEY } });
-  if (!resp.ok) throw new Error(`API-Sports basket ${path} → HTTP ${resp.status}`);
-  const data = await resp.json();
-  return data.response || [];
+  await enregistrerQuotaReelReglement('api-sports-basketball', resp);
+  return lireReponseApiSports(resp, `API-Sports basket ${path}`);
 }
 
 // Un seul appel par date à régler (comme bot-generate-tickets.js) : tous les
 // matchs du jour, avec statut final et score si terminé. Jamais un appel par
 // fixture — même logique de contournement du quota que la génération.
+// RETOURNE null (et non plus []) quand l'appel ÉCHOUE (compte suspendu, quota,
+// réseau…) : [] veut dire « l'API a répondu qu'il n'y a aucun match », null
+// veut dire « on ne sait pas » — et sur un « on ne sait pas », il ne faut
+// JAMAIS conclure qu'un match a disparu et voider la sélection.
 async function recupererFixturesDate(dateIso) {
   try {
     return await apiSportsGet('/fixtures', { date: dateIso, timezone: TZ_HAITI });
   } catch (e) {
     stats.erreurs.push(`fixtures(${dateIso}): ${e.message}`);
-    return [];
+    return null;
   }
 }
 
@@ -257,24 +337,24 @@ async function recupererButeurs(fixtureId) {
 // Session suivante (règlement basketball) — même principe qu'au-dessus
 // (un seul appel/date, tous les matchs), mais hôte et forme de réponse
 // différents (pas de fixture.status imbriqué, tout est à plat sur g.*).
+// Même convention que recupererFixturesDate : null = appel échoué (inconnu),
+// [] = l'API a répondu « aucun match ».
 async function recupererMatchsBasketDate(dateIso) {
   try {
     return await apiSportsGetBasket('/games', { date: dateIso });
   } catch (e) {
     stats.erreurs.push(`basket/games(${dateIso}): ${e.message}`);
-    return [];
+    return null;
   }
 }
 
-// CRITIQUE (30/09) — distingue un fixture_id The Odds API (toujours une
-// chaîne hexadécimale, jamais purement numérique) d'un fixture_id API-Sports
-// (toujours un entier, ex: 511550) — API-Sports n'a JAMAIS utilisé autre
-// chose qu'un entier comme identifiant de match, donc le simple format de la
-// valeur suffit à choisir la bonne source de règlement sans colonne
-// supplémentaire en base ni ambiguïté possible entre les deux espaces d'ID.
-function estIdOddsApi(fixtureId) {
-  return !/^\d+$/.test(String(fixtureId));
-}
+// CRITIQUE (30/09) — distingue un fixture_id The Odds API d'un fixture_id
+// API-Sports. La colonne ticket_legs.fixture_id est un BIGINT : l'id hexadécimal
+// d'Odds API y est stocké encodé en entier NÉGATIF (voir lib/id-source.js),
+// alors qu'API-Sports n'a JAMAIS utilisé autre chose qu'un entier POSITIF
+// (ex: 511550). Le signe suffit donc à choisir la bonne source de règlement,
+// sans colonne supplémentaire en base ni ambiguïté possible entre les deux
+// espaces d'identifiants. estIdOddsApi() est importée de ce module partagé.
 
 // Session suivante (30/09) — pendant basketball via The Odds API (voir
 // ODDS_API_KEY plus haut). Un seul appel par date à régler, même principe
@@ -282,8 +362,10 @@ function estIdOddsApi(fixtureId) {
 // appel par match. daysFrom (paramètre officiel de l'endpoint /scores/,
 // 1 à 3 accepté sur le plan gratuit) est calculé à partir du nombre de jours
 // réellement écoulés depuis dateIso, jamais codé en dur.
+// null = source indisponible (clé absente, réseau, HTTP, réponse illisible) ;
+// [] = l'API a répondu et n'a pas ce match. Voir recupererFixturesDate.
 async function recupererMatchsBasketDateOddsApi(dateIso) {
-  if (!ODDS_API_KEY) return [];
+  if (!ODDS_API_KEY) return null;
   const joursDepuis = Math.min(3, Math.max(1, joursEcoules(dateIso)));
   const url = new URL(`https://${ODDS_API_HOST}/v4/sports/basketball_nba/scores/`);
   url.searchParams.set('apiKey', ODDS_API_KEY);
@@ -294,20 +376,24 @@ async function recupererMatchsBasketDateOddsApi(dateIso) {
     resp = await fetch(url.toString());
   } catch (e) {
     stats.erreurs.push(`odds-api basket/scores(${dateIso}): ${e.message}`);
-    return [];
+    return null;
   }
   if (!resp.ok) {
     stats.erreurs.push(`odds-api basket/scores(${dateIso}) → HTTP ${resp.status}`);
-    return [];
+    return null;
   }
   let data;
   try {
     data = await resp.json();
   } catch (e) {
     stats.erreurs.push(`odds-api basket/scores(${dateIso}) réponse illisible: ${e.message}`);
-    return [];
+    return null;
   }
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) {
+    stats.erreurs.push(`odds-api basket/scores(${dateIso}) : réponse inattendue (pas une liste)`);
+    return null;
+  }
+  return data;
 }
 
 // Traduit un évènement The Odds API (/scores/) vers la même forme
@@ -554,7 +640,12 @@ async function capturerStatsEquipesBasket(gameId, dateIso, teamHomeId, teamAwayI
   }
 }
 
-async function reglerTicketsBasket(dateIso, ticketsBasket) {
+// besoinApi (30/09) : faux quand AUCUNE fiche basket de cette date n'a de leg
+// sans résultat (voir trierTicketsAReglerSelonLegs) — dans ce cas on n'envoie
+// aucune requête à API-Sports ni à The Odds API. Absent = vrai (ancien
+// comportement, pour tout appelant qui ne le précise pas).
+async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
+  if (besoinApi === undefined) besoinApi = true;
   // Déplacé AVANT la construction de parGame (30/09) : on a besoin de
   // connaître les fixture_id réellement engagés pour savoir si un appel
   // The Odds API est nécessaire — jamais systématique, pour ne pas gaspiller
@@ -570,7 +661,16 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
   }
   const besoinOddsApi = gameIdsAvecPari.some(estIdOddsApi);
 
-  const matchsJour = await recupererMatchsBasketDate(dateIso);
+  // 30/09 : null = l'appel a ÉCHOUÉ (compte suspendu, quota, réseau) — la
+  // source est alors « indisponible » : ses sélections restent EN ATTENTE au
+  // lieu d'être voidées comme si le match avait disparu (voir plus bas).
+  let apiSportsIndisponible = false;
+  let oddsApiIndisponible = false;
+  let matchsJour = [];
+  if (besoinApi) {
+    const r = await recupererMatchsBasketDate(dateIso);
+    if (r === null) apiSportsIndisponible = true; else matchsJour = r;
+  }
   // Index gameId → {statut, ptsHome, ptsAway}. ⚠️ Chemin des scores
   // (g.scores.home.total / g.scores.away.total) cohérent avec la
   // convention habituelle de cette famille d'API, mais PAS ENCORE VÉRIFIÉ
@@ -597,15 +697,26 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
   // CRITIQUE (30/09) — fusion de la source The Odds API, UNIQUEMENT si au
   // moins un fixture_id pariés ce jour-là en a besoin (voir besoinOddsApi
   // ci-dessus). Les identifiants des deux sources ne se chevauchent JAMAIS
-  // (entier vs hexadécimal), donc aucun risque d'écraser une entrée
-  // API-Sports existante dans parGame.
-  if (besoinOddsApi) {
+  // (entier positif pour API-Sports, entier négatif pour Odds API), donc
+  // aucun risque d'écraser une entrée API-Sports existante dans parGame.
+  // Chaque évènement /scores/ est indexé par le MÊME encodage que celui
+  // calculé à la génération : c'est ce qui permet de retrouver le score à
+  // partir du seul fixture_id lu en base.
+  if (besoinApi && besoinOddsApi) {
     const matchsJourOdds = await recupererMatchsBasketDateOddsApi(dateIso);
-    matchsJourOdds.forEach(ev => {
-      if (!ev || !ev.id) return;
-      parGame[ev.id] = Object.assign(evenementOddsApiScoreVersInfo(ev), { source: 'odds-api-basketball' });
-    });
+    if (matchsJourOdds === null) {
+      oddsApiIndisponible = true;
+    } else {
+      matchsJourOdds.forEach(ev => {
+        if (!ev || !ev.id) return;
+        const idNumerique = oddsApiIdVersEntier(ev.id);
+        if (idNumerique === null) return; // id illisible : jamais un score rattaché au mauvais match
+        parGame[idNumerique] = Object.assign(evenementOddsApiScoreVersInfo(ev), { source: 'odds-api-basketball' });
+      });
+    }
   }
+  // La source d'un leg se lit dans le SIGNE de son fixture_id (voir lib/id-source.js).
+  const sourceIndisponiblePour = fixtureId => (estIdOddsApi(fixtureId) ? oddsApiIndisponible : apiSportsIndisponible);
 
   const ecouler = joursEcoules(dateIso);
 
@@ -615,6 +726,7 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
   // match grâce à la vérification "déjà capturé" à l'intérieur de la
   // fonction, peu importe combien de fois le règlement repasse dessus.
   for (const gid of gameIdsAvecPari) {
+    if (!besoinApi) break; // rien à régler : aucune requête, même pour l'historique maison
     const info = parGame[gid];
     if (info && STATUTS_TERMINES_BASKET.includes(info.statut) && info.ptsHome != null && info.ptsAway != null) {
       await capturerStatsEquipesBasket(gid, dateIso, info.teamHomeId, info.teamAwayId, info.ptsHome, info.ptsAway);
@@ -644,8 +756,11 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
         nouveauResultat = evaluerLegBasket(leg, info.ptsHome, info.ptsAway);
       } else if (info && STATUTS_ANNULES_BASKET.includes(info.statut)) {
         nouveauResultat = 'void';
-      } else if (ecouler >= 1) {
+      } else if (ecouler >= 1 && !sourceIndisponiblePour(leg.fixture_id)) {
         // Règle des 23h59 Haïti, même principe que le foot : jamais bloquer indéfiniment.
+        // 30/09 : uniquement quand la source a RÉPONDU sans ce match. Si l'appel
+        // a échoué (suspension, quota, réseau), on ne sait rien du match : la
+        // sélection reste en attente et sera retentée au prochain passage.
         nouveauResultat = 'void';
       }
 
@@ -704,6 +819,29 @@ async function reglerDate(dateIso) {
   }
   if (!tickets.length) return;
 
+  // ÉCONOMIE D'APPELS (30/09, audit) : le règlement repasse chaque heure. Une
+  // fiche dont toutes les sélections sont déjà 'void' attend une décision
+  // MANUELLE de l'admin — la re-régler ne change rien, et pourtant chaque
+  // passage horaire envoyait 1 appel foot + 1 appel basket pour elle (fiches
+  // du 26/09 : ~48 appels/jour, non comptés). On lit donc d'abord les legs
+  // en base (gratuit) et on n'appelle API-Sports que s'il reste une leg SANS
+  // résultat. Les fiches concernées gardent exactement le même traitement.
+  let besoinApiIds = null; // null = lecture impossible → comportement d'avant (tout traiter, appeler l'API)
+  try {
+    const ids = tickets.map(t => t.id);
+    const legsRows = await sbSelect('ticket_legs',
+      `select=ticket_id,result&ticket_id=in.(${ids.join(',')})&limit=5000`);
+    const tri = garde.trierTicketsAReglerSelonLegs(tickets, legsRows);
+    stats.ticketsSansRienARegler += tickets.length - tri.aTraiter.length;
+    stats.ticketsToutVoid += tickets.length - tri.aTraiter.length; // même statistique qu'avant : fiche 100% void en attente admin
+    tickets = tri.aTraiter;
+    besoinApiIds = tri.besoinApiIds;
+  } catch (e) {
+    stats.erreurs.push(`pré-lecture legs(${dateIso}): ${e.message} — traitement complet comme avant`);
+  }
+  if (!tickets.length) { stats.datesSansAppelApi++; return; }
+  const besoinApiPour = liste => besoinApiIds === null || liste.some(t => besoinApiIds.has(t.id));
+
   // Session suivante (règlement basketball) : séparé dès la lecture — un
   // fixture_id foot et un gameId basketball peuvent coïncider
   // numériquement par pur hasard, jamais une seule table de
@@ -713,11 +851,24 @@ async function reglerDate(dateIso) {
   const ticketsFoot = tickets.filter(t => t.sport !== 'basket');
   const ticketsBasket = tickets.filter(t => t.sport === 'basket');
 
-  if (ticketsBasket.length) await reglerTicketsBasket(dateIso, ticketsBasket);
+  if (ticketsBasket.length) await reglerTicketsBasket(dateIso, ticketsBasket, besoinApiPour(ticketsBasket));
   if (!ticketsFoot.length) return;
   tickets = ticketsFoot;
 
-  const fixturesJour = await recupererFixturesDate(dateIso);
+  // Aucune leg foot sans résultat : aucun appel (les fiches sont seulement
+  // finalisées à partir des résultats déjà en base).
+  const besoinApiFoot = besoinApiPour(ticketsFoot);
+  if (!besoinApiFoot) stats.datesSansAppelApi++;
+  const fixturesJour = besoinApiFoot ? await recupererFixturesDate(dateIso) : [];
+  if (fixturesJour === null) {
+    // 30/09 : l'appel a ÉCHOUÉ (suspension, quota, réseau) — on ne sait RIEN
+    // des matchs. Avant, [] était substitué et la règle des 23h59 voidait les
+    // sélections de plus de 2 jours comme si les matchs avaient disparu.
+    // Maintenant : rien n'est modifié, tout reste « en attente » jusqu'à ce
+    // qu'API-Sports réponde de nouveau.
+    stats.ticketsEnAttente += ticketsFoot.length;
+    return;
+  }
   // Index rapide fixture_id → {statut, golHome, golAway, scoreFiable}
   //
   // PROLONGATIONS (27/08, section 11 du cahier des charges — "le bot doit

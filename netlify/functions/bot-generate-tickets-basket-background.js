@@ -83,6 +83,11 @@ const {
   dateCibleDemainHaiti, publierFiche, attendre, API_SPORTS_KEY, BASKET_HOST,
   recupererFiabiliteMarches, annoterPoolAvecFiabilite
 } = bot;
+// Encodage id The Odds API (chaîne hexadécimale) -> entier négatif compatible
+// avec ticket_legs.fixture_id (bigint). Module partagé avec le règlement.
+const { oddsApiIdVersEntier } = require('./lib/id-source.js');
+// Garde-fous quota (30/09, suite à l'audit) — voir lib/quota-guard.js.
+const garde = require('./lib/quota-guard.js');
 
 // ============================================================================
 // SUIVI DE QUOTA BASKETBALL — même principe que le foot (voir
@@ -90,8 +95,44 @@ const {
 // completement independant : provider différent dans la MÊME table
 // api_quota_usage (déjà générique, colonne provider en texte libre).
 // ============================================================================
-const QUOTA_MAX_JOUR_BASKET = 90; // marge de sécurité sous le vrai plafond de 100/jour
+// CHANGÉ (30/09, audit) : 90 → 75. Le compteur basket est partagé avec le
+// règlement (plafond 95 de son côté) : la génération laisse ainsi ~20 appels
+// au règlement et aux diagnostics. Une génération normale en consomme ~30-45.
+const QUOTA_MAX_JOUR_BASKET = 75;
 let quotaInterneEpuiseBasket = false;
+let compteur429Basket = 0; // refus de débit consécutifs de ce passage
+
+// ----------------------------------------------------------------------------
+// CACHE basket (30/09, audit) — même table et même RPC que le cache du foot
+// (api_fixtures_cache / cache_api_fixtures_upsert), provider distinct. Jusqu'ici
+// le basket n'avait AUCUN cache : chaque passage de la fenêtre (jusqu'à 4 par
+// créneau) refaisait les mêmes appels, y compris quand il n'y a aucun match
+// (intersaison NBA) — d'où ~44 appels/jour pour rien. Jamais bloquant : un
+// échec de lecture/écriture retombe simplement sur l'appel réel, comme avant.
+// ----------------------------------------------------------------------------
+// Les MARQUEURS « rien trouvé » (aucun match / aucune cote) ne servent qu'au
+// passage AUTOMATIQUE (handler). Une génération manuelle admin les ignore : elle
+// est déclenchée volontairement, souvent justement parce que du nouveau est
+// apparu, et ne doit jamais être bloquée par un « vide » vieux d'une heure.
+let utiliserMarqueursVides = false;
+const CACHE_PROVIDER_BASKET = 'api-sports-basketball';
+const CACHE_TTL_BASKET_MS = 6 * 60 * 60 * 1000;      // réponse non vide
+const CACHE_TTL_BASKET_VIDE_MS = 90 * 60 * 1000;      // réponse valide mais vide (aucun match)
+const CACHE_TTL_ODDS_API_VIDE_MS = 60 * 60 * 1000;    // The Odds API : aucun match NBA ce jour-là
+async function lireCacheBasket(cle, ttlMs) {
+  try {
+    const rows = await sbSelect('api_fixtures_cache', `select=payload,fetched_at&provider=eq.${CACHE_PROVIDER_BASKET}&cle=eq.${encodeURIComponent(cle)}&limit=1`);
+    if (rows && rows.length) {
+      const age = Date.now() - new Date(rows[0].fetched_at).getTime();
+      if (age >= 0 && age < ttlMs) return rows[0].payload;
+    }
+  } catch (e) { /* jamais bloquant — repli sur l'appel réel */ }
+  return null;
+}
+async function ecrireCacheBasket(cle, payload) {
+  try { await sbRpc('cache_api_fixtures_upsert', { p_provider: CACHE_PROVIDER_BASKET, p_cle: cle, p_payload: payload }); }
+  catch (e) { /* jamais bloquant */ }
+}
 
 async function verifierEtIncrementerQuotaBasket(contexte) {
   if (quotaInterneEpuiseBasket) return false;
@@ -126,6 +167,11 @@ async function enregistrerQuotaReelBasket(resp) {
     const remaining = resp.headers.get('x-ratelimit-requests-remaining');
     const limite = resp.headers.get('x-ratelimit-requests-limit');
     if (remaining === null || limite === null) return;
+    // COUPURE SUR LE VRAI QUOTA (30/09) — même règle que le foot.
+    if (!quotaInterneEpuiseBasket && garde.resteReelSousReserve(remaining, garde.RESERVE_REEL_GENERATION)) {
+      quotaInterneEpuiseBasket = true;
+      stats.erreurs.push(`[COUPURE QUOTA RÉEL] il ne reste que ${remaining}/${limite} requêtes API-Sports basket aujourd'hui (réserve ${garde.RESERVE_REEL_GENERATION}) — arrêt des appels de génération.`);
+    }
     await sbRpc('record_real_api_quota', {
       p_provider: 'api-sports-basketball',
       p_remaining: parseInt(remaining, 10),
@@ -137,6 +183,16 @@ async function enregistrerQuotaReelBasket(resp) {
 }
 
 async function apiSportsGetBasketRaw(path, params) {
+  // Cache des listes de matchs par date (30/09) — vérifié AVANT le compteur :
+  // une réponse en cache ne consomme aucune requête API-Sports.
+  const cleCache = (path === '/games' && params && params.date) ? `games:${params.date}` : null;
+  if (cleCache) {
+    const enCache = await lireCacheBasket(cleCache, CACHE_TTL_BASKET_MS);
+    if (enCache && Array.isArray(enCache.response)) {
+      if (enCache.response.length > 0) return { response: enCache.response };
+      if (utiliserMarqueursVides && (await lireCacheBasket(cleCache, CACHE_TTL_BASKET_VIDE_MS))) return { response: [] };
+    }
+  }
   const ok = await verifierEtIncrementerQuotaBasket(`${path}`);
   if (!ok) return { response: [] };
   const url = new URL(`https://${BASKET_HOST}${path}`);
@@ -148,6 +204,16 @@ async function apiSportsGetBasketRaw(path, params) {
   const messagesErreur = data.errors && (Array.isArray(data.errors) ? data.errors : Object.values(data.errors));
   if (messagesErreur && messagesErreur.length) {
     stats.erreurs.push(`API-Sports basket ${path}${/request limit|reached the.*limit/i.test(messagesErreur.join(' ')) ? ' [QUOTA JOURNALIER DÉPASSÉ]' : ''}: ${messagesErreur.join(' | ')}`);
+    // COUPURE (30/09) : quota atteint ou compte suspendu → plus aucun appel
+    // API-Sports pour ce passage (chacun échouerait de la même façon).
+    const genre = garde.classerErreurApi(messagesErreur);
+    if ((genre === 'quota' || genre === 'suspendu') && !quotaInterneEpuiseBasket) {
+      quotaInterneEpuiseBasket = true;
+      stats.erreurs.push(`[COUPURE API] ${genre === 'suspendu' ? 'compte/clé refusé par API-Sports' : 'quota journalier atteint'} — arrêt des appels API-Sports basket pour ce passage.`);
+    }
+  } else if (cleCache) {
+    // Réponse VALIDE (même vide) : gardée pour les passages suivants du soir.
+    await ecrireCacheBasket(cleCache, { response: data.response || [] });
   }
   return data;
 }
@@ -189,7 +255,7 @@ async function apiSportsGetBasketRaw(path, params) {
 const ODDS_API_KEY = (process.env.ODDS_API_KEY || '').trim();
 const ODDS_API_HOST = 'api.the-odds-api.com';
 let _sourceBasketActuelle = 'api-sports'; // trace pour recupererCoteParMatchBasket, jamais lue ailleurs
-let _cacheOddsApiBasket = new Map(); // gameId (id The Odds API) -> oddsItem à la forme API-Sports
+let _cacheOddsApiBasket = new Map(); // gameId ENTIER NÉGATIF (id The Odds API encodé, voir lib/id-source.js) -> oddsItem à la forme API-Sports
 
 // Mêmes en-têtes de quota qu'API-Sports (x-requests-*, jamais x-ratelimit-*
 // chez ce fournisseur) — même mécanisme générique record_real_api_quota,
@@ -215,7 +281,15 @@ async function enregistrerQuotaReelOddsApi(resp) {
 // de champs exacts, pour ne rien changer au reste du fichier.
 function evenementOddsApiVersFormatApiSports(ev) {
   return {
-    id: ev.id, // id The Odds API (chaîne), jamais comparé à un id API-Sports (sources jamais mélangées dans un même passage)
+    // CRITIQUE (30/09, second correctif) : ticket_legs.fixture_id est un
+    // BIGINT en base. L'id The Odds API est une chaîne hexadécimale que
+    // Postgres refuse d'insérer (22P02) — la fiche aurait été perdue à la
+    // publication. On l'encode donc ici, à la source, en entier NÉGATIF
+    // (voir lib/id-source.js) : tout le reste du pipeline (noms[], candidats,
+    // anti-doublon, publication, règlement) le traite comme n'importe quel
+    // id numérique, sans aucune autre modification. Les ids API-Sports sont
+    // toujours positifs, donc jamais de collision entre les deux sources.
+    id: oddsApiIdVersEntier(ev.id),
     date: ev.commence_time,
     status: { short: 'NS' }, // /odds ne renvoie jamais un match déjà commencé ou terminé, uniquement à venir
     teams: {
@@ -275,6 +349,15 @@ async function recupererMatchsBasketJourOddsApi(dateCible) {
     stats.erreurs.push('ODDS_API_KEY absente — repli The Odds API impossible.');
     return [];
   }
+  // 30/09 : « aucun match NBA ce jour-là » déjà constaté il y a moins d'1h →
+  // on ne redépense pas de crédits The Odds API (500/mois seulement).
+  const marqueurVide = utiliserMarqueursVides
+    ? await lireCacheBasket(`oddsapi-vide:${dateCible}`, CACHE_TTL_ODDS_API_VIDE_MS)
+    : null;
+  if (marqueurVide && marqueurVide.vide === true) {
+    _cacheOddsApiBasket = new Map();
+    return [];
+  }
   const url = new URL(`https://${ODDS_API_HOST}/v4/sports/basketball_nba/odds/`);
   url.searchParams.set('apiKey', ODDS_API_KEY);
   url.searchParams.set('regions', 'us');
@@ -318,11 +401,29 @@ async function recupererMatchsBasketJourOddsApi(dateCible) {
     const minutesJour = h.heureNum * 60 + h.minuteNum;
     if (minutesJour < BASKET_MIN_HOUR * 60 || minutesJour > BASKET_MAX_MINUTES) return;
 
+    // Id encodé en entier (voir evenementOddsApiVersFormatApiSports). Un id
+    // illisible n'est jamais publié : mieux vaut écarter ce match que
+    // risquer une insertion refusée par la base qui ferait perdre la fiche.
+    const idNumerique = oddsApiIdVersEntier(ev.id);
+    if (idNumerique === null) {
+      stats.erreurs.push(`odds-api basket: id de match illisible ("${String(ev.id).slice(0, 12)}…"), match écarté`);
+      return;
+    }
+    // Collision de l'encodage (probabilité négligeable, 2^52 valeurs) : on
+    // garde le premier match et on écarte le second plutôt que d'en
+    // mélanger deux sous le même identifiant.
+    if (_cacheOddsApiBasket.has(idNumerique)) {
+      stats.erreurs.push(`odds-api basket: collision d'identifiant encodé (${idNumerique}), second match écarté`);
+      return;
+    }
+
     const oddsItem = evenementOddsApiVersOddsItem(ev);
     if (!oddsItem) return; // aucune cote exploitable pour ce match, jamais un candidat cassé plus loin dans le pipeline
-    _cacheOddsApiBasket.set(ev.id, oddsItem);
+    _cacheOddsApiBasket.set(idNumerique, oddsItem);
     resultats.push(evenementOddsApiVersFormatApiSports(ev));
   });
+  // Réponse valide mais aucun match exploitable pour cette date : marqueur 1h.
+  if (!resultats.length) await ecrireCacheBasket(`oddsapi-vide:${dateCible}`, { vide: true });
   return resultats;
 }
 
@@ -438,6 +539,14 @@ function resetStatsBasket() {
   stats.sourceBasket = null;
   _sourceBasketActuelle = 'api-sports'; // repart toujours prioritaire sur API-Sports à chaque nouveau passage
   stats.erreurs = [];
+  // 30/09 : drapeaux de module remis à zéro à chaque passage — sur un
+  // conteneur Netlify « chaud », un drapeau resté vrai bloquait en silence
+  // tous les appels des passages suivants.
+  quotaInterneEpuiseBasket = false;
+  compteur429Basket = 0;
+  utiliserMarqueursVides = false; // seul le handler automatique le réactive (voir plus bas)
+  verrouCleBasket = null;
+  verrouDetenteurBasket = null;
   // Diagnostic (31/08 v4, demande explicite de James après un log réel
   // montrant matchsTrouves:7 mais candidatsExamines:1 — 6 matchs exclus
   // AVANT même d'atteindre les cotes, sans qu'aucune trace n'explique
@@ -469,6 +578,32 @@ async function logFinal() {
     // échouer le bot lui-même, ni masquer le résultat déjà déterminé.
     console.log('[BOT-BASKET] échec écriture bot_run_log:', e.message);
   }
+  await libererVerrouGenerationBasket(); // 30/09 : libère le verrou anti-chevauchement (no-op si non détenu)
+}
+
+// VERROU ANTI-CHEVAUCHEMENT (30/09, audit) — même principe que le foot (voir
+// bot-generate-tickets-background.js) : un seul passage à la fois par date,
+// verrou injoignable = on continue comme avant.
+let verrouCleBasket = null;
+let verrouDetenteurBasket = null;
+async function acquerirVerrouGenerationBasket(dateCible) {
+  const cle = `gen-basket:${dateCible}`;
+  const detenteur = garde.nouveauDetenteur('basket');
+  const r = await garde.acquerirVerrou(sbRpc, cle, detenteur, garde.TTL_VERROU_SECONDES);
+  if (!r.acquis) return false;
+  if (r.indisponible) {
+    stats.erreurs.push(`verrou_indisponible: ${r.raison} — passage poursuivi sans verrou.`);
+    return true;
+  }
+  verrouCleBasket = cle;
+  verrouDetenteurBasket = detenteur;
+  return true;
+}
+async function libererVerrouGenerationBasket() {
+  if (!verrouCleBasket) return;
+  const cle = verrouCleBasket, detenteur = verrouDetenteurBasket;
+  verrouCleBasket = null; verrouDetenteurBasket = null;
+  await garde.libererVerrou(sbRpc, cle, detenteur);
 }
 
 // Fenêtre horaire basketball : dès 08h00, jusqu'à 23h59 Haïti INCLUS — voir
@@ -522,6 +657,15 @@ async function recupererCoteParMatchBasket(gameId) {
   if (_sourceBasketActuelle === 'odds-api') {
     return _cacheOddsApiBasket.get(gameId) || null;
   }
+  // Cache par match (30/09) : cote déjà lue (3h) ou match sans cote (2h).
+  const enCacheOdds = await lireCacheBasket(`odds:${gameId}`, CACHE_TTL_BASKET_MS);
+  if (enCacheOdds) {
+    if (garde.estMarqueurSansCote(enCacheOdds)) {
+      if (utiliserMarqueursVides && (await lireCacheBasket(`odds:${gameId}`, garde.TTL_CACHE_SANS_COTE_MS))) return null;
+    } else if (await lireCacheBasket(`odds:${gameId}`, 3 * 60 * 60 * 1000)) {
+      return enCacheOdds;
+    }
+  }
   const ok = await verifierEtIncrementerQuotaBasket(`basket/odds(game=${gameId})`);
   if (!ok) return null;
   try {
@@ -541,10 +685,39 @@ async function recupererCoteParMatchBasket(gameId) {
     await enregistrerQuotaReelBasket(resp);
     if (!resp.ok) {
       stats.erreurs.push(`basket/odds(game=${gameId}): HTTP ${resp.status}`);
+      // COUPURE SUR 429 (30/09) : une pause, puis arrêt au 2e refus consécutif.
+      if (resp.status === 429) {
+        compteur429Basket++;
+        if (compteur429Basket >= garde.MAX_429_CONSECUTIFS) {
+          quotaInterneEpuiseBasket = true;
+          stats.erreurs.push(`[COUPURE 429] ${compteur429Basket} refus de débit consécutifs (basket/odds) — arrêt des appels API-Sports basket pour ce passage.`);
+        } else {
+          stats.erreurs.push(`[PAUSE 429] basket/odds(game=${gameId}) — pause de ${Math.round(garde.PAUSE_APRES_429_MS / 1000)}s avant de continuer.`);
+          await attendre(garde.PAUSE_APRES_429_MS);
+        }
+      }
       return null;
     }
     const data = await resp.json();
-    return (data.response && data.response[0]) || null;
+    const messagesOdds = garde.messagesErreur(data.errors);
+    if (messagesOdds.length) {
+      stats.erreurs.push(`basket/odds(game=${gameId}): ${messagesOdds.join(' | ')}`);
+      const genre = garde.classerErreurApi(messagesOdds);
+      if ((genre === 'quota' || genre === 'suspendu') && !quotaInterneEpuiseBasket) {
+        quotaInterneEpuiseBasket = true;
+        stats.erreurs.push(`[COUPURE API] ${genre === 'suspendu' ? 'compte/clé refusé par API-Sports' : 'quota journalier atteint'} — arrêt des appels API-Sports basket pour ce passage.`);
+      }
+      // Quota / suspension : réponse inutilisable, jamais mise en cache. Toute
+      // AUTRE erreur garde le comportement d'avant (on utilise ce que la réponse
+      // contient), sans jamais poser de marqueur « sans cote ».
+      if (genre) return null;
+    } else {
+      compteur429Basket = 0;
+    }
+    const resultatOdds = (data.response && data.response[0]) || null;
+    if (resultatOdds) await ecrireCacheBasket(`odds:${gameId}`, resultatOdds);
+    else if (!messagesOdds.length) await ecrireCacheBasket(`odds:${gameId}`, garde.MARQUEUR_SANS_COTE);
+    return resultatOdds;
   } catch (e) {
     stats.erreurs.push(`basket/odds(game=${gameId}): ${e.message}`);
     return null;
@@ -981,6 +1154,7 @@ function cascadeFicheBasket(pool, cibleNominale, rnd) {
 
 async function handler(event) {
   resetStatsBasket();
+  utiliserMarqueursVides = true; // passage AUTOMATIQUE : les marqueurs « rien trouvé » (1h/90 min/2h) sont autorisés
 
   const jetonTest = process.env.BOT_TEST_TOKEN || '';
   const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';
@@ -1048,6 +1222,14 @@ async function handler(event) {
     }
   } catch (e) {
     stats.erreurs.push('vérif idempotence: ' + e.message);
+  }
+
+  // Verrou anti-chevauchement (30/09) : APRÈS le contrôle « déjà généré »
+  // (gratuit) et AVANT tout appel API — voir acquerirVerrouGenerationBasket.
+  if (!(await acquerirVerrouGenerationBasket(dateCible))) {
+    stats.erreurs.push(`passage_ignore: une autre exécution de génération basket est déjà en cours pour ${dateCible}.`);
+    await logFinal();
+    return { statusCode: 200, body: `Une génération basket est déjà en cours pour ${dateCible} — abandon (aucun appel API).` };
   }
 
   // Rang 1 : synthétique, jamais lu depuis la table plans — un basketball
