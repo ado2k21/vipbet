@@ -459,14 +459,28 @@ const BASKET_MAX_MINUTES = 23 * 60 + 59;
 
 // Un seul appel : tous les matchs du jour cible, tous championnats
 // confondus (aucune liste blanche — règle 1 en en-tête).
-// CORRIGÉ (29/09) : API-Sports reste la source PRIORITAIRE, essayée en
-// premier à chaque passage (reprise automatique dès que le compte est
-// réactivé, sans aucune bascule manuelle) — mais si elle ne renvoie AUCUN
-// match (compte suspendu, quota épuisé, panne du fournisseur...), on
-// bascule sur The Odds API plutôt que de publier zéro fiche. _sourceBasketActuelle
-// trace laquelle des deux a réellement servi pour ce passage — lue par
-// recupererCoteParMatchBasket juste en dessous, jamais ailleurs.
+// CORRIGÉ (29/09, PUIS INVERSÉ le même jour, demande explicite de Don après
+// comparaison des deux sources) : The Odds API est désormais la source
+// PRIORITAIRE pour la NBA — un seul appel réseau (contre jusqu'à 30 chez
+// API-Sports, un par match, avec pause de 6,5s entre chaque), jusqu'à 20
+// bookmakers par match (contre 1 seul chez API-Sports), et strictement les
+// mêmes marchés déjà extraits par extraireMarchesBasket (1X2 + Plus/Moins —
+// jamais le Handicap, non branché ici de toute façon). API-Sports reste un
+// repli si Odds API ne renvoie rien (clé absente/quota Odds API épuisé) —
+// reprend automatiquement si Odds API redevient indisponible, sans bascule
+// manuelle. _sourceBasketActuelle trace laquelle des deux a réellement servi
+// pour ce passage — lue par recupererCoteParMatchBasket juste en dessous,
+// jamais ailleurs. AUCUN changement au calcul de la fiche : extraireMarchesBasket/
+// construireFicheBasket/cascadeFicheBasket ne savent pas d'où viennent les
+// données, ils reçoivent toujours exactement la même forme d'objets, quelle
+// que soit la source — testé de bout en bout (voir commit du 29/09).
 async function recupererMatchsBasketJour(dateCible) {
+  const reponseOdds = await recupererMatchsBasketJourOddsApi(dateCible);
+  if (reponseOdds.length) {
+    _sourceBasketActuelle = 'odds-api';
+    stats.sourceBasket = 'odds-api';
+    return reponseOdds;
+  }
   try {
     const data = await apiSportsGetBasketRaw('/games', { date: dateCible });
     const reponse = data.response || [];
@@ -478,12 +492,7 @@ async function recupererMatchsBasketJour(dateCible) {
   } catch (e) {
     stats.erreurs.push('basket/games(jour) [api-sports]: ' + e.message);
   }
-  const reponseOdds = await recupererMatchsBasketJourOddsApi(dateCible);
-  if (reponseOdds.length) {
-    _sourceBasketActuelle = 'odds-api';
-    stats.sourceBasket = 'odds-api';
-  }
-  return reponseOdds;
+  return [];
 }
 
 async function recupererCoteParMatchBasket(gameId) {
