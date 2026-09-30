@@ -11,6 +11,21 @@
    IMPORTANT (lecon des 27/08 et 08/09) : une fonction planifiee n'est
    reellement appelee que si elle est declaree dans netlify.toml. Le
    config.schedule ci-dessous est purement documentaire.
+
+   ORDRE CORRIGE LE 29/09 (etait invers auparavant) : on verifie D'ABORD
+   le statut REEL aupres du prestataire pour chaque paiement encore
+   pending, et on n'expire qu'APRES cette verification fraiche. L'ancien
+   ordre (expirer puis lire) pouvait marquer "echec" un paiement en train
+   d'etre reellement confirme au meme instant cote prestataire (USSD +
+   saisie du code PIN pouvant prendre 1-2 min, plus avec un reseau
+   lent) — quelqu'un qui a ferme son navigateur pile a l'expiration
+   aurait alors paye pour rien, sans jamais etre repêche. Avec ce nouvel
+   ordre, un paiement qui vient de passer a "ok" est deja confirme et
+   n'est donc plus status='pending' au moment ou expirer_paiements_
+   prestataire s'execute — il ne peut plus jamais etre expire par erreur.
+   C'est ce correctif qui rend sur de reduire PLOPPLOP_PENDING_TTL_MIN
+   (15 min a l'origine, ramene a 10 min le 29/09 une fois ce correctif
+   en place).
    ===================================================================== */
 
 'use strict';
@@ -36,19 +51,10 @@ exports.handler = async function () {
   const bilan = { vus: 0, confirmes: 0, attente: 0, refuses: 0, erreurs: 0, expires: 0 };
 
   try {
-    /* 1. Liberer les tentatives abandonnees. Fait AVANT la lecture pour
-       ne pas interroger inutilement le prestataire sur des references
-       mortes depuis longtemps. */
-    try {
-      const res = await C.sbRpc(cfg, 'expirer_paiements_prestataire', {});
-      bilan.expires = (res && res.expires) || 0;
-    } catch (e) {
-      console.error('[paiement-poll] expiration impossible :', e.message);
-    }
-
-    /* 2. Tous les paiements encore reellement en attente cote prestataire.
-       Les plus anciens d'abord : ce sont ceux qui approchent de leur
-       expiration, donc les plus urgents a trancher. */
+    /* 1. Tous les paiements encore reellement en attente cote prestataire,
+       verifies AVANT toute expiration. Les plus anciens d'abord : ce sont
+       ceux qui approchent de (ou ont deja depasse) leur expiration, donc
+       les plus urgents a trancher pendant qu'il en est encore temps. */
     const paiements = await C.sbSelect(
       cfg, 'payments',
       'status=eq.pending&provider=not.is.null' +
@@ -56,36 +62,44 @@ exports.handler = async function () {
       '&order=created_at.asc&limit=' + MAX_PAR_PASSAGE
     );
 
-    if (!paiements || !paiements.length) {
-      console.log('[paiement-poll] aucun paiement en attente. Expires :', bilan.expires);
-      return { statusCode: 200, body: JSON.stringify(bilan) };
+    if (paiements && paiements.length) {
+      for (let i = 0; i < paiements.length; i++) {
+        const p = paiements[i];
+        bilan.vus++;
+        try {
+          const res = await C.verifierEtConfirmer(cfg, p);
+          if (res.etat === 'confirme') {
+            bilan.confirmes++;
+            console.log('[paiement-poll] confirme :', p.reference, res.code);
+          } else if (res.etat === 'attente') {
+            bilan.attente++;
+          } else if (res.etat === 'refuse') {
+            bilan.refuses++;
+            /* Un refus n'est jamais silencieux : c'est exactement le cas
+               ou quelqu'un a paye moins que le prix du plan, ou avec une
+               methode differente. Il doit remonter a l'admin. */
+            console.error('[paiement-poll] REFUS :', p.reference, JSON.stringify(res));
+          } else if (res.etat === 'erreur') {
+            bilan.erreurs++;
+            console.error('[paiement-poll] erreur :', p.reference, res.code, res.message || '');
+          }
+        } catch (e) {
+          bilan.erreurs++;
+          console.error('[paiement-poll] exception sur', p.reference, ':', e.message);
+        }
+        if (i < paiements.length - 1) await pause(PAUSE_MS);
+      }
     }
 
-    for (let i = 0; i < paiements.length; i++) {
-      const p = paiements[i];
-      bilan.vus++;
-      try {
-        const res = await C.verifierEtConfirmer(cfg, p);
-        if (res.etat === 'confirme') {
-          bilan.confirmes++;
-          console.log('[paiement-poll] confirme :', p.reference, res.code);
-        } else if (res.etat === 'attente') {
-          bilan.attente++;
-        } else if (res.etat === 'refuse') {
-          bilan.refuses++;
-          /* Un refus n'est jamais silencieux : c'est exactement le cas
-             ou quelqu'un a paye moins que le prix du plan, ou avec une
-             methode differente. Il doit remonter a l'admin. */
-          console.error('[paiement-poll] REFUS :', p.reference, JSON.stringify(res));
-        } else if (res.etat === 'erreur') {
-          bilan.erreurs++;
-          console.error('[paiement-poll] erreur :', p.reference, res.code, res.message || '');
-        }
-      } catch (e) {
-        bilan.erreurs++;
-        console.error('[paiement-poll] exception sur', p.reference, ':', e.message);
-      }
-      if (i < paiements.length - 1) await pause(PAUSE_MS);
+    /* 2. Liberer les tentatives abandonnees — fait APRES la verification
+       ci-dessus, jamais avant : tout paiement reellement passe a "ok"
+       vient deja d'etre confirme (donc n'est plus status='pending') et
+       ne peut plus se faire expirer par erreur ici. */
+    try {
+      const res = await C.sbRpc(cfg, 'expirer_paiements_prestataire', {});
+      bilan.expires = (res && res.expires) || 0;
+    } catch (e) {
+      console.error('[paiement-poll] expiration impossible :', e.message);
     }
 
     console.log('[paiement-poll] bilan :', JSON.stringify(bilan));

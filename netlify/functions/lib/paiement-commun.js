@@ -53,8 +53,12 @@ function lireConfig() {
        possible) en quelques minutes, pas en trois quarts d'heure —
        l'API du prestataire ne renvoyant que "no"/"ok" (voir
        verifierEtConfirmer), ce delai est la SEULE facon de detecter un
-       abandon. Reglable sans redeploiement via PLOPPLOP_PENDING_TTL_MIN. */
-    dureeVieMinutes: parseInt(process.env.PLOPPLOP_PENDING_TTL_MIN || '15', 10) || 15,
+       abandon. Reglable sans redeploiement via PLOPPLOP_PENDING_TTL_MIN.
+       Ramene de 15 a 10 min le 29/09, une fois le correctif d'ordre de
+       paiement-poll-background.js en place (verification AVANT expiration —
+       voir les commentaires de ce fichier) : plus de risque qu'un paiement
+       en train d'etre confirme au meme instant soit expire par erreur. */
+    dureeVieMinutes: parseInt(process.env.PLOPPLOP_PENDING_TTL_MIN || '10', 10) || 10,
     /* AJOUT — limitation de debit. Reglable sans redeploiement.
        Mettre RATE_LIMIT_ACTIF=0 desactive completement le garde-fou si
        jamais il posait probleme en production. */
