@@ -238,7 +238,27 @@ function evenementOddsApiVersOddsItem(ev) {
   const bets = [];
   const mH2h = (bk.markets || []).find(m => m.key === 'h2h');
   if (mH2h) {
-    bets.push({ id: 2, values: (mH2h.outcomes || []).map(o => ({ value: o.name, odd: o.price })) });
+    // CRITIQUE (30/09) — The Odds API donne le NOM REEL de l'equipe dans
+    // outcome.name (ex: "Boston Celtics"), jamais "Home"/"Away". Or
+    // evaluerLegBasket() cote reglement (bot-settle-results.js) compare le
+    // pick au litteral 'Home'/'Away' (convention API-Sports basketball,
+    // jamais touchee). Sans cette traduction, un pick genere via The Odds
+    // API contiendrait "Victoire : Boston Celtics" -> ne peut JAMAIS
+    // egaler 'Home' ni 'Away' -> resultat FAUX garanti (toujours "lost")
+    // au lieu d'un simple void/en-attente. On traduit donc ici, a la
+    // source, pour que le pick stocke soit strictement identique quelle
+    // que soit la source de la cote. Si un nom ne correspond a aucun des
+    // deux camps annonces par l'evenement (donnee suspecte), on ecarte ce
+    // marche entierement plutot que de risquer une equivalence fausse.
+    const home = ev.home_team, away = ev.away_team;
+    const traduits = (mH2h.outcomes || []).map(o => {
+      if (o.name === home) return { value: 'Home', odd: o.price };
+      if (o.name === away) return { value: 'Away', odd: o.price };
+      return null;
+    });
+    if (traduits.every(Boolean) && traduits.length === 2) {
+      bets.push({ id: 2, values: traduits });
+    }
   }
   const mTotals = (bk.markets || []).find(m => m.key === 'totals');
   if (mTotals) {
@@ -1235,3 +1255,10 @@ module.exports.construireFicheBasketVarie = construireFicheBasketVarie;
 module.exports.stats = stats;
 module.exports.resetStatsBasket = resetStatsBasket;
 module.exports.logFinal = logFinal;
+// Exports supplémentaires (30/09) — même convention que ci-dessus, exposés
+// uniquement pour permettre des tests unitaires ciblés sur l'adaptateur
+// The Odds API, jamais utilisés par le handler lui-même autrement qu'en
+// interne.
+module.exports.evenementOddsApiVersOddsItem = evenementOddsApiVersOddsItem;
+module.exports.evenementOddsApiVersFormatApiSports = evenementOddsApiVersFormatApiSports;
+module.exports.recupererMatchsBasketJourOddsApi = recupererMatchsBasketJourOddsApi;

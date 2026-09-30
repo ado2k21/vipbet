@@ -49,6 +49,21 @@ const FOOT_HOST = 'v3.football.api-sports.io';
 // indépendants), donc jamais une seule table de correspondance commune.
 const BASKET_HOST = 'v1.basketball.api-sports.io';
 
+// CRITIQUE (30/09) — depuis l'inversion de priorité côté génération basketball
+// (bot-generate-tickets-basket-background.js), une partie des fixture_id
+// stockés dans ticket_legs pour le sport basketball proviennent désormais de
+// The Odds API (identifiant hexadécimal), plus seulement d'API-Sports
+// (toujours un entier). Sans cette clé et le chemin de règlement qui l'utilise
+// plus bas (recupererMatchsBasketDateOddsApi), CES fiches-là ne pourraient
+// JAMAIS être retrouvées dans l'index API-Sports (parGame) : elles
+// tomberaient systématiquement dans la règle des 23h59 et seraient annulées
+// ('void') à tort après ~1 jour, sans jamais montrer "gagné"/"perdu" — un
+// bug distinct de celui, déjà corrigé, du texte du pick lui-même (voir
+// evenementOddsApiVersOddsItem). Absente/vide → simplement ignorée (le
+// règlement continue de fonctionner pour tout ce qui reste sur API-Sports).
+const ODDS_API_KEY = (process.env.ODDS_API_KEY || '').trim();
+const ODDS_API_HOST = 'api.the-odds-api.com';
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -249,6 +264,78 @@ async function recupererMatchsBasketDate(dateIso) {
     stats.erreurs.push(`basket/games(${dateIso}): ${e.message}`);
     return [];
   }
+}
+
+// CRITIQUE (30/09) — distingue un fixture_id The Odds API (toujours une
+// chaîne hexadécimale, jamais purement numérique) d'un fixture_id API-Sports
+// (toujours un entier, ex: 511550) — API-Sports n'a JAMAIS utilisé autre
+// chose qu'un entier comme identifiant de match, donc le simple format de la
+// valeur suffit à choisir la bonne source de règlement sans colonne
+// supplémentaire en base ni ambiguïté possible entre les deux espaces d'ID.
+function estIdOddsApi(fixtureId) {
+  return !/^\d+$/.test(String(fixtureId));
+}
+
+// Session suivante (30/09) — pendant basketball via The Odds API (voir
+// ODDS_API_KEY plus haut). Un seul appel par date à régler, même principe
+// de contournement de quota que recupererMatchsBasketDate() : jamais un
+// appel par match. daysFrom (paramètre officiel de l'endpoint /scores/,
+// 1 à 3 accepté sur le plan gratuit) est calculé à partir du nombre de jours
+// réellement écoulés depuis dateIso, jamais codé en dur.
+async function recupererMatchsBasketDateOddsApi(dateIso) {
+  if (!ODDS_API_KEY) return [];
+  const joursDepuis = Math.min(3, Math.max(1, joursEcoules(dateIso)));
+  const url = new URL(`https://${ODDS_API_HOST}/v4/sports/basketball_nba/scores/`);
+  url.searchParams.set('apiKey', ODDS_API_KEY);
+  url.searchParams.set('daysFrom', String(joursDepuis));
+
+  let resp;
+  try {
+    resp = await fetch(url.toString());
+  } catch (e) {
+    stats.erreurs.push(`odds-api basket/scores(${dateIso}): ${e.message}`);
+    return [];
+  }
+  if (!resp.ok) {
+    stats.erreurs.push(`odds-api basket/scores(${dateIso}) → HTTP ${resp.status}`);
+    return [];
+  }
+  let data;
+  try {
+    data = await resp.json();
+  } catch (e) {
+    stats.erreurs.push(`odds-api basket/scores(${dateIso}) réponse illisible: ${e.message}`);
+    return [];
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+// Traduit un évènement The Odds API (/scores/) vers la même forme
+// {statut, ptsHome, ptsAway, teamHomeId, teamAwayId} que parGame côté
+// API-Sports, pour que le reste de reglerTicketsBasket() ne voie jamais la
+// différence entre les deux sources. teamHomeId/teamAwayId restent null
+// (The Odds API ne fournit aucun identifiant d'équipe) — capturerStatsEquipesBasket()
+// ignore déjà proprement ce cas (bonus historique maison, jamais bloquant).
+// completed=false → statut 'NS' (jamais terminé) plutôt qu'un statut annulé
+// deviné : The Odds API ne distingue pas "pas encore joué" de "annulé", donc
+// un match non complété retombe simplement, comme avant ce correctif, sur la
+// règle des 23h59 — jamais un verdict inventé.
+function evenementOddsApiScoreVersInfo(ev) {
+  let ptsHome = null, ptsAway = null;
+  if (ev.completed && Array.isArray(ev.scores)) {
+    ev.scores.forEach(s => {
+      if (!s || s.score == null) return;
+      const val = Number(s.score);
+      if (Number.isNaN(val)) return;
+      if (s.name === ev.home_team) ptsHome = val;
+      else if (s.name === ev.away_team) ptsAway = val;
+    });
+  }
+  return {
+    statut: ev.completed ? 'FT' : 'NS',
+    ptsHome, ptsAway,
+    teamHomeId: null, teamAwayId: null
+  };
 }
 
 // Statuts API-Sports considérés comme définitivement terminés / non-terminés (foot)
@@ -468,6 +555,21 @@ async function capturerStatsEquipesBasket(gameId, dateIso, teamHomeId, teamAwayI
 }
 
 async function reglerTicketsBasket(dateIso, ticketsBasket) {
+  // Déplacé AVANT la construction de parGame (30/09) : on a besoin de
+  // connaître les fixture_id réellement engagés pour savoir si un appel
+  // The Odds API est nécessaire — jamais systématique, pour ne pas gaspiller
+  // le quota gratuit (500 crédits/mois, partagé avec la génération) sur des
+  // dates qui n'ont que des fiches API-Sports.
+  let gameIdsAvecPari = [];
+  try {
+    const legsParies = await sbSelect('ticket_legs',
+      `select=fixture_id,tickets!inner(play_date,sport)&tickets.play_date=eq.${dateIso}&tickets.sport=eq.basket`);
+    gameIdsAvecPari = [...new Set(legsParies.map(l => l.fixture_id))];
+  } catch (e) {
+    stats.erreurs.push(`lecture fixture_id paries basket(${dateIso}): ${e.message}`);
+  }
+  const besoinOddsApi = gameIdsAvecPari.some(estIdOddsApi);
+
   const matchsJour = await recupererMatchsBasketDate(dateIso);
   // Index gameId → {statut, ptsHome, ptsAway}. ⚠️ Chemin des scores
   // (g.scores.home.total / g.scores.away.total) cohérent avec la
@@ -487,9 +589,23 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
       ptsAway: (typeof ptsAway === 'number') ? ptsAway : null,
       // Session suivante (historique maison, voir capturerStatsEquipesBasket).
       teamHomeId: g.teams && g.teams.home && g.teams.home.id,
-      teamAwayId: g.teams && g.teams.away && g.teams.away.id
+      teamAwayId: g.teams && g.teams.away && g.teams.away.id,
+      source: 'api-sports-basketball'
     };
   });
+
+  // CRITIQUE (30/09) — fusion de la source The Odds API, UNIQUEMENT si au
+  // moins un fixture_id pariés ce jour-là en a besoin (voir besoinOddsApi
+  // ci-dessus). Les identifiants des deux sources ne se chevauchent JAMAIS
+  // (entier vs hexadécimal), donc aucun risque d'écraser une entrée
+  // API-Sports existante dans parGame.
+  if (besoinOddsApi) {
+    const matchsJourOdds = await recupererMatchsBasketDateOddsApi(dateIso);
+    matchsJourOdds.forEach(ev => {
+      if (!ev || !ev.id) return;
+      parGame[ev.id] = Object.assign(evenementOddsApiScoreVersInfo(ev), { source: 'odds-api-basketball' });
+    });
+  }
 
   const ecouler = joursEcoules(dateIso);
 
@@ -498,14 +614,6 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
   // PARIÉ (jamais tous les matchs de la journée) — un seul passage par
   // match grâce à la vérification "déjà capturé" à l'intérieur de la
   // fonction, peu importe combien de fois le règlement repasse dessus.
-  let gameIdsAvecPari = [];
-  try {
-    const legsParies = await sbSelect('ticket_legs',
-      `select=fixture_id,tickets!inner(play_date,sport)&tickets.play_date=eq.${dateIso}&tickets.sport=eq.basket`);
-    gameIdsAvecPari = [...new Set(legsParies.map(l => l.fixture_id))];
-  } catch (e) {
-    stats.erreurs.push(`lecture fixture_id paries basket(${dateIso}): ${e.message}`);
-  }
   for (const gid of gameIdsAvecPari) {
     const info = parGame[gid];
     if (info && STATUTS_TERMINES_BASKET.includes(info.statut) && info.ptsHome != null && info.ptsAway != null) {
@@ -552,7 +660,7 @@ async function reglerTicketsBasket(dateIso, ticketsBasket) {
           leg_id: leg.id, market: leg.market, pick: leg.pick,
           actual_result: info ? `Score final ${info.ptsHome}-${info.ptsAway} (statut ${info.statut})` : 'Statut indisponible — règle 23h59 appliquée',
           statistic_used: info ? `statut=${info.statut}` : 'aucune donnée basketball pour cette date',
-          source: 'api-sports-basketball', status_before: null, status_after: nouveauResultat
+          source: info ? info.source : 'api-sports-basketball', status_before: null, status_after: nouveauResultat
         });
       } catch (e) {
         stats.erreurs.push(`maj leg basket(${leg.id}): ${e.message}`);
@@ -878,8 +986,14 @@ async function handler(event) {
   const modeTest = jetonTest && jetonFourni && jetonFourni === jetonTest;
   if (modeTest) console.log('[SETTLE] === MODE TEST déclenché manuellement ===');
 
-  if (!API_SPORTS_KEY) {
-    stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
+  // CORRIGÉ (30/09, même bug que côté génération basketball) : bloquer TOUT
+  // le règlement (foot ET basket) faute d'API_SPORTS_KEY serait une erreur
+  // si ODDS_API_KEY est disponible — le foot resterait de toute façon
+  // simplement "en attente" sans clé API-Sports (jamais de verdict inventé,
+  // voir recupererFixturesDate), mais le basketball, lui, peut désormais se
+  // régler via The Odds API seule.
+  if (!API_SPORTS_KEY && !ODDS_API_KEY) {
+    stats.erreurs.push('API_SPORTS_KEY et ODDS_API_KEY absentes des variables Netlify');
     logFinal();
     return { statusCode: 500, body: 'Configuration incomplète.' };
   }
