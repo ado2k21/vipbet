@@ -167,6 +167,17 @@
   schedule = "*/3 * * * *"
 
 # ============================================================================
+# 29/09 — Filet de rattrapage : re-verifie aupres du prestataire les
+# paiements marques 'failed' par expiration TTL, au cas (rare) ou celui-ci
+# confirmerait "ok" apres coup. Toutes les 20 min : ce cas est rare, pas
+# besoin d'une frequence plus elevee. Le config.schedule exporte dans le
+# fichier lui-meme reste PUREMENT DOCUMENTAIRE, seule la ligne ci-dessous
+# declenche reellement (memes lecons que paiement-poll-background).
+# ============================================================================
+[functions."paiement-reconciliation-background"]
+  schedule = "*/20 * * * *"
+
+# ============================================================================
 # 06/09 — CORRECTIF CACHE (demande explicite de James : "modification pas
 # visible au reload, ni pour un nouvel utilisateur qui vient d'avoir le
 # lien") — CAUSE RACINE confirmée par élimination : la base Supabase et la
