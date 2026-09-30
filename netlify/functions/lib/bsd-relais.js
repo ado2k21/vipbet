@@ -284,7 +284,36 @@ async function recupererEvenementsParDate(o) {
   return { carte, erreur: r.erreur, pages: r.pages };
 }
 
+// ---------------------------------------------------------------------------
+// Appariement STRICT d'une sélection API-Sports (sans id BSD) avec un match BSD.
+// Sert au règlement de secours quand API-Sports est indisponible.
+// JAMAIS d'approximation : les DEUX équipes doivent avoir exactement le même
+// nom (après normalisation : accents, ponctuation, suffixe « FC/CF/SC/AFC »),
+// dans le même sens (domicile/extérieur), l'heure de coup d'envoi doit être à
+// moins de `toleranceMs`, et UN SEUL match BSD doit correspondre. Sinon : null
+// (la sélection reste en attente). « Real Sociedad II » ≠ « Real Sociedad ».
+// ---------------------------------------------------------------------------
+function nomStrict(nom) {
+  return normaliser(nom).split(' ').filter(m => m && !['fc', 'cf', 'sc', 'afc'].includes(m)).join(' ');
+}
+function trouverEvenementParNoms(o) {
+  const dom = nomStrict(o.home), ext = nomStrict(o.away);
+  const t0 = Date.parse(o.kickoffIso);
+  if (!dom || !ext || !isFinite(t0)) return null;
+  const tol = o.toleranceMs == null ? 3 * 3600 * 1000 : o.toleranceMs;
+  const trouves = (o.evenements || []).filter(ev => {
+    if (!ev || !Number.isSafeInteger(ev.id)) return false;
+    if (nomStrict(ev.home_team) !== dom || nomStrict(ev.away_team) !== ext) return false;
+    const t = Date.parse(ev.event_date);
+    return isFinite(t) && Math.abs(t - t0) <= tol;
+  });
+  if (trouves.length !== 1) return null; // aucun, ou ambigu
+  return trouves[0];
+}
+
 module.exports = {
+  nomStrict,
+  trouverEvenementParNoms,
   normaliser,
   idLigueAPISports,
   evenementBSDVersFixture,

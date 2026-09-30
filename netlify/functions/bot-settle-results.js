@@ -606,6 +606,34 @@ async function infoBSDPourLeg(fixtureId, dateIso) {
   return cacheBSD.parId.get(id);
 }
 
+// RÈGLEMENT DE SECOURS PAR NOMS (30/09) — UNIQUEMENT quand API-Sports a
+// échoué pour la date. Une sélection à id API-Sports est réglée d'après BSD si
+// et seulement si l'appariement est strict (voir trouverEvenementParNoms) ET
+// que le match est terminé avec un score à 90 minutes sûr. Jamais de void par
+// cette voie, jamais de buteur. Sinon null → la sélection reste en attente.
+async function infoBSDParNoms(leg, dateIso) {
+  if (!BSD_API_KEY || leg.market === 'mk_buteur') return null;
+  const morceaux = String(leg.match_label || '').split(' — ');
+  if (morceaux.length !== 2) return null;
+  const t = Date.parse(leg.kickoff_at);
+  if (!isFinite(t)) return null;
+  const jours = [...new Set([dateIso, new Date(t).toISOString().slice(0, 10)])];
+  const evenements = [];
+  for (const jour of jours) {
+    if (!cacheBSD.scanParDate.has(jour)) {
+      const r = await bsdRelais.recupererEvenementsParDate({ cle: BSD_API_KEY, hote: BSD_HOST, dateIso: jour });
+      if (r.erreur) stats.erreurs.push(`BSD liste(${jour}): ${r.erreur}`);
+      cacheBSD.scanParDate.set(jour, r.carte);
+    }
+    cacheBSD.scanParDate.get(jour).forEach(ev => evenements.push(ev));
+  }
+  const ev = bsdRelais.trouverEvenementParNoms({ evenements, home: morceaux[0], away: morceaux[1], kickoffIso: leg.kickoff_at });
+  if (!ev) return null;
+  const res = bsdRelais.resultatDepuisEvenementBSD(ev);
+  if (!res || res.statut !== 'FT') return null;
+  return Object.assign({}, res, { parNoms: true, bsdId: ev.id });
+}
+
 // ============================================================================
 // 6. RÈGLEMENT D'UNE DATE (tous les tickets pending dont play_date = dateIso)
 // ============================================================================
@@ -907,7 +935,9 @@ async function reglerDate(dateIso) {
     // qu'API-Sports réponde de nouveau.
     // Relais BSD : seules les fiches ayant une sélection BSD en attente
     // continuent (via BSD) ; les sélections API-Sports restent en attente.
-    if (!(besoinBsdIds && ticketsFoot.some(t => besoinBsdIds.has(t.id)))) {
+    const aSelectionBsd = besoinBsdIds && ticketsFoot.some(t => besoinBsdIds.has(t.id));
+    const aSelectionSecours = !!BSD_API_KEY && besoinApiIds && ticketsFoot.some(t => besoinApiIds.has(t.id));
+    if (!(aSelectionBsd || aSelectionSecours)) {
       stats.ticketsEnAttente += ticketsFoot.length;
       return;
     }
@@ -961,7 +991,7 @@ async function reglerDate(dateIso) {
     let legs;
     try {
       legs = await sbSelect('ticket_legs',
-        `select=id,fixture_id,market,pick,result&ticket_id=eq.${ticket.id}&order=position.asc`);
+        `select=id,fixture_id,market,pick,result,match_label,kickoff_at&ticket_id=eq.${ticket.id}&order=position.asc`);
     } catch (e) {
       stats.erreurs.push(`lecture legs(ticket=${ticket.id}): ${e.message}`);
       continue;
@@ -985,6 +1015,9 @@ async function reglerDate(dateIso) {
       if (estLegBSD && !info) {
         stats.bsd.legsExaminees++;
         info = await infoBSDPourLeg(leg.fixture_id, dateIso) || undefined;
+      } else if (!estLegBSD && !info && apiFootEnEchec) {
+        // Secours : API-Sports indisponible → BSD, appariement strict par noms.
+        info = await infoBSDParNoms(leg, dateIso) || undefined;
       }
       let nouveauResultat = null;
 
@@ -1078,7 +1111,7 @@ async function reglerDate(dateIso) {
           settled_at: new Date().toISOString()
         });
         stats.legsMisAJour[nouveauResultat]++;
-        if (estLegBSD) stats.bsd.legsResolues++;
+        if (estLegBSD || (info && info.parNoms)) stats.bsd.legsResolues++;
         leg.result = nouveauResultat; // reflète localement pour le calcul du ticket ci-dessous
 
         // Section 23 du cahier des charges (27/08) : une ligne de log par
@@ -1102,8 +1135,8 @@ async function reglerDate(dateIso) {
               : `Score temps réglementaire ${info.golHome}-${info.golAway} (statut ${info.statut})`,
           statistic_used: !info
             ? 'aucune donnée fixture pour cette date'
-            : `statut=${info.statut} fulltime_fiable=${info.scoreFiable}`,
-          source: estLegBSD ? 'bsd' : 'api-sports',
+            : `statut=${info.statut} fulltime_fiable=${info.scoreFiable}${info.parNoms ? ' (BSD, appariement strict par noms, id BSD ' + info.bsdId + ')' : ''}`,
+          source: (estLegBSD || (info && info.parNoms)) ? 'bsd' : 'api-sports',
           status_before: null,
           status_after: nouveauResultat
         });
