@@ -153,6 +153,160 @@ async function apiSportsGetBasketRaw(path, params) {
 }
 
 // ============================================================================
+// SOURCE DE REPLI — The Odds API (29/09, ajoutée pendant la suspension du
+// compte API-Sports confirmée dans bot_run_log : "Your account is suspended,
+// check on https://dashboard.api-football.com" sur CHAQUE passage depuis le
+// 08/09, aucune fiche basket réellement publiée depuis le 25/09).
+//
+// Architecture volontairement en ADAPTATEUR (conforme au cahier des charges :
+// "le moteur doit être indépendant de la source de données") : les fonctions
+// ci-dessous ne changent RIEN à extraireMarchesBasket/construireFicheBasket/
+// cascadeFicheBasket, qui restent strictement inchangées. Elles produisent
+// seulement des objets à la MÊME forme que ceux qu'API-Sports renvoyait déjà
+// (g.id/g.date/g.status.short/g.teams/g.league/g.country pour les matchs,
+// bookmakers[].bets[id:2|4] pour les cotes) — tout le reste du moteur
+// continue de fonctionner sans savoir d'où viennent les données.
+//
+// LIMITE CONNUE (testée en direct le 29/09 avec une vraie clé The Odds API) :
+// le plan gratuit ne renvoie, pour la NBA, QUE les marchés 1X2 (h2h) et
+// Plus/Moins (totals) — jamais de Handicap sur ce plan pour ce sport. Ce
+// n'est PAS une régression : extraireMarchesBasket ne traite déjà que ces
+// deux marchés (id=2/id=4) — "Handicap asiatique... volontairement laissé de
+// côté pour l'instant", voir commentaire d'origine plus haut. Couverture donc
+// strictement identique à ce qu'API-Sports fournissait déjà à ce moteur.
+//
+// UN SEUL APPEL réseau par passage (jamais un appel par match comme
+// API-Sports) : The Odds API renvoie TOUS les matchs NBA à venir en une
+// fois, avec leurs cotes. Résultat gardé en mémoire le temps du passage
+// (_cacheOddsApiBasket) pour que recupererCoteParMatchBasket() n'ait jamais
+// besoin d'un second appel réseau par candidat — l'API-Sports, elle, exige
+// un appel par match, ce qui n'a plus de sens ici.
+//
+// RÉACTIVATION AUTOMATIQUE : dès qu'API-Sports recommence à répondre avec de
+// vrais matchs (compte réactivé), recupererMatchsBasketJour reprend cette
+// source EN PRIORITÉ (voir plus bas) — aucune bascule manuelle à faire.
+// ============================================================================
+const ODDS_API_KEY = (process.env.ODDS_API_KEY || '').trim();
+const ODDS_API_HOST = 'api.the-odds-api.com';
+let _sourceBasketActuelle = 'api-sports'; // trace pour recupererCoteParMatchBasket, jamais lue ailleurs
+let _cacheOddsApiBasket = new Map(); // gameId (id The Odds API) -> oddsItem à la forme API-Sports
+
+// Mêmes en-têtes de quota qu'API-Sports (x-requests-*, jamais x-ratelimit-*
+// chez ce fournisseur) — même mécanisme générique record_real_api_quota,
+// juste un provider différent ('odds-api-basketball') pour ne jamais
+// mélanger les deux compteurs sur le tableau de bord admin.
+async function enregistrerQuotaReelOddsApi(resp) {
+  try {
+    const remaining = resp.headers.get('x-requests-remaining');
+    const used = resp.headers.get('x-requests-used');
+    if (remaining === null) return;
+    await sbRpc('record_real_api_quota', {
+      p_provider: 'odds-api-basketball',
+      p_remaining: parseInt(remaining, 10),
+      p_limit: (used !== null) ? (parseInt(remaining, 10) + parseInt(used, 10)) : null
+    });
+  } catch (e) {
+    stats.erreurs.push('suivi_quota_odds_api: ' + e.message);
+  }
+}
+
+// Traduit un évènement The Odds API vers la forme "g" qu'API-Sports
+// renvoyait déjà (voir boucle matchsJour.forEach dans handler) — mêmes noms
+// de champs exacts, pour ne rien changer au reste du fichier.
+function evenementOddsApiVersFormatApiSports(ev) {
+  return {
+    id: ev.id, // id The Odds API (chaîne), jamais comparé à un id API-Sports (sources jamais mélangées dans un même passage)
+    date: ev.commence_time,
+    status: { short: 'NS' }, // /odds ne renvoie jamais un match déjà commencé ou terminé, uniquement à venir
+    teams: {
+      home: { name: ev.home_team, id: null }, // pas d'id numérique côté Odds API — profils/projection retombent sur null (déjà géré, additif uniquement)
+      away: { name: ev.away_team, id: null }
+    },
+    league: { name: 'NBA' },
+    country: { name: 'USA' }
+  };
+}
+
+// Construit l'objet "oddsItem" à la forme API-Sports (bookmakers[].bets[])
+// à partir d'un seul évènement The Odds API — nécessaire pour qu'extraireMarchesBasket
+// (jamais modifiée) continue de fonctionner à l'identique quelle que soit la source.
+function evenementOddsApiVersOddsItem(ev) {
+  const bookmakers = ev.bookmakers || [];
+  const bk = bookmakers.find(b => (b.markets || []).some(m => m.key === 'h2h') && (b.markets || []).some(m => m.key === 'totals'))
+          || bookmakers[0];
+  if (!bk) return null;
+  const bets = [];
+  const mH2h = (bk.markets || []).find(m => m.key === 'h2h');
+  if (mH2h) {
+    bets.push({ id: 2, values: (mH2h.outcomes || []).map(o => ({ value: o.name, odd: o.price })) });
+  }
+  const mTotals = (bk.markets || []).find(m => m.key === 'totals');
+  if (mTotals) {
+    // format "Over 231.5" / "Under 231.5" — exactement ce qu'attend
+    // traduirePointsBasket() plus bas, jamais touchée.
+    bets.push({ id: 4, values: (mTotals.outcomes || []).map(o => ({ value: `${o.name} ${o.point}`, odd: o.price })) });
+  }
+  if (!bets.length) return null;
+  return { bookmakers: [{ id: 8, bets }] };
+}
+
+async function recupererMatchsBasketJourOddsApi(dateCible) {
+  if (!ODDS_API_KEY) {
+    stats.erreurs.push('ODDS_API_KEY absente — repli The Odds API impossible.');
+    return [];
+  }
+  const url = new URL(`https://${ODDS_API_HOST}/v4/sports/basketball_nba/odds/`);
+  url.searchParams.set('apiKey', ODDS_API_KEY);
+  url.searchParams.set('regions', 'us');
+  url.searchParams.set('markets', 'h2h,totals'); // jamais 'spreads' : extraireMarchesBasket ne sait déjà traiter que id=2/id=4, le demander coûterait des crédits pour rien
+  url.searchParams.set('oddsFormat', 'decimal');
+  url.searchParams.set('dateFormat', 'iso');
+
+  let resp;
+  try {
+    resp = await fetch(url.toString());
+  } catch (e) {
+    stats.erreurs.push('odds-api basket/odds: ' + e.message);
+    return [];
+  }
+  await enregistrerQuotaReelOddsApi(resp);
+  if (!resp.ok) {
+    const texte = await resp.text().catch(() => '');
+    stats.erreurs.push(`odds-api basket/odds: HTTP ${resp.status} ${texte.slice(0, 300)}`);
+    return [];
+  }
+  let evenements;
+  try {
+    evenements = await resp.json();
+  } catch (e) {
+    stats.erreurs.push('odds-api basket/odds: réponse JSON invalide');
+    return [];
+  }
+  if (!Array.isArray(evenements)) return [];
+
+  _cacheOddsApiBasket = new Map(); // repart de zéro à chaque appel — jamais un résidu d'un passage précédent
+  const resultats = [];
+  evenements.forEach(ev => {
+    if (!ev || !ev.id || !ev.commence_time) return;
+    // Filtre date/heure Haïti ICI (The Odds API n'a pas de paramètre "date=",
+    // contrairement à API-Sports, qui renvoyait déjà uniquement le jour
+    // demandé) — même fenêtre exacte que le filtre redondant du handler plus
+    // bas (BASKET_MIN_HOUR/BASKET_MAX_MINUTES) : les deux disent la même
+        // chose, jamais en conflit.
+    const h = heureHaitiDuMatch(ev.commence_time);
+    if (!h || h.iso !== dateCible) return;
+    const minutesJour = h.heureNum * 60 + h.minuteNum;
+    if (minutesJour < BASKET_MIN_HOUR * 60 || minutesJour > BASKET_MAX_MINUTES) return;
+
+    const oddsItem = evenementOddsApiVersOddsItem(ev);
+    if (!oddsItem) return; // aucune cote exploitable pour ce match, jamais un candidat cassé plus loin dans le pipeline
+    _cacheOddsApiBasket.set(ev.id, oddsItem);
+    resultats.push(evenementOddsApiVersFormatApiSports(ev));
+  });
+  return resultats;
+}
+
+// ============================================================================
 // PROFILS RÉELS DE SCORING PAR ÉQUIPE (session suivante, demande explicite
 // de James : "vraies statistiques pour une rentabilité réelle") — CE QUI
 // EST RÉELLEMENT POSSIBLE, confirmé par ?diag=basket-stats du 30/08 :
@@ -246,6 +400,7 @@ const stats = {
   nbSelectionsPossibles: null, // AJOUTÉ (20/09) : nombres de sélections envisageables, ex. [3,4,5] (le tirage choisit)
   cibleTirage: null, // AJOUTÉ (20/09) : cote cible tirée pour le jour (5 à 25), transparence pure
   cibleAtteinte: null, // AJOUTÉ (06/09) : palier de cote réellement atteint par la cascade, transparence pure, jamais utilisé pour décider
+  sourceBasket: null, // AJOUTÉ (29/09) : 'api-sports' | 'odds-api' — quelle source a réellement servi ce passage, transparence pure
   erreurs: []
 };
 function resetStatsBasket() {
@@ -260,6 +415,8 @@ function resetStatsBasket() {
   stats.nbSelectionsPossibles = null;
   stats.cibleTirage = null;
   stats.cibleAtteinte = null;
+  stats.sourceBasket = null;
+  _sourceBasketActuelle = 'api-sports'; // repart toujours prioritaire sur API-Sports à chaque nouveau passage
   stats.erreurs = [];
   // Diagnostic (31/08 v4, demande explicite de James après un log réel
   // montrant matchsTrouves:7 mais candidatsExamines:1 — 6 matchs exclus
@@ -302,17 +459,40 @@ const BASKET_MAX_MINUTES = 23 * 60 + 59;
 
 // Un seul appel : tous les matchs du jour cible, tous championnats
 // confondus (aucune liste blanche — règle 1 en en-tête).
+// CORRIGÉ (29/09) : API-Sports reste la source PRIORITAIRE, essayée en
+// premier à chaque passage (reprise automatique dès que le compte est
+// réactivé, sans aucune bascule manuelle) — mais si elle ne renvoie AUCUN
+// match (compte suspendu, quota épuisé, panne du fournisseur...), on
+// bascule sur The Odds API plutôt que de publier zéro fiche. _sourceBasketActuelle
+// trace laquelle des deux a réellement servi pour ce passage — lue par
+// recupererCoteParMatchBasket juste en dessous, jamais ailleurs.
 async function recupererMatchsBasketJour(dateCible) {
   try {
     const data = await apiSportsGetBasketRaw('/games', { date: dateCible });
-    return data.response || [];
+    const reponse = data.response || [];
+    if (reponse.length) {
+      _sourceBasketActuelle = 'api-sports';
+      stats.sourceBasket = 'api-sports';
+      return reponse;
+    }
   } catch (e) {
-    stats.erreurs.push('basket/games(jour): ' + e.message);
-    return [];
+    stats.erreurs.push('basket/games(jour) [api-sports]: ' + e.message);
   }
+  const reponseOdds = await recupererMatchsBasketJourOddsApi(dateCible);
+  if (reponseOdds.length) {
+    _sourceBasketActuelle = 'odds-api';
+    stats.sourceBasket = 'odds-api';
+  }
+  return reponseOdds;
 }
 
 async function recupererCoteParMatchBasket(gameId) {
+  // Repli actif pour ce passage : les cotes sont déjà en mémoire (un seul
+  // appel réseau total, voir recupererMatchsBasketJourOddsApi), jamais un
+  // second appel par match comme le fait API-Sports plus bas.
+  if (_sourceBasketActuelle === 'odds-api') {
+    return _cacheOddsApiBasket.get(gameId) || null;
+  }
   const ok = await verifierEtIncrementerQuotaBasket(`basket/odds(game=${gameId})`);
   if (!ok) return null;
   try {
@@ -810,8 +990,15 @@ async function handler(event) {
   }
   if (modeTest) console.log('[BOT-BASKET] === MODE TEST déclenché manuellement ===');
 
-  if (!API_SPORTS_KEY) {
-    stats.erreurs.push('API_SPORTS_KEY absente des variables Netlify');
+  // CORRIGÉ (29/09) : AVANT, l'absence d'API_SPORTS_KEY arrêtait tout ici,
+  // avant même d'avoir une chance d'essayer le repli The Odds API — un bug
+  // réel trouvé en testant ce repli (API_SPORTS_KEY manquante ou révoquée
+  // aurait alors bloqué le moteur basketball même avec Odds API disponible
+  // et fonctionnel). Il faut désormais au moins UNE des deux clés pour
+  // continuer ; recupererMatchsBasketJour gère lui-même l'absence de l'une
+  // ou l'autre (voir ses propres messages d'erreur, jamais un plantage).
+  if (!API_SPORTS_KEY && !ODDS_API_KEY) {
+    stats.erreurs.push('Ni API_SPORTS_KEY ni ODDS_API_KEY présentes dans les variables Netlify — aucune source de données possible.');
     await logFinal();
     return { statusCode: 500, body: 'Configuration incomplète.' };
   }
