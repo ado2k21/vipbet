@@ -864,7 +864,8 @@ function filtrerCandidatsJour(fixturesJour, dateCible) {
   // CHANGÉ (31/08 v3, demande explicite de James : "le bot peut utiliser
   // au maximum le quota pour donner de meilleures cotes selon le nombre de
   // matchs, et essayer toujours de répondre aux exigences des fiches pour
-  // les plans") — 60 → 85 : avec QUOTA_MAX_JOUR=97 et ~1 appel /fixtures
+  // les plans") — 60 → 85 : avec QUOTA_MAX_JOUR=97 (depuis le 30/09 : 80 — c'est ce
+  // plafond qui limite réellement le nombre d'appels /odds, voir plus haut) et ~1 appel /fixtures
   // en amont, 85 appels /odds laisse encore une marge réelle sans jamais
   // risquer de cogner le vrai mur à 100. Un jour riche en matchs alimente
   // donc un pool nettement plus large, avec plus de choix pour satisfaire
