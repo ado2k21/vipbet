@@ -3364,7 +3364,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      abonnement, notifications, passage a l'etape 4) est RIGOUREUSEMENT
      identique a celui de Stripe — le depot manuel n'est qu'une variante de
      paiement en attente de validation admin, pas un parcours a part. */
-  async function completePayment(method,fenetreAuto,optsManuel){
+  async function completePayment(method,fenetreAuto,optsManuel,refImposee){
     if(sessionPerimee){
       // CORRIGE (bug signale par James, capture d'ecran about:blank) :
       // pour MonCash/NatCash, l'onglet vide est deja ouvert (geste de clic,
@@ -3455,7 +3455,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // bug "plan actif perdu apres un refus". La reference n'est ecrite
     // dans state.ref que dans le cas SANS plan actif en cours — sinon
     // elle ne va que dans pendingRef.
-    const nouvelleRef='VB-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000);
+    /* `refImposee` : uniquement pour Stripe (voir wizStripeBtn). La reference
+       doit exister AVANT l'ouverture de la page Stripe (geste de clic, sinon
+       le navigateur mobile bloque l'onglet) pour etre transmise a Stripe dans
+       l'adresse du lien — c'est ce qui permet au webhook de retrouver CE
+       paiement. Meme format que la reference generee ici ; sans refImposee,
+       comportement strictement identique a avant. */
+    const nouvelleRef=(typeof refImposee==='string'&&/^VB-\d{6}-\d{4}$/.test(refImposee))
+      ?refImposee
+      :'VB-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000);
 
     /* CORRECTIF (bug signale par James, capture "Peman an ap verifye" avec
        reference introuvable en base) : tout ce qui suit ecrit l'etat local
@@ -3706,8 +3714,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      Comportement IDENTIQUE a MonCash/NatCash : le clic ouvre la page Stripe
      dans un nouvel onglet ET enregistre immediatement un paiement 'pending'
      via completePayment('stripe') (meme chemin que les methodes manuelles).
-     La confirmation reste 100% manuelle par l'admin — le webhook automatique
-     stripe-webhook.js N'EST PAS utilise dans ce flux et reste non deploye. */
+     La confirmation reste manuelle par l'admin SAUF si le webhook signe de
+     Stripe (stripe-webhook.js, v2 du 03/10) la confirme automatiquement apres
+     verification du montant/devise ; sinon rien ne change. */
   document.getElementById('wizStripeBtn').addEventListener('click',()=>{
     payErr.style.display='none';
     const planCible=state.pendingPlanId||state.planId;
@@ -3720,10 +3729,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        navigateur bloque quand meme l'onglet, l'etape 4 propose un lien
        de secours (voir renderStep4). */
     const permis=renouvellementPermis(state,planCible);
+    /* Confirmation automatique (03/10) : la reference du paiement est
+       creee ICI, avant l'ouverture de Stripe, et transmise dans l'adresse
+       (?client_reference_id=). Le webhook signe de Stripe s'en sert pour
+       retrouver ce paiement 'pending' ; sans configuration serveur complete
+       il ne confirme rien et l'admin valide a la main, comme avant. */
+    const maintenant=new Date();
+    const refStripe='VB-'+maintenant.getFullYear()+String(maintenant.getMonth()+1).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000);
     if(lien&&permis&&permis.ok){
-      try{window.open(lien,'_blank','noopener');}catch(e){}
+      try{window.open(lien+'?client_reference_id='+encodeURIComponent(refStripe),'_blank','noopener');}catch(e){}
     }
-    completePayment('stripe');
+    completePayment('stripe',null,undefined,refStripe);
   });
 
   /* ================= ETAPE 4 : acces ================= */

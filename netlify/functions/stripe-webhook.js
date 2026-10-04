@@ -1,81 +1,84 @@
 /* ============================================================
-   VIP BETCOTE — Webhook Stripe
+   VIP BETCOTE — Webhook Stripe (confirmation automatique, v2 — 03/10/2026)
    ------------------------------------------------------------
-   Appelee par Stripe (et par personne d'autre) chaque fois qu'un
-   paiement se termine sur une page de paiement Stripe.
+   Appelee par Stripe (et par personne d'autre) quand un paiement se
+   termine sur un Payment Link.
 
-   REGLE CENTRALE : c'est la SEULE porte d'entree par laquelle un
-   paiement par carte peut exister dans la base. Le site public
-   n'ecrit plus rien au moment du clic sur "Payer avec Stripe" — un
-   aller-retour sans payer ne laisse donc aucune trace.
+   PRINCIPE (hybride, jamais de risque pour l'existant) :
+     - Le site cree TOUJOURS d'abord le paiement 'pending' + l'abonnement
+       'pending' (flux existant, inchange), avec une reference VB-AAAAMM-NNNN.
+       Cette reference est transmise a Stripe dans l'adresse du lien
+       (?client_reference_id=VB-...).
+     - Ce webhook NE CREE PLUS de paiement ni d'abonnement : il retrouve la
+       ligne 'pending' par sa reference et la confirme via la fonction SQL
+       confirmer_paiement_stripe (atomique, idempotente, meme regles que
+       MonCash/NatCash). Si UNE seule verification echoue, rien n'est active
+       et la ligne reste 'pending' : l'admin la valide a la main, comme avant.
 
-   Securite :
-     - la signature Stripe est verifiee cryptographiquement (HMAC
-       SHA-256) sur le corps BRUT de la requete. Un faux appel, meme
-       parfaitement forme, est rejete.
-     - protection anti-rejeu : un evenement plus vieux que 5 minutes
-       est refuse.
-     - le montant reellement encaisse est compare au montant attendu
-       pour le plan reclame (voir MONTANTS_ATTENDUS). En cas d'ecart,
-       l'abonnement n'est JAMAIS active automatiquement : le paiement
-       est laisse en attente pour verification manuelle par l'admin.
-     - idempotence : Stripe reessaie en cas d'erreur. L'identifiant de
-       session Stripe sert de reference unique du paiement, donc un
-       meme paiement ne peut jamais creer deux abonnements.
+   FAIL-CLOSED : tant que STRIPE_PLAN_AMOUNTS n'est pas configure (montant
+   + devise exacts de chaque plan), AUCUNE activation automatique n'a lieu.
+
+   Verifications avant toute activation :
+     1. signature Stripe HMAC SHA-256 sur le corps BRUT + anti-rejeu 5 min
+     2. evenement de test refuse sauf STRIPE_ALLOW_TEST=1
+     3. reference VB-... valide et ligne payments method='stripe' existante
+     4. montant ET devise exactement egaux a ceux attendus pour le plan de
+        LA LIGNE EN BASE (jamais un plan lu dans l'adresse)
+     5. si STRIPE_PLINK_PLANS est defini : le Payment Link reellement paye
+        correspond au plan de la ligne
+     6. (en SQL) pending, compte non suspendu, session jamais utilisee
+        ailleurs, abonnement 'pending' rattache
+
+   Remboursements / litiges : journalises dans error_log pour decision
+   humaine (aucune annulation automatique d'abonnement).
 
    Aucune dependance npm : Node natif uniquement (crypto + fetch).
+
+   Variables d'environnement (Netlify) :
+     STRIPE_WEBHOOK_SECRET   whsec_... du endpoint (different test / reel)
+     STRIPE_PLAN_AMOUNTS     {"p1":{"amount":500,"currency":"usd"},...}
+                             amount = plus petite unite (500 = 5,00 USD)
+     STRIPE_PLINK_PLANS      (optionnel) {"plink_xxx":"p1",...}
+     STRIPE_ALLOW_TEST       (optionnel) "1" pour accepter le mode test
+     SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
    ============================================================ */
 
 const crypto = require('crypto');
 
-/* ---- Variables d'environnement (a definir dans Netlify) ---- */
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
-const SERVICE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_SERVICE_KEY ||
-  process.env.SUPABASE_SERVICE_ROLE || '';
-
-/* Incident deja rencontre sur ce projet : SUPABASE_URL avait ete
-   enregistree avec un chemin en trop (/rest/v1/), ce qui cassait tous
-   les appels. On nettoie donc systematiquement, par securite. */
-function baseSupabase() {
+/* ---- Configuration lue A CHAQUE APPEL (testable, rechargeable) ---- */
+function lireConfig() {
   let u = (process.env.SUPABASE_URL || '').trim();
-  u = u.replace(/\/rest\/v1\/?$/i, '');
-  u = u.replace(/\/+$/, '');
-  return u;
+  u = u.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');   // incident deja vu : chemin en trop
+  return {
+    secret: (process.env.STRIPE_WEBHOOK_SECRET || '').trim(),
+    serviceKey: (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY ||
+      process.env.SUPABASE_SERVICE_ROLE || '').trim(),
+    supabaseUrl: u,
+    autoriserTest: String(process.env.STRIPE_ALLOW_TEST || '').trim() === '1',
+    montants: lireJson(process.env.STRIPE_PLAN_AMOUNTS),
+    plinks: lireJson(process.env.STRIPE_PLINK_PLANS)
+  };
+}
+function lireJson(brut) {
+  if (!brut) return null;
+  try {
+    const v = JSON.parse(brut);
+    return v && typeof v === 'object' && !Array.isArray(v) ? v : null;
+  } catch (e) { return null; }
 }
 
-/* ---- Montants attendus par plan ----------------------------
-   Cle = identifiant du plan ; valeur = { montant, devise }.
-   'montant' est exprime dans la plus petite unite de la devise,
-   exactement comme Stripe le renvoie (ex. 25.00 USD => 2500).
-   'devise' en minuscules (ex. 'usd').
-
-   Tant que cette table est vide, la verification est faite en mode
-   JOURNAL SEULEMENT : l'ecart est enregistre dans error_log mais
-   n'empeche pas l'activation. Des qu'un plan y figure, l'ecart
-   bloque l'activation automatique pour ce plan.
-   ------------------------------------------------------------ */
-const MONTANTS_ATTENDUS = {
-  // p1: { montant: 0, devise: 'usd' },
-  // p2: { montant: 0, devise: 'usd' },
-  // p3: { montant: 0, devise: 'usd' },
-  // p4: { montant: 0, devise: 'usd' }
-};
-
 /* ---- Petit client Supabase (REST, cle service_role) --------- */
-async function sb(chemin, options) {
+async function sb(cfg, chemin, options) {
   options = options || {};
-  const url = baseSupabase() + '/rest/v1/' + chemin;
-  const res = await fetch(url, {
+  const res = await fetch(cfg.supabaseUrl + '/rest/v1/' + chemin, {
     method: options.method || 'GET',
-    headers: Object.assign({
-      apikey: SERVICE_KEY,
-      Authorization: 'Bearer ' + SERVICE_KEY,
+    headers: {
+      apikey: cfg.serviceKey,
+      Authorization: 'Bearer ' + cfg.serviceKey,
       'Content-Type': 'application/json',
       Prefer: options.prefer || 'return=representation'
-    }, options.headers || {}),
-    body: options.body ? JSON.stringify(options.body) : undefined
+    },
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined
   });
   const texte = await res.text();
   let donnees = null;
@@ -83,29 +86,29 @@ async function sb(chemin, options) {
   if (!res.ok) {
     const err = new Error('Supabase ' + res.status + ' sur ' + chemin + ' : ' + texte);
     err.statut = res.status;
+    err.donnees = donnees;
     throw err;
   }
   return donnees;
 }
 
-/* Journalisation technique : ne remonte jamais a l'utilisateur, et ne
-   fait jamais echouer le traitement principal. */
-async function journaliser(contexte, message) {
+/* Journalisation technique : ne remonte jamais a l'utilisateur et ne fait
+   jamais echouer le traitement principal. */
+async function journaliser(cfg, contexte, message) {
   try {
-    await sb('error_log', {
-      method: 'POST',
-      prefer: 'return=minimal',
+    await sb(cfg, 'error_log', {
+      method: 'POST', prefer: 'return=minimal',
       body: [{ context: contexte, message: String(message).slice(0, 2000) }]
     });
   } catch (e) { /* si meme le journal est injoignable, on n'insiste pas */ }
 }
 
 /* ---- Verification de la signature Stripe -------------------- */
-function signatureValide(corpsBrut, enteteSignature) {
-  if (!WEBHOOK_SECRET || !enteteSignature) return { ok: false, raison: 'secret ou entete absent' };
+function signatureValide(secret, corpsBrut, enteteSignature) {
+  if (!secret || !enteteSignature) return { ok: false, raison: 'secret ou entete absent' };
   let horodatage = null;
   const signatures = [];
-  enteteSignature.split(',').forEach(part => {
+  String(enteteSignature).split(',').forEach(part => {
     const i = part.indexOf('=');
     if (i < 0) return;
     const cle = part.slice(0, i).trim();
@@ -115,42 +118,159 @@ function signatureValide(corpsBrut, enteteSignature) {
   });
   if (!horodatage || !signatures.length) return { ok: false, raison: 'entete mal formee' };
 
-  // Anti-rejeu : un evenement capture puis renvoye plus tard est refuse.
   const ageSecondes = Math.abs(Math.floor(Date.now() / 1000) - parseInt(horodatage, 10));
   if (!isFinite(ageSecondes) || ageSecondes > 300) return { ok: false, raison: 'horodatage trop ancien (' + ageSecondes + 's)' };
 
-  const attendu = crypto.createHmac('sha256', WEBHOOK_SECRET)
-    .update(horodatage + '.' + corpsBrut, 'utf8')
-    .digest('hex');
+  const attendu = crypto.createHmac('sha256', secret).update(horodatage + '.' + corpsBrut, 'utf8').digest('hex');
   const attenduBuf = Buffer.from(attendu, 'utf8');
   const correspond = signatures.some(sig => {
     const sigBuf = Buffer.from(sig, 'utf8');
     if (sigBuf.length !== attenduBuf.length) return false;
-    return crypto.timingSafeEqual(sigBuf, attenduBuf);   // comparaison a temps constant
+    return crypto.timingSafeEqual(sigBuf, attenduBuf);
   });
   return correspond ? { ok: true } : { ok: false, raison: 'signature non conforme' };
 }
 
+const FORMAT_REFERENCE = /^VB-\d{6}-\d{4}$/;
+
+/* Codes de la fonction SQL qui exigent une decision humaine : on les
+   journalise (200, car reessayer ne changerait rien). */
+const CODES_MANUELS = {
+  PAYMENT_NOT_FOUND: 'aucune ligne de paiement pour cette reference',
+  NOT_PENDING: 'le paiement n\'est plus en attente (refuse/echoue/rembourse)',
+  DOUBLE_PAYMENT: 'DEUXIEME paiement Stripe pour une reference deja confirmee : argent encaisse en double',
+  SESSION_DEJA_UTILISEE: 'cette session Stripe a deja servi pour un autre paiement',
+  NO_SUBSCRIPTION: 'aucun abonnement rattache au paiement',
+  PLAN_NOT_FOUND: 'plan inconnu en base',
+  USER_SUSPENDED: 'compte suspendu',
+  BAD_INPUT: 'donnees incompletes'
+};
+
+/* ---- Traitement d'un paiement reussi ------------------------ */
+async function traiterPaiement(cfg, session, livemode) {
+  const sessionId = session.id;
+  const ref = String(session.client_reference_id || '');
+  const infos = 'session=' + sessionId + ' ref=' + (ref || '?') +
+    ' email=' + ((session.customer_details && session.customer_details.email) || '?') +
+    ' montant=' + session.amount_total + ' ' + session.currency;
+
+  if (!FORMAT_REFERENCE.test(ref)) {
+    /* Paiement reel mais impossible a rattacher : ne JAMAIS le perdre
+       silencieusement. L'admin le retrouve dans Stripe. */
+    await journaliser(cfg, 'stripe_webhook_orphelin', 'Paiement sans reference VB-... exploitable. ' + infos);
+    return { statusCode: 200, body: 'orphelin journalise' };
+  }
+
+  const lignes = await sb(cfg, 'payments?reference=eq.' + encodeURIComponent(ref) +
+    '&method=eq.stripe&select=id,user_id,plan_id,status,subscription_id');
+  if (!Array.isArray(lignes) || !lignes.length) {
+    await journaliser(cfg, 'stripe_webhook_orphelin', 'Aucune ligne payments (method=stripe) pour cette reference. ' + infos);
+    return { statusCode: 200, body: 'ligne absente journalisee' };
+  }
+  const ligne = lignes[0];
+
+  /* ---- Montant + devise : FAIL-CLOSED ---------------------- */
+  const attendu = cfg.montants && cfg.montants[ligne.plan_id];
+  if (!attendu || !Number.isFinite(Number(attendu.amount)) || !attendu.currency) {
+    await journaliser(cfg, 'stripe_webhook_montant_non_configure',
+      'STRIPE_PLAN_AMOUNTS sans entree valide pour ' + ligne.plan_id + ' : activation automatique impossible, ' +
+      'paiement laisse en attente pour validation manuelle. ' + infos);
+    return { statusCode: 200, body: 'montant non configure — laisse en attente' };
+  }
+  const memeMontant = Number(session.amount_total) === Number(attendu.amount);
+  const memeDevise = String(session.currency || '').toLowerCase() === String(attendu.currency).toLowerCase();
+  if (!memeMontant || !memeDevise) {
+    await journaliser(cfg, 'stripe_webhook_montant',
+      'Ecart de montant pour ' + ligne.plan_id + ' : recu ' + session.amount_total + ' ' + session.currency +
+      ', attendu ' + attendu.amount + ' ' + attendu.currency + '. Abonnement NON active, laisse en attente. ' + infos);
+    return { statusCode: 200, body: 'montant a verifier — laisse en attente' };
+  }
+
+  /* ---- Lien de paiement reellement paye (optionnel mais strict si defini) */
+  if (cfg.plinks) {
+    const planDuLien = session.payment_link ? cfg.plinks[session.payment_link] : null;
+    if (planDuLien !== ligne.plan_id) {
+      await journaliser(cfg, 'stripe_webhook_lien',
+        'Le Payment Link paye (' + (session.payment_link || '?') + ' -> ' + (planDuLien || 'inconnu') +
+        ') ne correspond pas au plan de la ligne (' + ligne.plan_id + '). Laisse en attente. ' + infos);
+      return { statusCode: 200, body: 'lien incoherent — laisse en attente' };
+    }
+  }
+
+  /* ---- Confirmation atomique cote SQL ----------------------- */
+  let reponse;
+  try {
+    reponse = await sb(cfg, 'rpc/confirmer_paiement_stripe', {
+      method: 'POST',
+      body: {
+        p_reference: ref,
+        p_session_id: sessionId,
+        p_amount: Number(session.amount_total),
+        p_currency: String(session.currency || '').toLowerCase(),
+        p_payment_intent: typeof session.payment_intent === 'string' ? session.payment_intent : null,
+        p_livemode: !!livemode,
+        p_payload: null
+      }
+    });
+  } catch (e) {
+    /* Exception volontaire de la fonction (abonnement deja modifie) :
+       decision humaine. Tout autre echec (reseau, 5xx, 401, 404...) est
+       releve -> 500 -> Stripe reessaie, l'idempotence evite tout doublon. */
+    const msg = (e && e.donnees && e.donnees.message) || '';
+    if (e && e.statut === 400 && /ABONNEMENT_DEJA_MODIFIE/.test(msg)) {
+      await journaliser(cfg, 'stripe_webhook_a_traiter_manuellement',
+        'ABONNEMENT_DEJA_MODIFIE : aucune ecriture appliquee. ' + infos);
+      return { statusCode: 200, body: 'abonnement deja modifie — manuel' };
+    }
+    throw e;
+  }
+
+  const r = Array.isArray(reponse) ? reponse[0] : reponse;
+  if (r && r.ok === true) return { statusCode: 200, body: String(r.code || 'ok') };
+
+  const code = r && r.code ? r.code : 'INCONNU';
+  await journaliser(cfg, 'stripe_webhook_a_traiter_manuellement',
+    code + ' — ' + (CODES_MANUELS[code] || 'reponse inattendue') + '. ' + infos);
+  return { statusCode: 200, body: 'manuel: ' + code };
+}
+
+/* ---- Remboursement / litige : journal seulement ------------- */
+async function traiterRetour(cfg, evenement) {
+  const obj = (evenement.data && evenement.data.object) || {};
+  const pi = (typeof obj.payment_intent === 'string' && obj.payment_intent) || '';
+  let refs = '?';
+  if (pi) {
+    try {
+      const l = await sb(cfg, 'payments?provider_payload->>payment_intent=eq.' + encodeURIComponent(pi) +
+        '&select=reference,user_id,plan_id,status');
+      if (Array.isArray(l) && l.length) refs = l.map(x => x.reference + ' (' + x.plan_id + ', user ' + x.user_id + ', ' + x.status + ')').join('; ');
+    } catch (e) { /* recherche best effort */ }
+  }
+  await journaliser(cfg, 'stripe_webhook_remboursement_ou_litige',
+    evenement.type + ' — action admin requise (abonnement NON modifie automatiquement). ' +
+    'payment_intent=' + (pi || '?') + ' montant=' + obj.amount + ' ' + obj.currency + ' paiements=' + refs);
+  return { statusCode: 200, body: 'journalise' };
+}
+
 /* ============================================================ */
 exports.handler = async function (event) {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
-  if (!WEBHOOK_SECRET || !SERVICE_KEY || !baseSupabase()) {
-    await journaliser('stripe_webhook_config', 'Variables manquantes : STRIPE_WEBHOOK_SECRET / cle service_role / SUPABASE_URL');
+  if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
+
+  const cfg = lireConfig();
+  if (!cfg.secret || !cfg.serviceKey || !cfg.supabaseUrl) {
+    await journaliser(cfg, 'stripe_webhook_config', 'Variables manquantes : STRIPE_WEBHOOK_SECRET / cle service_role / SUPABASE_URL');
     return { statusCode: 500, body: 'Configuration incomplete' };
   }
 
-  // Le corps doit rester EXACTEMENT tel que Stripe l'a envoye : toute
-  // reserialisation invaliderait la signature.
+  // Le corps doit rester EXACTEMENT tel que Stripe l'a envoye.
   const corpsBrut = event.isBase64Encoded
     ? Buffer.from(event.body || '', 'base64').toString('utf8')
     : (event.body || '');
-
-  const entete = event.headers['stripe-signature'] || event.headers['Stripe-Signature'];
-  const verif = signatureValide(corpsBrut, entete);
+  const h = event.headers || {};
+  const entete = h['stripe-signature'] || h['Stripe-Signature'];
+  const verif = signatureValide(cfg.secret, corpsBrut, entete);
   if (!verif.ok) {
-    await journaliser('stripe_webhook_signature', 'Appel rejete : ' + verif.raison);
+    await journaliser(cfg, 'stripe_webhook_signature', 'Appel rejete : ' + verif.raison);
     return { statusCode: 400, body: 'Signature invalide' };
   }
 
@@ -158,164 +278,35 @@ exports.handler = async function (event) {
   try { evenement = JSON.parse(corpsBrut); }
   catch (e) { return { statusCode: 400, body: 'Corps illisible' }; }
 
-  // Un seul evenement nous interesse. Tous les autres recoivent 200 :
-  // sans ca, Stripe les considererait en echec et reessaierait sans fin.
-  if (evenement.type !== 'checkout.session.completed') {
-    return { statusCode: 200, body: 'ignore' };
-  }
-  const session = (evenement.data && evenement.data.object) || {};
-  if (session.payment_status !== 'paid') {
-    return { statusCode: 200, body: 'non paye' };
-  }
+  const type = evenement.type;
+  const livemode = evenement.livemode === true;
 
-  const refStripe = session.id;                       // cs_... — reference unique du paiement
-  const crid = session.client_reference_id || '';
-  const sep = crid.indexOf('__');
-  const uid = sep > 0 ? crid.slice(0, sep) : '';
-  const planId = sep > 0 ? crid.slice(sep + 2) : '';
-
-  if (!uid || !planId) {
-    /* Paiement reel mais impossible a rattacher : ne JAMAIS le perdre
-       silencieusement. On le journalise pour que l'admin puisse le
-       retrouver dans Stripe et le traiter a la main. */
-    await journaliser('stripe_webhook_orphelin',
-      'Paiement sans client_reference_id exploitable. session=' + refStripe +
-      ' email=' + ((session.customer_details && session.customer_details.email) || '?') +
-      ' montant=' + session.amount_total + ' ' + session.currency);
-    return { statusCode: 200, body: 'orphelin journalise' };
+  /* Evenement de test : refuse sauf autorisation explicite. Le secret du
+     endpoint etant propre a chaque mode, cela evite qu'un endpoint de test
+     laisse branche active un vrai abonnement avec un faux paiement. */
+  if (!livemode && !cfg.autoriserTest) {
+    await journaliser(cfg, 'stripe_webhook_test_ignore', 'Evenement mode test ignore (STRIPE_ALLOW_TEST non defini) : ' + type);
+    return { statusCode: 200, body: 'mode test ignore' };
   }
 
   try {
-    /* ---- 1. Idempotence -------------------------------------
-       Stripe reessaie tant qu'il ne recoit pas 200. La reference du
-       paiement est l'identifiant de session Stripe : si un paiement
-       porte deja cette reference, l'evenement a deja ete traite. */
-    const dejaVu = await sb('payments?reference=eq.' + encodeURIComponent(refStripe) + '&select=id,status,subscription_id');
-    if (Array.isArray(dejaVu) && dejaVu.length && dejaVu[0].status === 'confirmed') {
-      return { statusCode: 200, body: 'deja traite' };
+    if (type === 'checkout.session.completed' || type === 'checkout.session.async_payment_succeeded') {
+      const session = (evenement.data && evenement.data.object) || {};
+      // 'unpaid' = paiement asynchrone pas encore encaisse : on attend
+      // checkout.session.async_payment_succeeded.
+      if (session.payment_status !== 'paid') return { statusCode: 200, body: 'non paye' };
+      return await traiterPaiement(cfg, session, livemode);
     }
-
-    /* ---- 2. Le plan reclame doit exister reellement ---------- */
-    const plans = await sb('plans?id=eq.' + encodeURIComponent(planId) + '&select=id,price_htg,duration_days');
-    if (!Array.isArray(plans) || !plans.length) {
-      await journaliser('stripe_webhook_plan_inconnu', 'Plan "' + planId + '" absent de la table plans. session=' + refStripe);
-      return { statusCode: 200, body: 'plan inconnu' };
+    if (type === 'charge.refunded' || type === 'charge.dispute.created') {
+      return await traiterRetour(cfg, evenement);
     }
-    const plan = plans[0];
-
-    /* ---- 3. Verification du montant reellement encaisse ------
-       Empeche qu'une adresse modifiee a la main fasse payer le prix
-       du petit plan tout en reclamant le grand. */
-    let montantSuspect = false;
-    const attendu = MONTANTS_ATTENDUS[planId];
-    if (attendu) {
-      const memeMontant = Number(session.amount_total) === Number(attendu.montant);
-      const memeDevise = String(session.currency || '').toLowerCase() === String(attendu.devise).toLowerCase();
-      if (!memeMontant || !memeDevise) {
-        montantSuspect = true;
-        await journaliser('stripe_webhook_montant',
-          'Ecart de montant pour ' + planId + ' : recu ' + session.amount_total + ' ' + session.currency +
-          ', attendu ' + attendu.montant + ' ' + attendu.devise + '. session=' + refStripe +
-          ' — abonnement NON active, laisse en attente pour verification manuelle.');
-      }
-    } else {
-      await journaliser('stripe_webhook_montant_non_configure',
-        'Aucun montant attendu configure pour ' + planId + ' : recu ' + session.amount_total + ' ' +
-        session.currency + '. session=' + refStripe + ' — verification impossible, activation faite quand meme.');
-    }
-
-    /* ---- 4. Le paiement d'abord (ancre d'idempotence) --------
-       Ecrit avant l'abonnement : si la suite echoue et que Stripe
-       reessaie, on repart de cette ligne au lieu d'en creer une
-       deuxieme. */
-    let paiementId = (Array.isArray(dejaVu) && dejaVu.length) ? dejaVu[0].id : null;
-    if (!paiementId) {
-      const cree = await sb('payments', {
-        method: 'POST',
-        body: [{
-          user_id: uid, plan_id: planId, subscription_id: null,
-          amount_htg: plan.price_htg, method: 'stripe',
-          status: 'pending', reference: refStripe
-        }]
-      });
-      paiementId = Array.isArray(cree) && cree.length ? cree[0].id : null;
-    }
-    if (!paiementId) throw new Error('Impossible de creer ou retrouver la ligne de paiement');
-
-    /* Montant douteux : on s'arrete ici volontairement. L'argent est
-       bien trace (paiement en attente, visible dans l'espace admin),
-       mais aucun acces n'est ouvert automatiquement. */
-    if (montantSuspect) {
-      return { statusCode: 200, body: 'montant a verifier — laisse en attente' };
-    }
-
-    /* ---- 5. Fermeture de l'ancien abonnement actif -----------
-       Meme regle que la validation manuelle par l'admin : jamais deux
-       abonnements actifs en meme temps pour une meme personne. */
-    await sb('subscriptions?user_id=eq.' + encodeURIComponent(uid) + '&status=eq.active', {
-      method: 'PATCH', prefer: 'return=minimal', body: { status: 'cancelled' }
-    });
-
-    /* ---- 6. Le nouvel abonnement, actif -----------------------
-       Les vraies dates sont fixees ICI, au moment du paiement reel —
-       jamais a l'avance. Plan a vie = aucune expiration. */
-    const debut = new Date();
-    let expire = null;
-    if (plan.duration_days) {
-      const fin = new Date(debut);
-      fin.setDate(fin.getDate() + plan.duration_days);
-      expire = fin.toISOString();
-    }
-    const abos = await sb('subscriptions', {
-      method: 'POST',
-      body: [{
-        user_id: uid, plan_id: planId, status: 'active',
-        starts_at: debut.toISOString(), expires_at: expire
-      }]
-    });
-    const aboId = Array.isArray(abos) && abos.length ? abos[0].id : null;
-    if (!aboId) throw new Error('Abonnement non cree');
-
-    /* ---- 7. Le paiement passe a confirme ---------------------- */
-    await sb('payments?id=eq.' + encodeURIComponent(paiementId), {
-      method: 'PATCH', prefer: 'return=minimal',
-      body: { status: 'confirmed', confirmed_at: new Date().toISOString(), subscription_id: aboId }
-    });
-
-    /* ---- 8. Notification + journal d'audit -------------------
-       Best effort : leur echec ne doit jamais faire rejouer le
-       paiement, qui est deja correctement enregistre. */
-    try {
-      await sb('notifications', {
-        method: 'POST', prefer: 'return=minimal',
-        body: [{ user_id: uid, type: 'payment_confirmed', plan_id: planId, reason: null }]
-      });
-    } catch (e) { /* sans consequence sur le paiement */ }
-    try {
-      await sb('audit_log', {
-        method: 'POST', prefer: 'return=minimal',
-        body: [{
-          admin_id: null,                       // aucun admin : action automatique de Stripe
-          action: 'payment_confirmed',
-          target_user_id: uid,
-          old_value: { payment_id: paiementId, status: 'pending', source: 'stripe_webhook' },
-          new_value: {
-            payment_id: paiementId, status: 'confirmed', subscription_id: aboId,
-            stripe_session: refStripe,
-            stripe_amount: session.amount_total, stripe_currency: session.currency
-          },
-          reason: null
-        }]
-      });
-    } catch (e) { /* sans consequence sur le paiement */ }
-
-    return { statusCode: 200, body: 'ok' };
-
+    // Tout autre evenement : 200 pour que Stripe ne le rejoue pas sans fin.
+    return { statusCode: 200, body: 'ignore' };
   } catch (e) {
-    await journaliser('stripe_webhook_traitement',
-      'session=' + refStripe + ' user=' + uid + ' plan=' + planId + ' — ' + (e && e.message ? e.message : String(e)));
-    // 500 : Stripe reessaiera automatiquement. L'idempotence ci-dessus
-    // garantit qu'un nouvel essai ne creera pas de doublon.
+    await journaliser(cfg, 'stripe_webhook_traitement', type + ' — ' + (e && e.message ? e.message : String(e)));
+    // 500 : Stripe reessaiera. L'idempotence SQL garantit zero doublon.
     return { statusCode: 500, body: 'erreur de traitement' };
   }
 };
+
+exports.__test = { signatureValide, lireConfig, FORMAT_REFERENCE };
