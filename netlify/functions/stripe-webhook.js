@@ -36,8 +36,9 @@
 
    Variables d'environnement (Netlify) :
      STRIPE_WEBHOOK_SECRET   whsec_... du endpoint (different test / reel)
-     STRIPE_PLAN_AMOUNTS     {"p1":{"amount":500,"currency":"usd"},...}
-                             amount = plus petite unite (500 = 5,00 USD)
+     STRIPE_PLAN_AMOUNTS     {"p1":{"amount":399,"currency":"usd"},...}
+                             amount = plus petite unite (399 = 3,99 USD) ; un plan
+                             peut avoir une LISTE de prix (USD + HTG)
      STRIPE_PLINK_PLANS      (optionnel) {"plink_xxx":"p1",...}
      STRIPE_ALLOW_TEST       (optionnel) "1" pour accepter le mode test
      SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
@@ -169,20 +170,28 @@ async function traiterPaiement(cfg, session, livemode) {
   }
   const ligne = lignes[0];
 
-  /* ---- Montant + devise : FAIL-CLOSED ---------------------- */
-  const attendu = cfg.montants && cfg.montants[ligne.plan_id];
-  if (!attendu || !Number.isFinite(Number(attendu.amount)) || !attendu.currency) {
+  /* ---- Montant + devise : FAIL-CLOSED ----------------------
+     Un plan peut avoir PLUSIEURS prix acceptes (ex. USD et HTG quand le
+     Payment Link propose les deux devises) : STRIPE_PLAN_AMOUNTS accepte
+     un objet {amount,currency} OU une liste de ces objets. Le paiement doit
+     correspondre EXACTEMENT a l'un d'eux. */
+  const brut = cfg.montants && cfg.montants[ligne.plan_id];
+  const acceptes = (Array.isArray(brut) ? brut : (brut ? [brut] : []))
+    .filter(x => x && Number.isFinite(Number(x.amount)) && x.currency);
+  if (!acceptes.length) {
     await journaliser(cfg, 'stripe_webhook_montant_non_configure',
       'STRIPE_PLAN_AMOUNTS sans entree valide pour ' + ligne.plan_id + ' : activation automatique impossible, ' +
       'paiement laisse en attente pour validation manuelle. ' + infos);
     return { statusCode: 200, body: 'montant non configure — laisse en attente' };
   }
-  const memeMontant = Number(session.amount_total) === Number(attendu.amount);
-  const memeDevise = String(session.currency || '').toLowerCase() === String(attendu.currency).toLowerCase();
-  if (!memeMontant || !memeDevise) {
+  const devise = String(session.currency || '').toLowerCase();
+  const correspond = acceptes.some(x =>
+    Number(session.amount_total) === Number(x.amount) && devise === String(x.currency).toLowerCase());
+  if (!correspond) {
     await journaliser(cfg, 'stripe_webhook_montant',
       'Ecart de montant pour ' + ligne.plan_id + ' : recu ' + session.amount_total + ' ' + session.currency +
-      ', attendu ' + attendu.amount + ' ' + attendu.currency + '. Abonnement NON active, laisse en attente. ' + infos);
+      ', attendu ' + acceptes.map(x => x.amount + ' ' + x.currency).join(' ou ') +
+      '. Abonnement NON active, laisse en attente. ' + infos);
     return { statusCode: 200, body: 'montant a verifier — laisse en attente' };
   }
 
