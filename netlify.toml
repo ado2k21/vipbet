@@ -119,6 +119,10 @@
 [functions."bot-publish-scheduled"]
   schedule = "*/5 * * * *"
 
+# Relais Telegram (additif, lecture seule sur les fiches) — voir telegram-relais.js
+[functions."telegram-relais"]
+  schedule = "*/5 * * * *"
+
 # ============================================================================
 # 20/09/2026 — SURVEILLANCE + ALERTES ADMIN (alerte-watchdog.js)
 #
