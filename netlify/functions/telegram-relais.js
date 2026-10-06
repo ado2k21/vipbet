@@ -8,14 +8,14 @@
  * table de suivi telegram_envois.
  *
  * Règle de plans (identique au dashboard) : le groupe de rang N reçoit les
- * fiches dont min_plan_rank <= N.   groupe 1 = p1, 2 = p1-p2, 3 = p1-p3,
- * 4 = p1-p4. Même exception que le dashboard : une fiche basket à cote
+ * fiches dont min_plan_rank <= N.   groupe 1 = p1, 2 = p1-p2, 3 = p1 à p4
+ * (3 groupes). Un 4e groupe facultatif (P4) limiterait P3 à p1-p3. Même exception que le dashboard : une fiche basket à cote
  * totale > 15 (jour de jeu >= 2026-09-20) est masquée au rang 1.
  *
  * Variables Netlify (toutes facultatives : sans token ou sans groupe, la
  * fonction ne fait rien) :
  *   TELEGRAM_VIP_BOT_TOKEN
- *   TELEGRAM_VIP_CHAT_P1 … TELEGRAM_VIP_CHAT_P4   (identifiant du groupe)
+ *   TELEGRAM_VIP_CHAT_P1 … P3 (P4 facultatif)   (identifiant du groupe)
  *
  * Garanties :
  *  - une fiche = un message par groupe (réservation en base AVANT l'envoi) ;
@@ -57,11 +57,18 @@ function echapper(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// Le groupe `rang` doit-il recevoir cette fiche ? (même règle que le dashboard)
-function ficheVisiblePourGroupe(tk, rang) {
+// Plafond de rang d'un groupe : avec 3 groupes (P1, P2, P3), le groupe 3
+// reçoit tout (p1 à p4). Si TELEGRAM_VIP_CHAT_P4 existe, P3 s'arrête à p3.
+function plafondGroupe(g, groupes) {
+  return (g === 3 && !groupes[4]) ? 4 : g;
+}
+
+// Le groupe `g` doit-il recevoir cette fiche ? (même règle que le dashboard)
+function ficheVisiblePourGroupe(tk, g, groupes) {
+  const rang = plafondGroupe(g, groupes || {});
   const min = Number(tk.min_plan_rank);
   if (!Number.isFinite(min) || min > rang) return false;
-  if (rang === 1 && tk.sport === 'basket' && Number(tk.total_odd) > 15 &&
+  if (g === 1 && tk.sport === 'basket' && Number(tk.total_odd) > 15 &&
       String(tk.play_date || '') >= BASKET15_MASQUE_DES) return false;
   return true;
 }
@@ -147,7 +154,7 @@ async function passage(cfg, fetchEnvoi, dormir) {
   const erreurs = [];
   for (const tk of fiches) {
     if (envoyes >= MAX_ENVOIS_PAR_PASSAGE) break;
-    const cibles = rangs.filter(g => ficheVisiblePourGroupe(tk, g));
+    const cibles = rangs.filter(g => ficheVisiblePourGroupe(tk, g, cfg.groupes));
     if (!cibles.length) continue;
 
     // Déjà réservé/envoyé ?
@@ -216,4 +223,4 @@ async function handler() {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports.__test = { lireConfig, ficheVisiblePourGroupe, formaterMessage, passage, dateHaiti };
+module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, passage, dateHaiti };
