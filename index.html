@@ -3599,6 +3599,42 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
   .hero .h2-stat-gar b{font-size:11px}
   .hero .h2-stat span{font-size:8px;letter-spacing:0}
 }
+/* ============================================================
+   SIMULATEUR COMPACT : meme fonctionnement (IDs et JS inchanges),
+   moitie moins haut. Les 2 resultats sont cote a cote, les cartes
+   de formule sont reduites a l'essentiel.
+   ============================================================ */
+.hero .sim2-title{font-size:clamp(21px,2.3vw,26px);margin-bottom:12px}
+.hero .sim2-sub,.hero .sim2-sep{display:none}
+.hero .sim2-step{font-size:11px;letter-spacing:.1em;margin-bottom:7px;color:#AEBBC9}
+.hero .sim2-mises{margin-bottom:12px}
+.hero .sim2-mise{padding:8px 3px}
+.hero .sim2-formules{margin-bottom:12px}
+.hero .sim2-formule{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:9px 6px;text-align:center;border-radius:11px;
+}
+.hero .sim2-formule::before,.hero .f2-lab{display:none}
+.hero .f2-name{font-size:12px;letter-spacing:.02em;white-space:nowrap}
+.hero .f2-cote{font-size:15px}
+.hero .sim2-result-head{display:none}          /* la formule choisie est deja en surbrillance */
+.hero .sim2-res{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hero .sim2-gain{padding:11px 13px;border-radius:12px;gap:0}
+.hero .sim2-gain::before{display:none}
+.hero .sim2-gain-txt{padding-left:0;border-left:none;gap:4px}
+.hero .sim2-gain-lab{font-size:10px;letter-spacing:.1em}
+.hero .sim2-gain-val{gap:5px;flex-wrap:wrap}
+.hero .sim2-gain-val b{font-size:clamp(19px,2.2vw,24px)}
+.hero .sim2-gain-val small{font-size:12px}
+.hero .sim2-result .h2-cta{margin:14px 0 0}
+.hero .sim2-result .h2-btn-green{padding-top:13px;padding-bottom:13px}
+@media (max-width:640px){
+  .hero .sim2-title{font-size:21px;margin-bottom:10px}
+  .hero .sim2-divider{margin-bottom:16px}
+  .hero .sim2-gain-val b{font-size:19px}
+  .hero .f2-name{font-size:11px}
+  .hero .f2-cote{font-size:14px}
+}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -3905,6 +3941,7 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
         </div>
         <div class="sim2-result-sep"></div>
 
+        <div class="sim2-res">
         <div class="sim2-gain">
           <div class="sim2-gain-txt">
             <span class="sim2-gain-lab" data-i18n="lbl_gain_brut">GAIN POTENTIEL</span>
@@ -3919,12 +3956,13 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
              besoin de les repeter). Le JS (updateSim2, deja ecrit et
              fonctionnel, voir s2El.profit) attendait deja cet element —
              aucun changement JS necessaire, uniquement le HTML manquant. -->
-        <div class="sim2-gain" style="margin-top:8px">
+        <div class="sim2-gain">
           <div class="sim2-gain-txt">
             <span class="sim2-gain-lab" data-i18n="lbl_profit_net">PROFIT NET</span>
             <span class="sim2-gain-val"><b id="s2-profit" style="color:var(--vert-vif)">+11 163 Gdes</b></span>
           </div>
         </div>
+        </div><!-- /sim2-res -->
 
     <div class="h2-cta">
       <button class="btn h2-btn-green" data-goto="#abonnements">
