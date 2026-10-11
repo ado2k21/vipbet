@@ -3635,6 +3635,26 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
   .hero .f2-name{font-size:11px}
   .hero .f2-cote{font-size:14px}
 }
+/* ============================================================
+   DESCRIPTION RATTACHEE AU HERO (le bloc Hero lui-meme n'est pas modifie)
+   - la zone sous le Hero suit sans coupure : meme fond, espacement reduit
+   - titre de section plus discret, texte plus lisible
+   ============================================================ */
+.hero .hero2{padding-top:36px}
+.hero h1.h2-why{
+  font-size:clamp(19px,1.9vw,23px);line-height:1.2;letter-spacing:.04em;
+  margin-bottom:12px;max-width:none;
+}
+.hero h1.h2-why::before{width:36px;height:2px;margin-bottom:14px}
+.hero .sim2-title{font-size:clamp(19px,1.9vw,23px);line-height:1.2;letter-spacing:.04em;margin-bottom:14px}
+.hero .h2-sub{font-size:15.5px;line-height:1.65;color:#A3B1C2;max-width:540px;margin-bottom:22px}
+@media (max-width:640px){
+  .hero .hero2{padding-top:26px}
+  .hero h1.h2-why{font-size:18px;margin-bottom:10px}
+  .hero .sim2-title{font-size:18px;margin-bottom:12px}
+  .hero h1.h2-why::before{margin-bottom:12px}
+  .hero .h2-sub{font-size:14.5px;line-height:1.6;margin-bottom:18px}
+}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -3853,9 +3873,9 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
 
     <div class="hero2-left">
 
-    <h1 class="h2-why" data-i18n="hero_why">POUKISA'W DWE ENSKRI NAN VIPBETCOTE??</h1>
+    <h1 class="h2-why" data-i18n="hero_why">POUKISA CHWAZI VIPBETCOTE ?</h1>
 
-    <p class="h2-sub" data-i18n="hero_sub">La plus grande plateforme de pronostics qui vous aide à gagner sur ParyajPam, ParyajLakay et 1xBet. Nous avons 6 ans d'expérience. Si vous voulez arrêter de perdre votre argent, choisissez un plan ci-dessous dès maintenant.</p>
+    <p class="h2-sub" data-i18n="hero_sub">6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.</p>
 
 
     <!-- Statistiques -->
