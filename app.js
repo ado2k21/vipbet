@@ -4535,7 +4535,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     });
   });
   // "Commencer" sur un plan : le plan est memorise puis le wizard s'ouvre
-  document.querySelectorAll('[data-plan]').forEach(b=>{
+  // Les formules du simulateur (.sim2-formule) portent aussi data-plan (pour la
+  // synchro des noms) : elles ne doivent QUE recalculer la demo, jamais ouvrir l'inscription.
+  document.querySelectorAll('[data-plan]:not(.sim2-formule)').forEach(b=>{
     b.addEventListener('click',ev=>{
       ev.preventDefault();ev.stopPropagation();
       if(mnav.classList.contains('on'))closeMenu();
