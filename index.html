@@ -3809,6 +3809,31 @@ nav .ticker{background:rgba(3,6,23,.72);-webkit-backdrop-filter:blur(10px);backd
 .ax-steps .hx-step:nth-child(2)::after{animation-delay:.8s}
 .ax-steps .hx-step:nth-child(3)::after{animation-delay:1.6s}
 @keyframes hx-step-flow{from{background-position:100% 0}to{background-position:0 0}}
+/* ---- Sections plates (sans cartes), statistiques sur une ligne, menu plus marque ---- */
+.hero .ax-why,.hero .ax-sim{background:none;border:none;box-shadow:none;border-radius:0;padding:0}
+.hero .ax-why::before,.hero .ax-sim::before{display:none}
+.hero .ax{gap:34px;padding-top:28px}
+.hero .ax-why{padding-bottom:26px;border-bottom:1px solid rgba(244,243,237,.08)}
+@media (min-width:901px){.hero .ax-why{padding-bottom:0;border-bottom:none}}
+
+/* les 4 chiffres cles : une seule ligne, sans cadres */
+.hero .ax-why .h2-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.hero .ax-why .h2-stat{background:none;border:none;box-shadow:none;border-radius:0;padding:4px 2px;gap:8px}
+.hero .ax-why .h2-stat:not(:first-child){border-left:1px solid rgba(244,243,237,.08)}
+@media (hover:hover){.hero .ax-why .h2-stat:hover{transform:none}}
+@media (max-width:640px){
+  .hero .ax-why .h2-stat{gap:6px;padding:2px 1px}
+  .hero .ax-why .h2-stat .h2-ico{width:26px;height:26px;border-radius:8px}
+  .hero .ax-why .h2-stat .h2-ico svg{width:15px;height:15px}
+  .hero .ax-why .h2-stat b{font-size:17px;margin-bottom:3px}
+  .hero .ax-why .h2-stat-gar b{font-size:11.5px;line-height:1.5}
+  .hero .ax-why .h2-stat span{font-size:8px;letter-spacing:.01em;line-height:1.25}
+}
+
+/* menu : 3 traits plus gros et plus marques */
+.burger{color:#FFFFFF}
+.burger svg{width:26px;height:26px}
+.burger svg path{stroke-width:3}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
