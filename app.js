@@ -10113,7 +10113,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
       '<div class="admdash-section-h">'+t('adm_fiche_legs_h')+'</div>'+
       '<div id="admFicheLegsList"></div>'+
-      '<div id="admFicheCoteResume" style="margin-top:10px;font-size:12.5px;color:#9EB0C6"></div>'+
+      '<div id="admFicheCoteResume" style="margin-top:10px;font-size:12.5px;color:#DEE3EA"></div>'+
       '<button type="button" class="btn btn-ghost" id="admFicheLegAdd" style="width:100%;margin-top:10px">'+t('adm_fiche_leg_add')+'</button>'+
 
       '<button type="button" class="btn btn-confirm" id="admFicheSave" style="width:100%;margin-top:18px">'+t('adm_fiche_save')+'</button>'+
