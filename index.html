@@ -3859,13 +3859,14 @@ html{background:#030617}
 .cta-final{background-color:transparent}
 .hx{background:radial-gradient(ellipse 80% 55% at 72% 22%,rgba(46,212,127,.14),transparent 70%)}
 /* prix d'appel dans le Hero (plan le moins cher, synchronise avec l'admin) */
-.hx .hx-price{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:420px;margin:12px 0 0;padding:0;
+.hx .hx-price{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:420px;margin:20px 0 0;padding:0;
   font-family:var(--body);font-weight:500;font-size:13px;letter-spacing:.02em;color:#9AA7B8}
 .hx .hx-price::before{content:"";width:16px;height:16px;flex:none;border-radius:50%;
   background:rgba(46,212,127,.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235CD693' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/10px no-repeat}
 .hx .hx-price b{font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.01em;color:#F2C14E}
 .f2-cote .f2-cote-w{font-family:var(--body);font-size:.72em;font-weight:600;letter-spacing:.03em;opacity:.75;margin-right:1px}
-.hx .hx-copy .hx-cta{margin-top:22px}
+.hx .hx-copy .hx-cta{margin-top:12px}
+.hx .hx-copy .hx-steps-box{margin-top:22px}
 @media (max-width:640px){.hx .hx-price{justify-content:center;font-size:12.5px}}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
@@ -4017,11 +4018,11 @@ html{background:#030617}
         </h1>
         <p class="hx-sub">Cote <span>ParyajPam ParyajLakay</span></p>
         <p class="hx-desc" data-i18n="hero_sub">6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.</p>
+        <p class="hx-price"><span data-i18n="hero_price_from">Abònman apati</span> <b><span id="hxPrice">249</span> HTG</b></p>
         <button class="btn hx-cta" data-goto="#abonnements">
           <span data-i18n="btn_signup_free">Enskri gratis</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
-        <p class="hx-price"><span data-i18n="hero_price_from">Abònman apati</span> <b><span id="hxPrice">249</span> HTG</b></p>
         <div class="ax-card ax-steps hx-steps-box" aria-label="Kijan li mache">
           <ol class="hx-steps">
         <li class="hx-step"><span class="hx-num">1</span><span class="hx-step-txt">Kreye yon kont</span></li>
