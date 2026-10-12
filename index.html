@@ -3299,7 +3299,6 @@ details p{font-size:15.5px;line-height:1.72;color:#CBD8E4}
    - sections en cartes "appli"
    Couleurs du site conservees.
    ============================================================ */
-.ticker{display:none!important}
 
 nav{
   position:fixed;left:0;right:0;top:0;
@@ -3783,6 +3782,33 @@ nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-
 }
 .hx-bill:nth-child(even) .hx-bill-in{background-image:url("assets/bill-1000-back.webp")}
 .hx-bill-in b,.hx-bill-in em{display:none}
+/* ---- Ajustements landing (12/10) ---- */
+/* barre roulante des fiches gagnantes, en haut du header fixe */
+nav .ticker{background:rgba(3,6,23,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid rgba(46,212,127,.14);padding:7px 0;font-size:11.5px}
+
+/* Konekte sur la ligne du logo, juste devant le menu (mobile aussi) */
+@media (max-width:760px){
+  nav .nav-cta .btn.btn-outline{display:inline-flex;padding:8px 14px;font-size:12.5px;min-height:38px;border-width:1px}
+}
+
+/* note Trustpilot : plus petite, juste au-dessus du bouton */
+.hx .hx-copy .h2-rating{margin:20px 0 10px;gap:6px}
+.hx .hx-copy .h2-stars svg{width:10px;height:10px}
+.hx .hx-copy .h2-rating-txt{font-size:10.5px}
+.hx .hx-copy .h2-rating{padding:4px 10px 4px 8px}
+.hx .hx-copy .hx-cta{margin-top:0}
+
+/* 4 etapes : collees sous le bouton */
+.hx .hx-steps-box{margin-top:12px;max-width:560px}
+@media (max-width:900px){.hx .hx-steps-box{max-width:none}}
+/* ligne animee entre les etapes */
+.ax-steps .hx-step:not(:last-child)::after{
+  background:linear-gradient(90deg,rgba(46,212,127,.12) 0%,rgba(46,212,127,.12) 35%,#5BE79E 50%,rgba(46,212,127,.12) 65%,rgba(46,212,127,.12) 100%) 0 0/300% 100%;
+  animation:hx-step-flow 2.4s linear infinite;
+}
+.ax-steps .hx-step:nth-child(2)::after{animation-delay:.8s}
+.ax-steps .hx-step:nth-child(3)::after{animation-delay:1.6s}
+@keyframes hx-step-flow{from{background-position:100% 0}to{background-position:0 0}}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -3808,6 +3834,9 @@ nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-
   <div class="vbsplash-word">VIP<span>BETCOTE</span></div>
 </div>
 
+
+<!-- NAV -->
+<nav>
 <!-- TICKER -->
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track" id="tick">
@@ -3819,9 +3848,6 @@ nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-
     <span><i class="lg">LA LIGA</i> &nbsp;Real Madrid – Séville · Plus de 2.5 <b>1.61</b><i class="w" data-i18n="tick_won">GAGNÉ</i></span>
   </div>
 </div>
-
-<!-- NAV -->
-<nav>
   <div class="wrap nav-in">
     <a class="logo" href="#" aria-label="VIP BETCOTE — accueil">
       <span class="logo-mark logo-mark-img">
@@ -3933,10 +3959,6 @@ nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-
         </h1>
         <p class="hx-sub">Cote <span>ParyajPam ParyajLakay</span></p>
         <p class="hx-desc" data-i18n="hero_sub">6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.</p>
-        <button class="btn hx-cta" data-auth-open="signup">
-          <span data-i18n="btn_signup_free">Enskri gratis</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
         <div class="h2-rating">
       <span class="h2-stars">
         <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9L12 2.6Z"/></svg>
@@ -3947,6 +3969,18 @@ nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-
       </span>
       <span class="h2-rating-txt"><b id="statTrustpilot">4.6</b> · <span data-i18n="rating_label">Excellent sur Trustpilot</span></span>
     </div>
+        <button class="btn hx-cta" data-goto="#abonnements">
+          <span data-i18n="btn_signup_free">Enskri gratis</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <div class="ax-card ax-steps hx-steps-box" aria-label="Kijan li mache">
+          <ol class="hx-steps">
+        <li class="hx-step"><span class="hx-num">1</span><span class="hx-step-txt">Kreye yon kont</span></li>
+        <li class="hx-step"><span class="hx-num">2</span><span class="hx-step-txt">Chwazi yon abònman</span></li>
+        <li class="hx-step"><span class="hx-num">3</span><span class="hx-step-txt">Resevwa fich pou parye yo</span></li>
+        <li class="hx-step"><span class="hx-num">4</span><span class="hx-step-txt">Parye epi genyen</span></li>
+      </ol>
+        </div>
       </div>
 
     </div>
@@ -3954,15 +3988,6 @@ nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-
 
   <!-- SECTIONS STYLE APPLI -->
   <div class="wrap ax">
-
-    <section class="ax-card ax-steps" aria-label="Kijan li mache">
-      <ol class="hx-steps">
-        <li class="hx-step"><span class="hx-num">1</span><span class="hx-step-txt">Kreye yon kont</span></li>
-        <li class="hx-step"><span class="hx-num">2</span><span class="hx-step-txt">Chwazi yon abònman</span></li>
-        <li class="hx-step"><span class="hx-num">3</span><span class="hx-step-txt">Resevwa fich pou parye yo</span></li>
-        <li class="hx-step"><span class="hx-num">4</span><span class="hx-step-txt">Parye epi genyen</span></li>
-      </ol>
-    </section>
 
     <section class="ax-card ax-why">
       <h2 class="ax-h" data-i18n="hero_why">POUKISA CHWAZI VIPBETCOTE ?</h2>
