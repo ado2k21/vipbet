@@ -1056,10 +1056,10 @@ footer{border-top:1px solid var(--ligne);padding:56px 0 36px;background:#030617}
   display:block;object-fit:cover;z-index:2;
   box-shadow:0 10px 28px rgba(0,0,0,.5),0 0 0 1px rgba(244,243,237,.1);
 }
-.vbsplash-ring{position:absolute;inset:0;animation:vbspin 1.8s linear infinite;z-index:1}
+.vbsplash-ring{position:absolute;inset:0;animation:vbspin 1.1s linear infinite;z-index:1}
 .vbsplash-ball{
   position:absolute;top:-3px;left:50%;width:27px;height:27px;
-  transform:translateX(-50%);animation:vbcounter 1.8s linear infinite;
+  transform:translateX(-50%);animation:vbcounter 1.1s linear infinite;
   color:var(--vert-vif);
 }
 .vbsplash-ball-bask{color:var(--or-clair)}
@@ -3858,6 +3858,14 @@ body,header.hero,.section-alt,.section-faq,footer{background:transparent}
 html{background:#030617}
 .cta-final{background-color:transparent}
 .hx{background:radial-gradient(ellipse 80% 55% at 72% 22%,rgba(46,212,127,.14),transparent 70%)}
+/* prix d'appel dans le Hero (plan le moins cher, synchronise avec l'admin) */
+.hx .hx-price{margin:16px 0 0;display:inline-flex;align-items:baseline;gap:6px;padding:6px 14px;border-radius:999px;
+  font-family:var(--body);font-weight:600;font-size:14px;color:#DCE3EA;
+  background:rgba(232,206,138,.08);border:1px solid rgba(232,206,138,.35)}
+.hx .hx-price b{font-family:var(--display);font-weight:800;font-size:20px;color:#F2C14E}
+.hx .hx-price small{font-weight:800;font-size:12px;color:#F2C14E}
+.hx .hx-copy .h2-rating{margin-top:12px}
+@media (max-width:640px){.hx .hx-price{font-size:13px;padding:5px 12px}.hx .hx-price b{font-size:18px}}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -4008,6 +4016,7 @@ html{background:#030617}
         </h1>
         <p class="hx-sub">Cote <span>ParyajPam ParyajLakay</span></p>
         <p class="hx-desc" data-i18n="hero_sub">6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.</p>
+        <p class="hx-price"><span data-i18n="hero_price_from">Abònman apati</span> <b id="hxPrice">249</b> <small>HTG</small></p>
         <div class="h2-rating">
       <span class="h2-stars">
         <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9L12 2.6Z"/></svg>

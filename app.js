@@ -211,6 +211,7 @@ stripe_back_h:"Paiement reçu",
 stripe_back_p:"Votre paiement a bien été reçu. Votre abonnement s'active dans quelques instants.",
 legal_updated:"Mise à jour : août 2026",
 hero_why:"POURQUOI CHOISIR VIPBETCOTE ?",
+hero_price_from:"Abonnements dès",
 auth_lbl_username:"Nom d'utilisateur", auth_ph_username:"Choisissez un nom d'utilisateur",
 auth_optional:"(facultatif)",
 auth_err_email_temp:"Les adresses e-mail temporaires ne sont pas acceptées",
@@ -713,6 +714,7 @@ stripe_back_h:"Payment received",
 stripe_back_p:"Your payment has been received. Your plan will be activated in a few moments.",
 legal_updated:"Updated: August 2026",
 hero_why:"WHY CHOOSE VIPBETCOTE?",
+hero_price_from:"Plans from",
 auth_lbl_username:"Username", auth_ph_username:"Choose a username",
 auth_optional:"(optional)",
 auth_err_email_temp:"Temporary email addresses are not accepted",
@@ -1215,6 +1217,7 @@ stripe_back_h:"Nou resevwa peman an",
 stripe_back_p:"Nou byen resevwa peman ou. Abònman ou ap aktive nan kèk segond.",
 legal_updated:"Mizajou : out 2026",
 hero_why:"POUKISA CHWAZI VIPBETCOTE ?",
+hero_price_from:"Abònman apati",
 auth_lbl_username:"Non itilizatè", auth_ph_username:"Chwazi yon non itilizatè",
 auth_optional:"(fakiltatif)",
 auth_err_email_temp:"Nou pa aksepte imèl tanporè",
@@ -4728,7 +4731,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         }
       });
       if(changed){
-        syncerCartesTarifsLanding();syncerSimulateurFormules();
+        syncerCartesTarifsLanding();syncerSimulateurFormules();syncerPrixHero();
         // CHANGÉ (31/08 v7, demande explicite de James : "lorsque admin
         // modifie les jours/prix des plans, sur la page de paiement où
         // l'utilisateur choisit son plan, ça doit aussi se synchroniser,
@@ -4782,6 +4785,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      selecteur est volontairement limite a la section #abonnements : le
      simulateur, plus haut sur la page, utilise desormais lui aussi
      data-plan, il ne faut jamais confondre les deux. */
+  // Prix d'appel du Hero ("Abonman apati 249 HTG") : plan le moins cher reel.
+  function syncerPrixHero(){
+    const el=document.getElementById('hxPrice');
+    if(!el)return;
+    const prix=(window.VB_allPlans?window.VB_allPlans():[]).map(pl=>+pl.prix).filter(n=>n>0);
+    if(prix.length)el.textContent=money(Math.min(...prix));
+  }
   function syncerCartesTarifsLanding(){
     (window.VB_allPlans?window.VB_allPlans():[]).forEach(pl=>{
       const btn=document.querySelector('#abonnements [data-plan="'+pl.id+'"]');
@@ -10513,7 +10523,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   // Lancement initial du site : duree minimale pour eviter un flash,
   // et filet de securite pour ne jamais bloquer l'affichage.
-  const MIN_SHOW=1400,MAX_SHOW=4000;
+  const MIN_SHOW=600,MAX_SHOW=2500;
   const t0=Date.now();
   function finirLancement(){
     const attente=Math.max(0,MIN_SHOW-(Date.now()-t0));
