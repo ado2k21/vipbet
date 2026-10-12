@@ -3628,6 +3628,153 @@ nav.nav-solid{
   .hero .h2-stars svg{width:11px;height:11px}
   .hero .h2-rating-txt{font-size:11.5px}
 }
+/* ============================================================
+   SCENE 3D v2 : telephone (appli + fiche gagnante) + billets qui volent
+   Le visuel commence tout en haut : logo et menu sont poses dessus.
+   ============================================================ */
+.hx{padding:0 0 40px}
+.hx-title>span{display:block}
+.hx-title span span{display:inline}
+.hx-stack{display:none}
+.hx-chip-main{display:none}
+
+/* le menu sans cadre, comme une appli, tant qu'on est en haut */
+nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-shadow:none}
+
+.hx-art{height:660px;perspective:1400px;margin-top:0}
+.hx-scene{position:absolute;inset:0;transform-style:preserve-3d}
+
+/* --- billets de gourdes --- */
+.hx-bill{
+  position:absolute;width:118px;height:56px;z-index:1;
+  transform:rotate(var(--r)) scale(var(--s));
+  animation:hx-flutter 6s ease-in-out var(--dl) infinite alternate;
+}
+.hx-bill-in{
+  position:absolute;inset:0;border-radius:6px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 10px;font-style:normal;
+  background:
+    radial-gradient(circle at 26% 50%,rgba(255,255,255,.55) 0 15%,transparent 16%),
+    repeating-linear-gradient(135deg,rgba(14,92,54,.10) 0 2px,transparent 2px 6px),
+    linear-gradient(135deg,#E9F7DF 0%,#B9E3B0 45%,#7CC48F 100%);
+  border:1px solid rgba(14,92,54,.45);
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),inset 0 0 0 4px rgba(14,92,54,.35),0 10px 20px -8px rgba(0,0,0,.7);
+}
+.hx-bill-in b{font-family:var(--display);font-weight:800;font-size:15px;color:#0E5C36;margin-left:auto}
+.hx-bill-in em{position:absolute;left:10px;bottom:6px;font-style:normal;font-family:var(--mono);font-weight:800;font-size:7px;letter-spacing:.2em;color:#0E5C36;opacity:.75}
+.hx-bill-b{filter:blur(2.2px) brightness(.7);opacity:.55;z-index:0}
+.hx-bill-m{filter:blur(.6px) brightness(.9);opacity:.85}
+.hx-bill-f{z-index:6;filter:drop-shadow(0 14px 16px rgba(0,0,0,.55))}
+@keyframes hx-flutter{
+  0%{transform:rotate(var(--r)) scale(var(--s)) translateY(0) rotateX(0)}
+  100%{transform:rotate(calc(var(--r) + 8deg)) scale(var(--s)) translateY(-14px) rotateX(28deg)}
+}
+
+/* --- vraies fiches gagnantes flottantes --- */
+.hx-tkt{z-index:2}
+.hx-tkt-l{width:30%;left:0;top:30%;opacity:.8;filter:brightness(.85);transform:rotateY(28deg) rotateZ(-12deg)}
+.hx-tkt-r{width:30%;right:0;left:auto;top:20%;opacity:.85;filter:brightness(.9);transform:rotateY(-30deg) rotateZ(10deg)}
+
+/* --- telephone 3D --- */
+.hx-phone{
+  position:absolute;z-index:4;left:50%;top:9%;
+  width:46%;max-width:300px;aspect-ratio:9/18.5;
+  transform:translateX(-50%) rotateY(-16deg) rotateX(10deg) rotateZ(-7deg);
+  border-radius:42px;padding:9px;
+  background:linear-gradient(145deg,#3A4A63 0%,#0B1425 40%,#05080F 100%);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255,255,255,.22),
+    0 60px 90px -30px rgba(0,0,0,.95),
+    0 0 80px -10px rgba(46,212,127,.45),
+    -14px 18px 0 -4px rgba(5,8,15,.9);
+  animation:hx-phone 8s ease-in-out infinite alternate;
+}
+@keyframes hx-phone{
+  from{transform:translateX(-50%) rotateY(-16deg) rotateX(10deg) rotateZ(-7deg) translateY(0)}
+  to{transform:translateX(-50%) rotateY(-10deg) rotateX(8deg) rotateZ(-5deg) translateY(-10px)}
+}
+.hx-phone-screen{
+  position:relative;height:100%;border-radius:34px;overflow:hidden;
+  background:linear-gradient(180deg,#0A1A2E 0%,#071022 100%);
+  display:flex;flex-direction:column;
+}
+.hx-phone-screen::before{  /* encoche */
+  content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:34%;height:18px;border-radius:999px;background:#02040A;z-index:3;
+}
+.hx-app-bar{display:flex;align-items:center;justify-content:space-between;padding:36px 14px 10px}
+.hx-app-logo{font-family:var(--display);font-weight:800;font-size:13px;color:#F4F3ED;letter-spacing:.02em}
+.hx-app-logo b{color:var(--hx-g);margin-left:2px}
+.hx-app-live{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-weight:800;font-size:9px;letter-spacing:.14em;color:var(--hx-g);padding:3px 8px;border-radius:999px;background:rgba(46,212,127,.12);border:1px solid rgba(46,212,127,.3)}
+.hx-app-live i{width:6px;height:6px;border-radius:50%;background:var(--hx-g);animation:pulse 2s infinite}
+.hx-app-win{
+  display:flex;align-items:center;gap:10px;margin:2px 12px 10px;padding:10px 12px;border-radius:16px;
+  background:linear-gradient(135deg,rgba(46,212,127,.22),rgba(46,212,127,.06));
+  border:1px solid rgba(46,212,127,.4);
+}
+.hx-app-win-ic{display:grid;place-items:center;flex:0 0 auto;width:30px;height:30px;border-radius:10px;color:#04140D;background:linear-gradient(180deg,#48E294,#1FA95C)}
+.hx-app-win-ic svg{width:17px;height:17px}
+.hx-app-win-txt{display:flex;flex-direction:column;line-height:1.1}
+.hx-app-win-txt small{font-family:var(--mono);font-weight:800;font-size:8.5px;letter-spacing:.18em;color:var(--hx-g)}
+.hx-app-win-txt b{font-family:var(--display);font-weight:800;font-size:17px;color:#F2C14E}
+.hx-app-tkt{flex:1;margin:0 10px 10px;border-radius:14px;overflow:hidden;background:#fff}
+.hx-app-tkt img{display:block;width:100%;height:auto}
+.hx-phone-glare{
+  position:absolute;inset:0;border-radius:42px;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 72%,rgba(255,255,255,.06) 100%);
+}
+
+/* --- pastilles --- */
+.hx-chip{z-index:7}
+.hx-chip-a{right:2%;top:16%}
+.hx-chip-b{left:18%;top:78%;right:auto;bottom:auto}
+
+/* --- texte : passe devant le bas du visuel --- */
+.hx-copy{margin-right:-90px;padding-top:120px}
+
+@media (max-width:900px){
+  .hx{padding:0 0 28px}
+  .hx-art{height:470px;margin:0 -18px}
+  .hx-scene{-webkit-mask-image:linear-gradient(180deg,#000 62%,transparent 98%);mask-image:linear-gradient(180deg,#000 62%,transparent 98%)}
+  .hx-phone{top:15%;width:50%}
+  .hx-copy{margin:-150px 0 0;padding-top:0}
+  .hx-stack{-webkit-mask-image:none;mask-image:none}
+}
+@media (max-width:640px){
+  .hx-art{height:440px}
+  .hx-phone{width:52%;top:16%;border-radius:32px;padding:7px}
+  .hx-phone-screen{border-radius:26px}
+  .hx-phone-glare{border-radius:32px}
+  .hx-phone-screen::before{height:14px;top:7px}
+  .hx-app-bar{padding:28px 10px 8px}
+  .hx-app-logo{font-size:10.5px}
+  .hx-app-live{font-size:7.5px;padding:2px 6px}
+  .hx-app-win{margin:0 8px 8px;padding:7px 8px;gap:7px;border-radius:12px}
+  .hx-app-win-ic{width:24px;height:24px;border-radius:8px}
+  .hx-app-win-ic svg{width:14px;height:14px}
+  .hx-app-win-txt small{font-size:7px}
+  .hx-app-win-txt b{font-size:13px}
+  .hx-app-tkt{margin:0 7px 7px;border-radius:10px}
+  .hx-bill{width:86px;height:41px}
+  .hx-bill-in b{font-size:11.5px}
+  .hx-bill-in em{font-size:5.5px}
+  .hx-tkt-l{width:32%;top:34%}
+  .hx-tkt-r{width:32%;top:24%}
+  .hx-chip-a{top:20%;right:0}
+  .hx-chip-b{top:58%;left:0}
+  .hx .hx-title{font-size:clamp(34px,10.4vw,46px)}
+  .hx-copy{margin-top:-128px}
+}
+.hx-app-tkt{flex:0 1 auto;min-height:0}
+.hx-app-tabs{margin-top:auto;display:flex;justify-content:space-around;align-items:center;padding:10px 12px 14px;border-top:1px solid rgba(244,243,237,.08);background:rgba(3,6,23,.6)}
+.hx-app-tabs span{display:grid;place-items:center;width:34px;height:28px;border-radius:10px;color:#6E8092}
+.hx-app-tabs span.on{color:#04140D;background:linear-gradient(180deg,#48E294,#1FA95C)}
+.hx-app-tabs svg{width:17px;height:17px}
+@media (max-width:640px){
+  .hx-app-tabs{padding:6px 8px 9px}
+  .hx-app-tabs span{width:24px;height:20px;border-radius:7px}
+  .hx-app-tabs svg{width:12px;height:12px}
+}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -3723,26 +3870,58 @@ nav.nav-solid{
 
     <div class="wrap hx-in">
 
-      <div class="hx-art" role="img" aria-label="Fich ki genyen vre manm VIPBETCOTE yo : 336 000 HTG, 10 162 HTG, 2 233 HTG sou ParyajPam, ParyajLakay ak 1xBet">
-        <div class="hx-stack" aria-hidden="true">
+      <div class="hx-art" role="img" aria-label="Aplikasyon VIPBETCOTE ak fich ki genyen vre manm yo : 336 000 HTG, 10 162 HTG, 2 233 HTG sou ParyajPam, ParyajLakay ak 1xBet">
+        <div class="hx-scene" aria-hidden="true">
+          <!-- billets de gourdes qui volent (arriere-plan) -->
+          <span class="hx-bill hx-bill-b" style="left:2%;top:10%;--r:-28deg;--s:0.9;--dl:-0.0s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-b" style="left:70%;top:4%;--r:22deg;--s:0.8;--dl:-0.7s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-m" style="left:84%;top:30%;--r:-14deg;--s:1;--dl:-1.4s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-m" style="left:-4%;top:40%;--r:18deg;--s:1.05;--dl:-2.1s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-f" style="left:10%;top:66%;--r:-8deg;--s:1.1;--dl:-2.8s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-f" style="left:76%;top:62%;--r:30deg;--s:1.15;--dl:-3.5s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-b" style="left:40%;top:0%;--r:-6deg;--s:0.7;--dl:-4.2s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-m" style="left:58%;top:78%;--r:-22deg;--s:0.95;--dl:-4.9s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-b" style="left:24%;top:24%;--r:40deg;--s:0.75;--dl:-5.6s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+          <span class="hx-bill hx-bill-b" style="left:90%;top:8%;--r:-40deg;--s:0.7;--dl:-6.3s"><i class="hx-bill-in"><b>1000</b><em>GOUD</em></i></span>
+
+          <!-- vraies fiches gagnantes qui flottent -->
           <figure class="hx-tkt hx-tkt-l"><img src="assets/ticket-6.webp" alt="" width="560" height="783" decoding="async"></figure>
           <figure class="hx-tkt hx-tkt-r"><img src="assets/ticket-24.jpg" alt="" width="720" height="1066" decoding="async"></figure>
-          <figure class="hx-tkt hx-tkt-c"><img src="assets/ticket-22.jpg" alt="" width="720" height="834" decoding="async" fetchpriority="high"></figure>
+
+          <!-- telephone 3D : l'appli VIP BETCOTE avec la fiche du jour -->
+          <div class="hx-phone">
+            <div class="hx-phone-screen">
+              <div class="hx-app-bar">
+                <span class="hx-app-logo">VIP<b>BETCOTE</b></span>
+                <span class="hx-app-live"><i></i>LIVE</span>
+              </div>
+              <div class="hx-app-win">
+                <span class="hx-app-win-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+                <span class="hx-app-win-txt"><small data-i18n="tick_won">GENYEN</small><b>+336 000 HTG</b></span>
+              </div>
+              <div class="hx-app-tkt"><img src="assets/ticket-22.jpg" alt="" width="720" height="834" decoding="async" fetchpriority="high"></div>
+              <div class="hx-app-tabs">
+                <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9H3z"/></svg></span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M12 13v4M8.5 20h7"/></svg></span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></span>
+              </div>
+            </div>
+            <span class="hx-phone-glare"></span>
+          </div>
+
+          <!-- pastilles de gains -->
+          <div class="hx-chip hx-chip-s hx-chip-a"><i></i>+10 162 HTG</div>
+          <div class="hx-chip hx-chip-s hx-chip-b"><i></i>+2 233 HTG</div>
+          <span class="hx-spk hx-spk1"></span><span class="hx-spk hx-spk2"></span><span class="hx-spk hx-spk3"></span>
         </div>
-        <div class="hx-chip hx-chip-main" aria-hidden="true">
-          <span class="hx-chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
-          <span class="hx-chip-txt"><small data-i18n="tick_won">GENYEN</small><b>+336 000 HTG</b></span>
-        </div>
-        <div class="hx-chip hx-chip-s hx-chip-a" aria-hidden="true"><i></i>+10 162 HTG</div>
-        <div class="hx-chip hx-chip-s hx-chip-b" aria-hidden="true"><i></i>+2 233 HTG</div>
-        <span class="hx-spk hx-spk1" aria-hidden="true"></span><span class="hx-spk hx-spk2" aria-hidden="true"></span><span class="hx-spk hx-spk3" aria-hidden="true"></span>
       </div>
 
       <div class="hx-copy">
         <h1 class="hx-title">
-          <span>RESEVWA</span>
-          <span>PI BON <em class="hx-pill">FICH</em></span>
-          <span class="hx-t3">POU PARYE</span>
+          <span>GENYEN LAJAN</span>
+          <span>CHAK JOU AK</span>
+          <span><em class="hx-pill">FICH</em> <span class="hx-t3">VIP YO</span></span>
         </h1>
         <p class="hx-sub">Cote <span>ParyajPam ParyajLakay</span></p>
         <p class="hx-desc" data-i18n="hero_sub">6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.</p>
