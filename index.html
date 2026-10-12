@@ -3775,6 +3775,14 @@ nav:not(.nav-solid) .burger{background:transparent;border-color:transparent;box-
   .hx-app-tabs span{width:24px;height:20px;border-radius:7px}
   .hx-app-tabs svg{width:12px;height:12px}
 }
+/* billets : vraies images du billet de 1000 gourdes (recto / verso en alternance) */
+.hx-bill-in{
+  background:url("assets/bill-1000-front.webp") center/100% 100% no-repeat;
+  border:none;border-radius:3px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 10px 20px -8px rgba(0,0,0,.7);
+}
+.hx-bill:nth-child(even) .hx-bill-in{background-image:url("assets/bill-1000-back.webp")}
+.hx-bill-in b,.hx-bill-in em{display:none}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
