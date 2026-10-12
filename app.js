@@ -10501,7 +10501,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // Un tour complet du ballon de football, puis un tour complet du
   // ballon de basket, et ainsi de suite (alternance a chaque tour).
   let tour='foot';
-  ring.addEventListener('animationiteration',()=>{
+  ring.addEventListener('animationiteration',e=>{
+    if(e.target!==ring)return;   // l'animation du ballon (enfant) remonte aussi ici : un seul basculement par tour
     tour=(tour==='foot')?'bask':'foot';
     foot.style.display=(tour==='foot')?'':'none';
     bask.style.display=(tour==='bask')?'':'none';
