@@ -5252,7 +5252,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     // Fond degrade sombre, meme esprit que la charte (noir/vert/or).
     const grad=ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,'#1D1D1D');grad.addColorStop(1,'#2B2B2B');
+    grad.addColorStop(0,'#030617');grad.addColorStop(1,'#0A1224');
     ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
 
     // Bandeau superieur.
@@ -5260,7 +5260,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.font='700 30px sans-serif';
     ctx.textAlign='center';
     ctx.fillText('VIP BETCOTE',W/2,90);
-    ctx.fillStyle='#25D162';
+    ctx.fillStyle='#2ED47F';
     ctx.font='800 54px sans-serif';
     ctx.fillText('✅ '+t('dtk_share_titre'),W/2,160);
 
@@ -5273,10 +5273,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     legs.slice(0,MAX).forEach(lg=>{
       ctx.fillStyle='rgba(255,255,255,.05)';
       ctx.fillRect(60,y-38,W-120,74);
-      ctx.fillStyle='#FFFFFF';
+      ctx.fillStyle='#F4F3ED';
       ctx.font='700 26px sans-serif';
       ctx.fillText(tronqueTexte(lg.match||'',44),85,y-4);
-      ctx.fillStyle='#ACACAC';
+      ctx.fillStyle='#9AA7BD';
       ctx.font='400 22px sans-serif';
       const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
       ctx.fillText(tronqueTexte(pickTxt,40),85,y+26);
@@ -5288,7 +5288,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       y+=92;
     });
     if(legs.length>MAX){
-      ctx.fillStyle='#ACACAC';
+      ctx.fillStyle='#9AA7BD';
       ctx.font='400 22px sans-serif';
       ctx.textAlign='center';
       ctx.fillText(t('dtk_share_plus').replace('{n}',legs.length-MAX),W/2,y+10);
@@ -5299,15 +5299,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Cote totale, en grand.
     y+=40;
     ctx.textAlign='center';
-    ctx.fillStyle='#ACACAC';
+    ctx.fillStyle='#9AA7BD';
     ctx.font='700 24px sans-serif';
     ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y);
-    ctx.fillStyle='#25D162';
+    ctx.fillStyle='#2ED47F';
     ctx.font='800 96px sans-serif';
     ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+110);
 
     // Pied : mention responsable, jamais omise meme sur une image de partage.
-    ctx.fillStyle='#8E8E8E';
+    ctx.fillStyle='#7C8CA0';
     ctx.font='400 20px sans-serif';
     ctx.fillText(t('dtk_share_mention'),W/2,H-60);
 
@@ -7903,7 +7903,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<br><span class="admdash-detail-email">'+u.email+'</span></span>'+
       '</div>'+
       (estSuspendu?
-        '<div class="dash-pending" style="border-color:rgba(226,99,79,.4);background:linear-gradient(140deg,rgba(226,99,79,.13),rgba(44,44,44,0) 62%),#252525">'+
+        '<div class="dash-pending" style="border-color:rgba(226,99,79,.4);background:linear-gradient(140deg,rgba(226,99,79,.13),rgba(11,20,37,0) 62%),#100E18">'+
           '<span class="dash-pending-ic" style="background:rgba(226,99,79,.14);color:#E2634F;border-color:rgba(226,99,79,.32)">'+
             '<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'+
           '</span>'+
@@ -8791,7 +8791,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<label class="field"><textarea id="admFaqAEn" placeholder="'+t('adm_faq_a_ph')+'" style="min-height:110px">'+(f.answer_en||'')+'</textarea></label>'+
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_order_lbl')+'</span>'+
       '<input type="number" step="1" id="admFaqOrder" value="'+(f.display_order!=null?f.display_order:0)+'"></label>'+
-      '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13.5px;color:#FFFFFF">'+
+      '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13.5px;color:#F4F3ED">'+
       '<input type="checkbox" id="admFaqPub" style="width:17px;height:17px"'+(f.is_published?' checked':'')+'> '+t('adm_published_toggle')+
       '</label>'+
       '<button type="button" class="btn btn-confirm" id="admFaqSave" style="width:100%;margin-top:16px">'+t('adm_faq_save')+'</button>'+
@@ -8922,7 +8922,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<select id="admTestiRating">'+optionsNote+'</select></label>'+
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_order_lbl')+'</span>'+
       '<input type="number" step="1" id="admTestiOrder" value="'+(x.display_order!=null?x.display_order:0)+'"></label>'+
-      '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13.5px;color:#FFFFFF">'+
+      '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13.5px;color:#F4F3ED">'+
       '<input type="checkbox" id="admTestiPub" style="width:17px;height:17px"'+(x.is_published?' checked':'')+'> '+t('adm_published_toggle')+
       '</label>'+
       '<button type="button" class="btn btn-confirm" id="admTestiSave" style="width:100%;margin-top:16px">'+t('adm_testi_save')+'</button>'+
@@ -9328,7 +9328,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
     }
     box.textContent=txt+risque;
-    box.style.color=hors?'#E4574C':(risque?'#E0A32E':'#B2B2B2');
+    box.style.color=hors?'#E4574C':(risque?'#E0A32E':'#9FB0C4');
   }
   /* ============================================================
      MODULE FICHES (refonte 25/08)
@@ -10107,13 +10107,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<input type="date" id="admFicheDate" value="'+(tk.play_date||dateAujourdhui())+'"></label>'+
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_fiche_status')+'</span>'+
       '<select id="admFicheStatus">'+optionsStatus+'</select></label>'+
-      '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13.5px;color:#FFFFFF">'+
+      '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13.5px;color:#F4F3ED">'+
       '<input type="checkbox" id="admFichePub" style="width:17px;height:17px"'+(tk.published?' checked':'')+'> '+t('adm_published_toggle')+
       '</label>'+
 
       '<div class="admdash-section-h">'+t('adm_fiche_legs_h')+'</div>'+
       '<div id="admFicheLegsList"></div>'+
-      '<div id="admFicheCoteResume" style="margin-top:10px;font-size:12.5px;color:#B2B2B2"></div>'+
+      '<div id="admFicheCoteResume" style="margin-top:10px;font-size:12.5px;color:#9FB0C4"></div>'+
       '<button type="button" class="btn btn-ghost" id="admFicheLegAdd" style="width:100%;margin-top:10px">'+t('adm_fiche_leg_add')+'</button>'+
 
       '<button type="button" class="btn btn-confirm" id="admFicheSave" style="width:100%;margin-top:18px">'+t('adm_fiche_save')+'</button>'+
