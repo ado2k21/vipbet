@@ -5252,7 +5252,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     // Fond degrade sombre, meme esprit que la charte (noir/vert/or).
     const grad=ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,'#0B0D0C');grad.addColorStop(1,'#161A18');
+    grad.addColorStop(0,'#1D1D1D');grad.addColorStop(1,'#2B2B2B');
     ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
 
     // Bandeau superieur.
@@ -5260,7 +5260,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.font='700 30px sans-serif';
     ctx.textAlign='center';
     ctx.fillText('VIP BETCOTE',W/2,90);
-    ctx.fillStyle='#21E06F';
+    ctx.fillStyle='#25D162';
     ctx.font='800 54px sans-serif';
     ctx.fillText('✅ '+t('dtk_share_titre'),W/2,160);
 
@@ -5276,7 +5276,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ctx.fillStyle='#FFFFFF';
       ctx.font='700 26px sans-serif';
       ctx.fillText(tronqueTexte(lg.match||'',44),85,y-4);
-      ctx.fillStyle='#B4BCB6';
+      ctx.fillStyle='#ACACAC';
       ctx.font='400 22px sans-serif';
       const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
       ctx.fillText(tronqueTexte(pickTxt,40),85,y+26);
@@ -5288,7 +5288,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       y+=92;
     });
     if(legs.length>MAX){
-      ctx.fillStyle='#B4BCB6';
+      ctx.fillStyle='#ACACAC';
       ctx.font='400 22px sans-serif';
       ctx.textAlign='center';
       ctx.fillText(t('dtk_share_plus').replace('{n}',legs.length-MAX),W/2,y+10);
@@ -5299,15 +5299,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Cote totale, en grand.
     y+=40;
     ctx.textAlign='center';
-    ctx.fillStyle='#B4BCB6';
+    ctx.fillStyle='#ACACAC';
     ctx.font='700 24px sans-serif';
     ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y);
-    ctx.fillStyle='#21E06F';
+    ctx.fillStyle='#25D162';
     ctx.font='800 96px sans-serif';
     ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+110);
 
     // Pied : mention responsable, jamais omise meme sur une image de partage.
-    ctx.fillStyle='#959F98';
+    ctx.fillStyle='#8E8E8E';
     ctx.font='400 20px sans-serif';
     ctx.fillText(t('dtk_share_mention'),W/2,H-60);
 
@@ -7903,8 +7903,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<br><span class="admdash-detail-email">'+u.email+'</span></span>'+
       '</div>'+
       (estSuspendu?
-        '<div class="dash-pending" style="border-color:rgba(255,92,92,.4);background:linear-gradient(140deg,rgba(255,92,92,.13),rgba(23,28,25,0) 62%),#101412">'+
-          '<span class="dash-pending-ic" style="background:rgba(255,92,92,.14);color:#FF5C5C;border-color:rgba(255,92,92,.32)">'+
+        '<div class="dash-pending" style="border-color:rgba(226,99,79,.4);background:linear-gradient(140deg,rgba(226,99,79,.13),rgba(44,44,44,0) 62%),#252525">'+
+          '<span class="dash-pending-ic" style="background:rgba(226,99,79,.14);color:#E2634F;border-color:rgba(226,99,79,.32)">'+
             '<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'+
           '</span>'+
           '<span class="dash-pending-tx"><b>'+t('adm_badge_suspended')+'</b>'+
@@ -9328,7 +9328,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
     }
     box.textContent=txt+risque;
-    box.style.color=hors?'#FF5C5C':(risque?'#FFC857':'#B9C1BC');
+    box.style.color=hors?'#E4574C':(risque?'#E0A32E':'#B2B2B2');
   }
   /* ============================================================
      MODULE FICHES (refonte 25/08)
@@ -10113,7 +10113,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
       '<div class="admdash-section-h">'+t('adm_fiche_legs_h')+'</div>'+
       '<div id="admFicheLegsList"></div>'+
-      '<div id="admFicheCoteResume" style="margin-top:10px;font-size:12.5px;color:#B9C1BC"></div>'+
+      '<div id="admFicheCoteResume" style="margin-top:10px;font-size:12.5px;color:#B2B2B2"></div>'+
       '<button type="button" class="btn btn-ghost" id="admFicheLegAdd" style="width:100%;margin-top:10px">'+t('adm_fiche_leg_add')+'</button>'+
 
       '<button type="button" class="btn btn-confirm" id="admFicheSave" style="width:100%;margin-top:18px">'+t('adm_fiche_save')+'</button>'+
