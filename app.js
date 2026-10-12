@@ -11380,3 +11380,12 @@ window.addEventListener('pageshow',(ev)=>{
   },4000);
 })();
 
+
+// ---------- Header transparent sur le Hero : fond floute des qu'on defile ----------
+(function(){
+  const nav=document.querySelector('nav');
+  if(!nav)return;
+  const maj=()=>nav.classList.toggle('nav-solid',window.scrollY>12);
+  maj();
+  window.addEventListener('scroll',maj,{passive:true});
+})();
