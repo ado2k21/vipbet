@@ -3871,6 +3871,9 @@ html{background:#030617}
 /* fiches laterales du visuel 3D : entierement dans l'ecran sur tablette / mobile */
 @media (max-width:900px){.hx-tkt-l{left:16px}.hx-tkt-r{right:12px}}
 @media (max-width:640px){.hx-tkt-l,.hx-tkt-r{width:31%}}
+/* titre blanc (2 premieres lignes) : meilleure lisibilite au-dessus du visuel 3D */
+.hx .hx-title>span:nth-child(-n+2){color:#FFFFFF;
+  text-shadow:0 1px 2px rgba(3,6,23,.95),0 0 12px rgba(3,6,23,.9),0 6px 30px rgba(3,6,23,.85)}
 /* billets du visuel 3D : restent dans la largeur de l'ecran pendant toute l'animation */
 @media (max-width:900px){
   .hx-scene .hx-bill:nth-of-type(1){left:max(2%,10px)!important}
