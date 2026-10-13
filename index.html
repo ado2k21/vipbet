@@ -3871,6 +3871,20 @@ html{background:#030617}
 /* fiches laterales du visuel 3D : entierement dans l'ecran sur tablette / mobile */
 @media (max-width:900px){.hx-tkt-l{left:16px}.hx-tkt-r{right:12px}}
 @media (max-width:640px){.hx-tkt-l,.hx-tkt-r{width:31%}}
+/* billets du visuel 3D : restent dans la largeur de l'ecran pendant toute l'animation */
+@media (max-width:900px){
+  .hx-scene .hx-bill:nth-of-type(1){left:max(2%,10px)!important}
+  .hx-scene .hx-bill:nth-of-type(3){left:min(84%,calc(100% - 136px))!important}
+  .hx-scene .hx-bill:nth-of-type(4){left:18px!important}
+  .hx-scene .hx-bill:nth-of-type(6){left:min(76%,calc(100% - 148px))!important}
+  .hx-scene .hx-bill:nth-of-type(10){left:min(90%,calc(100% - 111px))!important}
+}
+@media (max-width:640px){
+  .hx-scene .hx-bill:nth-of-type(3){left:min(84%,calc(100% - 98px))!important}
+  .hx-scene .hx-bill:nth-of-type(4){left:14px!important}
+  .hx-scene .hx-bill:nth-of-type(6){left:min(76%,calc(100% - 114px))!important}
+  .hx-scene .hx-bill:nth-of-type(10){left:min(90%,calc(100% - 84px))!important}
+}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
