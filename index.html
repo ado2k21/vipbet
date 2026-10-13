@@ -3364,6 +3364,70 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
   .pcar-track .plan.lp-plan{flex-basis:240px;max-width:240px}
   .lp-life-buy{flex-direction:column;align-items:stretch}
 }
+/* ---------- Carte "Stripe bientot disponible" ---------- */
+.vbsoon{
+  position:fixed;inset:0;z-index:9450;display:flex;align-items:center;justify-content:center;
+  padding:20px calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+  background:rgba(2,5,14,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  opacity:0;transition:opacity .22s ease;
+}
+.vbsoon[hidden]{display:none}
+.vbsoon.on{opacity:1}
+.vbsoon-card{
+  position:relative;overflow:hidden;width:100%;max-width:370px;text-align:center;
+  padding:34px 24px 22px;border-radius:26px;
+  background:linear-gradient(180deg,#0F1D33 0%,#0A1324 100%);
+  border:1px solid rgba(244,243,237,.12);
+  box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(46,212,127,.06);
+  transform:translateY(16px) scale(.96);transition:transform .32s cubic-bezier(.2,.9,.25,1.15);
+}
+.vbsoon.on .vbsoon-card{transform:none}
+.vbsoon-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(150deg,rgba(99,91,255,.7),transparent 40%,transparent 65%,rgba(46,212,127,.55));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+}
+.vbsoon-glow{position:absolute;left:50%;top:-120px;width:300px;height:220px;transform:translateX(-50%);
+  background:radial-gradient(circle,rgba(99,91,255,.35),transparent 70%);pointer-events:none}
+.vbsoon-x{
+  position:absolute;top:14px;right:14px;z-index:2;width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;cursor:pointer;color:#C9D4E0;
+  background:rgba(244,243,237,.06);border:1px solid rgba(244,243,237,.14);
+  transition:color .2s,background .2s,border-color .2s,transform .2s;
+}
+.vbsoon-x:hover{color:#fff;background:rgba(244,243,237,.12);transform:rotate(90deg)}
+.vbsoon-ic{
+  position:relative;width:70px;height:70px;margin:0 auto 16px;border-radius:22px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(140deg,#7A73FF,#4B43D6);box-shadow:0 16px 36px rgba(80,70,220,.42),inset 0 1px 0 rgba(255,255,255,.3);
+}
+.vbsoon-ic svg{width:36px;height:36px}
+.vbsoon-badge{
+  position:relative;display:inline-flex;align-items:center;gap:7px;margin-bottom:12px;
+  font-family:var(--mono);font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:#C9C5FF;background:rgba(99,91,255,.14);border:1px solid rgba(99,91,255,.4);padding:5px 12px;border-radius:999px;
+}
+.vbsoon-badge i{width:6px;height:6px;border-radius:50%;background:#9C96FF;animation:vbsoonPulse 1.8s infinite}
+@keyframes vbsoonPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.vbsoon-card h3{position:relative;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.25;color:#fff;margin-bottom:8px;text-wrap:balance}
+.vbsoon-card p{position:relative;font-size:14.5px;line-height:1.6;color:#AEBBCB;margin-bottom:18px}
+.vbsoon-pay{display:flex;justify-content:center;gap:10px;margin-bottom:18px}
+.vbsoon-pay span{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:12px;
+  font-weight:700;font-size:13.5px;color:#E6ECF2;background:rgba(244,243,237,.05);border:1px solid rgba(244,243,237,.1);
+}
+.vbsoon-pay img{height:20px;width:auto;border-radius:4px;display:block}
+.vbsoon-cta{
+  width:100%;padding:14px 18px;border-radius:14px;font-weight:800;font-size:15px;color:#03140B;
+  background:linear-gradient(135deg,#2ED47F,#17A860);box-shadow:0 12px 30px rgba(23,168,96,.35);
+}
+.vbsoon-cta:hover{filter:brightness(1.07);transform:translateY(-1px)}
+@media (max-width:400px){
+  .vbsoon-card{padding:30px 18px 18px;border-radius:22px}
+  .vbsoon-card h3{font-size:18px}
+  .vbsoon-pay span{padding:7px 10px;font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){.vbsoon,.vbsoon-card{transition:none}}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -4583,6 +4647,28 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
       <p id="mfaErrorDetail" style="color:#E2634F;font-size:12.5px;margin-bottom:18px"></p>
       <button type="button" class="btn btn-or" id="mfaRetry" style="width:100%" data-i18n="mfa_btn_retry">Réessayer</button>
     </div>
+  </div>
+</div>
+
+<!-- Carte "Stripe bientot disponible" : affichee au clic sur "Peye ak Stripe"
+     tant que STRIPE_ACTIF=false dans app.js (les liens Stripe restent en place). -->
+<div class="vbsoon" id="vbStripeSoon" hidden>
+  <div class="vbsoon-card" role="dialog" aria-modal="true" aria-labelledby="vbStripeSoonH" aria-describedby="vbStripeSoonP">
+    <span class="vbsoon-glow" aria-hidden="true"></span>
+    <button class="vbsoon-x" type="button" id="vbStripeSoonX" aria-label="Fermer">
+      <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="vbsoon-ic" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="15" height="11" rx="2.2"/><path d="M2.5 9h15M5.5 13h3"/><circle cx="18" cy="17" r="4.2" fill="#0B1424"/><path d="M18 15v2.1l1.3.8"/></svg>
+    </div>
+    <span class="vbsoon-badge"><i></i><span data-i18n="stripe_soon_badge">Byento</span></span>
+    <h3 id="vbStripeSoonH" data-i18n="stripe_soon_h">Peman ak kat ap vini byento</h3>
+    <p id="vbStripeSoonP" data-i18n="stripe_soon_p">Pou kounye a, tanpri peye ak MonCash oswa NatCash. Abònman ou ap aktive rapidman.</p>
+    <div class="vbsoon-pay" aria-hidden="true">
+      <span><img src="assets/moncash.webp" alt="" width="34" height="22">MonCash</span>
+      <span><img src="assets/natcash.webp" alt="" width="34" height="22">NatCash</span>
+    </div>
+    <button class="btn vbsoon-cta" type="button" id="vbStripeSoonOk" data-i18n="stripe_soon_btn">Peye ak MonCash / NatCash</button>
   </div>
 </div>
 

@@ -1,6 +1,11 @@
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
+// Carte Stripe bientot disponible (13/10)
+stripe_soon_badge:"Bientôt",
+stripe_soon_h:"Le paiement par carte arrive bientôt",
+stripe_soon_p:"Pour le moment, merci de payer avec MonCash ou NatCash. Votre abonnement sera activé rapidement.",
+stripe_soon_btn:"Payer avec MonCash / NatCash",
 // Landing (refonte 13/10)
 lp_live:"Fiches du jour disponibles",
 lp_cta_results:"Voir les résultats",
@@ -544,6 +549,11 @@ legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement
 legal_jeu_body:"<h3>Le pari doit rester un loisir</h3><p>Parier n'est pas une source de revenus et ne doit jamais être considéré comme un moyen de rembourser une dette ou de compenser une perte. <strong>Ne misez que ce que vous pouvez perdre sans que cela change votre quotidien.</strong></p><h3>Ce que nous ne promettons pas</h3><p>VIP BETCOTE publie des analyses, pas des certitudes. Aucune sélection n'est garantie. Notre historique affiche les fiches perdantes au même titre que les gagnantes, précisément parce que les pertes font partie de l'activité.</p><h3>Signaux qui doivent alerter</h3><ul><li>Vous misez des sommes de plus en plus élevées pour ressentir le même intérêt.</li><li>Vous rejouez immédiatement pour récupérer une perte.</li><li>Vous empruntez de l'argent, ou vous puisez dans un budget prévu pour autre chose.</li><li>Vous cachez vos mises à vos proches.</li><li>Vous jouez pour échapper au stress, à l'ennui ou à la tristesse.</li><li>Vous avez déjà essayé d'arrêter sans y parvenir.</li></ul><h3>Garder le contrôle</h3><ul><li>Fixez un budget mensuel avant de commencer, et n'en sortez pas.</li><li>Fixez aussi une limite de temps.</li><li>Ne jouez jamais sous l'effet de l'alcool, de la fatigue ou de la colère.</li><li>Après une perte, arrêtez la journée plutôt que de rejouer.</li><li>Vérifiez régulièrement le total réellement misé sur un mois.</li></ul><h3>Interdit aux mineurs</h3><p>Ce service est strictement réservé aux personnes de <strong>18 ans ou plus</strong>. Tout compte identifié comme appartenant à un mineur est fermé sans remboursement.</p><h3>Demander de l'aide</h3><p>Si le jeu prend une place qui vous inquiète, parlez-en à une personne de confiance, à un médecin ou à un psychologue. En parler tôt rend les choses beaucoup plus simples. Vous pouvez aussi nous écrire pour demander la fermeture définitive de votre compte : nous appliquons cette demande sans discussion.</p>",
 },
 en: {
+// Carte Stripe bientot disponible (13/10)
+stripe_soon_badge:"Coming soon",
+stripe_soon_h:"Card payment is coming soon",
+stripe_soon_p:"For now, please pay with MonCash or NatCash. Your plan will be activated quickly.",
+stripe_soon_btn:"Pay with MonCash / NatCash",
 // Landing (refonte 13/10)
 lp_live:"Today's tickets are live",
 lp_cta_results:"See results",
@@ -1087,6 +1097,11 @@ legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service
 legal_jeu_body:"<h3>Betting should stay a pastime</h3><p>Betting is not an income and should never be seen as a way to repay a debt or recover a loss. <strong>Only stake what you can lose without it changing your daily life.</strong></p><h3>What we do not promise</h3><p>VIP BETCOTE publishes analysis, not certainties. No selection is guaranteed. Our history shows losing slips alongside winning ones, precisely because losses are part of it.</p><h3>Warning signs</h3><ul><li>You stake more and more to feel the same interest.</li><li>You bet again immediately to recover a loss.</li><li>You borrow money, or dip into a budget meant for something else.</li><li>You hide your stakes from those close to you.</li><li>You play to escape stress, boredom or sadness.</li><li>You have tried to stop and could not.</li></ul><h3>Staying in control</h3><ul><li>Set a monthly budget before you start, and stick to it.</li><li>Set a time limit too.</li><li>Never play under the influence of alcohol, tiredness or anger.</li><li>After a loss, stop for the day rather than betting again.</li><li>Regularly check the real total staked over a month.</li></ul><h3>Strictly no minors</h3><p>This service is strictly for people aged <strong>18 or over</strong>. Any account identified as belonging to a minor is closed without refund.</p><h3>Getting help</h3><p>If betting is taking a place that worries you, talk to someone you trust, a doctor or a psychologist. Speaking up early makes things far easier. You can also write to us to request permanent closure of your account: we act on that request without argument.</p>",
 },
 ht: {
+// Carte Stripe bientot disponible (13/10)
+stripe_soon_badge:"Byento",
+stripe_soon_h:"Peman ak kat ap vini byento",
+stripe_soon_p:"Pou kounye a, tanpri peye ak MonCash oswa NatCash. Abònman ou ap aktive rapidman.",
+stripe_soon_btn:"Peye ak MonCash / NatCash",
 // Landing (refonte 13/10)
 lp_live:"Fich jodi a disponib",
 lp_cta_results:"Wè rezilta yo",
@@ -2003,6 +2018,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      paiement reste TOUJOURS ecrit en 'pending' cote base — seul un
      admin peut faire passer un abonnement a 'active', jamais le site
      lui-meme ni un retour de Stripe. */
+  /* Interrupteur du paiement par carte (13/10, demande de James) :
+     false = le bouton "Peye ak Stripe" n'ouvre plus Stripe et n'enregistre
+     aucun paiement ; il affiche la carte "bientot disponible" qui oriente
+     vers MonCash/NatCash. Les liens ci-dessous sont CONSERVES tels quels :
+     repasser a true suffit pour reactiver Stripe. */
+  const STRIPE_ACTIF=false;
   const STRIPE_LINKS={
     p1:'https://buy.stripe.com/4gM14ngfD0PSesRe2c9MY01',
     p2:'https://buy.stripe.com/bJe9AT3sR7eg5Wl7DO9MY02',
@@ -3831,8 +3852,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      via completePayment('stripe') (meme chemin que les methodes manuelles).
      La confirmation reste 100% manuelle par l'admin — le webhook automatique
      stripe-webhook.js N'EST PAS utilise dans ce flux et reste non deploye. */
-  document.getElementById('wizStripeBtn').addEventListener('click',()=>{
+  document.getElementById('wizStripeBtn').addEventListener('click',ev=>{
     payErr.style.display='none';
+    if(!STRIPE_ACTIF){
+      if(window.VB_stripeBientot)window.VB_stripeBientot(ev.currentTarget);
+      return;
+    }
     const planCible=state.pendingPlanId||state.planId;
     const lien=STRIPE_LINKS[planCible]||null;
     /* L'ouverture de la page Stripe doit rester DANS le geste de clic :
@@ -11521,4 +11546,57 @@ window.addEventListener('pageshow',(ev)=>{
   const maj=()=>nav.classList.toggle('nav-solid',window.scrollY>12);
   maj();
   window.addEventListener('scroll',maj,{passive:true});
+})();
+
+/* ---------- Carte "Stripe bientot disponible" (13/10) ----------
+   Ouverte par le bouton Stripe du wizard tant que STRIPE_ACTIF=false.
+   Se ferme avec le X, un toucher en dehors de la carte ou Echap — sans
+   jamais fermer la page de paiement qui est en dessous. Le bouton vert
+   ramene l'utilisateur sur les choix MonCash / NatCash. */
+(function(){
+  const box=document.getElementById('vbStripeSoon');
+  if(!box)return;
+  const card=box.querySelector('.vbsoon-card');
+  const btnX=document.getElementById('vbStripeSoonX');
+  const btnOk=document.getElementById('vbStripeSoonOk');
+  let opener=null,timer=0;
+
+  function ouvrir(from){
+    opener=from||document.activeElement;
+    clearTimeout(timer);
+    box.hidden=false;
+    requestAnimationFrame(()=>{box.classList.add('on');btnX.focus();});
+  }
+  function fermer(versPaiement){
+    if(box.hidden)return;
+    box.classList.remove('on');
+    timer=setTimeout(()=>{box.hidden=true;},230);
+    // Choix de la marque (MonCash / NatCash) : toujours visible, contrairement
+    // aux sous-options (#wizPayMethods) masquees tant qu'aucune marque n'est choisie.
+    const methodes=document.getElementById('wizPayBrands');
+    if(versPaiement&&methodes){
+      methodes.scrollIntoView({behavior:'smooth',block:'center'});
+      const premier=methodes.querySelector('button,input,[tabindex]');
+      if(premier)premier.focus({preventScroll:true});
+    }else if(opener&&opener.focus){
+      opener.focus({preventScroll:true});
+    }
+    opener=null;
+  }
+  btnX.addEventListener('click',()=>fermer(false));
+  btnOk.addEventListener('click',()=>fermer(true));
+  // Toucher / clic en dehors de la carte
+  box.addEventListener('click',ev=>{ if(!card.contains(ev.target))fermer(false); });
+  // Echap : ferme la carte SEULEMENT (capture + arret de propagation,
+  // sinon le gestionnaire du wizard fermerait aussi la page de paiement)
+  document.addEventListener('keydown',ev=>{
+    if(box.hidden)return;
+    if(ev.key==='Escape'){ev.preventDefault();ev.stopImmediatePropagation();fermer(false);}
+    else if(ev.key==='Tab'){
+      const f=[btnX,btnOk];
+      if(ev.shiftKey&&document.activeElement===f[0]){ev.preventDefault();f[1].focus();}
+      else if(!ev.shiftKey&&document.activeElement===f[1]){ev.preventDefault();f[0].focus();}
+    }
+  },true);
+  window.VB_stripeBientot=ouvrir;
 })();
