@@ -3368,7 +3368,7 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
 .vbsoon{
   position:fixed;inset:0;z-index:9450;display:flex;align-items:center;justify-content:center;
   padding:20px calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
-  background:rgba(2,5,14,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  background:rgba(2,5,14,.38);
   opacity:0;transition:opacity .22s ease;
 }
 .vbsoon[hidden]{display:none}
@@ -3428,6 +3428,17 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
   .vbsoon-pay span{padding:7px 10px;font-size:12.5px}
 }
 @media (prefers-reduced-motion:reduce){.vbsoon,.vbsoon-card{transition:none}}
+/* ---------- Reseaux du pied de page : couleurs officielles ---------- */
+.foot-social a.soc-link{color:#fff;border:none;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.foot-social a[aria-label="WhatsApp"]{background:#25D366}
+.foot-social a[aria-label="Telegram"]{background:#229ED9}
+.foot-social a[aria-label="Instagram"]{background:radial-gradient(circle at 30% 107%,#FDF497 0%,#FDF497 5%,#FD5949 45%,#D6249F 60%,#285AEB 90%)}
+.foot-social a[aria-label="TikTok"]{background:#010101;box-shadow:0 6px 16px rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.14)}
+.foot-social a[aria-label="TikTok"] svg{filter:drop-shadow(-1.5px -1px 0 #25F4EE) drop-shadow(1.5px 1px 0 #FE2C55)}
+.foot-social a.soc-link:hover{color:#fff;border:none;filter:brightness(1.1);transform:translateY(-2px)}
+.foot-social a[aria-label="WhatsApp"]:hover{background:#25D366}
+.foot-social a[aria-label="Telegram"]:hover{background:#229ED9}
+.foot-social a[aria-label="TikTok"]:hover{background:#010101}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -3723,7 +3734,7 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
         <div class="lp-feat-hd"><span class="lp-feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><h3 data-i18n="lp_f1_t">Analiz ekspè chak jou</h3></div>
         <p data-i18n="lp_f1_d">Ekip nou an etidye match foutbòl ak NBA yo, mache yo ak cote yo anvan li pibliye chak fich.</p>
         <ul class="lp-markets" aria-label="Mache yo">
-          <li>1X2</li><li>Double Chance</li><li>BTTS</li><li>+/- 2.5</li><li>Handicap</li><li>Total NBA</li><li class="gold">Score exact</li>
+          <li>1X2</li><li>Double Chance</li><li>BTTS</li><li>+/- 1.5</li><li>+/- 2.5</li><li>Corners</li><li>Buteur</li><li>Handicap</li><li>Total NBA</li><li class="gold">Score exact</li>
         </ul>
       </article>
       <article class="lp-feat lp-feat-gold rev">
