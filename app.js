@@ -2635,7 +2635,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      numeros, noms de compte et QR plus tard ; une seule ligne a changer par
      marque, plus le fichier QR a deposer dans assets/. */
   const DEPOT_MANUEL={
-    moncash:{ numero:'+509 0000 0000', nom:'À REMPLIR', qr:'' },
+    moncash:{ numero:'+509 4729 1392', nom:'Louima Christianne', qr:'' },
     natcash:{ numero:'+509 0000 0000', nom:'À REMPLIR', qr:'' }
   };
 
