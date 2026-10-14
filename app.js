@@ -1,6 +1,8 @@
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
+mfa_disable_h:"Confirmer la désactivation du 2FA",
+mfa_disable_p:"Par sécurité, entrez le code à 6 chiffres de votre application d'authentification pour confirmer.",
 adm_sec_pas_pret:"L'activation du 2FA sera disponible très bientôt (installation en cours côté serveur).",
 // Sekirite 2FA (14/10)
 adm_nav_security:"Sécurité 2FA",
@@ -567,6 +569,8 @@ legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement
 legal_jeu_body:"<h3>Le pari doit rester un loisir</h3><p>Parier n'est pas une source de revenus et ne doit jamais être considéré comme un moyen de rembourser une dette ou de compenser une perte. <strong>Ne misez que ce que vous pouvez perdre sans que cela change votre quotidien.</strong></p><h3>Ce que nous ne promettons pas</h3><p>VIP BETCOTE publie des analyses, pas des certitudes. Aucune sélection n'est garantie. Notre historique affiche les fiches perdantes au même titre que les gagnantes, précisément parce que les pertes font partie de l'activité.</p><h3>Signaux qui doivent alerter</h3><ul><li>Vous misez des sommes de plus en plus élevées pour ressentir le même intérêt.</li><li>Vous rejouez immédiatement pour récupérer une perte.</li><li>Vous empruntez de l'argent, ou vous puisez dans un budget prévu pour autre chose.</li><li>Vous cachez vos mises à vos proches.</li><li>Vous jouez pour échapper au stress, à l'ennui ou à la tristesse.</li><li>Vous avez déjà essayé d'arrêter sans y parvenir.</li></ul><h3>Garder le contrôle</h3><ul><li>Fixez un budget mensuel avant de commencer, et n'en sortez pas.</li><li>Fixez aussi une limite de temps.</li><li>Ne jouez jamais sous l'effet de l'alcool, de la fatigue ou de la colère.</li><li>Après une perte, arrêtez la journée plutôt que de rejouer.</li><li>Vérifiez régulièrement le total réellement misé sur un mois.</li></ul><h3>Interdit aux mineurs</h3><p>Ce service est strictement réservé aux personnes de <strong>18 ans ou plus</strong>. Tout compte identifié comme appartenant à un mineur est fermé sans remboursement.</p><h3>Demander de l'aide</h3><p>Si le jeu prend une place qui vous inquiète, parlez-en à une personne de confiance, à un médecin ou à un psychologue. En parler tôt rend les choses beaucoup plus simples. Vous pouvez aussi nous écrire pour demander la fermeture définitive de votre compte : nous appliquons cette demande sans discussion.</p>",
 },
 en: {
+mfa_disable_h:"Confirm turning off 2FA",
+mfa_disable_p:"For security, enter the 6-digit code from your authenticator app to confirm.",
 adm_sec_pas_pret:"2FA activation will be available very soon (server setup in progress).",
 // Sekirite 2FA (14/10)
 adm_nav_security:"2FA security",
@@ -1133,6 +1137,8 @@ legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service
 legal_jeu_body:"<h3>Betting should stay a pastime</h3><p>Betting is not an income and should never be seen as a way to repay a debt or recover a loss. <strong>Only stake what you can lose without it changing your daily life.</strong></p><h3>What we do not promise</h3><p>VIP BETCOTE publishes analysis, not certainties. No selection is guaranteed. Our history shows losing slips alongside winning ones, precisely because losses are part of it.</p><h3>Warning signs</h3><ul><li>You stake more and more to feel the same interest.</li><li>You bet again immediately to recover a loss.</li><li>You borrow money, or dip into a budget meant for something else.</li><li>You hide your stakes from those close to you.</li><li>You play to escape stress, boredom or sadness.</li><li>You have tried to stop and could not.</li></ul><h3>Staying in control</h3><ul><li>Set a monthly budget before you start, and stick to it.</li><li>Set a time limit too.</li><li>Never play under the influence of alcohol, tiredness or anger.</li><li>After a loss, stop for the day rather than betting again.</li><li>Regularly check the real total staked over a month.</li></ul><h3>Strictly no minors</h3><p>This service is strictly for people aged <strong>18 or over</strong>. Any account identified as belonging to a minor is closed without refund.</p><h3>Getting help</h3><p>If betting is taking a place that worries you, talk to someone you trust, a doctor or a psychologist. Speaking up early makes things far easier. You can also write to us to request permanent closure of your account: we act on that request without argument.</p>",
 },
 ht: {
+mfa_disable_h:"Konfime dezaktivasyon 2FA",
+mfa_disable_p:"Pou sekirite, antre kòd 6 chif ki nan app otantifikasyon ou a pou konfime.",
 adm_sec_pas_pret:"Aktivasyon 2FA ap disponib byento (enstalasyon an ap fèt sou sèvè a).",
 // Sekirite 2FA (14/10)
 adm_nav_security:"Sekirite 2FA",
@@ -9230,12 +9236,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
     const mfaStatus=window.VB_mfaStatus?await window.VB_mfaStatus():{actif:false};
-    let restants=null, serveurPret=true;
-    try{
-      const {data,error}=await sb.rpc('admin_mfa_codes_restants');
-      if(error)serveurPret=false;
-      else restants=(typeof data==='number')?data:null;
-    }catch(e){serveurPret=false;}
+    let restants=null, serveurPret=false;
+    // admin_mfa_pret() est installee EN DERNIER : elle n'existe que si
+    // toutes les fonctions serveur de la 2FA sont en place.
+    try{const {data,error}=await sb.rpc('admin_mfa_pret');serveurPret=!error&&data===true;}catch(e){}
+    if(mfaStatus.actif){
+      try{const {data}=await sb.rpc('admin_mfa_codes_restants');restants=(typeof data==='number')?data:null;}catch(e){}
+    }
     // Securite : tant que les fonctions serveur (codes de secours,
     // reinitialisation) ne sont pas installees dans Supabase, on n'autorise
     // pas l'activation — sinon un admin pourrait activer la 2FA sans codes
@@ -9276,11 +9283,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(mfaStatus.actif){
         // Desactiver une protection existante merite une confirmation
         // Oui/Non ; l'activation a deja sa propre verification (QR + code).
-        demanderConfirmation(this,t('adm_confirm_q_2fa_disable'),async()=>{
-          const res=await window.VB_disableMfa();
-          if(!res||!res.ok){afficherErreur(res&&res.erreur);return;}
-          if(window.VB_toast)window.VB_toast('adm_settings_2fa_off_h',t('adm_settings_2fa_off_toast'));
-          renderSecurity();
+        demanderConfirmation(this,t('adm_confirm_q_2fa_disable'),()=>{
+          window.VB_demanderDesactivationMfa(()=>{
+            if(window.VB_toast)window.VB_toast('adm_settings_2fa_off_h',t('adm_settings_2fa_off_toast'));
+            renderSecurity();
+          });
         },'shield');
       }else{
         window.VB_startMfaEnrollment(()=>{
@@ -10815,6 +10822,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const stageBackup=overlay.querySelector('[data-mfa="backup"]');
   const stageCodes=overlay.querySelector('[data-mfa="codes"]');
   const stageError=overlay.querySelector('[data-mfa="error"]');
+  const stageDisable=overlay.querySelector('[data-mfa="disable"]');
+  const disableOtp=[...document.getElementById('mfaDisableOtp').querySelectorAll('input')];
+  const disableErr=document.getElementById('mfaDisableErr');
+  let retourDepuisSecours='challenge';
   const enrollOtp=[...document.getElementById('mfaEnrollOtp').querySelectorAll('input')];
   const challengeOtp=[...document.getElementById('mfaChallengeOtp').querySelectorAll('input')];
   const enrollErr=document.getElementById('mfaEnrollErr');
@@ -10936,6 +10947,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   brancherOtp(enrollOtp,enrollErr);
   brancherOtp(challengeOtp,challengeErr);
+  brancherOtp(disableOtp,disableErr);
 
   document.getElementById('mfaSecretCopy').addEventListener('click',async function(){
     const texte=document.getElementById('mfaSecret').textContent||'';
@@ -10964,6 +10976,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     stageBackup.hidden=(stage!=='backup');
     stageCodes.hidden=(stage!=='codes');
     stageError.hidden=(stage!=='error');
+    stageDisable.hidden=(stage!=='disable');
     if(stage==='error'){
       errorDetail.textContent=detail?(t('mfa_error_p')+' — '+String(detail).slice(0,160)):t('mfa_error_p');
       return;
@@ -10974,9 +10987,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
     if(stage==='codes')return;   // deja rempli par afficherCodesSecours
-    const inputs=stage==='enroll'?enrollOtp:challengeOtp;
+    const inputs=stage==='enroll'?enrollOtp:(stage==='disable'?disableOtp:challengeOtp);
     inputs.forEach(i=>i.value='');
-    (stage==='enroll'?enrollErr:challengeErr).style.display='none';
+    (stage==='enroll'?enrollErr:(stage==='disable'?disableErr:challengeErr)).style.display='none';
     if(window.innerWidth>860)inputs[0].focus({preventScroll:true});
   }
   function hideOverlay(){overlay.hidden=true;}
@@ -11071,6 +11084,70 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     adminIdCourant=adminId||adminIdCourant;
     ouvrirInscription(sb);
   };
+  /* Alerte e-mail de securite (comme Google/GitHub) : envoyee a l'adresse
+     du compte admin connecte apres chaque changement de 2FA. Best effort :
+     un echec d'envoi ne bloque jamais l'action elle-meme. */
+  async function alerteSecurite(evenement){
+    try{
+      const sb=window.VB_getSupabase&&window.VB_getSupabase();
+      const {data}=sb?await sb.auth.getSession():{data:null};
+      const jeton=data&&data.session&&data.session.access_token;
+      if(!jeton)return;
+      await fetch('/.netlify/functions/alerte-securite-admin',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+jeton},
+        body:JSON.stringify({evenement})
+      });
+    }catch(e){}
+  }
+  window.VB_mfaAlerte=alerteSecurite;
+
+  /* Desactivation (14/10) : comme un vrai 2FA, il faut retaper un code
+     6 chiffres FRAIS de l'application avant de retirer la protection.
+     Telephone perdu : "Je ne recois pas mon code" -> code de secours. */
+  let desactivationOnDone=null;
+  window.VB_demanderDesactivationMfa=async function(onDone){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return;
+    try{
+      const {data:factors}=await sb.auth.mfa.listFactors();
+      const verifie=((factors&&factors.totp)||[]).find(f=>f.status==='verified');
+      if(!verifie){if(onDone)onDone();return;}
+      factorIdCourant=verifie.id;
+      desactivationOnDone=onDone||null;
+      showOverlay('disable');
+    }catch(e){showOverlay('error',e&&e.message);}
+  };
+  document.getElementById('mfaDisableCancel').addEventListener('click',()=>{hideOverlay();});
+  document.getElementById('mfaDisableLost').addEventListener('click',()=>{
+    onSuccessCourant=desactivationOnDone;
+    retourDepuisSecours='disable';
+    showOverlay('backup');
+  });
+  document.getElementById('mfaDisableSubmit').addEventListener('click',async function(){
+    const code=disableOtp.map(i=>i.value.trim()).join('');
+    if(code.length!==6){disableErr.textContent=t('mfa_err_code');disableErr.style.display='block';return;}
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!factorIdCourant)return;
+    this.disabled=true;
+    try{
+      const {data:ch,error:chErr}=await sb.auth.mfa.challenge({factorId:factorIdCourant});
+      if(chErr||!ch)throw chErr||new Error('challenge');
+      const {error:vErr}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:ch.id,code});
+      if(vErr){disableErr.textContent=t('mfa_err_code');disableErr.style.display='block';this.disabled=false;return;}
+      const res=await window.VB_disableMfa();
+      if(!res||!res.ok)throw new Error((res&&res.erreur)||'');
+      this.disabled=false;
+      hideOverlay();
+      alerteSecurite('mfa_desactive');
+      if(desactivationOnDone)desactivationOnDone();
+    }catch(e){
+      this.disabled=false;
+      disableErr.textContent=t('adm_settings_2fa_err')+(e&&e.message?' — '+e.message:'');
+      disableErr.style.display='block';
+    }
+  });
+
   window.VB_mfaRegenererCodes=async function(onDone){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return {ok:false};
@@ -11078,6 +11155,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const codes=await genererEtEnregistrerCodesSecours(sb);
       onSuccessCourant=onDone||null;
       afficherCodesSecours(codes);
+      alerteSecurite('mfa_codes_regeneres');
       return {ok:true};
     }catch(e){return {ok:false,erreur:(e&&e.message)||''};}
   };
@@ -11164,6 +11242,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       // Premiere activation : on genere les codes de secours et on les
       // montre UNE FOIS avant de continuer — c'est la seule occasion de
       // les voir en clair.
+      alerteSecurite('mfa_active');
       if(adminIdCourant){
         try{
           const codes=await genererEtEnregistrerCodesSecours(sb);
@@ -11207,8 +11286,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   });
 
   /* ---- Chemin alternatif : code de secours, si le telephone est perdu ---- */
-  document.getElementById('mfaUseBackup').addEventListener('click',()=>{showOverlay('backup');});
-  document.getElementById('mfaBackToChallenge').addEventListener('click',()=>{showOverlay('challenge');});
+  document.getElementById('mfaUseBackup').addEventListener('click',()=>{retourDepuisSecours='challenge';showOverlay('backup');});
+  document.getElementById('mfaBackToChallenge').addEventListener('click',()=>{showOverlay(retourDepuisSecours);});
   document.getElementById('mfaBackupSubmit').addEventListener('click',async function(){
     const saisi=document.getElementById('mfaBackupInput').value.trim();
     if(!saisi){backupErr.textContent=t('mfa_err_code');backupErr.style.display='block';return;}
@@ -11230,6 +11309,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       document.getElementById('mfaBackupInput').value='';
       hideOverlay();
       if(window.VB_toast)window.VB_toast('mfa_reset_ok_h',t('mfa_reset_ok_p'));
+      alerteSecurite('mfa_reinitialise');
       if(onSuccessCourant)onSuccessCourant();
     }catch(e){
       backupErr.textContent=t('mfa_err_code')+(e&&e.message?(' — '+e.message):'');backupErr.style.display='block';

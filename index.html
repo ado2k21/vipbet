@@ -4685,6 +4685,22 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
       <button type="button" class="btn btn-or" id="mfaChallengeSubmit" style="width:100%" data-i18n="mfa_btn_verify">Verifye</button>
       <button type="button" class="btn-link" id="mfaUseBackup" style="width:100%;margin-top:8px" data-i18n="mfa_use_backup">Sèvi ak yon kòd sekou</button>
     </div>
+    <div class="mfa-stage" data-mfa="disable" hidden>
+      <h3 data-i18n="mfa_disable_h">Konfime dezaktivasyon 2FA</h3>
+      <p data-i18n="mfa_disable_p">Pou sekirite, antre kòd 6 chif ki nan app otantifikasyon ou a pou konfime.</p>
+      <div class="wiz-otp" id="mfaDisableOtp">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="1" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="2" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="3" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="4" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="5" autocomplete="one-time-code">
+        <input type="text" inputmode="numeric" maxlength="1" aria-label="6" autocomplete="one-time-code">
+      </div>
+      <span class="field-err" id="mfaDisableErr" style="display:none;text-align:center;margin-bottom:14px" data-i18n="mfa_err_code">Kòd la pa kòrèk</span>
+      <button type="button" class="btn btn-reject" id="mfaDisableSubmit" style="width:100%" data-i18n="adm_settings_2fa_disable">Dezaktive 2FA</button>
+      <button type="button" class="btn-link" id="mfaDisableLost" style="width:100%;margin-top:8px" data-i18n="mfa_use_backup">Mwen pa ka resevwa kòd la</button>
+      <button type="button" class="btn-link" id="mfaDisableCancel" style="width:100%;margin-top:2px" data-i18n="auth_back">Retounen</button>
+    </div>
     <div class="mfa-stage" data-mfa="backup" hidden>
       <h3 data-i18n="mfa_backup_h">Kòd sekou</h3>
       <p data-i18n="mfa_backup_p">Antre youn nan kòd sekou ou te telechaje yo.</p>

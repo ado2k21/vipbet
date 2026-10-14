@@ -164,3 +164,14 @@ grant execute on function public.admin_mfa_generer_codes()     to authenticated;
 grant execute on function public.admin_mfa_codes_restants()    to authenticated;
 grant execute on function public.admin_mfa_supprimer_codes()   to authenticated;
 grant execute on function public.admin_mfa_reinitialiser(text) to authenticated;
+
+-- 7. Temoin "installation complete" : cree EN DERNIER. Le site n'autorise
+--    l'activation de la 2FA que si cette fonction existe (toutes les
+--    fonctions ci-dessus sont alors en place).
+create or replace function public.admin_mfa_pret()
+returns boolean
+language sql
+stable
+as $$ select true $$;
+revoke all on function public.admin_mfa_pret() from public, anon;
+grant execute on function public.admin_mfa_pret() to authenticated;
