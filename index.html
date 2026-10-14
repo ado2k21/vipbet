@@ -977,6 +977,19 @@ details p{
 .field input[type="date"]::-webkit-date-and-time-value{text-align:center}
 .field input[type="time"],.field input[type="datetime-local"]{text-align:center}
 .field input[type="datetime-local"]::-webkit-date-and-time-value{text-align:center}
+/* Debordement des champs date/heure sur iOS Safari (14/10, captures de
+   l'admin > Fich) : min-width:0 ne suffit pas, iOS garde une largeur
+   native minimale tant que l'apparence native est active. On la retire
+   (le selecteur de date/heure natif s'ouvre toujours au toucher) et on
+   fixe une hauteur pour qu'un champ vide ne s'ecrase pas. Les champs cote
+   a cote (heure debut / fin) doivent aussi pouvoir retrecir. */
+.field{min-width:0}
+.field input[type="date"],.field input[type="time"],.field input[type="datetime-local"]{
+  -webkit-appearance:none;appearance:none;display:block;
+  width:100%;min-width:0;max-width:100%;min-height:46px;
+}
+.field input[type="date"]::-webkit-date-and-time-value,
+.field input[type="time"]::-webkit-date-and-time-value{text-align:center;margin:0}
 .field.invalid input{border-color:#E2634F}
 .field-err{display:none;color:#E2634F;font-size:12px;font-weight:600}
 .field.invalid .field-err{display:block}

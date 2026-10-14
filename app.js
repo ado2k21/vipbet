@@ -9533,6 +9533,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>
         x.classList.toggle('is-on',x.dataset.fstatus==='pending'));
     }
+    // Filtre "An kou" retire de l'Historique (14/10, demande de James) :
+    // une fiche encore en cours n'a pas sa place dans l'historique. S'il
+    // etait actif au moment de passer sur l'Historique, on retombe sur "Tout".
+    const chipEnCours=document.querySelector('#admFichesFilters [data-fstatus="pending"]');
+    if(chipEnCours){
+      const estHist=admFichesTab==='hist';
+      chipEnCours.style.display=estHist?'none':'';
+      if(estHist && admFichesStatut==='pending'){
+        admFichesStatut='all';
+        document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>
+          x.classList.toggle('is-on',x.dataset.fstatus==='all'));
+      }
+    }
   }
   // Pagination "Charger plus" (Phase 3 roadmap, 27/08) — Historique
   // uniquement (le jour courant reste petit par nature, jamais paginé).
