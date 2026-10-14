@@ -1,6 +1,7 @@
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
+adm_sec_pas_pret:"L'activation du 2FA sera disponible très bientôt (installation en cours côté serveur).",
 // Sekirite 2FA (14/10)
 adm_nav_security:"Sécurité 2FA",
 adm_security_h:"Sécurité 2FA",
@@ -566,6 +567,7 @@ legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement
 legal_jeu_body:"<h3>Le pari doit rester un loisir</h3><p>Parier n'est pas une source de revenus et ne doit jamais être considéré comme un moyen de rembourser une dette ou de compenser une perte. <strong>Ne misez que ce que vous pouvez perdre sans que cela change votre quotidien.</strong></p><h3>Ce que nous ne promettons pas</h3><p>VIP BETCOTE publie des analyses, pas des certitudes. Aucune sélection n'est garantie. Notre historique affiche les fiches perdantes au même titre que les gagnantes, précisément parce que les pertes font partie de l'activité.</p><h3>Signaux qui doivent alerter</h3><ul><li>Vous misez des sommes de plus en plus élevées pour ressentir le même intérêt.</li><li>Vous rejouez immédiatement pour récupérer une perte.</li><li>Vous empruntez de l'argent, ou vous puisez dans un budget prévu pour autre chose.</li><li>Vous cachez vos mises à vos proches.</li><li>Vous jouez pour échapper au stress, à l'ennui ou à la tristesse.</li><li>Vous avez déjà essayé d'arrêter sans y parvenir.</li></ul><h3>Garder le contrôle</h3><ul><li>Fixez un budget mensuel avant de commencer, et n'en sortez pas.</li><li>Fixez aussi une limite de temps.</li><li>Ne jouez jamais sous l'effet de l'alcool, de la fatigue ou de la colère.</li><li>Après une perte, arrêtez la journée plutôt que de rejouer.</li><li>Vérifiez régulièrement le total réellement misé sur un mois.</li></ul><h3>Interdit aux mineurs</h3><p>Ce service est strictement réservé aux personnes de <strong>18 ans ou plus</strong>. Tout compte identifié comme appartenant à un mineur est fermé sans remboursement.</p><h3>Demander de l'aide</h3><p>Si le jeu prend une place qui vous inquiète, parlez-en à une personne de confiance, à un médecin ou à un psychologue. En parler tôt rend les choses beaucoup plus simples. Vous pouvez aussi nous écrire pour demander la fermeture définitive de votre compte : nous appliquons cette demande sans discussion.</p>",
 },
 en: {
+adm_sec_pas_pret:"2FA activation will be available very soon (server setup in progress).",
 // Sekirite 2FA (14/10)
 adm_nav_security:"2FA security",
 adm_security_h:"2FA security",
@@ -1131,6 +1133,7 @@ legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service
 legal_jeu_body:"<h3>Betting should stay a pastime</h3><p>Betting is not an income and should never be seen as a way to repay a debt or recover a loss. <strong>Only stake what you can lose without it changing your daily life.</strong></p><h3>What we do not promise</h3><p>VIP BETCOTE publishes analysis, not certainties. No selection is guaranteed. Our history shows losing slips alongside winning ones, precisely because losses are part of it.</p><h3>Warning signs</h3><ul><li>You stake more and more to feel the same interest.</li><li>You bet again immediately to recover a loss.</li><li>You borrow money, or dip into a budget meant for something else.</li><li>You hide your stakes from those close to you.</li><li>You play to escape stress, boredom or sadness.</li><li>You have tried to stop and could not.</li></ul><h3>Staying in control</h3><ul><li>Set a monthly budget before you start, and stick to it.</li><li>Set a time limit too.</li><li>Never play under the influence of alcohol, tiredness or anger.</li><li>After a loss, stop for the day rather than betting again.</li><li>Regularly check the real total staked over a month.</li></ul><h3>Strictly no minors</h3><p>This service is strictly for people aged <strong>18 or over</strong>. Any account identified as belonging to a minor is closed without refund.</p><h3>Getting help</h3><p>If betting is taking a place that worries you, talk to someone you trust, a doctor or a psychologist. Speaking up early makes things far easier. You can also write to us to request permanent closure of your account: we act on that request without argument.</p>",
 },
 ht: {
+adm_sec_pas_pret:"Aktivasyon 2FA ap disponib byento (enstalasyon an ap fèt sou sèvè a).",
 // Sekirite 2FA (14/10)
 adm_nav_security:"Sekirite 2FA",
 adm_security_h:"Sekirite 2FA",
@@ -9227,9 +9230,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
     const mfaStatus=window.VB_mfaStatus?await window.VB_mfaStatus():{actif:false};
-    let restants=null;
-    if(mfaStatus.actif){
-      try{const {data}=await sb.rpc('admin_mfa_codes_restants');restants=(typeof data==='number')?data:null;}catch(e){}
+    let restants=null, serveurPret=true;
+    try{
+      const {data,error}=await sb.rpc('admin_mfa_codes_restants');
+      if(error)serveurPret=false;
+      else restants=(typeof data==='number')?data:null;
+    }catch(e){serveurPret=false;}
+    // Securite : tant que les fonctions serveur (codes de secours,
+    // reinitialisation) ne sont pas installees dans Supabase, on n'autorise
+    // pas l'activation — sinon un admin pourrait activer la 2FA sans codes
+    // de secours fonctionnels et rester bloque s'il perd son telephone.
+    if(!serveurPret&&!mfaStatus.actif){
+      box.innerHTML='<div class="admsec-card"><div class="admsec-head"><span class="admsec-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>'+
+        '<div><b>'+t('adm_settings_2fa_h')+'</b><span class="admsec-pill">'+t('adm_sec_off')+'</span></div></div>'+
+        '<p class="admsec-p">'+t('adm_sec_pas_pret')+'</p></div>';
+      return;
     }
     box.innerHTML=
       '<div class="admsec-card'+(mfaStatus.actif?' on':'')+'">'+
