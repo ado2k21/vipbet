@@ -1,6 +1,20 @@
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
+// Sekirite 2FA (14/10)
+adm_nav_security:"Sécurité 2FA",
+adm_security_h:"Sécurité 2FA",
+adm_security_p:"Double authentification de votre compte admin.",
+adm_sec_on:"ACTIVÉE",
+adm_sec_off:"DÉSACTIVÉE",
+adm_sec_codes_left:"{n} code(s) disponible(s)",
+adm_sec_codes_p:"Si vous ne pouvez pas recevoir votre code à 6 chiffres, un code de secours réinitialise votre 2FA. Chaque code ne sert qu'une fois.",
+adm_sec_codes_regen:"Générer de nouveaux codes de secours",
+adm_sec_codes_regen_q:"Générer de nouveaux codes ? Les anciens ne fonctionneront plus.",
+adm_sec_codes_err:"Le 2FA est activé, mais les codes de secours n'ont pas pu être créés. Générez-les depuis le menu Sécurité 2FA.",
+mfa_reset_trop:"Trop d'essais. Attendez 15 minutes puis réessayez.",
+mfa_reset_ok_h:"2FA réinitialisé",
+mfa_reset_ok_p:"Le 2FA a été retiré de votre compte. Réactivez-le depuis le menu Sécurité 2FA.",
 // Titre du hero (14/10) : traduit en anglais seulement, FR = texte creole
 lp_h1:"<span>GENYEN LAJAN</span> <span>CHAK JOU AK</span> <span><em class=\"lp-pill\">FICH</em> <b>VIP YO</b></span>",
 lp_kicker:"Cote <span>ParyajPam ParyajLakay</span>",
@@ -321,7 +335,7 @@ adm_rev_total:"Revenu total confirmé", adm_rev_total_note:"Tout historique, pai
 adm_rev_mois:"Revenu ce mois-ci", adm_rev_paiements:"Paiements confirmés ce mois-ci",
 adm_rev_attente:"En attente de validation", adm_rev_attente_note:"{n} paiement(s) — jamais compté comme revenu tant que non validé.",
 adm_rev_tx_h:"Historique des transactions", adm_rev_tx_more:"Charger les plus anciennes",
-adm_settings_h:"Paramètres", adm_settings_p:"Votre mot de passe et la sécurité de votre compte admin.",
+adm_settings_h:"Paramètres", adm_settings_p:"Le mot de passe de votre compte admin.",
 adm_settings_pw_h:"Changer le mot de passe",
 adm_settings_pw_new:"Nouveau mot de passe", adm_settings_pw_confirm:"Confirmer le nouveau mot de passe",
 adm_settings_pw_save:"Enregistrer le mot de passe",
@@ -332,7 +346,7 @@ adm_settings_pw_err:"Le changement a échoué.",
 adm_settings_pw_toast_h:"Mot de passe modifié", adm_settings_pw_toast_p:"Votre mot de passe a été changé avec succès.",
 adm_settings_2fa_h:"Double authentification (2FA)",
 adm_settings_2fa_on_p:"Le 2FA est activé sur ce compte. Un code sera demandé à chaque connexion.",
-adm_settings_2fa_off_p:"Le 2FA n'est pas activé. Activez-le pour renforcer la sécurité de ce compte admin — totalement optionnel.",
+adm_settings_2fa_off_p:"Le 2FA n'est pas activé. Il est facultatif : une fois activé, un code sera exigé à chaque connexion.",
 adm_settings_2fa_enable:"Activer le 2FA", adm_settings_2fa_disable:"Désactiver le 2FA",
 adm_settings_2fa_err:"L'action a échoué.",
 adm_settings_2fa_on_h:"2FA activé", adm_settings_2fa_on_toast:"La double authentification est maintenant active sur ce compte.",
@@ -519,8 +533,8 @@ mfa_error_nofactor:"Aucun code d'authentification actif trouvé.",
 mfa_btn_retry:"Réessayer",
 mfa_copy:"Copier", mfa_copied:"Copié !",
 mfa_remember:"Se souvenir de cet appareil pendant 30 jours",
-mfa_use_backup:"Utiliser un code de secours",
-mfa_backup_h:"Code de secours", mfa_backup_p:"Entrez un des codes de secours que vous avez téléchargés.",
+mfa_use_backup:"Je ne reçois pas mon code",
+mfa_backup_h:"Réinitialiser le 2FA", mfa_backup_p:"Entrez un de vos codes de secours. Le 2FA sera retiré de votre compte et vous pourrez le réactiver.",
 mfa_backup_err:"Ce code est invalide ou déjà utilisé.",
 mfa_back_to_code:"Revenir au code habituel",
 mfa_codes_h:"Vos codes de secours",
@@ -552,6 +566,20 @@ legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement
 legal_jeu_body:"<h3>Le pari doit rester un loisir</h3><p>Parier n'est pas une source de revenus et ne doit jamais être considéré comme un moyen de rembourser une dette ou de compenser une perte. <strong>Ne misez que ce que vous pouvez perdre sans que cela change votre quotidien.</strong></p><h3>Ce que nous ne promettons pas</h3><p>VIP BETCOTE publie des analyses, pas des certitudes. Aucune sélection n'est garantie. Notre historique affiche les fiches perdantes au même titre que les gagnantes, précisément parce que les pertes font partie de l'activité.</p><h3>Signaux qui doivent alerter</h3><ul><li>Vous misez des sommes de plus en plus élevées pour ressentir le même intérêt.</li><li>Vous rejouez immédiatement pour récupérer une perte.</li><li>Vous empruntez de l'argent, ou vous puisez dans un budget prévu pour autre chose.</li><li>Vous cachez vos mises à vos proches.</li><li>Vous jouez pour échapper au stress, à l'ennui ou à la tristesse.</li><li>Vous avez déjà essayé d'arrêter sans y parvenir.</li></ul><h3>Garder le contrôle</h3><ul><li>Fixez un budget mensuel avant de commencer, et n'en sortez pas.</li><li>Fixez aussi une limite de temps.</li><li>Ne jouez jamais sous l'effet de l'alcool, de la fatigue ou de la colère.</li><li>Après une perte, arrêtez la journée plutôt que de rejouer.</li><li>Vérifiez régulièrement le total réellement misé sur un mois.</li></ul><h3>Interdit aux mineurs</h3><p>Ce service est strictement réservé aux personnes de <strong>18 ans ou plus</strong>. Tout compte identifié comme appartenant à un mineur est fermé sans remboursement.</p><h3>Demander de l'aide</h3><p>Si le jeu prend une place qui vous inquiète, parlez-en à une personne de confiance, à un médecin ou à un psychologue. En parler tôt rend les choses beaucoup plus simples. Vous pouvez aussi nous écrire pour demander la fermeture définitive de votre compte : nous appliquons cette demande sans discussion.</p>",
 },
 en: {
+// Sekirite 2FA (14/10)
+adm_nav_security:"2FA security",
+adm_security_h:"2FA security",
+adm_security_p:"Two-factor authentication for your admin account.",
+adm_sec_on:"ON",
+adm_sec_off:"OFF",
+adm_sec_codes_left:"{n} code(s) left",
+adm_sec_codes_p:"If you can't get your 6-digit code, a backup code resets your 2FA. Each code works only once.",
+adm_sec_codes_regen:"Generate new backup codes",
+adm_sec_codes_regen_q:"Generate new codes? The old ones will stop working.",
+adm_sec_codes_err:"2FA is on, but the backup codes couldn't be created. Generate them from the 2FA security menu.",
+mfa_reset_trop:"Too many attempts. Wait 15 minutes and try again.",
+mfa_reset_ok_h:"2FA reset",
+mfa_reset_ok_p:"2FA was removed from your account. Turn it back on from the 2FA security menu.",
 // Titre du hero (14/10) : traduit en anglais seulement, FR = texte creole
 lp_h1:"<span>WIN MONEY</span> <span>EVERY DAY WITH</span> <span><em class=\"lp-pill\">VIP</em> <b>TICKETS</b></span>",
 lp_kicker:"Odds for <span>ParyajPam ParyajLakay</span>",
@@ -872,7 +900,7 @@ adm_rev_total:"Total confirmed revenue", adm_rev_total_note:"All time, confirmed
 adm_rev_mois:"Revenue this month", adm_rev_paiements:"Confirmed payments this month",
 adm_rev_attente:"Awaiting validation", adm_rev_attente_note:"{n} payment(s) — never counted as revenue until validated.",
 adm_rev_tx_h:"Transaction history", adm_rev_tx_more:"Load older ones",
-adm_settings_h:"Settings", adm_settings_p:"Your password and admin account security.",
+adm_settings_h:"Settings", adm_settings_p:"Your admin account password.",
 adm_settings_pw_h:"Change password",
 adm_settings_pw_new:"New password", adm_settings_pw_confirm:"Confirm new password",
 adm_settings_pw_save:"Save password",
@@ -883,7 +911,7 @@ adm_settings_pw_err:"The change failed.",
 adm_settings_pw_toast_h:"Password changed", adm_settings_pw_toast_p:"Your password was updated successfully.",
 adm_settings_2fa_h:"Two-factor authentication (2FA)",
 adm_settings_2fa_on_p:"2FA is enabled on this account. A code will be required at every login.",
-adm_settings_2fa_off_p:"2FA is not enabled. Turn it on to strengthen this admin account's security — fully optional.",
+adm_settings_2fa_off_p:"2FA is not enabled. It's optional: once enabled, a code will be required at every login.",
 adm_settings_2fa_enable:"Enable 2FA", adm_settings_2fa_disable:"Disable 2FA",
 adm_settings_2fa_err:"The action failed.",
 adm_settings_2fa_on_h:"2FA enabled", adm_settings_2fa_on_toast:"Two-factor authentication is now active on this account.",
@@ -1070,8 +1098,8 @@ mfa_error_nofactor:"No active authenticator found.",
 mfa_btn_retry:"Try again",
 mfa_copy:"Copy", mfa_copied:"Copied!",
 mfa_remember:"Remember this device for 30 days",
-mfa_use_backup:"Use a backup code",
-mfa_backup_h:"Backup code", mfa_backup_p:"Enter one of the backup codes you downloaded.",
+mfa_use_backup:"I can't get my code",
+mfa_backup_h:"Reset 2FA", mfa_backup_p:"Enter one of your backup codes. 2FA will be removed from your account and you can turn it back on.",
 mfa_backup_err:"This code is invalid or already used.",
 mfa_back_to_code:"Back to the usual code",
 mfa_codes_h:"Your backup codes",
@@ -1103,6 +1131,20 @@ legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service
 legal_jeu_body:"<h3>Betting should stay a pastime</h3><p>Betting is not an income and should never be seen as a way to repay a debt or recover a loss. <strong>Only stake what you can lose without it changing your daily life.</strong></p><h3>What we do not promise</h3><p>VIP BETCOTE publishes analysis, not certainties. No selection is guaranteed. Our history shows losing slips alongside winning ones, precisely because losses are part of it.</p><h3>Warning signs</h3><ul><li>You stake more and more to feel the same interest.</li><li>You bet again immediately to recover a loss.</li><li>You borrow money, or dip into a budget meant for something else.</li><li>You hide your stakes from those close to you.</li><li>You play to escape stress, boredom or sadness.</li><li>You have tried to stop and could not.</li></ul><h3>Staying in control</h3><ul><li>Set a monthly budget before you start, and stick to it.</li><li>Set a time limit too.</li><li>Never play under the influence of alcohol, tiredness or anger.</li><li>After a loss, stop for the day rather than betting again.</li><li>Regularly check the real total staked over a month.</li></ul><h3>Strictly no minors</h3><p>This service is strictly for people aged <strong>18 or over</strong>. Any account identified as belonging to a minor is closed without refund.</p><h3>Getting help</h3><p>If betting is taking a place that worries you, talk to someone you trust, a doctor or a psychologist. Speaking up early makes things far easier. You can also write to us to request permanent closure of your account: we act on that request without argument.</p>",
 },
 ht: {
+// Sekirite 2FA (14/10)
+adm_nav_security:"Sekirite 2FA",
+adm_security_h:"Sekirite 2FA",
+adm_security_p:"Double otantifikasyon kont admin ou.",
+adm_sec_on:"AKTIVE",
+adm_sec_off:"DEZAKTIVE",
+adm_sec_codes_left:"{n} kòd disponib",
+adm_sec_codes_p:"Si w pa ka resevwa kòd 6 chif la, yon kòd sekou ap reyinisyalize 2FA ou. Chak kòd sèvi yon sèl fwa.",
+adm_sec_codes_regen:"Jenere nouvo kòd sekou",
+adm_sec_codes_regen_q:"Jenere nouvo kòd ? Ansyen kòd yo p ap mache ankò.",
+adm_sec_codes_err:"2FA a aktive, men kòd sekou yo pa t ka kreye. Jenere yo nan meni Sekirite 2FA.",
+mfa_reset_trop:"Twòp esè. Tann 15 minit epi eseye ankò.",
+mfa_reset_ok_h:"2FA reyinisyalize",
+mfa_reset_ok_p:"2FA a retire sou kont ou. Reaktive l nan meni Sekirite 2FA.",
 // Titre du hero (14/10) : traduit en anglais seulement, FR = texte creole
 lp_h1:"<span>GENYEN LAJAN</span> <span>CHAK JOU AK</span> <span><em class=\"lp-pill\">FICH</em> <b>VIP YO</b></span>",
 lp_kicker:"Cote <span>ParyajPam ParyajLakay</span>",
@@ -1423,7 +1465,7 @@ adm_rev_total:"Total revni konfime", adm_rev_total_note:"Tout istorik, sèlman p
 adm_rev_mois:"Revni mwa sa a", adm_rev_paiements:"Peman konfime mwa sa a",
 adm_rev_attente:"Ap tann validasyon", adm_rev_attente_note:"{n} peman — pa janm konte kòm revni jiskaske li valide.",
 adm_rev_tx_h:"Istorik tranzaksyon", adm_rev_tx_more:"Chaje pi ansyen yo",
-adm_settings_h:"Paramèt", adm_settings_p:"Modpas ou ak sekirite kont admin ou.",
+adm_settings_h:"Paramèt", adm_settings_p:"Modpas kont admin ou.",
 adm_settings_pw_h:"Chanje modpas",
 adm_settings_pw_new:"Nouvo modpas", adm_settings_pw_confirm:"Konfime nouvo modpas la",
 adm_settings_pw_save:"Anrejistre modpas la",
@@ -1434,7 +1476,7 @@ adm_settings_pw_err:"Chanjman an echwe.",
 adm_settings_pw_toast_h:"Modpas chanje", adm_settings_pw_toast_p:"Modpas ou chanje avèk siksè.",
 adm_settings_2fa_h:"Doub otantifikasyon (2FA)",
 adm_settings_2fa_on_p:"2FA aktif sou kont sa a. Y ap mande yon kòd chak fwa ou konekte.",
-adm_settings_2fa_off_p:"2FA pa aktif. Aktive li pou ranfòse sekirite kont admin sa a — se opsyonèl nèt.",
+adm_settings_2fa_off_p:"2FA a pa aktive. Li pa obligatwa : depi w aktive l, y ap mande kòd la chak fwa w konekte.",
 adm_settings_2fa_enable:"Aktive 2FA", adm_settings_2fa_disable:"Dezaktive 2FA",
 adm_settings_2fa_err:"Aksyon an echwe.",
 adm_settings_2fa_on_h:"2FA aktif", adm_settings_2fa_on_toast:"Doub otantifikasyon aktif kounye a sou kont sa a.",
@@ -1621,8 +1663,8 @@ mfa_error_nofactor:"Pa gen okenn kòd otantifikasyon aktif.",
 mfa_btn_retry:"Eseye ankò",
 mfa_copy:"Kopye", mfa_copied:"Kopye!",
 mfa_remember:"Sonje aparèy sa a pandan 30 jou",
-mfa_use_backup:"Sèvi ak yon kòd sekou",
-mfa_backup_h:"Kòd sekou", mfa_backup_p:"Antre youn nan kòd sekou ou te telechaje yo.",
+mfa_use_backup:"Mwen pa ka resevwa kòd la",
+mfa_backup_h:"Reyinisyalize 2FA", mfa_backup_p:"Antre youn nan kòd sekou ou yo. 2FA a ap retire sou kont ou, epi w ap ka reaktive l.",
 mfa_backup_err:"Kòd sa a envalid oswa deja itilize.",
 mfa_back_to_code:"Retounen nan kòd la",
 mfa_codes_h:"Kòd sekou ou yo",
@@ -7347,6 +7389,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='testimonials')renderTestiList();
     if(view==='landing')renderLandingStatsAdmin();
     if(view==='settings')renderSettings();
+    if(view==='security')renderSecurity();
   }
   document.querySelectorAll('#admDash [data-adback]').forEach(b=>{
     b.addEventListener('click',()=>{
@@ -9169,47 +9212,74 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const box=document.getElementById('admSettingsBody');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
-    const mfaStatus=window.VB_mfaStatus?await window.VB_mfaStatus():{actif:false};
-
     box.innerHTML=
       '<div class="admdash-section-h">'+t('adm_settings_pw_h')+'</div>'+
-      '<div id="admSetPwBox"></div>'+
-
-      '<div class="admdash-section-h">'+t('adm_settings_2fa_h')+'</div>'+
-      '<p style="font-size:13px;color:var(--gris);margin-bottom:14px;line-height:1.5">'+
-        (mfaStatus.actif?t('adm_settings_2fa_on_p'):t('adm_settings_2fa_off_p'))+
-      '</p>'+
-      (mfaStatus.actif?
-        '<button type="button" class="btn btn-reject" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_disable')+'</button>'
-        :
-        '<button type="button" class="btn btn-confirm" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_enable')+'</button>')+
-      '<div id="admSet2faErr" class="field-err" style="display:none;margin-top:8px"></div>';
-
+      '<div id="admSetPwBox"></div>';
     admPwStage='start';admPwCode='';
     renderAdmPwSection();
+  }
 
+  /* ---- Sekirite 2FA (14/10) : activer / desactiver quand l'admin le
+     veut, codes de secours. Facultative ; une fois activee, la base
+     exige le code a chaque nouvelle session (voir is_admin). ---- */
+  async function renderSecurity(){
+    const box=document.getElementById('admSecurityBody');
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+    const mfaStatus=window.VB_mfaStatus?await window.VB_mfaStatus():{actif:false};
+    let restants=null;
+    if(mfaStatus.actif){
+      try{const {data}=await sb.rpc('admin_mfa_codes_restants');restants=(typeof data==='number')?data:null;}catch(e){}
+    }
+    box.innerHTML=
+      '<div class="admsec-card'+(mfaStatus.actif?' on':'')+'">'+
+        '<div class="admsec-head">'+
+          '<span class="admsec-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.6c0 4.5 3.1 8.2 7.5 9.4 4.4-1.2 7.5-4.9 7.5-9.4V6Z"/>'+(mfaStatus.actif?'<path d="m8.6 12.2 2.4 2.4 4.4-4.6"/>':'<path d="M12 9v4M12 16h.01"/>')+'</svg></span>'+
+          '<div><b>'+t('adm_settings_2fa_h')+'</b><span class="admsec-pill">'+t(mfaStatus.actif?'adm_sec_on':'adm_sec_off')+'</span></div>'+
+        '</div>'+
+        '<p class="admsec-p">'+(mfaStatus.actif?t('adm_settings_2fa_on_p'):t('adm_settings_2fa_off_p'))+'</p>'+
+        (mfaStatus.actif?
+          '<button type="button" class="btn btn-reject" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_disable')+'</button>'
+          :
+          '<button type="button" class="btn btn-confirm" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_enable')+'</button>')+
+      '</div>'+
+      (mfaStatus.actif?
+        '<div class="admsec-card">'+
+          '<div class="admsec-head"><span class="admsec-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 7.7-7.7M15.5 7.5l2.5 2.5M18 5l2 2"/></svg></span>'+
+          '<div><b>'+t('mfa_codes_h')+'</b><span class="admsec-pill'+(restants===0?' warn':'')+'">'+(restants==null?'—':t('adm_sec_codes_left').replace('{n}',restants))+'</span></div></div>'+
+          '<p class="admsec-p">'+t('adm_sec_codes_p')+'</p>'+
+          '<button type="button" class="btn btn-or-soft" id="admSecRegen" style="width:100%">'+t('adm_sec_codes_regen')+'</button>'+
+        '</div>'
+      :'')+
+      '<div id="admSet2faErr" class="field-err" style="display:none;margin-top:8px"></div>';
+
+    const afficherErreur=msg=>{
+      const err=document.getElementById('admSet2faErr');
+      if(err){err.textContent=t('adm_settings_2fa_err')+(msg?' — '+msg:'');err.style.display='block';}
+    };
     document.getElementById('admSet2faToggle').addEventListener('click',function(){
       if(mfaStatus.actif){
-        // Desactiver une protection existante est la seule des deux
-        // actions assez sensible pour meriter une confirmation Oui/Non —
-        // l'activation, elle, a deja sa propre etape de verification
-        // (le QR code + le code a 6 chiffres).
+        // Desactiver une protection existante merite une confirmation
+        // Oui/Non ; l'activation a deja sa propre verification (QR + code).
         demanderConfirmation(this,t('adm_confirm_q_2fa_disable'),async()=>{
           const res=await window.VB_disableMfa();
-          if(!res||!res.ok){
-            const err=document.getElementById('admSet2faErr');
-            if(err){err.textContent=t('adm_settings_2fa_err')+' — '+((res&&res.erreur)||'');err.style.display='block';}
-            return;
-          }
+          if(!res||!res.ok){afficherErreur(res&&res.erreur);return;}
           if(window.VB_toast)window.VB_toast('adm_settings_2fa_off_h',t('adm_settings_2fa_off_toast'));
-          renderSettings();
+          renderSecurity();
         },'shield');
       }else{
         window.VB_startMfaEnrollment(()=>{
           if(window.VB_toast)window.VB_toast('adm_settings_2fa_on_h',t('adm_settings_2fa_on_toast'));
-          renderSettings();
+          renderSecurity();
         },(currentUser&&currentUser.id)||null);
       }
+    });
+    const regen=document.getElementById('admSecRegen');
+    if(regen)regen.addEventListener('click',function(){
+      demanderConfirmation(this,t('adm_sec_codes_regen_q'),async()=>{
+        const res=await window.VB_mfaRegenererCodes(()=>renderSecurity());
+        if(!res||!res.ok)afficherErreur(res&&res.erreur);
+      },'shield');
     });
   }
 
@@ -10789,29 +10859,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   window.VB_mfaVerifiedThisTab=mfaVerifieCetOnglet;
 
-  /* ---- Codes de secours : jamais stockes en clair — seul un hachage
-     SHA-256 est ecrit en base. Le code en clair n'existe qu'un instant,
-     le temps de l'afficher/telecharger, jamais conserve ensuite. */
-  function genererUnCode(){
-    const bytes=new Uint8Array(4);
-    crypto.getRandomValues(bytes);
-    const hex=[...bytes].map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
-    return hex.slice(0,4)+'-'+hex.slice(4,8);
-  }
-  async function hacherCode(code){
-    const norm=code.toUpperCase().replace(/[^0-9A-F]/g,'');
-    const enc=new TextEncoder().encode(norm);
-    const buf=await crypto.subtle.digest('SHA-256',enc);
-    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
-  async function genererEtEnregistrerCodesSecours(sb,adminId){
-    const codes=Array.from({length:10},genererUnCode);
-    try{
-      const hashes=await Promise.all(codes.map(hacherCode));
-      const lignes=hashes.map(h=>({admin_id:adminId,code_hash:h,used:false}));
-      await sb.from('admin_mfa_backup_codes').insert(lignes);
-    }catch(e){}
-    return codes;
+  /* Codes de secours (14/10) : generes ET stockes par le serveur
+     (fonction admin_mfa_generer_codes, hachage bcrypt), uniquement avec
+     une session 2FA validee. Le navigateur n'a plus aucun acces a la
+     table des codes : il recoit seulement les codes en clair, une fois. */
+  async function genererEtEnregistrerCodesSecours(sb){
+    const {data,error}=await sb.rpc('admin_mfa_generer_codes');
+    if(error||!Array.isArray(data)||!data.length)throw error||new Error('codes');
+    return data;
   }
   function afficherCodesSecours(codes){
     dernierCodesGeneres=codes;
@@ -10934,7 +10989,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // Un facteur verifie existe : la personne a deja active le 2FA
         // elle-meme depuis Parametres. Si cet appareil est deja reconnu
         // (et toujours valide), on ne redemande rien.
-        if(mfaEstDigneDeConfiance(emailCourant)){onSuccess();return;}
+        // 2FA activee : le code est TOUJOURS demande pour une nouvelle
+        // session (la base refuse de toute facon les droits admin sans
+        // lui). Un simple rafraichissement de l'onglet garde la session
+        // deja validee (aal2) et ne redemande rien.
         await ouvrirChallenge(sb);
         return;
       }
@@ -10998,6 +11056,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     adminIdCourant=adminId||adminIdCourant;
     ouvrirInscription(sb);
   };
+  window.VB_mfaRegenererCodes=async function(onDone){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return {ok:false};
+    try{
+      const codes=await genererEtEnregistrerCodesSecours(sb);
+      onSuccessCourant=onDone||null;
+      afficherCodesSecours(codes);
+      return {ok:true};
+    }catch(e){return {ok:false,erreur:(e&&e.message)||''};}
+  };
   window.VB_disableMfa=async function(){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return {ok:false};
@@ -11007,6 +11075,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(!verifie)return {ok:true};   // deja desactive
       const {error}=await sb.auth.mfa.unenroll({factorId:verifie.id});
       if(error)return {ok:false, erreur:error.message};
+      // Les codes de secours n'ont plus de raison d'exister sans 2FA.
+      try{await sb.rpc('admin_mfa_supprimer_codes');}catch(e){}
+      try{await sb.auth.refreshSession();}catch(e){}
       return {ok:true};
     }catch(e){
       return {ok:false, erreur:e.message};
@@ -11074,15 +11145,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(chErr){enrollErr.textContent=t('mfa_err_code')+(chErr.message?(' — '+chErr.message):'');enrollErr.style.display='block';return;}
       const {error:vErr}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:ch.id,code});
       if(vErr){enrollErr.textContent=t('mfa_err_code')+(vErr.message?(' — '+vErr.message):'');enrollErr.style.display='block';return;}
-      if(seSouvenirCourant)mfaFaireConfiance(emailCourant);
       mfaMarquerOngletVerifie(emailCourant);
       // Premiere activation : on genere les codes de secours et on les
       // montre UNE FOIS avant de continuer — c'est la seule occasion de
       // les voir en clair.
       if(adminIdCourant){
-        const codes=await genererEtEnregistrerCodesSecours(sb,adminIdCourant);
-        afficherCodesSecours(codes);
-        return;   // mfaCodesContinue termine le parcours (voir plus haut)
+        try{
+          const codes=await genererEtEnregistrerCodesSecours(sb);
+          afficherCodesSecours(codes);
+          return;   // mfaCodesContinue termine le parcours (voir plus haut)
+        }catch(eCodes){
+          // La 2FA est bien active ; les codes pourront etre generes plus
+          // tard depuis le menu Sekirite 2FA.
+          if(window.VB_toast)window.VB_toast('mfa_codes_h',t('adm_sec_codes_err'));
+        }
       }
       hideOverlay();
       if(onSuccessCourant)onSuccessCourant();
@@ -11107,7 +11183,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{
       const {error}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:challengeIdCourant,code});
       if(error){challengeErr.textContent=t('mfa_err_code')+(error.message?(' — '+error.message):'');challengeErr.style.display='block';return;}
-      if(seSouvenirCourant)mfaFaireConfiance(emailCourant);
       mfaMarquerOngletVerifie(emailCourant);
       hideOverlay();
       if(onSuccessCourant)onSuccessCourant();
@@ -11126,17 +11201,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!sb||!adminIdCourant)return;
     this.disabled=true;
     try{
-      const hash=await hacherCode(saisi);
-      const {data:rows}=await sb.from('admin_mfa_backup_codes')
-        .select('id').eq('admin_id',adminIdCourant).eq('code_hash',hash).eq('used',false).limit(1);
-      if(!rows||!rows.length){
-        backupErr.textContent=t('mfa_backup_err');backupErr.style.display='block';
+      // Verification 100 % serveur (admin_mfa_reinitialiser) : code a
+      // usage unique, 5 essais rates max par 15 minutes. Code bon : la 2FA
+      // de ce compte est retiree, il peut la reactiver depuis le menu.
+      const {data:statut,error}=await sb.rpc('admin_mfa_reinitialiser',{p_code:saisi});
+      if(error||statut!=='ok'){
+        backupErr.textContent=t(statut==='trop_essais'?'mfa_reset_trop':'mfa_backup_err');
+        backupErr.style.display='block';
         this.disabled=false;return;
       }
-      // Usage unique : jamais reutilisable, meme s'il n'est pas expire.
-      await sb.from('admin_mfa_backup_codes').update({used:true}).eq('id',rows[0].id);
-      mfaMarquerOngletVerifie(emailCourant);
+      try{await sb.auth.refreshSession();}catch(e){}
+      this.disabled=false;
+      document.getElementById('mfaBackupInput').value='';
       hideOverlay();
+      if(window.VB_toast)window.VB_toast('mfa_reset_ok_h',t('mfa_reset_ok_p'));
       if(onSuccessCourant)onSuccessCourant();
     }catch(e){
       backupErr.textContent=t('mfa_err_code')+(e&&e.message?(' — '+e.message):'');backupErr.style.display='block';
@@ -11449,18 +11527,14 @@ async function tenterRestaurationSession(){
     if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(session.user.id);
 
     if(profil&&profil.role==='admin'){
-      // Un simple F5 pendant la meme visite ne redemande jamais le 2FA
-      // (marque "verifie cet onglet"), ni si l'appareil est retenu
-      // ("se souvenir de moi", 30 jours) — sinon le code est redemande,
-      // jamais un contournement silencieux.
-      const dejaOk=(window.VB_mfaVerifiedThisTab&&window.VB_mfaVerifiedThisTab(emailSession))
-                 ||(window.VB_mfaEstDigneDeConfiance&&window.VB_mfaEstDigneDeConfiance(emailSession));
-      if(dejaOk){
-        if(window.VB_openAdminDash)window.VB_openAdminDash(session.user);
-      }else if(window.VB_handleAdminMFA){
+      // VB_handleAdminMFA laisse passer directement une session deja
+      // validee en 2FA (aal2, ex. simple F5) et demande le code sinon.
+      if(window.VB_handleAdminMFA){
         window.VB_handleAdminMFA(()=>{
           if(window.VB_openAdminDash)window.VB_openAdminDash(session.user);
         },session.user.email,session.user.id,false);
+      }else if(window.VB_openAdminDash){
+        window.VB_openAdminDash(session.user);
       }
       return;
     }
