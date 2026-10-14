@@ -3484,6 +3484,9 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .admsec-card.on .admsec-pill{color:var(--vert-vif);background:rgba(46,212,127,.12)}
 .admsec-pill.warn{color:#E2634F!important;background:rgba(226,99,79,.12)!important}
 .admsec-p{font-size:13px;color:var(--gris);line-height:1.55;margin-bottom:14px}
+/* Chiffres de la FAQ : invisibles tant que les vraies valeurs ne sont pas lues */
+[data-stat]{opacity:0;transition:opacity .25s}
+[data-stat].stat-ok{opacity:1}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien

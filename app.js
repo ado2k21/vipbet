@@ -11425,6 +11425,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      reprennent TOUJOURS les memes valeurs que les statistiques du haut
      (data-count = la valeur cible, jamais le compteur en cours d'animation).
      Remplit tous les <span data-stat="won|rate"> ; racine = zone a traiter. */
+  /* Un chiffre de la FAQ n'est montre qu'une fois les VRAIES valeurs lues
+     dans landing_stats : tant que la lecture n'a pas abouti, les
+     chiffres restent invisibles (jamais la valeur de secours du HTML).
+     Si la base est injoignable plus de 6 s, on montre les valeurs de
+     secours plutot que des trous dans la phrase. */
+  let statsLues=false;
+  setTimeout(()=>{statsLues=true;majChiffresFAQ();},6000);
   function majChiffresFAQ(racine){
     const lang=(typeof currentLang!=='undefined'&&currentLang)||'ht';
     const nb=parseInt(elWon&&elWon.dataset.count,10);
@@ -11434,6 +11441,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     (racine||document).querySelectorAll('[data-stat]').forEach(el=>{
       const v=el.dataset.stat==='won'?txtWon:txtRate;
       if(v!=null)el.textContent=v;
+      el.classList.toggle('stat-ok',statsLues);
     });
   }
   window.VB_majChiffresFAQ=majChiffresFAQ;
@@ -11469,6 +11477,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const n=Number(row.trustpilot_rating);
       elTrust.textContent=isFinite(n)?n.toFixed(1):String(row.trustpilot_rating);
     }
+    statsLues=true;
     majChiffresFAQ();
   }
 
