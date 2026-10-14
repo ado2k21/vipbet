@@ -3439,6 +3439,22 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
 .foot-social a[aria-label="WhatsApp"]:hover{background:#25D366}
 .foot-social a[aria-label="Telegram"]:hover{background:#229ED9}
 .foot-social a[aria-label="TikTok"]:hover{background:#010101}
+/* ---------- Icones SVG (remplacent les emojis, 14/10) ---------- */
+.flag{display:block;width:22px;height:15px;border-radius:3px;box-shadow:0 0 0 1px rgba(244,243,237,.18)}
+.langdd-flag{display:inline-flex;align-items:center}
+.langdd-opt span{display:inline-flex;align-items:center}
+.authpage-foot .langdd-flag .flag{width:19px;height:13px}
+.adm-gen-ic{width:17px;height:17px;flex-shrink:0}
+.dtk-countdown{display:flex;align-items:center;justify-content:center;gap:6px}
+.dtk-countdown::before{
+  content:'';width:13px;height:13px;flex-shrink:0;background-color:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='13' r='8'/%3E%3Cpath d='M12 9v4l2.5 2M9.5 2.5h5M19 6l1.5-1.5'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='13' r='8'/%3E%3Cpath d='M12 9v4l2.5 2M9.5 2.5h5M19 6l1.5-1.5'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.dtk-niv-dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 22%,transparent);flex-shrink:0}
+.adm-quota-ic{width:16px;height:16px;flex-shrink:0;color:#E8CE8A}
+.adm-stars{display:inline-flex;gap:1px;color:#E8B84B}
+.adm-star{width:13px;height:13px}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -3621,11 +3637,11 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
         <div><b id="statUsers" data-count="11850" data-base="11850" data-suffix="+" data-sep="comma">11,850+</b><span data-i18n="stat_pronostiqueurs">ITILIZATÈ AKTIF</span></div>
       </div>
       <div class="lp-stat">
-        <span class="lp-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg></span>
+        <span class="lp-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.4 2.8 2.8 5.4-5.6"/></svg></span>
         <div><b id="statWon" data-count="6390" data-base="6390" data-sep="none">6390</b><span data-i18n="stat_pronostics_jour">PRONOSTIK REYISI</span></div>
       </div>
       <div class="lp-stat">
-        <span class="lp-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v4M8.5 20h7M10 17h4"/></svg></span>
+        <span class="lp-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.6"/><circle cx="17" cy="17" r="2.6"/></svg></span>
         <div><b id="statRate" data-count="83" data-base="83" data-suffix="%">83%</b><span data-i18n="stat_gratuits">PRONOSTIC KI GENYEN</span></div>
       </div>
     </div>
@@ -3715,9 +3731,9 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
       <p data-i18n="lp_how_p">Enskripsyon an pran mwens pase 2 minit. Answit, fich yo rive chak jou dirèkteman nan dashboard ou.</p>
     </div>
     <ol class="lp-steps">
-      <li class="lp-step rev"><div class="lp-step-hd"><span class="lp-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></span><h3 data-i18n="lp_s1_t">Kreye yon kont</h3><span class="lp-step-n">01</span></div><p data-i18n="lp_s1_d">Enskri gratis ak imel ou an kèk segonn, san okenn angajman.</p></li>
+      <li class="lp-step rev"><div class="lp-step-hd"><span class="lp-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M3 21c.8-3.8 3.6-6 7-6 1.7 0 3.2.5 4.4 1.4"/><path d="M19 14.5v6M16 17.5h6"/></svg></span><h3 data-i18n="lp_s1_t">Kreye yon kont</h3><span class="lp-step-n">01</span></div><p data-i18n="lp_s1_d">Enskri gratis ak imel ou an kèk segonn, san okenn angajman.</p></li>
       <li class="lp-step rev"><div class="lp-step-hd"><span class="lp-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></svg></span><h3 data-i18n="lp_s2_t">Chwazi yon abònman</h3><span class="lp-step-n">02</span></div><p data-i18n="lp_s2_d">Chwazi plan ki fèt pou ou a epi peye ak MonCash, NatCash oswa kat.</p></li>
-      <li class="lp-step rev"><div class="lp-step-hd"><span class="lp-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5V9a3 3 0 0 0 0 6v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5V15a3 3 0 0 0 0-6Z"/><path d="M14 5v14" stroke-dasharray="2 2.5"/></svg></span><h3 data-i18n="lp_s3_t">Resevwa fich yo</h3><span class="lp-step-n">03</span></div><p data-i18n="lp_s3_d">Chak jou, fich ki deja analize rive nan dashboard ou ak nan gwoup Telegram VIP la.</p></li>
+      <li class="lp-step rev"><div class="lp-step-hd"><span class="lp-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 2.5h14v19l-2.4-1.4-2.3 1.4-2.3-1.4-2.3 1.4-2.3-1.4L5 21.5Z"/><path d="M8.5 7.5h7M8.5 11.5h7M8.5 15.5h4"/></svg></span><h3 data-i18n="lp_s3_t">Resevwa fich yo</h3><span class="lp-step-n">03</span></div><p data-i18n="lp_s3_d">Chak jou, fich ki deja analize rive nan dashboard ou ak nan gwoup Telegram VIP la.</p></li>
       <li class="lp-step rev"><div class="lp-step-hd"><span class="lp-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v4M8.5 20h7M10 17h4"/></svg></span><h3 data-i18n="lp_s4_t">Parye epi genyen</h3><span class="lp-step-n">04</span></div><p data-i18n="lp_s4_d">Jwe fich yo sou ParyajPam, ParyajLakay oswa 1xBet epi swiv rezilta yo.</p></li>
     </ol>
   </div>
@@ -3733,7 +3749,7 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
     </div>
     <div class="lp-bento">
       <article class="lp-feat lp-feat-xl rev">
-        <div class="lp-feat-hd"><span class="lp-feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><h3 data-i18n="lp_f1_t">Analiz ekspè chak jou</h3></div>
+        <div class="lp-feat-hd"><span class="lp-feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M15 8h5v5"/></svg></span><h3 data-i18n="lp_f1_t">Analiz ekspè chak jou</h3></div>
         <p data-i18n="lp_f1_d">Ekip nou an etidye match foutbòl ak NBA yo, mache yo ak cote yo anvan li pibliye chak fich.</p>
         <ul class="lp-markets" aria-label="Mache yo">
           <li>1X2</li><li>Double Chance</li><li>BTTS</li><li>+/- 1.5</li><li>+/- 2.5</li><li>Corners</li><li>Buteur</li><li>Handicap</li><li>Total NBA</li><li class="gold">Score exact</li>
@@ -3748,11 +3764,11 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
         <p data-i18n="lp_f3_d">Chak fich anrejistre ak rezilta reyèl li, kit li genyen kit li pèdi.</p>
       </article>
       <article class="lp-feat rev">
-        <div class="lp-feat-hd"><span class="lp-feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4h-12A2.5 2.5 0 0 0 3 6.5v11A2.5 2.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/><path d="M21 9h-5a3 3 0 0 0 0 6h5Z"/><circle cx="16" cy="12" r=".6" fill="currentColor"/></svg></span><h3 data-i18n="lp_f4_t">Peman lokal an Gdes</h3></div>
+        <div class="lp-feat-hd"><span class="lp-feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.2"/><circle cx="12" cy="12" r="2.7"/><path d="M6 9.5h.01M18 14.5h.01"/></svg></span><h3 data-i18n="lp_f4_t">Peman lokal an Gdes</h3></div>
         <p data-i18n="lp_f4_d">MonCash, NatCash, kat Visa/Mastercard ak PayPal. Aktivasyon rapid.</p>
       </article>
       <article class="lp-feat rev">
-        <div class="lp-feat-hd"><span class="lp-feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span><h3 data-i18n="lp_f5_t">Dashboard + Telegram</h3></div>
+        <div class="lp-feat-hd"><span class="lp-feat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="9" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="5" rx="1.6"/><rect x="13.5" y="11" width="7.5" height="10" rx="1.6"/><rect x="3" y="15" width="7.5" height="6" rx="1.6"/></svg></span><h3 data-i18n="lp_f5_t">Dashboard + Telegram</h3></div>
         <p data-i18n="lp_f5_d">Fich ou yo disponib nan dashboard ou epi nan gwoup Telegram VIP la.</p>
       </article>
     </div>
@@ -4584,13 +4600,13 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
         <div class="authpage-foot">
           <div class="langdd langdd-up" id="langddAuth">
           <button class="langdd-btn" id="langddBtnAuth" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Langue">
-            <span class="langdd-flag">&#127469;&#127481;</span>
+            <span class="langdd-flag"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg></span>
             <svg class="ic langdd-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <div class="langdd-menu" role="menu">
-            <button class="langdd-opt" type="button" role="menuitem" data-lang="ht"><span>&#127469;&#127481;</span> Krey&ograve;l</button>
-            <button class="langdd-opt" type="button" role="menuitem" data-lang="fr"><span>&#127467;&#127479;</span> Fran&ccedil;ais</button>
-            <button class="langdd-opt" type="button" role="menuitem" data-lang="en"><span>&#127482;&#127480;</span> English</button>
+            <button class="langdd-opt" type="button" role="menuitem" data-lang="ht"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg></span> Krey&ograve;l</button>
+            <button class="langdd-opt" type="button" role="menuitem" data-lang="fr"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ED2939"/></svg></span> Fran&ccedil;ais</button>
+            <button class="langdd-opt" type="button" role="menuitem" data-lang="en"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#B22234"/><path d="M0 2.3h30M0 5.4h30M0 8.5h30M0 11.6h30M0 14.7h30M0 17.8h30" stroke="#fff" stroke-width="1.55"/><rect width="13" height="10.8" fill="#3C3B6E"/><g fill="#fff"><circle cx="2.2" cy="2" r=".6"/><circle cx="5.2" cy="2" r=".6"/><circle cx="8.2" cy="2" r=".6"/><circle cx="11" cy="2" r=".6"/><circle cx="3.7" cy="4.2" r=".6"/><circle cx="6.7" cy="4.2" r=".6"/><circle cx="9.6" cy="4.2" r=".6"/><circle cx="2.2" cy="6.4" r=".6"/><circle cx="5.2" cy="6.4" r=".6"/><circle cx="8.2" cy="6.4" r=".6"/><circle cx="11" cy="6.4" r=".6"/><circle cx="3.7" cy="8.6" r=".6"/><circle cx="6.7" cy="8.6" r=".6"/><circle cx="9.6" cy="8.6" r=".6"/></g></svg></span> English</button>
           </div>
         </div>
           <img class="auth-logo-img" src="" alt="VIPBETCOTE — logo ofisyèl" width="22" height="22">
@@ -4779,13 +4795,13 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
             <span class="dash-menu-lang-lbl" data-i18n="dash_menu_lang">Lang</span>
             <div class="langdd langdd-down" id="langddDash">
               <button class="langdd-btn" id="langddBtnDash" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Langue">
-                <span class="langdd-flag">&#127469;&#127481;</span>
+                <span class="langdd-flag"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg></span>
                 <svg class="ic langdd-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <div class="langdd-menu" role="menu">
-                <button class="langdd-opt" type="button" role="menuitem" data-lang="ht"><span>&#127469;&#127481;</span> Krey&ograve;l</button>
-                <button class="langdd-opt" type="button" role="menuitem" data-lang="fr"><span>&#127467;&#127479;</span> Fran&ccedil;ais</button>
-                <button class="langdd-opt" type="button" role="menuitem" data-lang="en"><span>&#127482;&#127480;</span> English</button>
+                <button class="langdd-opt" type="button" role="menuitem" data-lang="ht"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg></span> Krey&ograve;l</button>
+                <button class="langdd-opt" type="button" role="menuitem" data-lang="fr"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ED2939"/></svg></span> Fran&ccedil;ais</button>
+                <button class="langdd-opt" type="button" role="menuitem" data-lang="en"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#B22234"/><path d="M0 2.3h30M0 5.4h30M0 8.5h30M0 11.6h30M0 14.7h30M0 17.8h30" stroke="#fff" stroke-width="1.55"/><rect width="13" height="10.8" fill="#3C3B6E"/><g fill="#fff"><circle cx="2.2" cy="2" r=".6"/><circle cx="5.2" cy="2" r=".6"/><circle cx="8.2" cy="2" r=".6"/><circle cx="11" cy="2" r=".6"/><circle cx="3.7" cy="4.2" r=".6"/><circle cx="6.7" cy="4.2" r=".6"/><circle cx="9.6" cy="4.2" r=".6"/><circle cx="2.2" cy="6.4" r=".6"/><circle cx="5.2" cy="6.4" r=".6"/><circle cx="8.2" cy="6.4" r=".6"/><circle cx="11" cy="6.4" r=".6"/><circle cx="3.7" cy="8.6" r=".6"/><circle cx="6.7" cy="8.6" r=".6"/><circle cx="9.6" cy="8.6" r=".6"/></g></svg></span> English</button>
               </div>
             </div>
           </div>
@@ -5245,9 +5261,9 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
       </div>
       <div id="admFichesSync" class="admf-sync"></div>
       <button type="button" class="btn btn-or" id="admFichesNew" style="width:100%;margin:12px 0 8px" data-i18n="adm_fiches_new">+ Nouvelle fiche</button>
-      <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_btn">⚡ GÉNÉRER FICHE</button>
-      <button type="button" class="btn btn-or-soft" id="admFicheGenererExactBtn" style="width:100%;margin:0 0 8px" data-i18n="adm_fiche_gen_exact_btn">🎯 GÉNÉRER SCORE EXACT</button>
-      <button type="button" class="btn btn-or-soft" id="admFicheGenererBasketBtn" style="width:100%;margin:0 0 14px" data-i18n="adm_fiche_gen_basket_submit">🏀 GÉNÉRER FICHE BASKETBALL</button>
+      <button type="button" class="btn btn-or" id="admFicheGenererBtn" style="width:100%;margin:0 0 8px"><svg class="ic adm-gen-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12Z"/></svg><span data-i18n="adm_fiche_gen_btn">GÉNÉRER FICHE</span></button>
+      <button type="button" class="btn btn-or-soft" id="admFicheGenererExactBtn" style="width:100%;margin:0 0 8px"><svg class="ic adm-gen-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg><span data-i18n="adm_fiche_gen_exact_btn">GÉNÉRER SCORE EXACT</span></button>
+      <button type="button" class="btn btn-or-soft" id="admFicheGenererBasketBtn" style="width:100%;margin:0 0 14px"><svg class="ic adm-gen-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/><path d="M5.6 5.6c3.2 3.4 3.2 9.4 0 12.8M18.4 5.6c-3.2 3.4-3.2 9.4 0 12.8"/></svg><span data-i18n="adm_fiche_gen_basket_submit">GÉNÉRER FICHE BASKETBALL</span></button>
       <div id="admFichesBody"></div>
     </div>
 
@@ -5450,13 +5466,13 @@ footer.lp-foot{border-top:1px solid var(--lp-line);padding:64px 0 calc(32px + en
       <div class="foot-lang">
         <div class="langdd" id="langdd">
           <button class="langdd-btn" id="langddBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Langue">
-            <span class="langdd-flag">&#127469;&#127481;</span>
+            <span class="langdd-flag"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg></span>
             <svg class="ic langdd-caret" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <div class="langdd-menu" id="langddMenu" role="menu">
-            <button class="langdd-opt" type="button" role="menuitem" data-lang="ht"><span>&#127469;&#127481;</span> Krey&ograve;l</button>
-            <button class="langdd-opt" type="button" role="menuitem" data-lang="fr"><span>&#127467;&#127479;</span> Fran&ccedil;ais</button>
-            <button class="langdd-opt" type="button" role="menuitem" data-lang="en"><span>&#127482;&#127480;</span> English</button>
+            <button class="langdd-opt" type="button" role="menuitem" data-lang="ht"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg></span> Krey&ograve;l</button>
+            <button class="langdd-opt" type="button" role="menuitem" data-lang="fr"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ED2939"/></svg></span> Fran&ccedil;ais</button>
+            <button class="langdd-opt" type="button" role="menuitem" data-lang="en"><span><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#B22234"/><path d="M0 2.3h30M0 5.4h30M0 8.5h30M0 11.6h30M0 14.7h30M0 17.8h30" stroke="#fff" stroke-width="1.55"/><rect width="13" height="10.8" fill="#3C3B6E"/><g fill="#fff"><circle cx="2.2" cy="2" r=".6"/><circle cx="5.2" cy="2" r=".6"/><circle cx="8.2" cy="2" r=".6"/><circle cx="11" cy="2" r=".6"/><circle cx="3.7" cy="4.2" r=".6"/><circle cx="6.7" cy="4.2" r=".6"/><circle cx="9.6" cy="4.2" r=".6"/><circle cx="2.2" cy="6.4" r=".6"/><circle cx="5.2" cy="6.4" r=".6"/><circle cx="8.2" cy="6.4" r=".6"/><circle cx="11" cy="6.4" r=".6"/><circle cx="3.7" cy="8.6" r=".6"/><circle cx="6.7" cy="8.6" r=".6"/><circle cx="9.6" cy="8.6" r=".6"/></g></svg></span> English</button>
           </div>
         </div>
       </div>

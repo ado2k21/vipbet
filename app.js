@@ -179,8 +179,8 @@ dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
 fiche_note_x2:"Jouer par deux matchs",
-adm_fiche_gen_btn:"⚡ GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
-adm_fiche_gen_exact_btn:"🎯 GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
+adm_fiche_gen_btn:"GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
+adm_fiche_gen_exact_btn:"GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
 adm_fiche_gen_basket_h:"Générer une fiche basketball",
 adm_fiche_gen_nbmatchs:"Nombre de matchs",
 adm_fiche_gen_date:"Date des matchs", adm_fiche_gen_hdebut:"Heure début (PAP)", adm_fiche_gen_hfin:"Heure fin (PAP)", adm_fiche_gen_sport:"Sport",
@@ -198,20 +198,20 @@ adm_fiche_gen_ok_prog:"programmée pour le {h}", adm_fiche_gen_clamped:"cote max
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} utilisés · {left} restants aujourd'hui",
 adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
-adm_quota_gen_epuise:"⛔ Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"⚠️ Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
+adm_quota_gen_epuise:"Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
 adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} utilisés · {remaining} restants (vérifié à {time})",
-adm_quota_inconnu:"⚠️ Quota réel inconnu depuis minuit UTC — aucun appel API-Sports effectué aujourd'hui.",
-adm_quota_gen_inconnu:"⚠️ Quota inconnu depuis minuit UTC. Lance un diagnostic (?diag=quota-status) avant de générer pour être sûr.",
+adm_quota_inconnu:"Quota réel inconnu depuis minuit UTC — aucun appel API-Sports effectué aujourd'hui.",
+adm_quota_gen_inconnu:"Quota inconnu depuis minuit UTC. Lance un diagnostic (?diag=quota-status) avant de générer pour être sûr.",
 adm_apprentissage_btn:"Rapport apprentissage",
 adm_apprentissage_indispo:"Rapport indisponible pour le moment.",
 adm_apprentissage_vide:"Pas encore assez de résultats réglés pour un rapport.",
 adm_apprentissage_labels:"Par label de confiance (A-E)",
 adm_apprentissage_marches:"Par championnat + marché",
 adm_fiche_gen_basket_p:"Fiche basketball combinée — aucune cote minimale obligatoire, seule la cote max ci-dessus est un plafond strict. Visible par les plans cochés et tous les plans au-dessus (cascade d'accès).",
-adm_fiche_gen_basket_submit:"🏀 GÉNÉRER FICHE BASKETBALL",
+adm_fiche_gen_basket_submit:"GÉNÉRER FICHE BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
-dtk_cd_min:"⏱ Premier match dans {n} min", dtk_cd_h:"⏱ Premier match dans {h}h{m}", dtk_cd_j:"⏱ Premier match dans {j} j", dtk_cd_bientot:"⏱ Premier match imminent", dtk_cd_encours:"⏱ Premier match en cours",
+dtk_cd_min:"Premier match dans {n} min", dtk_cd_h:"Premier match dans {h}h{m}", dtk_cd_j:"Premier match dans {j} j", dtk_cd_bientot:"Premier match imminent", dtk_cd_encours:"Premier match en cours",
 dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez de façon responsable", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
@@ -727,8 +727,8 @@ dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
 fiche_note_x2:"Play two matches at a time",
-adm_fiche_gen_btn:"⚡ GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
-adm_fiche_gen_exact_btn:"🎯 GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
+adm_fiche_gen_btn:"GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
+adm_fiche_gen_exact_btn:"GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
 adm_fiche_gen_basket_h:"Generate a basketball ticket",
 adm_fiche_gen_nbmatchs:"Number of matches",
 adm_fiche_gen_date:"Match date", adm_fiche_gen_hdebut:"Start time (PAP)", adm_fiche_gen_hfin:"End time (PAP)", adm_fiche_gen_sport:"Sport",
@@ -746,20 +746,20 @@ adm_fiche_gen_ok_prog:"scheduled for {h}", adm_fiche_gen_clamped:"max odds cappe
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 adm_quota_lbl:"API-Sports quota · {used}/{max} used · {left} left today",
 adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
-adm_quota_gen_epuise:"⛔ Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"⚠️ Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
+adm_quota_gen_epuise:"Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
 adm_quota_lbl_reel:"API-Sports quota · {used}/{max} used · {remaining} left (checked at {time})",
-adm_quota_inconnu:"⚠️ Real quota unknown since midnight UTC — no API-Sports call made today.",
-adm_quota_gen_inconnu:"⚠️ Quota unknown since midnight UTC. Run a diagnostic (?diag=quota-status) before generating to be sure.",
+adm_quota_inconnu:"Real quota unknown since midnight UTC — no API-Sports call made today.",
+adm_quota_gen_inconnu:"Quota unknown since midnight UTC. Run a diagnostic (?diag=quota-status) before generating to be sure.",
 adm_apprentissage_btn:"Learning report",
 adm_apprentissage_indispo:"Report unavailable right now.",
 adm_apprentissage_vide:"Not enough settled results yet for a report.",
 adm_apprentissage_labels:"By confidence label (A-E)",
 adm_apprentissage_marches:"By league + market",
 adm_fiche_gen_basket_p:"Combined basketball ticket — no mandatory minimum odd, only the max odd above is a strict cap. Visible to the checked plans and every plan above them (cascading access).",
-adm_fiche_gen_basket_submit:"🏀 GENERATE BASKETBALL SLIP",
+adm_fiche_gen_basket_submit:"GENERATE BASKETBALL SLIP",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
-dtk_cd_min:"⏱ First match in {n} min", dtk_cd_h:"⏱ First match in {h}h{m}", dtk_cd_j:"⏱ First match in {j} d", dtk_cd_bientot:"⏱ First match starting soon", dtk_cd_encours:"⏱ First match underway",
+dtk_cd_min:"First match in {n} min", dtk_cd_h:"First match in {h}h{m}", dtk_cd_j:"First match in {j} d", dtk_cd_bientot:"First match starting soon", dtk_cd_encours:"First match underway",
 dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play responsibly", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
@@ -1275,8 +1275,8 @@ dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
 fiche_note_x2:"Jwe pa de match",
-adm_fiche_gen_btn:"⚡ JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
-adm_fiche_gen_exact_btn:"🎯 JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
+adm_fiche_gen_btn:"JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
+adm_fiche_gen_exact_btn:"JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
 adm_fiche_gen_basket_h:"Jenere yon fich basketball",
 adm_fiche_gen_nbmatchs:"Konbyen match",
 adm_fiche_gen_date:"Dat match yo", adm_fiche_gen_hdebut:"Lè kòmanse (PAP)", adm_fiche_gen_hfin:"Lè fini (PAP)", adm_fiche_gen_sport:"Espò",
@@ -1294,20 +1294,20 @@ adm_fiche_gen_ok_prog:"pwograme pou {h}", adm_fiche_gen_clamped:"kòt max redwi 
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} itilize · {left} rete jodi a",
 adm_quota_sport_foot:"Foutbòl", adm_quota_sport_basket:"Basketbòl",
-adm_quota_gen_epuise:"⛔ Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"⚠️ Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
+adm_quota_gen_epuise:"Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
 adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} itilize · {remaining} rete (verifye a {time})",
-adm_quota_inconnu:"⚠️ Vrè quota pa konnen depi minwi UTC — pa gen okenn apèl API-Sports jodi a.",
-adm_quota_gen_inconnu:"⚠️ Quota pa konnen depi minwi UTC. Lanse yon dyagnostik (?diag=quota-status) anvan ou jenere pou w sèten.",
+adm_quota_inconnu:"Vrè quota pa konnen depi minwi UTC — pa gen okenn apèl API-Sports jodi a.",
+adm_quota_gen_inconnu:"Quota pa konnen depi minwi UTC. Lanse yon dyagnostik (?diag=quota-status) anvan ou jenere pou w sèten.",
 adm_apprentissage_btn:"Rapò aprantisaj",
 adm_apprentissage_indispo:"Rapò a pa disponib kounye a.",
 adm_apprentissage_vide:"Poko gen ase rezilta regle pou yon rapò.",
 adm_apprentissage_labels:"Pa etikèt konfyans (A-E)",
 adm_apprentissage_marches:"Pa chanpyona + mache",
 adm_fiche_gen_basket_p:"Fich basketball konbine — pa gen kòt minimòm obligatwa, se sèlman kòt maks anwo a ki yon plafon strik. Vizib pou plan yo ou koche ak tout plan ki pi wo (kaskad aksè).",
-adm_fiche_gen_basket_submit:"🏀 JENERE FICH BASKETBALL",
+adm_fiche_gen_basket_submit:"JENERE FICH BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
-dtk_cd_min:"⏱ Premye match nan {n} min", dtk_cd_h:"⏱ Premye match nan {h}è{m}", dtk_cd_j:"⏱ Premye match nan {j} jou", dtk_cd_bientot:"⏱ Premye match pral kòmanse", dtk_cd_encours:"⏱ Premye match ap jwe",
+dtk_cd_min:"Premye match nan {n} min", dtk_cd_h:"Premye match nan {h}è{m}", dtk_cd_j:"Premye match nan {j} jou", dtk_cd_bientot:"Premye match pral kòmanse", dtk_cd_encours:"Premye match ap jwe",
 dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe yon fason responsab", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
@@ -1788,8 +1788,9 @@ function applyLang(lang){
     if(val!=null)el.setAttribute('placeholder',val);
   });
   document.querySelectorAll('.mnav-lang-opt').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
-  const flags={ht:'\uD83C\uDDED\uD83C\uDDF9',fr:'\uD83C\uDDEB\uD83C\uDDF7',en:'\uD83C\uDDFA\uD83C\uDDF8'};
-  document.querySelectorAll('.langdd-flag').forEach(fl=>{fl.textContent=flags[lang]||flags.ht;});
+  // Drapeaux en SVG : rendu identique sur tous les appareils (Windows n'affiche pas les emojis drapeaux)
+  const flags={ht:'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg>',fr:'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ED2939"/></svg>',en:'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#B22234"/><path d="M0 2.3h30M0 5.4h30M0 8.5h30M0 11.6h30M0 14.7h30M0 17.8h30" stroke="#fff" stroke-width="1.55"/><rect width="13" height="10.8" fill="#3C3B6E"/><g fill="#fff"><circle cx="2.2" cy="2" r=".6"/><circle cx="5.2" cy="2" r=".6"/><circle cx="8.2" cy="2" r=".6"/><circle cx="11" cy="2" r=".6"/><circle cx="3.7" cy="4.2" r=".6"/><circle cx="6.7" cy="4.2" r=".6"/><circle cx="9.6" cy="4.2" r=".6"/><circle cx="2.2" cy="6.4" r=".6"/><circle cx="5.2" cy="6.4" r=".6"/><circle cx="8.2" cy="6.4" r=".6"/><circle cx="11" cy="6.4" r=".6"/><circle cx="3.7" cy="8.6" r=".6"/><circle cx="6.7" cy="8.6" r=".6"/><circle cx="9.6" cy="8.6" r=".6"/></g></svg>'};
+  document.querySelectorAll('.langdd-flag').forEach(fl=>{fl.innerHTML=flags[lang]||flags.ht;});
   document.documentElement.setAttribute('lang',lang);
   document.querySelectorAll('.langdd-opt').forEach(o=>{o.hidden=(o.dataset.lang===lang)});
   updateSim2();
@@ -5419,7 +5420,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.fillText('VIP BETCOTE',W/2,90);
     ctx.fillStyle='#2ED47F';
     ctx.font='800 54px sans-serif';
-    ctx.fillText('✅ '+t('dtk_share_titre'),W/2,160);
+    // Coche dessinee (l'emoji n'est pas rendu pareil selon les appareils)
+    const titrePartage=t('dtk_share_titre');
+    const rCoche=24,ecart=16,largeurTitre=ctx.measureText(titrePartage).width;
+    const x0=W/2-(rCoche*2+ecart+largeurTitre)/2;
+    ctx.beginPath();ctx.arc(x0+rCoche,141,rCoche,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.strokeStyle='#06140C';ctx.lineWidth=6;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(x0+rCoche-11,141);ctx.lineTo(x0+rCoche-3,149);ctx.lineTo(x0+rCoche+12,133);ctx.stroke();ctx.restore();
+    ctx.textAlign='left';ctx.fillText(titrePartage,x0+rCoche*2+ecart,160);ctx.textAlign='center';
 
     // Liste des selections (jusqu'a 8 lignes, puis "+N autres" pour ne
     // jamais deborder du cadre quel que soit le nombre de legs).
@@ -6267,10 +6275,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const niveauInfo=niveauSelonCote(totalOdd(tk));
     const lvl=niveauInfo.niveau==='haut'?'':(niveauInfo.niveau==='moyen'?' mid':' low');
     const niveauCle=niveauInfo.niveau;
-    const niveauEmoji=niveauInfo.niveau==='haut'?'🟢':(niveauInfo.niveau==='moyen'?'🟡':'🔴');
+    const niveauEmoji='<i class="dtk-niv-dot" aria-hidden="true"></i>';
     conf.innerHTML='<div class="dtk-conf-top"><span class="dtk-conf-lbl">'+t('dash_conf')+'</span>'+
       '<span style="display:flex;align-items:center;gap:6px"><span class="dtk-conf-val">'+niveauInfo.pct+'%</span>'+
-      '<span class="dtk-badge-niveau '+niveauCle+'">'+niveauEmoji+' '+t('dtk_niveau_'+niveauCle)+'</span></span></div>'+
+      '<span class="dtk-badge-niveau '+niveauCle+'">'+niveauEmoji+t('dtk_niveau_'+niveauCle)+'</span></span></div>'+
       '<div class="dtk-conf-bar"><span class="dtk-conf-fill'+lvl+'" style="width:'+niveauInfo.pct+'%"></span></div>';
     el.appendChild(conf);
 
@@ -7546,7 +7554,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // de la page de génération manuelle (renderQuotaBadgeGen).
   function htmlBadgeQuota(q,labelSport){
     if(!q || !q.est_du_jour){
-      return '<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+
+      return '<div class="adm-quota-badge or"><svg class="ic adm-quota-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4.5M12 17h.01"/></svg><span class="adm-quota-badge-txt">'+
         (labelSport?'<b>'+stripTags(labelSport)+'</b> — ':'')+t('adm_quota_inconnu')+'</span></div>';
     }
     const pct=q.real_limit?Math.round((q.real_limit-q.real_remaining)/q.real_limit*100):0;
@@ -9042,7 +9050,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         :'<span class="admdash-row-badge aucun">'+t('adm_draft')+'</span>';
       return '<button type="button" class="admdash-row" data-testiid="'+x.id+'">'+
         '<span class="admdash-row-av">'+initiales(x.author_name||'?')+'</span>'+
-        '<span class="admdash-row-tx"><b>'+(x.author_name||'—')+'</b><span>'+('★'.repeat(x.rating||0))+'</span></span>'+
+        '<span class="admdash-row-tx"><b>'+(x.author_name||'—')+'</b><span class="adm-stars" aria-label="'+(x.rating||0)+'/5">'+('<svg class="adm-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9Z"/></svg>'.repeat(x.rating||0))+'</span></span>'+
         badge+
         '</button>';
     }).join('');
