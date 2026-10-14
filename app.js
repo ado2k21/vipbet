@@ -104,7 +104,7 @@ ab_btn_vip:"Devenir VIP",
 ab_btn_lifetime:"S&rsquo;ABONNER", ab_btn_sabonner:"S&rsquo;ABONNER",
 faq_h2:"Questions fréquentes",
 faq1_q:"Comment sont sélectionnés les pronostics ?", faq1_a:"Chaque pronostic est proposé et examiné par notre équipe d'experts. Nous étudions chaque jour les rencontres de football et de NBA disponibles, évaluons les marchés proposés et publions des sélections simples et combinées, chacune accompagnée d'un score de confiance déterminé par nos analystes.",
-faq2_a:"Après analyse et selon nos statistiques, nous affichons un score de 83 % de fiches validées et plus de 8 390 fiches réussies. Notre historique complet reste consultable, fiches perdantes comprises.",
+faq2_a:"Après analyse et selon nos statistiques, nous affichons un score de <span data-stat=\"rate\">83 %</span> de fiches validées et plus de <span data-stat=\"won\">6 390</span> fiches réussies. Notre historique complet reste consultable, fiches perdantes comprises.",
 faq3_q:"Comment payer mon abonnement ?", faq3_a:"Via MonCash, NatCash, Carte/PayPal. Selon le mode choisi, l'abonnement est activé automatiquement ou après validation par l'administrateur.",
 faq4_q:"Quels sports et quels types de paris sont couverts ?", faq4_a:"Football, NBA, etc. Marchés disponibles sur ParyajPam, ParyajLakay, 1xBet, etc. : 1X2, Double Chance, Les deux équipes marquent, Plus/Moins de buts, Handicap, Buteur, Total NBA, etc.",
 faq5_q:"Puis-je annuler mon abonnement ?", faq5_a:"Oui. Les abonnements mensuels s'arrêtent simplement à leur date d'expiration si vous ne renouvelez pas. Le plan Lifetime est un paiement unique, sans renouvellement.",
@@ -672,7 +672,7 @@ ab_btn_vip:"Go VIP",
 ab_btn_lifetime:"S&rsquo;ABONNER", ab_btn_sabonner:"S&rsquo;ABONNER",
 faq_h2:"Frequently asked questions",
 faq1_q:"How are the picks selected?", faq1_a:"Every pick is proposed and reviewed by our team of experts. Every day we study the available football and NBA matches, evaluate the markets on offer, and publish single and combo picks, each with a confidence score set by our analysts.",
-faq2_a:"After analysis and according to our statistics, we show a score of 83% validated slips and over 8,390 successful slips. Our full history stays open to view, losing slips included.",
+faq2_a:"After analysis and according to our statistics, we show a score of <span data-stat=\"rate\">83%</span> validated slips and over <span data-stat=\"won\">6,390</span> successful slips. Our full history stays open to view, losing slips included.",
 faq3_q:"How do I pay for my subscription?", faq3_a:"Via MonCash, NatCash, Card/PayPal. Depending on the method chosen, the plan is activated automatically or after admin approval.",
 faq4_q:"Which sports and bet types are covered?", faq4_a:"Football, NBA, and more. Markets available on ParyajPam, ParyajLakay, 1xBet, etc.: 1X2, Double Chance, Both teams to score, Over/Under goals, Handicap, Goalscorer, NBA Total, etc.",
 faq5_q:"Can I cancel my subscription?", faq5_a:"Yes. Monthly subscriptions simply stop at their expiry date if you don't renew. The Lifetime plan is a one-time payment with no renewal.",
@@ -1240,7 +1240,7 @@ ab_btn_vip:"Vin VIP",
 ab_btn_lifetime:"S&rsquo;ABONNER", ab_btn_sabonner:"S&rsquo;ABONNER",
 faq_h2:"Kesyon yo poze souvan",
 faq1_q:"Kijan pronostik yo seleksyone?", faq1_a:"Chak pronostik pwopoze epi egzamine pa ekip ekspè nou an. Chak jou nou etidye match foutbòl ak NBA ki disponib yo, nou evalye mache yo pwopoze yo, epi nou pibliye seleksyon senp ak kombine, chak youn ak yon nòt konfyans analis nou yo detèmine.",
-faq2_a:"Apre analiz ak estatistik yo, nou gen yon score 83% fich valide, plis pase 8 390 fich reyisi. Istorik konplè nou an rete disponib, ak fich ki pèdi yo tou.",
+faq2_a:"Apre analiz ak estatistik yo, nou gen yon score <span data-stat=\"rate\">83%</span> fich valide, plis pase <span data-stat=\"won\">6 390</span> fich reyisi. Istorik konplè nou an rete disponib, ak fich ki pèdi yo tou.",
 faq3_q:"Kijan pou m peye abònman m?", faq3_a:"Ak MonCash, NatCash, Carte/PayPal. Selon metòd ou chwazi a, abònman an aktive otomatikman oswa apre validasyon administratè a.",
 faq4_q:"Ki espò ak ki kalite paryaj ki kouvri?", faq4_a:"Foutbòl, NBA, elatriye. Mache yo disponib sou ParyajPam, ParyajLakay, 1xBet, elatriye: 1X2, Doub Chans, Tou de ekip make, Plus/Mwens Gòl, Andikap, Bitè, Total NBA, elatriye.",
 faq5_q:"Èske m ka anile abònman m?", faq5_a:"Wi. Abònman chak mwa yo senpleman fini nan dat ekspirasyon yo si ou pa renouvle. Plan Lifetime a se yon sèl peman, san renouvèlman.",
@@ -5092,12 +5092,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const lang=(currentLang==='en'||currentLang==='ht')?currentLang:'fr';
       list.innerHTML=data.map((f,i)=>{
         const q=stripTags(f['question_'+lang]||f.question_fr||'');
-        const a=stripTags(f['answer_'+lang]||f.answer_fr||'');
+        const a=stripTags(f['answer_'+lang]||f.answer_fr||'')
+          // Chiffres synchronises avec les statistiques du haut de page :
+          // jetons {won}/{rate} (a utiliser dans l'admin) + anciens chiffres
+          // ecrits en dur dans la reponse "Garantissez-vous des gains ?".
+          .replace(/\{won\}|\b8[\s,.\u00a0\u202f]?390\b/g,'<span data-stat="won">$&</span>')
+          .replace(/\{rate\}|\b83\s?%/g,'<span data-stat="rate">$&</span>');
         return '<details'+(i===0?' open':'')+'>'+
           '<summary><span>'+q+'</span>'+
           '<span class="pl"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>'+
           '</summary><p>'+a+'</p></details>';
       }).join('');
+      if(window.VB_majChiffresFAQ)window.VB_majChiffresFAQ(list);
     }catch(e){ /* le contenu statique deja present reste affiche */ }
   };
   window.VB_renderFAQ();
@@ -11414,6 +11420,26 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const elWon=document.getElementById('statWon');
   const elRate=document.getElementById('statRate');
   const elTrust=document.getElementById('statTrustpilot');
+
+  /* Chiffres de la FAQ (14/10) : "score de X % ... Y fiches reussies"
+     reprennent TOUJOURS les memes valeurs que les statistiques du haut
+     (data-count = la valeur cible, jamais le compteur en cours d'animation).
+     Remplit tous les <span data-stat="won|rate"> ; racine = zone a traiter. */
+  function majChiffresFAQ(racine){
+    const lang=(typeof currentLang!=='undefined'&&currentLang)||'ht';
+    const nb=parseInt(elWon&&elWon.dataset.count,10);
+    const pct=parseInt(elRate&&elRate.dataset.count,10);
+    const txtWon=isFinite(nb)?nb.toLocaleString(lang==='en'?'en-US':'fr-FR').replace(/\u202f/g,'\u00a0'):null;
+    const txtRate=isFinite(pct)?(lang==='fr'?pct+'\u00a0%':pct+'%'):null;
+    (racine||document).querySelectorAll('[data-stat]').forEach(el=>{
+      const v=el.dataset.stat==='won'?txtWon:txtRate;
+      if(v!=null)el.textContent=v;
+    });
+  }
+  window.VB_majChiffresFAQ=majChiffresFAQ;
+  document.addEventListener('vb:langchange',()=>majChiffresFAQ());
+  majChiffresFAQ();
+
   if(!elUsers&&!elWon&&!elRate&&!elTrust)return;
 
   /* Ecrase directement le texte affiche, meme si l'animation au scroll a
@@ -11443,6 +11469,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const n=Number(row.trustpilot_rating);
       elTrust.textContent=isFinite(n)?n.toFixed(1):String(row.trustpilot_rating);
     }
+    majChiffresFAQ();
   }
 
   async function chargerLandingStats(){
