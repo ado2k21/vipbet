@@ -3487,6 +3487,11 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 /* Chiffres de la FAQ : invisibles tant que les vraies valeurs ne sont pas lues */
 [data-stat]{opacity:0;transition:opacity .25s}
 [data-stat].stat-ok{opacity:1}
+/* Admin > Estatistik akeyi : vraies donnees en lecture seule */
+.admland-real{padding:14px 16px;border-radius:14px;background:rgba(46,212,127,.06);border:1px solid rgba(46,212,127,.25)}
+.admland-real-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:6px 0;font-size:13.5px;color:#C5D0DC}
+.admland-real-row b{font-family:var(--mono);font-size:20px;color:var(--vert-vif);flex-shrink:0}
+.admland-real p{margin-top:10px;padding-top:10px;border-top:1px solid var(--ligne);font-size:12.5px;line-height:1.55;color:var(--gris)}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien

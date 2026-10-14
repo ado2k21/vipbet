@@ -1,6 +1,11 @@
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
+adm_landing_shown_h:"Chiffres affichés sur la page d'accueil",
+adm_landing_real_h:"Données réelles (lecture seule)",
+adm_landing_real_won:"Fiches publiées réellement gagnées (bot + admin)",
+adm_landing_real_users:"Utilisateurs réellement inscrits et confirmés",
+adm_landing_real_note:"Les chiffres affichés sont un chiffre de départ choisi par vous, auquel +1 s'ajoute automatiquement à chaque vraie inscription confirmée et à chaque fiche publiée qui devient gagnante. Les statistiques de Fich → Estatistik ne comptent que les vraies fiches publiées.",
 mfa_disable_h:"Confirmer la désactivation du 2FA",
 mfa_disable_p:"Par sécurité, entrez le code à 6 chiffres de votre application d'authentification pour confirmer.",
 adm_sec_pas_pret:"L'activation du 2FA sera disponible très bientôt (installation en cours côté serveur).",
@@ -569,6 +574,11 @@ legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement
 legal_jeu_body:"<h3>Le pari doit rester un loisir</h3><p>Parier n'est pas une source de revenus et ne doit jamais être considéré comme un moyen de rembourser une dette ou de compenser une perte. <strong>Ne misez que ce que vous pouvez perdre sans que cela change votre quotidien.</strong></p><h3>Ce que nous ne promettons pas</h3><p>VIP BETCOTE publie des analyses, pas des certitudes. Aucune sélection n'est garantie. Notre historique affiche les fiches perdantes au même titre que les gagnantes, précisément parce que les pertes font partie de l'activité.</p><h3>Signaux qui doivent alerter</h3><ul><li>Vous misez des sommes de plus en plus élevées pour ressentir le même intérêt.</li><li>Vous rejouez immédiatement pour récupérer une perte.</li><li>Vous empruntez de l'argent, ou vous puisez dans un budget prévu pour autre chose.</li><li>Vous cachez vos mises à vos proches.</li><li>Vous jouez pour échapper au stress, à l'ennui ou à la tristesse.</li><li>Vous avez déjà essayé d'arrêter sans y parvenir.</li></ul><h3>Garder le contrôle</h3><ul><li>Fixez un budget mensuel avant de commencer, et n'en sortez pas.</li><li>Fixez aussi une limite de temps.</li><li>Ne jouez jamais sous l'effet de l'alcool, de la fatigue ou de la colère.</li><li>Après une perte, arrêtez la journée plutôt que de rejouer.</li><li>Vérifiez régulièrement le total réellement misé sur un mois.</li></ul><h3>Interdit aux mineurs</h3><p>Ce service est strictement réservé aux personnes de <strong>18 ans ou plus</strong>. Tout compte identifié comme appartenant à un mineur est fermé sans remboursement.</p><h3>Demander de l'aide</h3><p>Si le jeu prend une place qui vous inquiète, parlez-en à une personne de confiance, à un médecin ou à un psychologue. En parler tôt rend les choses beaucoup plus simples. Vous pouvez aussi nous écrire pour demander la fermeture définitive de votre compte : nous appliquons cette demande sans discussion.</p>",
 },
 en: {
+adm_landing_shown_h:"Numbers shown on the homepage",
+adm_landing_real_h:"Real data (read-only)",
+adm_landing_real_won:"Published slips that really won (bot + admin)",
+adm_landing_real_users:"Users really signed up and confirmed",
+adm_landing_real_note:"The numbers shown are a starting figure you chose, to which +1 is added automatically for every real confirmed sign-up and every published slip that becomes a winner. The Tickets → Statistics page only counts real published slips.",
 mfa_disable_h:"Confirm turning off 2FA",
 mfa_disable_p:"For security, enter the 6-digit code from your authenticator app to confirm.",
 adm_sec_pas_pret:"2FA activation will be available very soon (server setup in progress).",
@@ -1137,6 +1147,11 @@ legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service
 legal_jeu_body:"<h3>Betting should stay a pastime</h3><p>Betting is not an income and should never be seen as a way to repay a debt or recover a loss. <strong>Only stake what you can lose without it changing your daily life.</strong></p><h3>What we do not promise</h3><p>VIP BETCOTE publishes analysis, not certainties. No selection is guaranteed. Our history shows losing slips alongside winning ones, precisely because losses are part of it.</p><h3>Warning signs</h3><ul><li>You stake more and more to feel the same interest.</li><li>You bet again immediately to recover a loss.</li><li>You borrow money, or dip into a budget meant for something else.</li><li>You hide your stakes from those close to you.</li><li>You play to escape stress, boredom or sadness.</li><li>You have tried to stop and could not.</li></ul><h3>Staying in control</h3><ul><li>Set a monthly budget before you start, and stick to it.</li><li>Set a time limit too.</li><li>Never play under the influence of alcohol, tiredness or anger.</li><li>After a loss, stop for the day rather than betting again.</li><li>Regularly check the real total staked over a month.</li></ul><h3>Strictly no minors</h3><p>This service is strictly for people aged <strong>18 or over</strong>. Any account identified as belonging to a minor is closed without refund.</p><h3>Getting help</h3><p>If betting is taking a place that worries you, talk to someone you trust, a doctor or a psychologist. Speaking up early makes things far easier. You can also write to us to request permanent closure of your account: we act on that request without argument.</p>",
 },
 ht: {
+adm_landing_shown_h:"Chif ki parèt sou paj akèy la",
+adm_landing_real_h:"Done reyèl (lekti sèlman)",
+adm_landing_real_won:"Fich ki pibliye e ki reyèlman genyen (bot + admin)",
+adm_landing_real_users:"Itilizatè ki reyèlman enskri e konfime",
+adm_landing_real_note:"Chif ki afiche yo se yon chif depa ou chwazi, kote +1 ajoute otomatikman pou chak vrè enskripsyon konfime ak pou chak fich pibliye ki vin genyen. Estatistik Fich → Estatistik yo konte sèlman vrè fich ki pibliye yo.",
 mfa_disable_h:"Konfime dezaktivasyon 2FA",
 mfa_disable_p:"Pou sekirite, antre kòd 6 chif ki nan app otantifikasyon ou a pou konfime.",
 adm_sec_pas_pret:"Aktivasyon 2FA ap disponib byento (enstalasyon an ap fèt sou sèvè a).",
@@ -8896,7 +8911,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }catch(e){}
     if(!row){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
 
+    /* Vraies donnees (lecture seule, 14/10) : evite toute confusion entre
+       les chiffres D'AFFICHAGE de l'accueil (chiffre de depart + vraies
+       donnees) et la realite. Memes regles que les statistiques des fiches
+       de l'admin : fiches PUBLIEES passees a 'won' (bot ou admin). */
+    let reelGagnees=null,reelUsers=null;
+    try{
+      const [a,b]=await Promise.all([
+        sb.from('tickets').select('id',{count:'exact',head:true}).eq('published',true).eq('status','won'),
+        sb.from('profiles').select('id',{count:'exact',head:true}).eq('role','user').eq('email_verified',true)
+      ]);
+      if(!a.error)reelGagnees=a.count;
+      if(!b.error)reelUsers=b.count;
+    }catch(e){}
+    const nf=n=>n==null?'—':Number(n).toLocaleString(currentLang==='en'?'en-US':'fr-FR');
+
     box.innerHTML=
+      '<div class="admdash-section-h">'+t('adm_landing_shown_h')+'</div>'+
       '<label class="field"><span class="field-lbl">'+t('adm_landing_users_lbl')+'</span>'+
       '<input type="number" min="0" step="1" id="admLandUsers" value="'+row.active_users+'"></label>'+
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_landing_tickets_lbl')+'</span>'+
@@ -8906,7 +8937,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_landing_trust_lbl')+'</span>'+
       '<input type="number" min="0" max="5" step="0.1" id="admLandTrust" value="'+row.trustpilot_rating+'"></label>'+
       '<button type="button" class="btn btn-confirm" id="admLandSave" style="width:100%;margin-top:14px">'+t('adm_plans_save')+'</button>'+
-      '<div id="admLandErr" class="field-err" style="display:none;margin-top:8px"></div>';
+      '<div id="admLandErr" class="field-err" style="display:none;margin-top:8px"></div>'+
+      '<div class="admdash-section-h" style="margin-top:22px">'+t('adm_landing_real_h')+'</div>'+
+      '<div class="admland-real">'+
+        '<div class="admland-real-row"><span>'+t('adm_landing_real_won')+'</span><b>'+nf(reelGagnees)+'</b></div>'+
+        '<div class="admland-real-row"><span>'+t('adm_landing_real_users')+'</span><b>'+nf(reelUsers)+'</b></div>'+
+        '<p>'+t('adm_landing_real_note')+'</p>'+
+      '</div>';
 
     document.getElementById('admLandSave').addEventListener('click',function(){
       const err=document.getElementById('admLandErr');
