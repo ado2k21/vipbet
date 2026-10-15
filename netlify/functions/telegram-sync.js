@@ -14,9 +14,13 @@ exports.handler = async (event) => {
   try { planifie = !!JSON.parse((event && event.body) || '{}').next_run; } catch (e) { /* appel HTTP */ }
   if (!planifie) {
     const h = (event && event.headers) || {};
-    const u = await T.utilisateurDepuisJeton(h.authorization || h.Authorization);
-    if (!u || !(await T.estAdminSite(u.id))) return T.reponse(401, { error: 'non autorise' });
+    const entete = h.authorization || h.Authorization;
+    const u = await T.utilisateurDepuisJeton(entete);
+    if (!u || !(await T.estAdminSite(u.id, entete))) return T.reponse(401, { error: 'non autorise' });
   }
+  // Une execution a la fois, toutes les 90 s au plus : un appel externe forge
+  // (corps 'next_run' falsifie) ne peut pas marteler l'API Telegram.
+  if (!(await T.limiter('telegram_sync', 1, 90))) return T.reponse(200, { ok: true, ignore: 'trop rapproche' });
   if (!T.jeton()) return T.reponse(200, { ok: false, raison: 'robot non configure' });
   try {
     const rapport = await T.reconcilier();

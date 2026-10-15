@@ -47,6 +47,8 @@
  * ============================================================================
  */
 
+const { chatAlerte } = require('./lib/garde-telegram-alertes');
+
 const config = { schedule: '*/10 * * * *' };
 
 // ---------------------------------------------------------------------------
@@ -354,13 +356,18 @@ async function rpc(nom, args) {
 const CANAUX = [
   {
     nom: 'telegram',
-    configure: () => !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+    configure: () => {
+      if (!process.env.TELEGRAM_BOT_TOKEN) return false;
+      const g = chatAlerte();
+      if (!g.ok && process.env.TELEGRAM_CHAT_ID) console.error('[ALERTE] Telegram desactive : ' + g.raison);
+      return g.ok;
+    },
     async envoyer(sujet, lignes, courtes) {
       const texteCourt = (courtes && courtes.length) ? courtes.join('\n') : lignes.join('\n');
       const r = await fetchAvecDelai(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text: `${sujet}\n\n${texteCourt}`.slice(0, 3900) })
+        body: JSON.stringify({ chat_id: chatAlerte().chat, text: `${sujet}\n\n${texteCourt}`.slice(0, 3900) })
       });
       if (!r.ok) console.log('[ALERTE] Telegram HTTP', r.status, (await r.text()).slice(0, 200));
       return r.ok;

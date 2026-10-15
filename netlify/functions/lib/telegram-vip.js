@@ -177,20 +177,42 @@ async function reconcilier() {
   return rapport;
 }
 
-/* ---- Verification du jeton d'un utilisateur connecte ---- */
+/* ---- Verification du jeton d'un utilisateur connecte ----
+   La cle ANON (publique par nature) sert aux appels faits AVEC le jeton de
+   l'utilisateur : la cle service_role n'est jamais envoyee a ce point d'entree. */
+const CLE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxscWlmamZjcHlkZHdqa2ZlcnBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MTU2MjcsImV4cCI6MjEwMjI5MTYyN30.Bw7-CHFDYV4LmNtt6WyIc5gSt3UCe7n5agbyBEo6-Zc';
+
 async function utilisateurDepuisJeton(entete) {
   const auth = entete || '';
   if (!auth.startsWith('Bearer ')) return null;
   const res = await fetch(baseSupabase() + '/auth/v1/user', {
-    headers: { Authorization: auth, apikey: cleService() }
+    headers: { Authorization: auth, apikey: CLE_ANON }
   });
   if (!res.ok) return null;
   const u = await res.json().catch(() => null);
   return u && u.id ? u : null;
 }
-async function estAdminSite(uid) {
-  const p = await sb('profiles?select=role&id=eq.' + encodeURIComponent(uid) + '&limit=1');
-  return !!(Array.isArray(p) && p[0] && p[0].role === 'admin');
+/* Droits admin = EXACTEMENT ceux de la base (is_admin) : role admin ET, si la 2FA est
+   activee sur le compte, session 2FA validee (aal2). Un mot de passe vole seul ne suffit pas. */
+async function estAdminSite(uid, entete) {
+  try {
+    const res = await fetch(baseSupabase() + '/rest/v1/rpc/is_admin', {
+      method: 'POST',
+      headers: { apikey: CLE_ANON, Authorization: entete, 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    if (!res.ok) return false;
+    return (await res.json()) === true;
+  } catch (e) { return false; }
+}
+
+/* Limiteur d'appels (table de quotas existante). Fail-open : un incident du
+   limiteur ne doit jamais bloquer la synchronisation reguliere. */
+async function limiter(cle, max, fenetreSecondes) {
+  try {
+    const r = await rpc('consommer_quota', { p_cle: String(cle).slice(0, 200), p_max: max, p_fenetre_secondes: fenetreSecondes });
+    return !(r && r.ok === false);
+  } catch (e) { return true; }
 }
 
 const reponse = (statusCode, corps) => ({
@@ -200,5 +222,5 @@ const reponse = (statusCode, corps) => ({
 module.exports = {
   PLANS, jeton, retraitsActifs, groupePourPlan, planPourGroupe,
   sb, rpc, journaliser, tg, retirerDuGroupe, revoquerLien, estAdminDuGroupe,
-  eligibles, terminerAcces, reconcilier, utilisateurDepuisJeton, estAdminSite, reponse
+  eligibles, terminerAcces, reconcilier, utilisateurDepuisJeton, estAdminSite, limiter, reponse
 };

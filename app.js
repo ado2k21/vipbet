@@ -12081,7 +12081,8 @@ window.addEventListener('pageshow',(ev)=>{
     const txt=document.getElementById('dashTgTxt');
     btn.disabled=true;btn.textContent=t('tg_btn_wait');
     const r=await appeler('lien');
-    if(r&&r.etat==='lien'&&r.url){
+    if(r&&r.etat==='lien'&&/^https:\/\/t\.me\/[A-Za-z0-9_+\-]+$/.test(String(r.url||''))){
+      // Seule une adresse t.me est suivie (jamais une autre adresse renvoyee par erreur).
       // Meme onglet : jamais bloque par les navigateurs mobiles, et ouvre l'app Telegram.
       window.location.href=r.url;
       setTimeout(()=>{btn.disabled=false;btn.textContent=t('tg_btn');},4000);

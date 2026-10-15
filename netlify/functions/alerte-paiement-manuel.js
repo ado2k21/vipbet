@@ -27,6 +27,8 @@
  * ============================================================================
  */
 
+const { chatAlerte } = require('./lib/garde-telegram-alertes');
+
 async function fetchAvecDelai(url, options, ms) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), ms || 15000);
@@ -60,8 +62,10 @@ function construireMessage(p) {
 
 async function envoyerTelegram(texte) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chat = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chat) return { ok: false, raison: 'Telegram non configuré (TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID manquants)' };
+  const garde = chatAlerte();
+  const chat = garde.chat;
+  if (!token || !process.env.TELEGRAM_CHAT_ID) return { ok: false, raison: 'Telegram non configuré (TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID manquants)' };
+  if (!garde.ok) return { ok: false, raison: garde.raison };
   try {
     const r = await fetchAvecDelai(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',

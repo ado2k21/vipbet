@@ -9,8 +9,9 @@ const T = require('./lib/telegram-vip');
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return T.reponse(405, { error: 'Méthode non autorisée' });
   const h = event.headers || {};
-  const u = await T.utilisateurDepuisJeton(h.authorization || h.Authorization);
-  if (!u || !(await T.estAdminSite(u.id))) return T.reponse(401, { error: 'non autorise' });
+  const entete = h.authorization || h.Authorization;
+  const u = await T.utilisateurDepuisJeton(entete);
+  if (!u || !(await T.estAdminSite(u.id, entete))) return T.reponse(401, { error: 'non autorise' });
   let action = 'etat';
   try { action = JSON.parse(event.body || '{}').action || 'etat'; } catch (e) { /* defaut */ }
   if (!T.jeton()) return T.reponse(200, { configure: false, raison: 'jeton du robot absent' });
