@@ -9374,7 +9374,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<div class="admdash-row"><span class="admdash-row-tx"><b>Membres reliés</b><span>'+(acces.joined||0)+' · liens en attente '+(acces.issued||0)+' · retirés '+(acces.revoked||0)+' · sortis '+(acces.left||0)+' · expirés '+(acces.expired||0)+'</span></span></div>'+
       '</div>'+
       '<div class="admdash-panel"><div class="admdash-section-h">Invité manuel (jamais retiré par le robot)</div>'+
-        '<p class="admdash-count" style="margin:0 0 10px">Les personnes que vous ajoutez vous-même au groupe (ajout direct ou lien créé à la main) sont reconnues automatiquement. Pour garder un membre déjà présent, entrez son identifiant Telegram ici.</p>'+
+        '<p class="admdash-count" style="margin:0 0 10px">Les personnes que vous ajoutez vous-même au groupe (ajout direct, ou lien créé à la main à USAGE UNIQUE : limite de 1 membre) sont reconnues automatiquement. Un lien manuel illimité est refusé. Pour garder un membre déjà présent, entrez son identifiant Telegram ici.</p>'+
         '<div class="hf-dates" style="grid-template-columns:1fr 1fr">'+
           '<label class="field"><span class="field-lbl">Groupe</span><select id="admTgManPlan">'+(e.groupes||[]).filter(g=>g.configure).map(g=>'<option value="'+g.plan+'">'+stripTags(noms[g.plan]||g.plan)+'</option>').join('')+'</select></label>'+
           '<label class="field"><span class="field-lbl">Identifiant Telegram</span><input type="text" inputmode="numeric" id="admTgManId" placeholder="123456789" autocomplete="off"></label>'+

@@ -55,10 +55,16 @@ async function traiterEntree(chatId, membre, lienUtilise, acteur) {
     return 'invite manuel (ajoute par un administrateur)';
   }
   // Entre avec un lien cree a la main par un administrateur (et non par le robot).
+  // RESTRICTION : seul un lien a USAGE UNIQUE (limite de 1 membre) est accepte. Un lien
+  // illimite ou a plusieurs usages pourrait etre partage : celui qui entre avec est retire.
   const createur = lienUtilise && lienUtilise.creator;
   if (createur && !createur.is_bot && Number(createur.id) !== tgId && await T.estAdminDuGroupe(chatId, Number(createur.id))) {
-    await memoriserManuel(chatId, membre, 'lien_admin');
-    return 'invite manuel (lien d\'administrateur)';
+    if (Number(lienUtilise.member_limit) === 1) {
+      await memoriserManuel(chatId, membre, 'lien_admin');
+      return 'invite manuel (lien d\'administrateur a usage unique)';
+    }
+    await T.journaliser('telegram_lien_manuel_refuse',
+      'Entree via un lien d\'administrateur NON a usage unique (member_limit=' + (lienUtilise.member_limit == null ? 'aucune' : lienUtilise.member_limit) + ') : refusee. tg=' + tgId + ' groupe=' + chatId);
   }
 
   const lienTexte = lienUtilise && lienUtilise.invite_link ? lienUtilise.invite_link : '';
