@@ -9900,10 +9900,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(dateLbl)dateLbl.style.display=(st||admFichesTab==='hist')?'none':'';
     const hf=document.getElementById('admHistFilters');
     if(hf)hf.style.display=(admFichesTab==='hist')?'':'none';
-    [document.getElementById('admFichesFilters'),document.getElementById('admFichesSync'),
-     document.getElementById('admFichesNew'),document.getElementById('admFicheGenererBtn'),
-     document.getElementById('admFicheGenererExactBtn'),document.getElementById('admFicheGenererBasketBtn')
+    [document.getElementById('admFichesFilters'),document.getElementById('admFichesSync')
     ].forEach(el=>{if(el)el.style.display=st?'none':'';});
+    // Les 4 boutons de creation / generation n'existent que sur « Jodi a » (jamais Istorik ni Estatistik).
+    ['admFichesNew','admFicheGenererBtn','admFicheGenererExactBtn','admFicheGenererBasketBtn'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.style.display=(admFichesTab==='day')?'':'none';});
     const fs=document.getElementById('admFichesStatsFilters');
     if(fs)fs.style.display=st?'':'none';
     const cu=document.getElementById('admStatsCustom');
@@ -10230,11 +10231,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     chips('#admHistType','data-htype',v=>{admHistType=v;});
     ['admHistFrom','admHistTo'].forEach(id=>{
       const el=document.getElementById(id);
+      el.classList.add('is-empty');
+      el.addEventListener('change',()=>el.classList.toggle('is-empty',!el.value));
       el.addEventListener('change',()=>{if(id==='admHistFrom')admHistDu=el.value;else admHistAu=el.value;relancer();});
     });
     document.getElementById('admHistReset').addEventListener('click',()=>{
       admHistQ='';admHistSport='all';admHistType='all';admHistDu='';admHistAu='';admFichesStatut='all';
-      qEl.value='';document.getElementById('admHistFrom').value='';document.getElementById('admHistTo').value='';
+      qEl.value='';['admHistFrom','admHistTo'].forEach(i=>{const e=document.getElementById(i);e.value='';e.classList.add('is-empty');});
       document.querySelectorAll('#admHistSport [data-hsport],#admHistType [data-htype]').forEach(x=>
         x.classList.toggle('is-on',x.dataset.hsport==='all'||x.dataset.htype==='all'));
       document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>x.classList.toggle('is-on',x.dataset.fstatus==='all'));
