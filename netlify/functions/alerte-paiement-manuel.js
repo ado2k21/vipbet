@@ -75,6 +75,26 @@ async function envoyerTelegram(texte) {
   }
 }
 
+async function envoyerEmail(texte) {
+  if (!process.env.RESEND_API_KEY || !process.env.ALERT_EMAIL) return { ok: false, raison: 'email non configuré' };
+  try {
+    const r = await fetchAvecDelai('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.ALERT_FROM || 'Alertes système <contact@mail.vipbetcote.com>',
+        to: [process.env.ALERT_EMAIL],
+        subject: '🚨 PRIORITÉ — Paiement manuel en attente',
+        text: texte
+      })
+    }, 15000);
+    if (!r.ok) return { ok: false, raison: `HTTP ${r.status}` };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, raison: e.message };
+  }
+}
+
 async function envoyerWhatsapp(texte) {
   const phone = process.env.WHATSAPP_PHONE;
   const apikey = process.env.WHATSAPP_APIKEY;
@@ -112,13 +132,19 @@ async function handler(event) {
   }
 
   const texte = construireMessage(payload);
-  // Telegram d'abord (gratuit, sans quota) ; WhatsApp seulement en secours.
-  let r = await envoyerTelegram(texte);
-  if (!r.ok) {
-    console.log('[ALERTE PAIEMENT] échec Telegram :', r.raison);
-    r = await envoyerWhatsapp(texte);
-    if (!r.ok) console.log('[ALERTE PAIEMENT] échec WhatsApp :', r.raison);
+  // ALERTE PRIORITAIRE : préfixe + TOUS les canaux configurés à la fois
+  // (Telegram, email, WhatsApp si encore actif). Réussie si au moins un canal passe.
+  const prio = '🚨 PRIORITÉ — ' + texte;
+  const essais = await Promise.all([
+    envoyerTelegram(prio).then(r => ['Telegram', r]),
+    envoyerEmail(prio).then(r => ['email', r]),
+    envoyerWhatsapp(prio).then(r => ['WhatsApp', r])
+  ]);
+  const ok = essais.some(([, r]) => r.ok);
+  for (const [nom, r] of essais) {
+    if (!r.ok && !/non configuré/.test(r.raison || '')) console.log(`[ALERTE PAIEMENT] échec ${nom} :`, r.raison);
   }
+  const r = { ok, raison: ok ? null : 'aucun canal n\'a abouti' };
 
   // Toujours 200 : un échec d'envoi ne doit jamais faire réessayer le trigger
   // Postgres à l'infini (pg_net n'a pas de logique de nouvel essai de toute
@@ -127,4 +153,4 @@ async function handler(event) {
 }
 
 module.exports.handler = handler;
-module.exports._interne = { construireMessage, envoyerTelegram, envoyerWhatsapp };
+module.exports._interne = { construireMessage, envoyerTelegram, envoyerEmail, envoyerWhatsapp };
