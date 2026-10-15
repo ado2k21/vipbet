@@ -56,6 +56,9 @@ function baseSupabase() {
    n'empeche pas l'activation. Des qu'un plan y figure, l'ecart
    bloque l'activation automatique pour ce plan.
    ------------------------------------------------------------ */
+/* Prix de TEST temporaire du plan p1 (0,50 $), valable jusqu'a la date indiquee seulement. */
+const PRIX_TEST_P1 = { cents: 50, jusqua: '2026-10-17T23:59:00Z' };
+
 const MONTANTS_ATTENDUS = {
   p1: { montant: 199,  devise: 'usd' },   // 249 G  = 1,99 $
   p2: { montant: 399,  devise: 'usd' },   // 499 G  = 3,99 $
@@ -222,19 +225,14 @@ exports.handler = async function (event) {
        du petit plan tout en reclamant le grand. */
     let montantSuspect = false;
     let attendu = MONTANTS_ATTENDUS[planId];
-    /* PRIX DE TEST TEMPORAIRE (plan p1 uniquement) : actif SEULEMENT si les deux variables
-       Netlify sont definies — STRIPE_TEST_P1_CENTS (ex. 50 = 0,50 $) et STRIPE_TEST_JUSQUA
-       (date limite ISO, ex. 2026-10-17T23:59:00Z). Passee cette date, le prix de test est
-       IGNORE automatiquement, meme si les variables sont oubliees. */
-    if (planId === 'p1') {
-      const centsTest = parseInt(process.env.STRIPE_TEST_P1_CENTS || '', 10);
-      const limite = Date.parse(process.env.STRIPE_TEST_JUSQUA || '');
-      if (Number.isFinite(centsTest) && centsTest >= 50 && Number.isFinite(limite) && Date.now() < limite) {
-        const recu = session.amount_subtotal != null ? session.amount_subtotal : session.amount_total;
-        if (Number(recu) === centsTest && String(session.currency || '').toLowerCase() === 'usd') {
-          attendu = { montant: centsTest, devise: 'usd' };
-          await journaliser('stripe_webhook_prix_test', 'Prix de TEST accepte pour p1 (' + centsTest + ' cents). session=' + refStripe);
-        }
+    /* PRIX DE TEST TEMPORAIRE (plan p1 uniquement, dans le code : aucune variable Netlify).
+       Accepte PRIX_TEST_P1.cents (0,50 $) SEULEMENT jusqu'a PRIX_TEST_P1.jusqua : passee cette
+       date il est IGNORE automatiquement. A retirer du code apres le test. */
+    if (planId === 'p1' && Date.now() < Date.parse(PRIX_TEST_P1.jusqua)) {
+      const recu = session.amount_subtotal != null ? session.amount_subtotal : session.amount_total;
+      if (Number(recu) === PRIX_TEST_P1.cents && String(session.currency || '').toLowerCase() === 'usd') {
+        attendu = { montant: PRIX_TEST_P1.cents, devise: 'usd' };
+        await journaliser('stripe_webhook_prix_test', 'Prix de TEST accepte pour p1 (' + PRIX_TEST_P1.cents + ' cents). session=' + refStripe);
       }
     }
     if (attendu) {
