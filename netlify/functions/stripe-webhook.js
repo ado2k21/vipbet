@@ -221,7 +221,22 @@ exports.handler = async function (event) {
        Empeche qu'une adresse modifiee a la main fasse payer le prix
        du petit plan tout en reclamant le grand. */
     let montantSuspect = false;
-    const attendu = MONTANTS_ATTENDUS[planId];
+    let attendu = MONTANTS_ATTENDUS[planId];
+    /* PRIX DE TEST TEMPORAIRE (plan p1 uniquement) : actif SEULEMENT si les deux variables
+       Netlify sont definies — STRIPE_TEST_P1_CENTS (ex. 50 = 0,50 $) et STRIPE_TEST_JUSQUA
+       (date limite ISO, ex. 2026-10-17T23:59:00Z). Passee cette date, le prix de test est
+       IGNORE automatiquement, meme si les variables sont oubliees. */
+    if (planId === 'p1') {
+      const centsTest = parseInt(process.env.STRIPE_TEST_P1_CENTS || '', 10);
+      const limite = Date.parse(process.env.STRIPE_TEST_JUSQUA || '');
+      if (Number.isFinite(centsTest) && centsTest >= 50 && Number.isFinite(limite) && Date.now() < limite) {
+        const recu = session.amount_subtotal != null ? session.amount_subtotal : session.amount_total;
+        if (Number(recu) === centsTest && String(session.currency || '').toLowerCase() === 'usd') {
+          attendu = { montant: centsTest, devise: 'usd' };
+          await journaliser('stripe_webhook_prix_test', 'Prix de TEST accepte pour p1 (' + centsTest + ' cents). session=' + refStripe);
+        }
+      }
+    }
     if (attendu) {
       // Montant HORS taxes : si la collecte de taxes de Stripe est activee, le total
       // peut depasser le prix du plan sans que le client ait mal paye.
