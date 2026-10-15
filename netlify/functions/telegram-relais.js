@@ -8,14 +8,16 @@
  * table de suivi telegram_envois.
  *
  * Règle de plans (identique au dashboard) : le groupe de rang N reçoit les
- * fiches dont min_plan_rank <= N.   groupe 1 = p1, 2 = p1-p2, 3 = p1 à p4
- * (3 groupes). Un 4e groupe facultatif (P4) limiterait P3 à p1-p3. Même exception que le dashboard : une fiche basket à cote
- * totale > 15 (jour de jeu >= 2026-09-20) est masquée au rang 1.
+ * fiches dont min_plan_rank <= N.
+ * Configuration prévue (4 groupes) : P1 = p1, P2 = p1-p2, P3 = p1 à p3,
+ * P4 = p1 à p4. Repli à 3 groupes (P4 absent) : P3 reçoit alors p1 à p4.
+ * Même exception que le dashboard : une fiche basket à cote totale > 15
+ * (jour de jeu >= 2026-09-20) est masquée au rang 1.
  *
  * Variables Netlify (toutes facultatives : sans token ou sans groupe, la
  * fonction ne fait rien) :
  *   TELEGRAM_VIP_BOT_TOKEN
- *   TELEGRAM_VIP_CHAT_P1 … P3 (P4 facultatif)   (identifiant du groupe)
+ *   TELEGRAM_VIP_CHAT_P1 … P4 (P4 facultatif)   (identifiant du groupe)
  *
  * Garanties :
  *  - une fiche = un message par groupe (réservation en base AVANT l'envoi) ;
@@ -57,8 +59,9 @@ function echapper(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// Plafond de rang d'un groupe : avec 3 groupes (P1, P2, P3), le groupe 3
-// reçoit tout (p1 à p4). Si TELEGRAM_VIP_CHAT_P4 existe, P3 s'arrête à p3.
+// Plafond de rang d'un groupe : avec 4 groupes (P1 à P4), chaque groupe g
+// reçoit les plans p1 à pg. Repli à 3 groupes (P4 absent) : P3 reçoit tout
+// (p1 à p4), pour que les abonnés LIFETIME ne soient jamais sans groupe.
 function plafondGroupe(g, groupes) {
   return (g === 3 && !groupes[4]) ? 4 : g;
 }
