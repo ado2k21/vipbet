@@ -53,8 +53,14 @@ async function traiterEntree(chatId, membre, lienUtilise) {
         await T.revoquerLien(chatId, ligne.invite_link);
         return 'relie';
       } catch (e) {
-        // Ce compte Telegram est deja relie a un AUTRE compte du site : refuse.
-        await T.journaliser('telegram_double_compte', 'tg=' + tgId + ' deja relie — ' + (e.message || e));
+        // SEUL un conflit d'unicite (409 : ce compte Telegram est deja relie a un AUTRE compte du
+        // site) justifie un retrait. Toute autre erreur (reseau, 5xx) est relancee : Telegram
+        // rejouera l'evenement, un abonne legitime n'est jamais retire a cause d'un incident.
+        if (e && e.statut === 409) {
+          await T.journaliser('telegram_double_compte', 'tg=' + tgId + ' deja relie — ' + (e.message || e));
+        } else {
+          throw e;
+        }
       }
     }
   }

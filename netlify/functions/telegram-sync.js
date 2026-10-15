@@ -11,12 +11,14 @@ const T = require('./lib/telegram-vip');
 
 exports.handler = async (event) => {
   let planifie = false;
+  let admin = false;
   try { planifie = !!JSON.parse((event && event.body) || '{}').next_run; } catch (e) { /* appel HTTP */ }
   if (!planifie) {
     const h = (event && event.headers) || {};
     const entete = h.authorization || h.Authorization;
     const u = await T.utilisateurDepuisJeton(entete);
     if (!u || !(await T.estAdminSite(u.id, entete))) return T.reponse(401, { error: 'non autorise' });
+    admin = true;
   }
   // Une execution a la fois, toutes les 90 s au plus : un appel externe forge
   // (corps 'next_run' falsifie) ne peut pas marteler l'API Telegram.
@@ -24,7 +26,8 @@ exports.handler = async (event) => {
   if (!T.jeton()) return T.reponse(200, { ok: false, raison: 'robot non configure' });
   try {
     const rapport = await T.reconcilier();
-    return T.reponse(200, { ok: true, retraits_actifs: T.retraitsActifs(), rapport });
+    // Seul un administrateur voit le detail ; l'execution planifiee n'a besoin de rien lire.
+    return T.reponse(200, admin ? { ok: true, retraits_actifs: T.retraitsActifs(), rapport } : { ok: true });
   } catch (e) {
     await T.journaliser('telegram_sync', e && e.message ? e.message : String(e));
     return T.reponse(500, { ok: false });

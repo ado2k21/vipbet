@@ -191,7 +191,9 @@ exports.handler = async function (event) {
        paiement est l'identifiant de session Stripe : si un paiement
        porte deja cette reference, l'evenement a deja ete traite. */
     const dejaVu = await sb('payments?reference=eq.' + encodeURIComponent(refStripe) + '&select=id,status,subscription_id');
-    if (Array.isArray(dejaVu) && dejaVu.length && dejaVu[0].status === 'confirmed') {
+    // Tout paiement deja traite (confirme, echoue, rembourse...) n'est JAMAIS reactive par un
+    // rejeu : seule une ligne encore 'pending' (traitement interrompu) peut etre reprise.
+    if (Array.isArray(dejaVu) && dejaVu.length && dejaVu[0].status !== 'pending') {
       return { statusCode: 200, body: 'deja traite' };
     }
 
@@ -237,6 +239,32 @@ exports.handler = async function (event) {
       await journaliser('stripe_webhook_montant_non_configure',
         'Aucun montant attendu configure pour ' + planId + ' : recu ' + session.amount_total + ' ' +
         session.currency + '. session=' + refStripe + ' — verification impossible, activation faite quand meme.');
+    }
+
+    /* ---- 3b. Remise inattendue : les codes promo sont desactives sur les liens. Un paiement
+       remise est donc anormal : laisse en attente pour verification manuelle. */
+    if (session.total_details && Number(session.total_details.amount_discount) > 0) {
+      montantSuspect = true;
+      await journaliser('stripe_webhook_remise',
+        'Remise inattendue (' + session.total_details.amount_discount + ') pour ' + planId + '. session=' + refStripe + ' — laisse en attente.');
+    }
+
+    /* ---- 3c. Anti-detournement : client_reference_id est controle par celui qui paie. Un tiers ne
+       doit jamais pouvoir REMPLACER le plan d'une autre personne par un plan INFERIEUR (ex. un
+       abonne Lifetime ecrase par un plan 7 jours). Dans ce cas : laisse en attente, trace. */
+    let rangInferieur = false;
+    try {
+      const plansRang = await sb('plans?select=id,rank');
+      const rang = {}; (plansRang || []).forEach(x => { rang[x.id] = Number(x.rank); });
+      const actifs = await sb('subscriptions?user_id=eq.' + encodeURIComponent(uid) + '&status=eq.active&select=plan_id,expires_at');
+      const maintenant = Date.now();
+      rangInferieur = (actifs || []).some(a =>
+        (!a.expires_at || new Date(a.expires_at).getTime() > maintenant) && (rang[a.plan_id] || 0) > (rang[planId] || 0));
+    } catch (e) { throw e; }
+    if (rangInferieur) {
+      montantSuspect = true;
+      await journaliser('stripe_webhook_rang_inferieur',
+        'Paiement du plan ' + planId + ' pour un compte deja abonne a un plan SUPERIEUR : non active automatiquement. session=' + refStripe);
     }
 
     /* ---- 4. Le paiement d'abord (ancre d'idempotence) --------

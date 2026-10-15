@@ -17,7 +17,8 @@
 
 const PLANS = ['p1', 'p2', 'p3', 'p4'];
 
-const jeton = () => (process.env.TELEGRAM_VIP_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || '').trim();
+// Jeton DEDIE aux groupes VIP : jamais de repli sur le bot des alertes (TELEGRAM_BOT_TOKEN).
+const jeton = () => (process.env.TELEGRAM_VIP_BOT_TOKEN || '').trim();
 const retraitsActifs = () => String(process.env.TELEGRAM_VIP_ENFORCE || '').trim() === '1';
 
 function baseSupabase() {
@@ -148,6 +149,15 @@ async function reconcilier() {
       const plan = droits[l.user_id] || null;
       const groupeVoulu = plan ? groupePourPlan(plan) : null;
       const raison = !plan ? 'plan_inactif' : 'plan_change';
+
+      // SECURITE : un plan actif dont le groupe n'est pas (ou mal) configure ne doit JAMAIS
+      // faire retirer les abonnes : variable supprimee, mal saisie ou renommee.
+      if (plan && !groupeVoulu) {
+        rapport.erreurs++;
+        await journaliser('telegram_groupe_non_configure',
+          'Plan ' + plan + ' actif mais TELEGRAM_VIP_CHAT_' + plan.toUpperCase() + ' absent ou invalide : acces ' + l.id + ' laisse en place.');
+        continue;
+      }
 
       if (groupeVoulu !== Number(l.chat_id)) {
         // Plus de droit sur CE groupe (plan expire, retire, suspendu ou change).

@@ -30,6 +30,8 @@ exports.handler = async (event) => {
   let action = 'lien';
   try { action = (JSON.parse(event.body || '{}').action) || 'lien'; } catch (e) { /* corps vide */ }
 
+  if (!(await T.limiter('telegram_lien:' + user.id, 12, 60))) return T.reponse(429, { error: 'trop_de_demandes' });
+
   try {
     const droits = await T.eligibles();
     const plan = droits[user.id] || null;
