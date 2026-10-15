@@ -406,6 +406,8 @@ adm_fiche_err_save:"L'enregistrement a échoué.",
 adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatement si publiée.",
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
 adm_menu_exit:"Déconnecter",
+ov_live:"En direct", ov_kpis_h:"Indicateurs clés", ov_quick_h:"Accès rapide", ov_q_pay:"Paiements", ov_q_users:"Utilisateurs", ov_q_fiches:"Fiches", ov_q_rev:"Revenus",
+st_pending:"En cours", hf_search_ph:"Rechercher un code, un match, une ligue…", hf_sport:"Sport", hf_count:"{n} fiche(s) trouvée(s)", hf_reset:"Réinitialiser",
 adm_home_h:"Vue d'ensemble", adm_home_p:"Chiffres réels, directement issus de la base de données.",
 adm_refresh:"Rafraîchir", adm_updated_at:"Mis à jour à {t}",
 adm_k_loading:"Chargement...", adm_k_offline:"Connexion indisponible", adm_k_error:"Erreur de lecture",
@@ -979,6 +981,8 @@ adm_fiche_err_save:"Save failed.",
 adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if published.",
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
 adm_menu_exit:"Log out",
+ov_live:"Live", ov_kpis_h:"Key metrics", ov_quick_h:"Quick access", ov_q_pay:"Payments", ov_q_users:"Users", ov_q_fiches:"Slips", ov_q_rev:"Revenue",
+st_pending:"In progress", hf_search_ph:"Search a code, match or league…", hf_sport:"Sport", hf_count:"{n} slip(s) found", hf_reset:"Reset",
 adm_home_h:"Overview", adm_home_p:"Real figures, taken directly from the database.",
 adm_refresh:"Refresh", adm_updated_at:"Updated at {t}",
 adm_k_loading:"Loading...", adm_k_offline:"Connection unavailable", adm_k_error:"Read error",
@@ -1552,6 +1556,8 @@ adm_fiche_err_save:"Anrejistreman echwe.",
 adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li pibliye.",
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
 adm_menu_exit:"Dekonekte",
+ov_live:"An dirèk", ov_kpis_h:"Endikatè kle", ov_quick_h:"Aksè rapid", ov_q_pay:"Peman", ov_q_users:"Itilizatè", ov_q_fiches:"Fich", ov_q_rev:"Revni",
+st_pending:"An kou", hf_search_ph:"Chèche yon kòd, yon match, yon lig…", hf_sport:"Espò", hf_count:"{n} fich jwenn", hf_reset:"Reyinisyalize",
 adm_home_h:"Vi jeneral", adm_home_p:"Chif reyèl, dirèkteman soti nan baz done a.",
 adm_refresh:"Rafrechi", adm_updated_at:"Mizajou a {t}",
 adm_k_loading:"Chajman...", adm_k_offline:"Koneksyon pa disponib", adm_k_error:"Erè lekti",
@@ -7557,10 +7563,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ]);
       const subsActives=(typeof subsActivesData==='number')?subsActivesData:null;
       box.innerHTML=
-        revCard(IC_USERS,null,badgeVariation(usersMois||0,usersMoisPrec||0),t('adm_k_users'),(users!=null?String(users):'—'),null,t('adm_k_users_note'),'users') +
-        revCard(IC_CHECK,'green','',t('adm_k_subs_active'),(subsActives!=null?String(subsActives):'—'),'green',t('adm_k_subs_note'),'users') +
-        revCard(IC_CLOCK,null,'',t('adm_k_pay_pending'),(paysPending!=null?String(paysPending):'—'),'gold',t('adm_k_pay_note'),'payments') +
-        revCard(IC_TICKET,null,'',t('adm_k_tickets'),(tickets!=null?String(tickets):'—'),null,t('adm_k_tickets_note'),'fiches');
+        ovKpi('blue',IC_USERS,badgeVariation(usersMois||0,usersMoisPrec||0),t('adm_k_users'),(users!=null?String(users):'—'),t('adm_k_users_note'),'users') +
+        ovKpi('green',IC_CHECK,'',t('adm_k_subs_active'),(subsActives!=null?String(subsActives):'—'),t('adm_k_subs_note'),'users') +
+        ovKpi('gold',IC_CLOCK,'',t('adm_k_pay_pending'),(paysPending!=null?String(paysPending):'—'),t('adm_k_pay_note'),'payments') +
+        ovKpi('red',IC_TICKET,'',t('adm_k_tickets'),(tickets!=null?String(tickets):'—'),t('adm_k_tickets_note'),'fiches');
       document.getElementById('admHomeUpdated').textContent=t('adm_updated_at').replace('{t}',new Date().toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'}));
       box.querySelectorAll('[data-nav]').forEach(card=>{
         const aller=()=>setView(card.dataset.nav);
@@ -7585,6 +7591,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
   }
   document.getElementById('admHomeRefresh').addEventListener('click',renderHome);
+  document.querySelectorAll('[data-ovgo]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.ovgo)));
 
   // ============================================================
   // BADGE DE QUOTA API-SPORTS (29/08)
@@ -7745,6 +7752,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sens=pct>=0?'up':'down';
     const fleche=pct>=0?'↑':'↓';
     return '<span class="rev-card-badge '+sens+'">'+fleche+' '+(pct>=0?'+':'')+pct+'%</span>';
+  }
+  // Carte KPI de la nouvelle Vue d'ensemble (15/10) : affichage seul, memes donnees que revCard.
+  function ovKpi(tone,iconPath,badgeHtml,label,valeurHtml,note,nav){
+    return '<div class="ov-kpi '+tone+(nav?' dash-kpi-clickable':'')+'"'+(nav?' data-nav="'+nav+'" role="button" tabindex="0"':'')+'>'+
+      '<div class="ov-kpi-top"><span class="ov-kpi-ic">'+icRev(iconPath)+'</span>'+(badgeHtml||'')+'</div>'+
+      '<div class="ov-kpi-val">'+valeurHtml+'</div>'+
+      '<div class="ov-kpi-lbl">'+label+'</div>'+
+      (note?'<div class="ov-kpi-note">'+note+'</div>':'')+
+      (nav?'<span class="ov-kpi-go" aria-hidden="true">›</span>':'')+
+    '</div>';
   }
   function revCard(iconPath,iconTone,badgeHtml,label,valeurHtml,valueClass,note,nav){
     return '<div class="rev-card'+(nav?' dash-kpi-clickable':'')+'"'+(nav?' data-nav="'+nav+'" role="button" tabindex="0"':'')+'>'+
@@ -9878,8 +9895,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // synchro, boutons de création/génération) : jamais un contrôle sans effet à l'écran.
     const st=admFichesTab==='stats';
     const dateEl=document.getElementById('admFichesDate');
-    [dateEl&&dateEl.closest('label'),
-     document.getElementById('admFichesFilters'),document.getElementById('admFichesSync'),
+    const dateLbl=dateEl&&dateEl.closest('label');
+    // Istorik : la date unique n'a aucun effet (le filtre par periode la remplace) -> masquee.
+    if(dateLbl)dateLbl.style.display=(st||admFichesTab==='hist')?'none':'';
+    const hf=document.getElementById('admHistFilters');
+    if(hf)hf.style.display=(admFichesTab==='hist')?'':'none';
+    [document.getElementById('admFichesFilters'),document.getElementById('admFichesSync'),
      document.getElementById('admFichesNew'),document.getElementById('admFicheGenererBtn'),
      document.getElementById('admFicheGenererExactBtn'),document.getElementById('admFicheGenererBasketBtn')
     ].forEach(el=>{if(el)el.style.display=st?'none':'';});
@@ -9899,16 +9920,41 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       foot:bloc(c.foot||{}),basket:bloc(c.basket||{})
     };
   }
-  function admfCarteStatsHtml(titre,b){
-    const taux=b.taux==null?'—':String(b.taux).replace('.',',')+' %';
-    return '<div class="admf-stat-card">'+
-      '<div class="admf-stat-title">'+stripTags(titre)+'</div>'+
-      '<div class="admf-stat-row">'+
-        '<div class="admf-stat"><b class="gagne">'+b.won+'</b><span>'+stripTags(t('adm_fiches_st_won'))+'</span></div>'+
-        '<div class="admf-stat"><b class="perdu">'+b.lost+'</b><span>'+stripTags(t('adm_fiches_st_lost'))+'</span></div>'+
-        '<div class="admf-stat"><b class="taux">'+taux+'</b><span>'+stripTags(t('adm_fiches_st_rate'))+'</span></div>'+
+  // Statistiques (15/10) : meme calcul, nouvel affichage (anneau + barres).
+  function admfPct(n,tot){return tot>0?Math.round(n/tot*1000)/10:0;}
+  function admfTauxTxt(b){return b.taux==null?'—':String(b.taux).replace('.',',')+' %';}
+  function admfHeroStatsHtml(titre,b){
+    const tot=b.won+b.lost+b.pending;
+    const C=2*Math.PI*52;
+    const arc=b.taux==null?0:C*b.taux/100;
+    return '<div class="st-hero">'+
+      '<div class="st-kicker">'+stripTags(titre)+'</div>'+
+      '<div class="st-ring"><svg viewBox="0 0 124 124" aria-hidden="true">'+
+        '<defs><linearGradient id="stGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17A860"/><stop offset="1" stop-color="#2ED47F"/></linearGradient></defs>'+
+        '<circle class="bg" cx="62" cy="62" r="52"/>'+
+        '<circle class="fg" cx="62" cy="62" r="52" stroke-dasharray="'+arc.toFixed(1)+' '+C.toFixed(1)+'"/></svg>'+
+        '<div class="st-ring-tx"><b>'+admfTauxTxt(b)+'</b><span>'+stripTags(t('adm_fiches_st_rate'))+'</span></div></div>'+
+      '<div class="st-legend">'+
+        '<div class="st-lg st-won"><i></i><span>'+stripTags(t('adm_fiches_st_won'))+'</span><b>'+b.won+'</b></div>'+
+        '<div class="st-lg st-lost"><i></i><span>'+stripTags(t('adm_fiches_st_lost'))+'</span><b>'+b.lost+'</b></div>'+
+        '<div class="st-lg st-pend"><i></i><span>'+stripTags(t('st_pending'))+'</span><b>'+b.pending+'</b></div>'+
       '</div>'+
-      '<div class="admf-stat-foot">'+stripTags(t('adm_fiches_st_line').replace('{s}',b.reglees).replace('{p}',b.pending))+'</div>'+
+      '<div class="st-bar" role="img" aria-label="'+stripTags(titre)+'">'+
+        (tot?'<s class="w" style="width:'+admfPct(b.won,tot)+'%"></s><s class="l" style="width:'+admfPct(b.lost,tot)+'%"></s><s class="p" style="width:'+admfPct(b.pending,tot)+'%"></s>':'')+'</div>'+
+      '<div class="st-foot">'+stripTags(t('adm_fiches_st_line').replace('{s}',b.reglees).replace('{p}',b.pending))+'</div>'+
+    '</div>';
+  }
+  function admfCarteStatsHtml(titre,b,icone){
+    const empty=b.taux==null;
+    return '<div class="st-sport">'+
+      '<div class="st-sport-h">'+(icone||'')+'<span>'+stripTags(titre)+'</span></div>'+
+      '<div class="st-sport-rate">'+admfTauxTxt(b)+'<small>'+stripTags(t('adm_fiches_st_rate'))+'</small></div>'+
+      '<div class="st-meter'+(empty?' empty':'')+'"><s style="width:'+(empty?0:b.taux)+'%"></s></div>'+
+      '<div class="st-mini">'+
+        '<div class="w"><b>'+b.won+'</b><span>'+stripTags(t('adm_fiches_st_won'))+'</span></div>'+
+        '<div class="l"><b>'+b.lost+'</b><span>'+stripTags(t('adm_fiches_st_lost'))+'</span></div>'+
+        '<div class="p"><b>'+b.pending+'</b><span>'+stripTags(t('st_pending'))+'</span></div>'+
+      '</div>'+
     '</div>';
   }
   async function admfRenderStats(body,sb){
@@ -9927,14 +9973,54 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         c[x.sp][x.st]=x.r.count||0;
       });
       const st=admfCalculerStats(c);
+      const IC_FOOT='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 8 3.6 2.6-1.4 4.2H9.8l-1.4-4.2z"/><path d="M12 3v5M20.5 9.5 15.6 10.6M17.5 19.5l-3.3-4.7M6.5 19.5l3.3-4.7M3.5 9.5l4.9 1.1"/></svg>';
+      const IC_BASK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/><path d="M5.6 5.6c3.2 3.4 3.2 9.4 0 12.8M18.4 5.6c-3.2 3.4-3.2 9.4 0 12.8"/></svg>';
       body.innerHTML=
-        admfCarteStatsHtml(t('adm_fiches_st_total'),st.total)+
-        admfCarteStatsHtml(t('adm_fiches_st_foot'),st.foot)+
-        admfCarteStatsHtml(t('adm_fiches_st_basket'),st.basket)+
-        '<div class="admf-stat-note">'+stripTags(t('adm_fiches_st_note'))+'</div>';
+        admfHeroStatsHtml(t('adm_fiches_st_total'),st.total)+
+        '<div class="st-sports">'+
+          admfCarteStatsHtml(t('adm_fiches_st_foot'),st.foot,IC_FOOT)+
+          admfCarteStatsHtml(t('adm_fiches_st_basket'),st.basket,IC_BASK)+
+        '</div>'+
+        '<div class="st-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>'+stripTags(t('adm_fiches_st_note'))+'</span></div>';
     }catch(e){
       body.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';
     }
+  }
+
+  // ---- Filtres de l'Istorik (15/10) : recherche + sport + type + periode ----
+  // Lecture seule : simples filtres ajoutes a la requete d'affichage existante.
+  let admHistQ='',admHistSport='all',admHistType='all',admHistDu='',admHistAu='';
+  function admHistFiltresActifs(){return !!(admHistQ||admHistSport!=='all'||admHistType!=='all'||admHistDu||admHistAu||admFichesStatut!=='all');}
+  function admHistNettoyerQ(q){return String(q||'').replace(/[*%,()\\"'`]/g,' ').replace(/\s+/g,' ').trim().slice(0,60);}
+  async function admHistAppliquer(req,sb){
+    if(admHistSport==='foot')req=req.eq('sport','foot');
+    else if(admHistSport==='basket')req=req.in('sport',ADMF_STATS_SPORTS.basket);
+    if(admHistType==='normal')req=req.eq('score_legs_count',0);
+    else if(admHistType==='exact')req=req.gt('score_legs_count',0);
+    let du=admHistDu,au=admHistAu;
+    if(du&&au&&du>au){const x=du;du=au;au=x;}
+    if(du)req=req.gte('play_date',du);
+    if(au)req=req.lte('play_date',au);
+    const q=admHistNettoyerQ(admHistQ);
+    if(q){
+      // Le texte est cherche dans le code de la fiche ET dans ses matchs / ligues.
+      let ids=[];
+      try{
+        const {data}=await sb.from('ticket_legs').select('ticket_id')
+          .or('match_label.ilike.*'+q+'*,league.ilike.*'+q+'*').order('kickoff_at',{ascending:false}).limit(600);
+        ids=[...new Set((data||[]).map(x=>x.ticket_id))].slice(0,200);   // URL raisonnable
+      }catch(e){}
+      req=req.or('code.ilike.*'+q+'*'+(ids.length?',id.in.('+ids.join(',')+')':''));
+    }
+    return req;
+  }
+  function admHistMajCompteur(total){
+    const el=document.getElementById('admHistCount');
+    if(el)el.innerHTML=(total==null)?'':stripTags(t('hf_count')).replace('{n}','<b>'+total+'</b>');
+    const rs=document.getElementById('admHistReset');
+    if(rs)rs.style.visibility=admHistFiltresActifs()?'visible':'hidden';
+    const cl=document.getElementById('admHistQClr');
+    if(cl)cl.hidden=!admHistQ;
   }
 
   async function renderFiches(){
@@ -9949,7 +10035,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     majSyncBot();
     try{
       let req=sb.from('tickets')
-        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,created_at,legs_count,total_odd,score_legs_count,source,settled_at');
+        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,created_at,legs_count,total_odd,score_legs_count,source,settled_at',
+          admFichesTab==='hist'?{count:'exact'}:undefined);
       if(admFichesTab==='day'){
         // Vue du jour : les fiches de la date choisie. Filtre de statut
         // (Partie 3 roadmap, 27/08 : zones "En cours/Gagné/Perdu") — mêmes
@@ -9974,9 +10061,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
                .order('play_date',{ascending:false}).order('min_plan_rank',{ascending:true})
                .limit(admFichesHistLimit);
         if(admFichesStatut!=='all')req=req.eq('status',admFichesStatut);
+        req=await admHistAppliquer(req,sb);
       }
-      const {data:tickets,error}=await req;
+      const {data:tickets,error,count:totalHist}=await req;
       if(error)throw error;
+      if(admFichesTab==='hist')admHistMajCompteur(totalHist!=null?totalHist:(tickets||[]).length);
       if(!tickets||!tickets.length){
         body.innerHTML='<div class="admdash-empty">'+
           t(admFichesTab==='hist'?'adm_fiches_hist_empty':'adm_fiches_empty')+'</div>';
@@ -10119,6 +10208,39 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       renderFiches();
     });
   });
+  // Filtres de l'Istorik (recherche, sport, type, periode, reinitialisation)
+  (function(){
+    const qEl=document.getElementById('admHistQ');
+    if(!qEl)return;
+    const relancer=()=>{admFichesHistLimit=ADMF_HIST_PAGE;renderFiches();};
+    let timer=null;
+    qEl.addEventListener('input',()=>{
+      admHistQ=qEl.value;
+      const cl=document.getElementById('admHistQClr');if(cl)cl.hidden=!admHistQ;
+      clearTimeout(timer);timer=setTimeout(relancer,350);
+    });
+    qEl.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();clearTimeout(timer);relancer();qEl.blur();}});
+    document.getElementById('admHistQClr').addEventListener('click',()=>{qEl.value='';admHistQ='';relancer();qEl.focus();});
+    const chips=(sel,attr,set)=>document.querySelectorAll(sel+' ['+attr+']').forEach(b=>b.addEventListener('click',()=>{
+      set(b.getAttribute(attr));
+      document.querySelectorAll(sel+' ['+attr+']').forEach(x=>x.classList.toggle('is-on',x===b));
+      relancer();
+    }));
+    chips('#admHistSport','data-hsport',v=>{admHistSport=v;});
+    chips('#admHistType','data-htype',v=>{admHistType=v;});
+    ['admHistFrom','admHistTo'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.addEventListener('change',()=>{if(id==='admHistFrom')admHistDu=el.value;else admHistAu=el.value;relancer();});
+    });
+    document.getElementById('admHistReset').addEventListener('click',()=>{
+      admHistQ='';admHistSport='all';admHistType='all';admHistDu='';admHistAu='';admFichesStatut='all';
+      qEl.value='';document.getElementById('admHistFrom').value='';document.getElementById('admHistTo').value='';
+      document.querySelectorAll('#admHistSport [data-hsport],#admHistType [data-htype]').forEach(x=>
+        x.classList.toggle('is-on',x.dataset.hsport==='all'||x.dataset.htype==='all'));
+      document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>x.classList.toggle('is-on',x.dataset.fstatus==='all'));
+      relancer();
+    });
+  })();
   // Filtres de statut (les 2 onglets depuis le 27/08 — Phase 3 roadmap)
   document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(b=>{
     b.addEventListener('click',()=>{

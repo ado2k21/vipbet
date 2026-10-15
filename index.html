@@ -3492,6 +3492,126 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .admland-real-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:6px 0;font-size:13.5px;color:#C5D0DC}
 .admland-real-row b{font-family:var(--mono);font-size:20px;color:var(--vert-vif);flex-shrink:0}
 .admland-real p{margin-top:10px;padding-top:10px;border-top:1px solid var(--ligne);font-size:12.5px;line-height:1.55;color:var(--gris)}
+
+/* =====================================================================
+   ADMIN REDESIGN (15/10) : Vue d'ensemble, Statistiques, filtres Istorik.
+   Affichage uniquement : aucune donnee, requete ou configuration modifiee.
+   ===================================================================== */
+[data-adview="home"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
+.ov-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 22px}
+.ov-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ov-green)}
+.ov-live{width:7px;height:7px;border-radius:50%;background:var(--ov-green);box-shadow:0 0 0 0 rgba(46,212,127,.6);animation:ovPulse 2s infinite}
+@keyframes ovPulse{70%{box-shadow:0 0 0 8px rgba(46,212,127,0)}100%{box-shadow:0 0 0 0 rgba(46,212,127,0)}}
+.ov-head h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,3vw,32px);letter-spacing:-.025em;color:#fff;margin:8px 0 4px;line-height:1.1}
+.ov-head p{color:var(--gris);font-size:13px;max-width:46ch}
+.ov-head-act{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ov-refresh{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid var(--ov-line);background:rgba(244,243,237,.04);color:#F4F3ED;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:background .18s,border-color .18s}
+.ov-refresh:hover{background:rgba(46,212,127,.1);border-color:rgba(46,212,127,.4)}
+.ov-sec{margin:0 0 26px;padding:0}
+.ov-split>.ov-sec{margin:0}
+.ov-split{margin-bottom:26px}
+.ov-head .admdash-updated:empty{display:none}
+.ov-head p{margin:0}
+.ov-sec-h{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);margin:0 0 12px}
+.ov-sec-h::after{content:"";flex:1;height:1px;background:var(--ov-line)}
+.ov-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width:860px){.ov-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.ov-kpi{--c:var(--ov-blue);position:relative;overflow:hidden;background:linear-gradient(180deg,var(--ov-card2),var(--ov-card));border:1px solid var(--ov-line);border-radius:18px;padding:16px 15px 14px;min-width:0;transition:transform .18s,border-color .18s}
+.ov-kpi::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,var(--c),transparent 75%)}
+.ov-kpi::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--c) 18%,transparent),transparent 70%);pointer-events:none}
+.ov-kpi.green{--c:var(--ov-green)}.ov-kpi.gold{--c:var(--ov-gold)}.ov-kpi.blue{--c:var(--ov-blue)}.ov-kpi.red{--c:var(--ov-red)}
+.ov-kpi.dash-kpi-clickable{cursor:pointer}
+.ov-kpi.dash-kpi-clickable:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--c) 45%,transparent)}
+.ov-kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px;position:relative;z-index:1}
+.ov-kpi-ic{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+.ov-kpi-val{position:relative;z-index:1;font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,36px);letter-spacing:-.03em;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.ov-kpi-lbl{position:relative;z-index:1;margin-top:9px;font-size:12.5px;font-weight:700;color:#DCE4EC;line-height:1.3}
+.ov-kpi-note{position:relative;z-index:1;margin-top:3px;font-size:11px;color:var(--gris);line-height:1.35}
+.ov-kpi-go{position:absolute;right:13px;bottom:11px;z-index:1;color:var(--gris);font-size:18px;line-height:1;opacity:.6}
+.ov-rev{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0}
+@media (max-width:640px){.ov-rev{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ov-rev .rev-card{background:linear-gradient(180deg,var(--ov-card2),var(--ov-card));border-radius:18px;border:1px solid var(--ov-line);padding:15px}
+.ov-rev .rev-card:first-child{grid-column:1/-1;position:relative;overflow:hidden;padding:20px 18px;background:radial-gradient(120% 140% at 100% 0%,rgba(201,164,76,.22),transparent 55%),linear-gradient(180deg,#14213A,#0A1324);border-color:rgba(201,164,76,.38)}
+.ov-rev .rev-card:first-child .rev-card-val{font-size:clamp(32px,6vw,44px);letter-spacing:-.03em;background:linear-gradient(180deg,#FFF1C9,#D9B766);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--ov-gold)}
+.ov-rev .rev-card:first-child .rev-card-val small{font-size:.42em;-webkit-text-fill-color:var(--ov-gold);opacity:.8;letter-spacing:.06em}
+.ov-rev .rev-card-val{font-variant-numeric:tabular-nums}
+.ov-rev .rev-card-val small{font-size:.55em;color:var(--gris);font-weight:700}
+.ov-split{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:980px){.ov-split{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}}
+.ov-card{background:linear-gradient(180deg,var(--ov-card2),var(--ov-card));border:1px solid var(--ov-line);border-radius:18px;padding:16px}
+.ov-card .admdash-list{gap:7px}
+.ov-card .admdash-row{background:rgba(244,243,237,.03);border-color:var(--ov-line);border-radius:13px}
+.ov-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.ov-q{display:flex;align-items:center;gap:10px;padding:12px;border-radius:13px;border:1px solid var(--ov-line);background:rgba(244,243,237,.03);color:#F4F3ED;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-align:left;transition:background .18s,border-color .18s}
+.ov-q:hover{background:rgba(46,212,127,.09);border-color:rgba(46,212,127,.4)}
+.ov-q svg{flex:0 0 auto;color:var(--ov-gold)}
+.ov-tools{margin-top:14px;padding-top:14px;border-top:1px solid var(--ov-line)}
+
+/* ---- Statistiques des fiches ---- */
+.st-panel{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:18px;padding:14px 14px 12px;margin:0 0 16px}
+.st-panel .admf-stat-lbl{margin:0 0 7px}
+.st-seg{display:inline-flex;flex-wrap:wrap;gap:3px;padding:3px;margin:0 0 12px!important;border-radius:12px;background:rgba(3,8,23,.7);border:1px solid rgba(244,243,237,.07)}
+.st-seg .admf-chip{border:0;border-radius:9px;padding:7px 13px}
+.st-seg .admf-chip.is-on{background:linear-gradient(180deg,rgba(46,212,127,.22),rgba(46,212,127,.1));color:#2ED47F;box-shadow:inset 0 0 0 1px rgba(46,212,127,.35)}
+.st-panel .admf-stat-custom{margin:0 0 12px}
+.st-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;padding:20px 18px;margin-bottom:12px;border-radius:20px;border:1px solid rgba(201,164,76,.34);background:radial-gradient(120% 140% at 0% 0%,rgba(46,212,127,.14),transparent 55%),linear-gradient(180deg,#12203A,#0A1324)}
+.st-kicker{grid-column:1/-1;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--or-clair)}
+.st-ring{position:relative;width:124px;height:124px}
+.st-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.st-ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.st-ring .bg{stroke:rgba(244,243,237,.08)}
+.st-ring .fg{stroke:url(#stGrad);transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1)}
+.st-ring-tx{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.st-ring-tx b{font-family:var(--display);font-weight:800;font-size:25px;letter-spacing:-.03em;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+.st-ring-tx span{margin-top:5px;font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--gris);max-width:80px;line-height:1.25}
+.st-legend{display:flex;flex-direction:column;gap:11px;min-width:0}
+.st-lg{display:flex;align-items:center;gap:10px;min-width:0}
+.st-lg i{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.st-lg span{flex:1;font-size:12.5px;color:#C5D0DC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-lg b{font-family:var(--display);font-weight:800;font-size:21px;font-variant-numeric:tabular-nums;color:#fff}
+.st-won i{background:#2ED47F}.st-lost i{background:#F0735E}.st-pend i{background:#C9A44C}
+.st-won b{color:#2ED47F}.st-lost b{color:#F0735E}.st-pend b{color:#E8CE8A}
+.st-bar{grid-column:1/-1;display:flex;height:9px;border-radius:99px;overflow:hidden;background:rgba(244,243,237,.07)}
+.st-bar s{display:block;height:100%;text-decoration:none;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.st-bar .w{background:linear-gradient(90deg,#17A860,#2ED47F)}.st-bar .l{background:#F0735E}.st-bar .p{background:#C9A44C}
+.st-foot{grid-column:1/-1;font-size:12px;color:var(--gris)}
+.st-sports{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}
+@media (max-width:420px){.st-hero{grid-template-columns:1fr;justify-items:center}.st-bar,.st-foot{width:100%;justify-self:stretch}.st-foot{text-align:center}.st-legend{width:100%}.st-kicker{justify-self:start}.st-sports{grid-template-columns:1fr}}
+.st-sport{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:18px;padding:15px;min-width:0}
+.st-sport-h{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-family:var(--display);font-weight:700;font-size:14px;color:#F4F3ED}
+.st-sport-h svg{color:var(--or-clair)}
+.st-sport-rate{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-.03em;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.st-sport-rate small{display:block;margin-top:6px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.st-meter{height:7px;border-radius:99px;margin:14px 0 12px;background:rgba(240,115,94,.35);overflow:hidden}
+.st-meter s{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#17A860,#2ED47F);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.st-meter.empty{background:rgba(244,243,237,.08)}
+.st-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.st-mini div{padding:8px 4px;border-radius:10px;background:rgba(244,243,237,.035)}
+.st-mini b{display:block;font-family:var(--display);font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.st-mini span{display:block;margin-top:2px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.st-mini .w b{color:#2ED47F}.st-mini .l b{color:#F0735E}.st-mini .p b{color:#E8CE8A}
+.st-note{display:flex;gap:8px;align-items:flex-start;font-size:11.5px;line-height:1.5;color:var(--gris);padding:2px 4px 8px}
+.st-note svg{flex:0 0 auto;margin-top:1px}
+
+/* ---- Filtres de l'Istorik ---- */
+.hf{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:18px;padding:13px;margin:0 0 14px}
+.hf-search{position:relative;display:flex;align-items:center;margin:0 0 12px}
+.hf-search>svg{position:absolute;left:13px;color:var(--gris);pointer-events:none}
+.hf-search input{width:100%;min-height:46px;padding:0 42px 0 41px;border-radius:13px;border:1px solid rgba(244,243,237,.12);background:rgba(3,8,23,.7);color:#F4F3ED;font:inherit;font-size:14px;-webkit-appearance:none;appearance:none}
+.hf-search input:focus{outline:none;border-color:rgba(46,212,127,.55);box-shadow:0 0 0 3px rgba(46,212,127,.12)}
+.hf-search input::-webkit-search-cancel-button{display:none}
+.hf-clear{position:absolute;right:8px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(244,243,237,.08);color:#F4F3ED;font-size:16px;line-height:1;cursor:pointer}
+.hf-clear[hidden]{display:none}
+.hf-row{display:flex;flex-wrap:wrap;gap:6px 18px}
+.hf-grp{min-width:0}
+.hf .admf-stat-lbl{margin:0 0 6px}
+.hf-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:2px 0 4px}
+.hf-dates .field{margin:0;min-width:0}
+.hf-dates input{min-width:0;max-width:100%}
+.hf-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding-top:11px;border-top:1px solid rgba(244,243,237,.07);font-size:12px;color:var(--gris)}
+.hf-foot b{color:var(--or-clair)}
+.hf-reset{border:1px solid rgba(244,243,237,.12);background:transparent;color:#F4F3ED;border-radius:999px;padding:6px 13px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer}
+.hf-reset:hover{border-color:rgba(46,212,127,.45);color:#2ED47F}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -5129,41 +5249,55 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 
     <!-- VUE : ACCUEIL -->
     <div class="dash-view on" data-adview="home">
-      <div class="dash-hi">
-        <h2 id="admHiH" data-i18n="adm_home_h">Vue d'ensemble</h2>
-        <p data-i18n="adm_home_p">Chif reyèl, dirèkteman soti nan baz done a.</p>
-      </div>
-
-      <div class="admdash-panel">
-        <div class="rev-cards" id="admKpisHome">
-          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+      <div class="ov-head">
+        <div>
+          <span class="ov-eyebrow"><span class="ov-live"></span><span data-i18n="ov_live">En direct</span></span>
+          <h2 id="admHiH" data-i18n="adm_home_h">Vue d'ensemble</h2>
+          <p data-i18n="adm_home_p">Chif reyèl, dirèkteman soti nan baz done a.</p>
         </div>
-      </div>
-
-      <div class="admdash-panel">
-        <div class="admdash-section-h" data-i18n="adm_rev_h">Revni</div>
-        <div class="rev-cards" id="admRevCards">
-          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
-        </div>
-      </div>
-
-      <div class="admdash-panel admdash-panel-toolbar">
-        <div id="admApprentissageWrap">
-          <button type="button" class="wiz-change" id="admApprentissageBtn" data-i18n="adm_apprentissage_btn">Rapport apprentissage</button>
-          <div id="admApprentissageResultat" style="margin-top:8px"></div>
-        </div>
-        <div class="admdash-refresh-row" style="margin-top:0">
+        <div class="ov-head-act">
           <span class="admdash-updated" id="admHomeUpdated"></span>
-          <button type="button" class="wiz-change" id="admHomeRefresh">
+          <button type="button" class="ov-refresh" id="admHomeRefresh">
             <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
             <span data-i18n="adm_refresh">Rafrechi</span>
           </button>
         </div>
       </div>
 
-      <div class="admdash-panel">
-        <div class="admdash-section-h" data-i18n="adm_activity_h">Aktivite resan</div>
-        <div id="admActiviteRecente" class="admdash-list"></div>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="ov_kpis_h">Indicateurs clés</div>
+        <div class="ov-kpis" id="admKpisHome">
+          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+        </div>
+      </section>
+
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_rev_h">Revni</div>
+        <div class="ov-rev" id="admRevCards">
+          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+        </div>
+      </section>
+
+      <div class="ov-split">
+        <section class="ov-sec">
+          <div class="ov-sec-h" data-i18n="adm_activity_h">Aktivite resan</div>
+          <div class="ov-card"><div id="admActiviteRecente" class="admdash-list"></div></div>
+        </section>
+        <section class="ov-sec">
+          <div class="ov-sec-h" data-i18n="ov_quick_h">Accès rapide</div>
+          <div class="ov-card">
+            <div class="ov-quick">
+              <button type="button" class="ov-q" data-ovgo="payments"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg><span data-i18n="ov_q_pay">Paiements</span></button>
+              <button type="button" class="ov-q" data-ovgo="users"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"/></svg><span data-i18n="ov_q_users">Utilisateurs</span></button>
+              <button type="button" class="ov-q" data-ovgo="fiches"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span data-i18n="ov_q_fiches">Fiches</span></button>
+              <button type="button" class="ov-q" data-ovgo="revenus"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span data-i18n="ov_q_rev">Revenus</span></button>
+            </div>
+            <div class="ov-tools" id="admApprentissageWrap">
+              <button type="button" class="wiz-change" id="admApprentissageBtn" data-i18n="adm_apprentissage_btn">Rapport apprentissage</button>
+              <div id="admApprentissageResultat" style="margin-top:8px"></div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -5289,9 +5423,9 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
         <button type="button" class="admf-tab" data-ftab="hist" data-i18n="adm_fiches_tab_hist">Istorik</button>
         <button type="button" class="admf-tab" data-ftab="stats" data-i18n="adm_fiches_tab_stats">Estatistik</button>
       </div>
-      <div id="admFichesStatsFilters" style="display:none">
+      <div id="admFichesStatsFilters" class="st-panel" style="display:none">
         <div class="admf-stat-lbl" data-i18n="adm_fiches_st_period">Peryòd</div>
-        <div class="admf-filters" id="admStatsPeriodChips" style="margin-top:6px">
+        <div class="admf-filters st-seg" id="admStatsPeriodChips">
           <button type="button" class="admf-chip is-on" data-speriod="all" data-i18n="adm_fiches_f_all">Tout</button>
           <button type="button" class="admf-chip" data-speriod="7" data-i18n="adm_fiches_st_p7">7 jou</button>
           <button type="button" class="admf-chip" data-speriod="30" data-i18n="adm_fiches_st_p30">30 jou</button>
@@ -5302,10 +5436,43 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
           <label class="field"><span class="field-lbl" data-i18n="adm_fiches_st_to">Jiska</span><input type="date" id="admStatsTo"></label>
         </div>
         <div class="admf-stat-lbl" data-i18n="adm_fiches_st_type">Tip</div>
-        <div class="admf-filters" id="admStatsTypeChips" style="margin:6px 0 16px">
+        <div class="admf-filters st-seg" id="admStatsTypeChips" style="margin-bottom:2px!important">
           <button type="button" class="admf-chip is-on" data-stype="all" data-i18n="adm_fiches_f_all">Tout</button>
           <button type="button" class="admf-chip" data-stype="normal" data-i18n="adm_fiches_st_t_normal">Fich nòmal</button>
           <button type="button" class="admf-chip" data-stype="exact" data-i18n="adm_fiches_st_t_exact">Skò egzak</button>
+        </div>
+      </div>
+      <div id="admHistFilters" class="hf" style="display:none">
+        <div class="hf-search">
+          <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="admHistQ" data-i18n-ph="hf_search_ph" placeholder="Chèche kòd, match, lig..." autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button type="button" class="hf-clear" id="admHistQClr" hidden aria-label="Effacer">&times;</button>
+        </div>
+        <div class="hf-row">
+          <div class="hf-grp">
+            <div class="admf-stat-lbl" data-i18n="hf_sport">Espò</div>
+            <div class="admf-filters st-seg" id="admHistSport">
+              <button type="button" class="admf-chip is-on" data-hsport="all" data-i18n="adm_fiches_f_all">Tout</button>
+              <button type="button" class="admf-chip" data-hsport="foot" data-i18n="adm_fiches_st_foot">Foutbòl</button>
+              <button type="button" class="admf-chip" data-hsport="basket" data-i18n="adm_fiches_st_basket">Basketball</button>
+            </div>
+          </div>
+          <div class="hf-grp">
+            <div class="admf-stat-lbl" data-i18n="adm_fiches_st_type">Tip</div>
+            <div class="admf-filters st-seg" id="admHistType">
+              <button type="button" class="admf-chip is-on" data-htype="all" data-i18n="adm_fiches_f_all">Tout</button>
+              <button type="button" class="admf-chip" data-htype="normal" data-i18n="adm_fiches_st_t_normal">Fich nòmal</button>
+              <button type="button" class="admf-chip" data-htype="exact" data-i18n="adm_fiches_st_t_exact">Skò egzak</button>
+            </div>
+          </div>
+        </div>
+        <div class="hf-dates">
+          <label class="field"><span class="field-lbl" data-i18n="adm_fiches_st_from">De</span><input type="date" id="admHistFrom"></label>
+          <label class="field"><span class="field-lbl" data-i18n="adm_fiches_st_to">Jiska</span><input type="date" id="admHistTo"></label>
+        </div>
+        <div class="hf-foot">
+          <span id="admHistCount"></span>
+          <button type="button" class="hf-reset" id="admHistReset" data-i18n="hf_reset">Reyinisyalize</button>
         </div>
       </div>
       <label class="field"><span class="field-lbl" data-i18n="adm_fiches_date_lbl">Dat</span>
