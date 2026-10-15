@@ -3649,6 +3649,22 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .foot-social a.soc-link:hover,
 .foot-social a[aria-label="WhatsApp"]:hover,.foot-social a[aria-label="Telegram"]:hover,
 .foot-social a[aria-label="Instagram"]:hover,.foot-social a[aria-label="TikTok"]:hover{background:#fff;filter:none;transform:translateY(-3px) scale(1.04);box-shadow:0 10px 22px rgba(0,0,0,.35),0 0 0 2px rgba(255,255,255,.9)}
+
+/* Reseaux : SANS fond blanc — pastille sombre discrete, logos tres vifs aux couleurs de marque */
+.foot-social a.soc-link{width:50px;height:50px;border-radius:15px;background:rgba(255,255,255,.05);box-shadow:none;border:1px solid rgba(255,255,255,.16)}
+.foot-social a.soc-link svg{width:30px;height:30px}
+.foot-social a[aria-label="WhatsApp"]{background:rgba(37,211,102,.10);color:#2FE577;border-color:rgba(37,211,102,.5)}
+.foot-social a[aria-label="Telegram"]{background:rgba(42,171,238,.10);color:#37B7FF;border-color:rgba(42,171,238,.5)}
+.foot-social a[aria-label="Instagram"]{background:rgba(245,39,108,.08);color:#FF3E85;border-color:rgba(245,39,108,.45)}
+.foot-social a[aria-label="TikTok"]{background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.3);box-shadow:none}
+.foot-social a[aria-label="TikTok"] svg{filter:drop-shadow(-1.8px -1px 0 #25F4EE) drop-shadow(1.8px 1px 0 #FE2C55)}
+.foot-social a.soc-link:hover,
+.foot-social a[aria-label="WhatsApp"]:hover,.foot-social a[aria-label="Telegram"]:hover,
+.foot-social a[aria-label="Instagram"]:hover,.foot-social a[aria-label="TikTok"]:hover{filter:none;transform:translateY(-3px) scale(1.05)}
+.foot-social a[aria-label="WhatsApp"]:hover{background:rgba(37,211,102,.2);box-shadow:0 8px 22px rgba(37,211,102,.25)}
+.foot-social a[aria-label="Telegram"]:hover{background:rgba(42,171,238,.2);box-shadow:0 8px 22px rgba(42,171,238,.25)}
+.foot-social a[aria-label="Instagram"]:hover{background:rgba(245,39,108,.16);box-shadow:0 8px 22px rgba(245,39,108,.25)}
+.foot-social a[aria-label="TikTok"]:hover{background:rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(255,255,255,.12)}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
