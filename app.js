@@ -7820,6 +7820,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   /* Stripe a part, en DOLLARS (15/10) : montants d'origine en USD (provider_amount), jamais le
      montant en gourdes eventuellement paye par le client. Lecture seule (RPC get_stripe_stats). */
+  const refCourte=r=>{r=String(r||'');return r.length>22?r.slice(0,12)+'…'+r.slice(-6):(r||'—');};
   const usd=n=>Number(n||0).toLocaleString(currentLang==='en'?'en-US':'fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/\u202f|\u00a0/g,' ')+' $';
   async function renderStripeUsd(){
     const cards=document.getElementById('admStripeCards'),det=document.getElementById('admStripeDetail');
@@ -8522,7 +8523,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
            explicite, l'admin ne verrait jamais la reference saisie ni la
            preuve d'un depot manuel. `provider` sert a distinguer un depot
            manuel (NULL) d'un paiement automatique (renseigne cote serveur). */
-        .select('id,user_id,subscription_id,plan_id,amount_htg,method,status,reference,confirmed_at,confirmed_by,created_at,provider,manual_transaction_ref,manual_proof_path')
+        .select('id,user_id,subscription_id,plan_id,amount_htg,method,status,reference,confirmed_at,confirmed_by,created_at,provider,manual_transaction_ref,manual_proof_path,provider_amount')
         .order('created_at',{ascending:false}).limit(300);
       paysCache=(!error&&data)?data:[];
     }catch(e){
@@ -8558,12 +8559,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          provider PLOP PLOP : pas de badge pour lui, ce serait toujours
          "MANUEL" et n'apporterait aucune information. */
       const estMoncashNatcash=(p.method==='moncash'||p.method==='natcash');
-      const badgeMode=estMoncashNatcash?
+      /* Stripe (15/10) : confirme automatiquement par le webhook signe (provider='stripe') ->
+         badge AUTO, et montant d'origine en dollars (jamais le montant en gourdes). */
+      const estStripeAuto=(p.method==='stripe'&&p.provider==='stripe');
+      const montantListe=(estStripeAuto&&p.provider_amount!=null)?usd(p.provider_amount):((p.amount_htg||0)+' HTG');
+      const badgeMode=estStripeAuto?
+        ' <span class="admdash-mode-badge auto">'+t('adm_pay_mode_auto')+'</span>':estMoncashNatcash?
         ' <span class="admdash-mode-badge '+(p.provider?'auto':'manuel')+'">'+
         t(p.provider?'adm_pay_mode_auto':'adm_pay_mode_manual')+'</span>':'';
       return '<button type="button" class="admdash-row" data-pid="'+p.id+'">'+
         '<span class="admdash-row-av">'+(p.plan_id||'?').toUpperCase().slice(0,2)+'</span>'+
-        '<span class="admdash-row-tx"><b>'+nom+'</b><span>'+(p.amount_htg||0)+' HTG · '+
+        '<span class="admdash-row-tx"><b>'+nom+'</b><span>'+montantListe+' · '+
         (p.method||'—')+badgeMode+' · '+fmt(p.created_at)+'</span></span>'+
         '<span class="admdash-row-badge '+(badgeCls[p.status]||'aucun')+'">'+t(badgeLbl[p.status]||'adm_badge_none')+'</span>'+
         '</button>';
@@ -8625,15 +8631,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '</div>'+
       '<dl class="wiz-done-sum" style="margin-top:16px">'+
         '<div><dt>'+t('adm_pay_plan')+'</dt><dd>'+(p.plan_id||'—').toUpperCase()+'</dd></div>'+
-        '<div><dt>'+t('adm_pay_amount')+'</dt><dd>'+(p.amount_htg||0)+' HTG</dd></div>'+
+        '<div><dt>'+t('adm_pay_amount')+'</dt><dd>'+((p.method==='stripe'&&p.provider==='stripe'&&p.provider_amount!=null)?usd(p.provider_amount):((p.amount_htg||0)+' HTG'))+'</dd></div>'+
         /* Depot manuel (14/09) : `provider IS NULL` sur moncash/natcash =
            l'utilisateur a transfere lui-meme et a joint un recu. Le badge
            evite de confondre avec un paiement deja verifie par PLOP PLOP. */
         '<div><dt>'+t('adm_pay_method')+'</dt><dd>'+(methodLbl[p.method]||p.method||'—')+
           ((p.method==='moncash'||p.method==='natcash')?
             ' <span class="wiz-paym-badge" style="background:'+(p.provider?'var(--vert-vif)':'var(--or)')+'">'+
-            t(p.provider?'adm_pay_mode_auto':'adm_pay_mode_manual')+'</span>':'')+'</dd></div>'+
-        '<div><dt>'+t('adm_pay_ref')+'</dt><dd>'+(p.reference||'—')+'</dd></div>'+
+            t(p.provider?'adm_pay_mode_auto':'adm_pay_mode_manual')+'</span>':
+            (p.method==='stripe'&&p.provider==='stripe'?
+              ' <span class="wiz-paym-badge" style="background:var(--vert-vif)">'+t('adm_pay_mode_auto')+'</span>':''))+'</dd></div>'+
+        '<div><dt>'+t('adm_pay_ref')+'</dt><dd title="'+echapper(p.reference||'')+'">'+echapper(refCourte(p.reference))+'</dd></div>'+
         (p.manual_transaction_ref?
           '<div><dt>'+t('adm_pay_manual_ref')+'</dt><dd>'+echapper(p.manual_transaction_ref)+'</dd></div>':'')+
         '<div><dt>'+t('adm_pay_date')+'</dt><dd>'+fmt(p.created_at)+'</dd></div>'+
