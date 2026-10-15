@@ -134,6 +134,21 @@ function signatureValide(corpsBrut, enteteSignature) {
   return correspond ? { ok: true } : { ok: false, raison: 'signature non conforme' };
 }
 
+/* Montant et devise a comparer au prix du plan, TOUJOURS dans la devise du prix d'origine (USD).
+   Avec « Adaptive Pricing » (le client choisit de payer en gourdes HTG), Stripe convertit : les champs
+   principaux de la session sont alors dans la devise du client, et currency_conversion donne les
+   montants d'ORIGINE (USD). On compare donc aux montants d'origine quand ils existent. Montant HORS
+   taxes (subtotal). Si rien n'est exploitable, on retombe sur les champs principaux : un ecart
+   laisse le paiement en attente (jamais d'activation par erreur). */
+function montantOrigine(session) {
+  const c = session.currency_conversion;
+  if (c && c.source_currency && c.amount_subtotal != null) {
+    return { montant: Number(c.amount_subtotal), devise: String(c.source_currency).toLowerCase() };
+  }
+  const m = session.amount_subtotal != null ? session.amount_subtotal : session.amount_total;
+  return { montant: Number(m), devise: String(session.currency || '').toLowerCase() };
+}
+
 /* ============================================================ */
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
@@ -229,8 +244,8 @@ exports.handler = async function (event) {
        Accepte PRIX_TEST_P1.cents (0,50 $) SEULEMENT jusqu'a PRIX_TEST_P1.jusqua : passee cette
        date il est IGNORE automatiquement. A retirer du code apres le test. */
     if (planId === 'p1' && Date.now() < Date.parse(PRIX_TEST_P1.jusqua)) {
-      const recu = session.amount_subtotal != null ? session.amount_subtotal : session.amount_total;
-      if (Number(recu) === PRIX_TEST_P1.cents && String(session.currency || '').toLowerCase() === 'usd') {
+      const orig = montantOrigine(session);
+      if (orig.montant === PRIX_TEST_P1.cents && orig.devise === 'usd') {
         attendu = { montant: PRIX_TEST_P1.cents, devise: 'usd' };
         await journaliser('stripe_webhook_prix_test', 'Prix de TEST accepte pour p1 (' + PRIX_TEST_P1.cents + ' cents). session=' + refStripe);
       }
@@ -238,13 +253,14 @@ exports.handler = async function (event) {
     if (attendu) {
       // Montant HORS taxes : si la collecte de taxes de Stripe est activee, le total
       // peut depasser le prix du plan sans que le client ait mal paye.
-      const montantRecu = session.amount_subtotal != null ? session.amount_subtotal : session.amount_total;
+      const orig = montantOrigine(session);
+      const montantRecu = orig.montant;
       const memeMontant = Number(montantRecu) === Number(attendu.montant);
-      const memeDevise = String(session.currency || '').toLowerCase() === String(attendu.devise).toLowerCase();
+      const memeDevise = orig.devise === String(attendu.devise).toLowerCase();
       if (!memeMontant || !memeDevise) {
         montantSuspect = true;
         await journaliser('stripe_webhook_montant',
-          'Ecart de montant pour ' + planId + ' : recu ' + session.amount_total + ' ' + session.currency +
+          'Ecart de montant pour ' + planId + ' : recu ' + orig.montant + ' ' + orig.devise + ' (session ' + session.amount_total + ' ' + session.currency + ')' +
           ', attendu ' + attendu.montant + ' ' + attendu.devise + '. session=' + refStripe +
           ' — abonnement NON active, laisse en attente pour verification manuelle.');
       }
