@@ -3624,6 +3624,19 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .tgcard-note{display:block;margin-top:9px;font-size:11px;color:var(--gris);line-height:1.4}
 
 .admdash-row-tx span{overflow-wrap:anywhere}
+
+/* Reseaux du pied de page : plus grands et plus vifs (15/10, « trop fonces ») */
+.foot-social{gap:12px}
+.foot-social a.soc-link{width:48px;height:48px;border-radius:14px;opacity:1;filter:saturate(1.08) brightness(1.04);box-shadow:0 6px 18px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.18)}
+.foot-social a.soc-link svg{width:24px;height:24px}
+.foot-social a[aria-label="WhatsApp"]{background:linear-gradient(135deg,#3CEB7E,#12C157)}
+.foot-social a[aria-label="Telegram"]{background:linear-gradient(135deg,#46C4FF,#1C93E0)}
+.foot-social a[aria-label="Instagram"]{background:radial-gradient(circle at 30% 107%,#FFE27A 0%,#FFE27A 5%,#FF6A4D 42%,#E02BA6 62%,#4D7CFF 92%)}
+.foot-social a[aria-label="TikTok"]{background:linear-gradient(135deg,#2A2A2E,#0B0B0D);box-shadow:0 6px 18px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.3)}
+.foot-social a.soc-link:hover{filter:saturate(1.2) brightness(1.15)}
+.foot-social a[aria-label="WhatsApp"]:hover{background:linear-gradient(135deg,#3CEB7E,#12C157)}
+.foot-social a[aria-label="Telegram"]:hover{background:linear-gradient(135deg,#46C4FF,#1C93E0)}
+.foot-social a[aria-label="TikTok"]:hover{background:linear-gradient(135deg,#2A2A2E,#0B0B0D)}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
