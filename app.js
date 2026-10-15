@@ -1,12 +1,82 @@
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
+adm_landing_shown_h:"Chiffres affichés sur la page d'accueil",
+adm_landing_real_h:"Données réelles (lecture seule)",
+adm_landing_real_won:"Fiches publiées réellement gagnées (bot + admin)",
+adm_landing_real_users:"Utilisateurs réellement inscrits et confirmés",
+adm_landing_real_note:"Les chiffres affichés sont un chiffre de départ choisi par vous, auquel +1 s'ajoute automatiquement à chaque vraie inscription confirmée et à chaque fiche publiée qui devient gagnante. Les statistiques de Fich → Estatistik ne comptent que les vraies fiches publiées.",
+mfa_disable_h:"Confirmer la désactivation du 2FA",
+mfa_disable_p:"Par sécurité, entrez le code à 6 chiffres de votre application d'authentification pour confirmer.",
+adm_sec_pas_pret:"L'activation du 2FA sera disponible très bientôt (installation en cours côté serveur).",
+// Sekirite 2FA (14/10)
+adm_nav_security:"Sécurité 2FA",
+adm_security_h:"Sécurité 2FA",
+adm_security_p:"Double authentification de votre compte admin.",
+adm_sec_on:"ACTIVÉE",
+adm_sec_off:"DÉSACTIVÉE",
+adm_sec_codes_left:"{n} code(s) disponible(s)",
+adm_sec_codes_p:"Si vous ne pouvez pas recevoir votre code à 6 chiffres, un code de secours réinitialise votre 2FA. Chaque code ne sert qu'une fois.",
+adm_sec_codes_regen:"Générer de nouveaux codes de secours",
+adm_sec_codes_regen_q:"Générer de nouveaux codes ? Les anciens ne fonctionneront plus.",
+adm_sec_codes_err:"Le 2FA est activé, mais les codes de secours n'ont pas pu être créés. Générez-les depuis le menu Sécurité 2FA.",
+mfa_reset_trop:"Trop d'essais. Attendez 15 minutes puis réessayez.",
+mfa_reset_ok_h:"2FA réinitialisé",
+mfa_reset_ok_p:"Le 2FA a été retiré de votre compte. Réactivez-le depuis le menu Sécurité 2FA.",
+// Titre du hero (14/10) : traduit en anglais seulement, FR = texte creole
+lp_h1:"<span>GENYEN LAJAN</span> <span>CHAK JOU AK</span> <span><em class=\"lp-pill\">FICH</em> <b>VIP YO</b></span>",
+lp_kicker:"Cote <span>ParyajPam ParyajLakay</span>",
+// Carte Stripe bientot disponible (13/10)
+stripe_soon_badge:"Bientôt",
+stripe_soon_h:"Le paiement par carte arrive bientôt",
+stripe_soon_p:"Pour le moment, merci de payer avec MonCash ou NatCash. Votre abonnement sera activé rapidement.",
+stripe_soon_btn:"Payer avec MonCash / NatCash",
+// Landing (refonte 13/10)
+lp_live:"Fiches du jour disponibles",
+lp_cta_results:"Voir les résultats",
+lp_books:"Des fiches pour les grandes plateformes de paris",
+lp_how_tag:"Comment ça marche",
+lp_how_h2:"4 étapes pour commencer à gagner",
+lp_how_p:"L'inscription prend moins de 2 minutes. Ensuite, les fiches arrivent chaque jour directement dans votre dashboard.",
+lp_s1_t:"Créez un compte",
+lp_s1_d:"Inscrivez-vous gratuitement avec votre e-mail en quelques secondes, sans engagement.",
+lp_s2_t:"Choisissez un abonnement",
+lp_s2_d:"Choisissez le plan qui vous convient et payez via MonCash, NatCash ou carte.",
+lp_s3_t:"Recevez les fiches",
+lp_s3_d:"Chaque jour, des fiches déjà analysées arrivent dans votre dashboard et dans le groupe Telegram VIP.",
+lp_s4_t:"Pariez et gagnez",
+lp_s4_d:"Jouez les fiches sur ParyajPam, ParyajLakay ou 1xBet et suivez les résultats.",
+lp_why_tag:"Nos avantages",
+lp_why_p:"Un service fiable, transparent et pensé pour les parieurs haïtiens.",
+lp_f1_t:"Analyse d'experts chaque jour",
+lp_f1_d:"Notre équipe étudie les matchs de football et de NBA, les marchés et les cotes avant de publier chaque fiche.",
+lp_f2_t:"Garantie remboursement",
+lp_f2_d:"Si vous ne gagnez pas une seule fois pendant votre abonnement, nous vous remboursons.",
+lp_f3_t:"Historique transparent",
+lp_f3_d:"Chaque fiche est enregistrée avec son résultat réel, gagnante ou perdante.",
+lp_f4_t:"Paiement local en Gdes",
+lp_f4_d:"MonCash, NatCash, cartes Visa/Mastercard et PayPal. Activation rapide.",
+lp_f5_t:"Dashboard + Telegram",
+lp_f5_d:"Vos fiches sont disponibles dans votre dashboard et dans le groupe Telegram VIP.",
+lp_sim_tag:"Simulateur",
+lp_sim_b1:"Cote de chaque formule VIP",
+lp_sim_b2:"Calcul en Gourdes (HTG)",
+lp_sim_b3:"Valable pour ParyajPam, ParyajLakay et 1xBet",
+lp_sim_note:"Exemple illustratif. Les résultats passés ne garantissent pas les résultats futurs.",
+lp_pay_secure:"Paiement sécurisé",
+lp_proof_zoom:"Touchez une fiche pour l'agrandir",
+lp_help_t:"Une autre question ?",
+lp_help_d:"Notre équipe est disponible sur WhatsApp et Telegram pour vous aider.",
+lp_faq_all:"Voir toutes les questions",
+lp_resp:"Jouez de façon responsable. Ne misez que ce que vous pouvez perdre.",
+lp_foot_desc:"Fiches et pronostics football et NBA, analysés chaque jour par notre équipe d'experts pour ParyajPam, ParyajLakay et 1xBet.",
+lp_copy:"&copy; VIPBETCOTE. Tous droits réservés. Jouez de façon responsable.",
 nav_tickets:"FICHES RÉUSSIES", nav_simulateur:"ESSAYER LA DÉMO", nav_abonnements:"Abonnements", nav_faq:"FAQ",
 btn_connect:"Se connecter", btn_signup:"S'inscrire", btn_signup_free:"S'inscrire gratuitement",
 tick_won:"GAGNÉ",
 hero_badge:"EXPERTS EN LIGNE &nbsp;•&nbsp; +42 PRONOSTICS DU JOUR",
 hero_t1:"L'EXCELLENCE", hero_t2:"DU", hero_t3:"PRONOSTIC", hero_t4:"PREMIUM",
-hero_sub:"La plus grande plateforme de pronostics qui vous aide à gagner sur ParyajPam, ParyajLakay et 1xBet. Nous avons 6 ans d'expérience. Si vous voulez arrêter de perdre votre argent, choisissez un plan ci-dessous dès maintenant.",
+hero_sub:"6 ans d'expérience dans le pronostic sportif. Chaque jour, notre équipe d'experts vous envoie des fiches déjà analysées pour ParyajPam, ParyajLakay et 1xBet. Choisissez un plan et arrêtez de perdre votre argent.",
 hero_cta1:"DÉMARRER MAINTENANT",
 rating_label:"Excellent sur Trustpilot",
 stat_garanti:"GARANTI", stat_garanti_lab:"REMBOURSEMENT SI VOUS NE GAGNEZ PAS UNE FOIS",
@@ -39,7 +109,7 @@ ab_btn_vip:"Devenir VIP",
 ab_btn_lifetime:"S&rsquo;ABONNER", ab_btn_sabonner:"S&rsquo;ABONNER",
 faq_h2:"Questions fréquentes",
 faq1_q:"Comment sont sélectionnés les pronostics ?", faq1_a:"Chaque pronostic est proposé et examiné par notre équipe d'experts. Nous étudions chaque jour les rencontres de football et de NBA disponibles, évaluons les marchés proposés et publions des sélections simples et combinées, chacune accompagnée d'un score de confiance déterminé par nos analystes.",
-faq2_a:"Après analyse et selon nos statistiques, nous affichons un score de 83 % de fiches validées et plus de 8 390 fiches réussies. Notre historique complet reste consultable, fiches perdantes comprises.",
+faq2_a:"Après analyse et selon nos statistiques, nous affichons un score de <span data-stat=\"rate\">83 %</span> de fiches validées et plus de <span data-stat=\"won\">6 390</span> fiches réussies. Notre historique complet reste consultable, fiches perdantes comprises.",
 faq3_q:"Comment payer mon abonnement ?", faq3_a:"Via MonCash, NatCash, Carte/PayPal. Selon le mode choisi, l'abonnement est activé automatiquement ou après validation par l'administrateur.",
 faq4_q:"Quels sports et quels types de paris sont couverts ?", faq4_a:"Football, NBA, etc. Marchés disponibles sur ParyajPam, ParyajLakay, 1xBet, etc. : 1X2, Double Chance, Les deux équipes marquent, Plus/Moins de buts, Handicap, Buteur, Total NBA, etc.",
 faq5_q:"Puis-je annuler mon abonnement ?", faq5_a:"Oui. Les abonnements mensuels s'arrêtent simplement à leur date d'expiration si vous ne renouvelez pas. Le plan Lifetime est un paiement unique, sans renouvellement.",
@@ -134,8 +204,8 @@ dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
 fiche_note_x2:"Jouer par deux matchs",
-adm_fiche_gen_btn:"⚡ GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
-adm_fiche_gen_exact_btn:"🎯 GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
+adm_fiche_gen_btn:"GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
+adm_fiche_gen_exact_btn:"GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
 adm_fiche_gen_basket_h:"Générer une fiche basketball",
 adm_fiche_gen_nbmatchs:"Nombre de matchs",
 adm_fiche_gen_date:"Date des matchs", adm_fiche_gen_hdebut:"Heure début (PAP)", adm_fiche_gen_hfin:"Heure fin (PAP)", adm_fiche_gen_sport:"Sport",
@@ -153,20 +223,20 @@ adm_fiche_gen_ok_prog:"programmée pour le {h}", adm_fiche_gen_clamped:"cote max
 dash_conf:"Confiance moyenne par sélection", dash_totalodd:"Cote totale",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} utilisés · {left} restants aujourd'hui",
 adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
-adm_quota_gen_epuise:"⛔ Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"⚠️ Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
+adm_quota_gen_epuise:"Quota épuisé pour aujourd'hui — génération impossible avant le reset (minuit UTC).", adm_quota_gen_bas:"Seulement {left} appels restants — la fiche générée aura un pool de matchs plus pauvre que d'habitude.",
 adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} utilisés · {remaining} restants (vérifié à {time})",
-adm_quota_inconnu:"⚠️ Quota réel inconnu depuis minuit UTC — aucun appel API-Sports effectué aujourd'hui.",
-adm_quota_gen_inconnu:"⚠️ Quota inconnu depuis minuit UTC. Lance un diagnostic (?diag=quota-status) avant de générer pour être sûr.",
+adm_quota_inconnu:"Quota réel inconnu depuis minuit UTC — aucun appel API-Sports effectué aujourd'hui.",
+adm_quota_gen_inconnu:"Quota inconnu depuis minuit UTC. Lance un diagnostic (?diag=quota-status) avant de générer pour être sûr.",
 adm_apprentissage_btn:"Rapport apprentissage",
 adm_apprentissage_indispo:"Rapport indisponible pour le moment.",
 adm_apprentissage_vide:"Pas encore assez de résultats réglés pour un rapport.",
 adm_apprentissage_labels:"Par label de confiance (A-E)",
 adm_apprentissage_marches:"Par championnat + marché",
 adm_fiche_gen_basket_p:"Fiche basketball combinée — aucune cote minimale obligatoire, seule la cote max ci-dessus est un plafond strict. Visible par les plans cochés et tous les plans au-dessus (cascade d'accès).",
-adm_fiche_gen_basket_submit:"🏀 GÉNÉRER FICHE BASKETBALL",
+adm_fiche_gen_basket_submit:"GÉNÉRER FICHE BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
-dtk_cd_min:"⏱ Premier match dans {n} min", dtk_cd_h:"⏱ Premier match dans {h}h{m}", dtk_cd_j:"⏱ Premier match dans {j} j", dtk_cd_bientot:"⏱ Premier match imminent", dtk_cd_encours:"⏱ Premier match en cours",
+dtk_cd_min:"Premier match dans {n} min", dtk_cd_h:"Premier match dans {h}h{m}", dtk_cd_j:"Premier match dans {j} j", dtk_cd_bientot:"Premier match imminent", dtk_cd_encours:"Premier match en cours",
 dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez de façon responsable", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
@@ -210,7 +280,8 @@ wiz_p_stripe_indispo:"Le paiement par carte n'est pas disponible pour ce plan po
 stripe_back_h:"Paiement reçu",
 stripe_back_p:"Votre paiement a bien été reçu. Votre abonnement s'active dans quelques instants.",
 legal_updated:"Mise à jour : août 2026",
-hero_why:"POUKISA'W DWE ENSKRI NAN VIPBETCOTE??",
+hero_why:"POURQUOI CHOISIR VIPBETCOTE ?",
+hero_price_from:"Abonnements dès",
 auth_lbl_username:"Nom d'utilisateur", auth_ph_username:"Choisissez un nom d'utilisateur",
 auth_optional:"(facultatif)",
 auth_err_email_temp:"Les adresses e-mail temporaires ne sont pas acceptées",
@@ -272,7 +343,7 @@ adm_rev_total:"Revenu total confirmé", adm_rev_total_note:"Tout historique, pai
 adm_rev_mois:"Revenu ce mois-ci", adm_rev_paiements:"Paiements confirmés ce mois-ci",
 adm_rev_attente:"En attente de validation", adm_rev_attente_note:"{n} paiement(s) — jamais compté comme revenu tant que non validé.",
 adm_rev_tx_h:"Historique des transactions", adm_rev_tx_more:"Charger les plus anciennes",
-adm_settings_h:"Paramètres", adm_settings_p:"Votre mot de passe et la sécurité de votre compte admin.",
+adm_settings_h:"Paramètres", adm_settings_p:"Le mot de passe de votre compte admin.",
 adm_settings_pw_h:"Changer le mot de passe",
 adm_settings_pw_new:"Nouveau mot de passe", adm_settings_pw_confirm:"Confirmer le nouveau mot de passe",
 adm_settings_pw_save:"Enregistrer le mot de passe",
@@ -283,7 +354,7 @@ adm_settings_pw_err:"Le changement a échoué.",
 adm_settings_pw_toast_h:"Mot de passe modifié", adm_settings_pw_toast_p:"Votre mot de passe a été changé avec succès.",
 adm_settings_2fa_h:"Double authentification (2FA)",
 adm_settings_2fa_on_p:"Le 2FA est activé sur ce compte. Un code sera demandé à chaque connexion.",
-adm_settings_2fa_off_p:"Le 2FA n'est pas activé. Activez-le pour renforcer la sécurité de ce compte admin — totalement optionnel.",
+adm_settings_2fa_off_p:"Le 2FA n'est pas activé. Il est facultatif : une fois activé, un code sera exigé à chaque connexion.",
 adm_settings_2fa_enable:"Activer le 2FA", adm_settings_2fa_disable:"Désactiver le 2FA",
 adm_settings_2fa_err:"L'action a échoué.",
 adm_settings_2fa_on_h:"2FA activé", adm_settings_2fa_on_toast:"La double authentification est maintenant active sur ce compte.",
@@ -335,6 +406,10 @@ adm_fiche_err_save:"L'enregistrement a échoué.",
 adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatement si publiée.",
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
 adm_menu_exit:"Déconnecter",
+tg_h:"Groupe Telegram VIP", tg_membre:"Vous êtes dans votre groupe Telegram VIP.", tg_a_rejoindre:"Votre plan est actif : rejoignez votre groupe Telegram privé. Le lien ne fonctionne qu'une seule fois et uniquement pour votre compte.", tg_btn:"Rejoindre mon groupe Telegram", tg_btn_wait:"Création du lien…", tg_indispo:"Votre groupe Telegram n'est pas encore disponible. Contactez le support.", tg_attente:"Votre changement de groupe est en cours. Réessayez dans quelques minutes.", tg_err:"Impossible de créer le lien pour le moment. Réessayez.", tg_perdu:"Votre accès au groupe s'arrête quand votre plan expire ou change.",
+adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
+ov_live:"En direct", ov_kpis_h:"Indicateurs clés", ov_quick_h:"Accès rapide", ov_q_pay:"Paiements", ov_q_users:"Utilisateurs", ov_q_fiches:"Fiches", ov_q_rev:"Revenus",
+st_pending:"En cours", hf_search_ph:"Rechercher un code, un match, une ligue…", hf_sport:"Sport", hf_count:"{n} fiche(s) trouvée(s)", hf_reset:"Réinitialiser",
 adm_home_h:"Vue d'ensemble", adm_home_p:"Chiffres réels, directement issus de la base de données.",
 adm_refresh:"Rafraîchir", adm_updated_at:"Mis à jour à {t}",
 adm_k_loading:"Chargement...", adm_k_offline:"Connexion indisponible", adm_k_error:"Erreur de lecture",
@@ -470,8 +545,8 @@ mfa_error_nofactor:"Aucun code d'authentification actif trouvé.",
 mfa_btn_retry:"Réessayer",
 mfa_copy:"Copier", mfa_copied:"Copié !",
 mfa_remember:"Se souvenir de cet appareil pendant 30 jours",
-mfa_use_backup:"Utiliser un code de secours",
-mfa_backup_h:"Code de secours", mfa_backup_p:"Entrez un des codes de secours que vous avez téléchargés.",
+mfa_use_backup:"Je ne reçois pas mon code",
+mfa_backup_h:"Réinitialiser le 2FA", mfa_backup_p:"Entrez un de vos codes de secours. Le 2FA sera retiré de votre compte et vous pourrez le réactiver.",
 mfa_backup_err:"Ce code est invalide ou déjà utilisé.",
 mfa_back_to_code:"Revenir au code habituel",
 mfa_codes_h:"Vos codes de secours",
@@ -503,12 +578,82 @@ legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement
 legal_jeu_body:"<h3>Le pari doit rester un loisir</h3><p>Parier n'est pas une source de revenus et ne doit jamais être considéré comme un moyen de rembourser une dette ou de compenser une perte. <strong>Ne misez que ce que vous pouvez perdre sans que cela change votre quotidien.</strong></p><h3>Ce que nous ne promettons pas</h3><p>VIP BETCOTE publie des analyses, pas des certitudes. Aucune sélection n'est garantie. Notre historique affiche les fiches perdantes au même titre que les gagnantes, précisément parce que les pertes font partie de l'activité.</p><h3>Signaux qui doivent alerter</h3><ul><li>Vous misez des sommes de plus en plus élevées pour ressentir le même intérêt.</li><li>Vous rejouez immédiatement pour récupérer une perte.</li><li>Vous empruntez de l'argent, ou vous puisez dans un budget prévu pour autre chose.</li><li>Vous cachez vos mises à vos proches.</li><li>Vous jouez pour échapper au stress, à l'ennui ou à la tristesse.</li><li>Vous avez déjà essayé d'arrêter sans y parvenir.</li></ul><h3>Garder le contrôle</h3><ul><li>Fixez un budget mensuel avant de commencer, et n'en sortez pas.</li><li>Fixez aussi une limite de temps.</li><li>Ne jouez jamais sous l'effet de l'alcool, de la fatigue ou de la colère.</li><li>Après une perte, arrêtez la journée plutôt que de rejouer.</li><li>Vérifiez régulièrement le total réellement misé sur un mois.</li></ul><h3>Interdit aux mineurs</h3><p>Ce service est strictement réservé aux personnes de <strong>18 ans ou plus</strong>. Tout compte identifié comme appartenant à un mineur est fermé sans remboursement.</p><h3>Demander de l'aide</h3><p>Si le jeu prend une place qui vous inquiète, parlez-en à une personne de confiance, à un médecin ou à un psychologue. En parler tôt rend les choses beaucoup plus simples. Vous pouvez aussi nous écrire pour demander la fermeture définitive de votre compte : nous appliquons cette demande sans discussion.</p>",
 },
 en: {
+adm_landing_shown_h:"Numbers shown on the homepage",
+adm_landing_real_h:"Real data (read-only)",
+adm_landing_real_won:"Published slips that really won (bot + admin)",
+adm_landing_real_users:"Users really signed up and confirmed",
+adm_landing_real_note:"The numbers shown are a starting figure you chose, to which +1 is added automatically for every real confirmed sign-up and every published slip that becomes a winner. The Tickets → Statistics page only counts real published slips.",
+mfa_disable_h:"Confirm turning off 2FA",
+mfa_disable_p:"For security, enter the 6-digit code from your authenticator app to confirm.",
+adm_sec_pas_pret:"2FA activation will be available very soon (server setup in progress).",
+// Sekirite 2FA (14/10)
+adm_nav_security:"2FA security",
+adm_security_h:"2FA security",
+adm_security_p:"Two-factor authentication for your admin account.",
+adm_sec_on:"ON",
+adm_sec_off:"OFF",
+adm_sec_codes_left:"{n} code(s) left",
+adm_sec_codes_p:"If you can't get your 6-digit code, a backup code resets your 2FA. Each code works only once.",
+adm_sec_codes_regen:"Generate new backup codes",
+adm_sec_codes_regen_q:"Generate new codes? The old ones will stop working.",
+adm_sec_codes_err:"2FA is on, but the backup codes couldn't be created. Generate them from the 2FA security menu.",
+mfa_reset_trop:"Too many attempts. Wait 15 minutes and try again.",
+mfa_reset_ok_h:"2FA reset",
+mfa_reset_ok_p:"2FA was removed from your account. Turn it back on from the 2FA security menu.",
+// Titre du hero (14/10) : traduit en anglais seulement, FR = texte creole
+lp_h1:"<span>WIN MONEY</span> <span>EVERY DAY WITH</span> <span><em class=\"lp-pill\">VIP</em> <b>TICKETS</b></span>",
+lp_kicker:"Odds for <span>ParyajPam ParyajLakay</span>",
+// Carte Stripe bientot disponible (13/10)
+stripe_soon_badge:"Coming soon",
+stripe_soon_h:"Card payment is coming soon",
+stripe_soon_p:"For now, please pay with MonCash or NatCash. Your plan will be activated quickly.",
+stripe_soon_btn:"Pay with MonCash / NatCash",
+// Landing (refonte 13/10)
+lp_live:"Today's tickets are live",
+lp_cta_results:"See results",
+lp_books:"Tickets for the biggest betting platforms",
+lp_how_tag:"How it works",
+lp_how_h2:"4 steps to start winning",
+lp_how_p:"Signing up takes less than 2 minutes. Then tickets land in your dashboard every day.",
+lp_s1_t:"Create an account",
+lp_s1_d:"Sign up for free with your email in seconds, no commitment.",
+lp_s2_t:"Pick a plan",
+lp_s2_d:"Pick the plan that suits you and pay with MonCash, NatCash or card.",
+lp_s3_t:"Get your tickets",
+lp_s3_d:"Every day, pre-analyzed tickets arrive in your dashboard and in the VIP Telegram group.",
+lp_s4_t:"Bet and win",
+lp_s4_d:"Play the tickets on ParyajPam, ParyajLakay or 1xBet and track the results.",
+lp_why_tag:"Why us",
+lp_why_p:"A reliable, transparent service built for Haitian bettors.",
+lp_f1_t:"Expert analysis every day",
+lp_f1_d:"Our team studies football and NBA games, markets and odds before publishing every ticket.",
+lp_f2_t:"Money-back guarantee",
+lp_f2_d:"If you don't win a single time during your subscription, we refund you.",
+lp_f3_t:"Transparent history",
+lp_f3_d:"Every ticket is recorded with its real result, win or lose.",
+lp_f4_t:"Local payment in HTG",
+lp_f4_d:"MonCash, NatCash, Visa/Mastercard and PayPal. Fast activation.",
+lp_f5_t:"Dashboard + Telegram",
+lp_f5_d:"Your tickets are available in your dashboard and in the VIP Telegram group.",
+lp_sim_tag:"Simulator",
+lp_sim_b1:"Odds for each VIP plan",
+lp_sim_b2:"Calculated in Gourdes (HTG)",
+lp_sim_b3:"Works for ParyajPam, ParyajLakay and 1xBet",
+lp_sim_note:"Illustrative example. Past results do not guarantee future results.",
+lp_pay_secure:"Secure payment",
+lp_proof_zoom:"Tap a ticket to enlarge it",
+lp_help_t:"Another question?",
+lp_help_d:"Our team is available on WhatsApp and Telegram to help you.",
+lp_faq_all:"See all questions",
+lp_resp:"Play responsibly. Only bet what you can afford to lose.",
+lp_foot_desc:"Football and NBA tickets and predictions, analyzed every day by our expert team for ParyajPam, ParyajLakay and 1xBet.",
+lp_copy:"&copy; VIPBETCOTE. All rights reserved. Play responsibly.",
 nav_tickets:"WINNING SLIPS", nav_simulateur:"TRY THE DEMO", nav_abonnements:"Plans", nav_faq:"FAQ",
 btn_connect:"Log in", btn_signup:"Sign up", btn_signup_free:"Sign up for free",
 tick_won:"WON",
 hero_badge:"EXPERTS ONLINE &nbsp;•&nbsp; +42 PICKS TODAY",
 hero_t1:"PREMIUM", hero_t2:"BETTING", hero_t3:"PICKS", hero_t4:"EXCELLENCE",
-hero_sub:"The biggest tipping platform helping you win on ParyajPam, ParyajLakay and 1xBet. We have 6 years of experience. If you want to stop losing your money, pick a plan below right now.",
+hero_sub:"6 years of sports-tipping experience. Every day, our team of experts sends you fully analyzed picks for ParyajPam, ParyajLakay and 1xBet. Choose a plan and stop losing your money.",
 hero_cta1:"GET STARTED NOW",
 rating_label:"Excellent on Trustpilot",
 stat_garanti:"GUARANTEED", stat_garanti_lab:"REFUND IF YOU DO NOT WIN ONCE",
@@ -541,7 +686,7 @@ ab_btn_vip:"Go VIP",
 ab_btn_lifetime:"S&rsquo;ABONNER", ab_btn_sabonner:"S&rsquo;ABONNER",
 faq_h2:"Frequently asked questions",
 faq1_q:"How are the picks selected?", faq1_a:"Every pick is proposed and reviewed by our team of experts. Every day we study the available football and NBA matches, evaluate the markets on offer, and publish single and combo picks, each with a confidence score set by our analysts.",
-faq2_a:"After analysis and according to our statistics, we show a score of 83% validated slips and over 8,390 successful slips. Our full history stays open to view, losing slips included.",
+faq2_a:"After analysis and according to our statistics, we show a score of <span data-stat=\"rate\">83%</span> validated slips and over <span data-stat=\"won\">6,390</span> successful slips. Our full history stays open to view, losing slips included.",
 faq3_q:"How do I pay for my subscription?", faq3_a:"Via MonCash, NatCash, Card/PayPal. Depending on the method chosen, the plan is activated automatically or after admin approval.",
 faq4_q:"Which sports and bet types are covered?", faq4_a:"Football, NBA, and more. Markets available on ParyajPam, ParyajLakay, 1xBet, etc.: 1X2, Double Chance, Both teams to score, Over/Under goals, Handicap, Goalscorer, NBA Total, etc.",
 faq5_q:"Can I cancel my subscription?", faq5_a:"Yes. Monthly subscriptions simply stop at their expiry date if you don't renew. The Lifetime plan is a one-time payment with no renewal.",
@@ -636,8 +781,8 @@ dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
 fiche_note_x2:"Play two matches at a time",
-adm_fiche_gen_btn:"⚡ GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
-adm_fiche_gen_exact_btn:"🎯 GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
+adm_fiche_gen_btn:"GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
+adm_fiche_gen_exact_btn:"GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
 adm_fiche_gen_basket_h:"Generate a basketball ticket",
 adm_fiche_gen_nbmatchs:"Number of matches",
 adm_fiche_gen_date:"Match date", adm_fiche_gen_hdebut:"Start time (PAP)", adm_fiche_gen_hfin:"End time (PAP)", adm_fiche_gen_sport:"Sport",
@@ -655,20 +800,20 @@ adm_fiche_gen_ok_prog:"scheduled for {h}", adm_fiche_gen_clamped:"max odds cappe
 dash_conf:"Average confidence per selection", dash_totalodd:"Total odds",
 adm_quota_lbl:"API-Sports quota · {used}/{max} used · {left} left today",
 adm_quota_sport_foot:"Football", adm_quota_sport_basket:"Basketball",
-adm_quota_gen_epuise:"⛔ Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"⚠️ Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
+adm_quota_gen_epuise:"Quota exhausted for today — generation impossible until reset (midnight UTC).", adm_quota_gen_bas:"Only {left} calls left — the generated ticket will use a smaller match pool than usual.",
 adm_quota_lbl_reel:"API-Sports quota · {used}/{max} used · {remaining} left (checked at {time})",
-adm_quota_inconnu:"⚠️ Real quota unknown since midnight UTC — no API-Sports call made today.",
-adm_quota_gen_inconnu:"⚠️ Quota unknown since midnight UTC. Run a diagnostic (?diag=quota-status) before generating to be sure.",
+adm_quota_inconnu:"Real quota unknown since midnight UTC — no API-Sports call made today.",
+adm_quota_gen_inconnu:"Quota unknown since midnight UTC. Run a diagnostic (?diag=quota-status) before generating to be sure.",
 adm_apprentissage_btn:"Learning report",
 adm_apprentissage_indispo:"Report unavailable right now.",
 adm_apprentissage_vide:"Not enough settled results yet for a report.",
 adm_apprentissage_labels:"By confidence label (A-E)",
 adm_apprentissage_marches:"By league + market",
 adm_fiche_gen_basket_p:"Combined basketball ticket — no mandatory minimum odd, only the max odd above is a strict cap. Visible to the checked plans and every plan above them (cascading access).",
-adm_fiche_gen_basket_submit:"🏀 GENERATE BASKETBALL SLIP",
+adm_fiche_gen_basket_submit:"GENERATE BASKETBALL SLIP",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
-dtk_cd_min:"⏱ First match in {n} min", dtk_cd_h:"⏱ First match in {h}h{m}", dtk_cd_j:"⏱ First match in {j} d", dtk_cd_bientot:"⏱ First match starting soon", dtk_cd_encours:"⏱ First match underway",
+dtk_cd_min:"First match in {n} min", dtk_cd_h:"First match in {h}h{m}", dtk_cd_j:"First match in {j} d", dtk_cd_bientot:"First match starting soon", dtk_cd_encours:"First match underway",
 dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play responsibly", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
@@ -712,7 +857,8 @@ wiz_p_stripe_indispo:"Card payment is not available for this plan right now.",
 stripe_back_h:"Payment received",
 stripe_back_p:"Your payment has been received. Your plan will be activated in a few moments.",
 legal_updated:"Updated: August 2026",
-hero_why:"POUKISA'W DWE ENSKRI NAN VIPBETCOTE??",
+hero_why:"WHY CHOOSE VIPBETCOTE?",
+hero_price_from:"Plans from",
 auth_lbl_username:"Username", auth_ph_username:"Choose a username",
 auth_optional:"(optional)",
 auth_err_email_temp:"Temporary email addresses are not accepted",
@@ -774,7 +920,7 @@ adm_rev_total:"Total confirmed revenue", adm_rev_total_note:"All time, confirmed
 adm_rev_mois:"Revenue this month", adm_rev_paiements:"Confirmed payments this month",
 adm_rev_attente:"Awaiting validation", adm_rev_attente_note:"{n} payment(s) — never counted as revenue until validated.",
 adm_rev_tx_h:"Transaction history", adm_rev_tx_more:"Load older ones",
-adm_settings_h:"Settings", adm_settings_p:"Your password and admin account security.",
+adm_settings_h:"Settings", adm_settings_p:"Your admin account password.",
 adm_settings_pw_h:"Change password",
 adm_settings_pw_new:"New password", adm_settings_pw_confirm:"Confirm new password",
 adm_settings_pw_save:"Save password",
@@ -785,7 +931,7 @@ adm_settings_pw_err:"The change failed.",
 adm_settings_pw_toast_h:"Password changed", adm_settings_pw_toast_p:"Your password was updated successfully.",
 adm_settings_2fa_h:"Two-factor authentication (2FA)",
 adm_settings_2fa_on_p:"2FA is enabled on this account. A code will be required at every login.",
-adm_settings_2fa_off_p:"2FA is not enabled. Turn it on to strengthen this admin account's security — fully optional.",
+adm_settings_2fa_off_p:"2FA is not enabled. It's optional: once enabled, a code will be required at every login.",
 adm_settings_2fa_enable:"Enable 2FA", adm_settings_2fa_disable:"Disable 2FA",
 adm_settings_2fa_err:"The action failed.",
 adm_settings_2fa_on_h:"2FA enabled", adm_settings_2fa_on_toast:"Two-factor authentication is now active on this account.",
@@ -837,6 +983,10 @@ adm_fiche_err_save:"Save failed.",
 adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if published.",
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
 adm_menu_exit:"Log out",
+tg_h:"VIP Telegram group", tg_membre:"You are in your VIP Telegram group.", tg_a_rejoindre:"Your plan is active: join your private Telegram group. The link works only once and only for your account.", tg_btn:"Join my Telegram group", tg_btn_wait:"Creating link…", tg_indispo:"Your Telegram group is not available yet. Please contact support.", tg_attente:"Your group change is in progress. Try again in a few minutes.", tg_err:"Unable to create the link right now. Please try again.", tg_perdu:"Your access to the group ends when your plan expires or changes.",
+adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
+ov_live:"Live", ov_kpis_h:"Key metrics", ov_quick_h:"Quick access", ov_q_pay:"Payments", ov_q_users:"Users", ov_q_fiches:"Slips", ov_q_rev:"Revenue",
+st_pending:"In progress", hf_search_ph:"Search a code, match or league…", hf_sport:"Sport", hf_count:"{n} slip(s) found", hf_reset:"Reset",
 adm_home_h:"Overview", adm_home_p:"Real figures, taken directly from the database.",
 adm_refresh:"Refresh", adm_updated_at:"Updated at {t}",
 adm_k_loading:"Loading...", adm_k_offline:"Connection unavailable", adm_k_error:"Read error",
@@ -972,8 +1122,8 @@ mfa_error_nofactor:"No active authenticator found.",
 mfa_btn_retry:"Try again",
 mfa_copy:"Copy", mfa_copied:"Copied!",
 mfa_remember:"Remember this device for 30 days",
-mfa_use_backup:"Use a backup code",
-mfa_backup_h:"Backup code", mfa_backup_p:"Enter one of the backup codes you downloaded.",
+mfa_use_backup:"I can't get my code",
+mfa_backup_h:"Reset 2FA", mfa_backup_p:"Enter one of your backup codes. 2FA will be removed from your account and you can turn it back on.",
 mfa_backup_err:"This code is invalid or already used.",
 mfa_back_to_code:"Back to the usual code",
 mfa_codes_h:"Your backup codes",
@@ -1005,12 +1155,82 @@ legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service
 legal_jeu_body:"<h3>Betting should stay a pastime</h3><p>Betting is not an income and should never be seen as a way to repay a debt or recover a loss. <strong>Only stake what you can lose without it changing your daily life.</strong></p><h3>What we do not promise</h3><p>VIP BETCOTE publishes analysis, not certainties. No selection is guaranteed. Our history shows losing slips alongside winning ones, precisely because losses are part of it.</p><h3>Warning signs</h3><ul><li>You stake more and more to feel the same interest.</li><li>You bet again immediately to recover a loss.</li><li>You borrow money, or dip into a budget meant for something else.</li><li>You hide your stakes from those close to you.</li><li>You play to escape stress, boredom or sadness.</li><li>You have tried to stop and could not.</li></ul><h3>Staying in control</h3><ul><li>Set a monthly budget before you start, and stick to it.</li><li>Set a time limit too.</li><li>Never play under the influence of alcohol, tiredness or anger.</li><li>After a loss, stop for the day rather than betting again.</li><li>Regularly check the real total staked over a month.</li></ul><h3>Strictly no minors</h3><p>This service is strictly for people aged <strong>18 or over</strong>. Any account identified as belonging to a minor is closed without refund.</p><h3>Getting help</h3><p>If betting is taking a place that worries you, talk to someone you trust, a doctor or a psychologist. Speaking up early makes things far easier. You can also write to us to request permanent closure of your account: we act on that request without argument.</p>",
 },
 ht: {
+adm_landing_shown_h:"Chif ki parèt sou paj akèy la",
+adm_landing_real_h:"Done reyèl (lekti sèlman)",
+adm_landing_real_won:"Fich ki pibliye e ki reyèlman genyen (bot + admin)",
+adm_landing_real_users:"Itilizatè ki reyèlman enskri e konfime",
+adm_landing_real_note:"Chif ki afiche yo se yon chif depa ou chwazi, kote +1 ajoute otomatikman pou chak vrè enskripsyon konfime ak pou chak fich pibliye ki vin genyen. Estatistik Fich → Estatistik yo konte sèlman vrè fich ki pibliye yo.",
+mfa_disable_h:"Konfime dezaktivasyon 2FA",
+mfa_disable_p:"Pou sekirite, antre kòd 6 chif ki nan app otantifikasyon ou a pou konfime.",
+adm_sec_pas_pret:"Aktivasyon 2FA ap disponib byento (enstalasyon an ap fèt sou sèvè a).",
+// Sekirite 2FA (14/10)
+adm_nav_security:"Sekirite 2FA",
+adm_security_h:"Sekirite 2FA",
+adm_security_p:"Double otantifikasyon kont admin ou.",
+adm_sec_on:"AKTIVE",
+adm_sec_off:"DEZAKTIVE",
+adm_sec_codes_left:"{n} kòd disponib",
+adm_sec_codes_p:"Si w pa ka resevwa kòd 6 chif la, yon kòd sekou ap reyinisyalize 2FA ou. Chak kòd sèvi yon sèl fwa.",
+adm_sec_codes_regen:"Jenere nouvo kòd sekou",
+adm_sec_codes_regen_q:"Jenere nouvo kòd ? Ansyen kòd yo p ap mache ankò.",
+adm_sec_codes_err:"2FA a aktive, men kòd sekou yo pa t ka kreye. Jenere yo nan meni Sekirite 2FA.",
+mfa_reset_trop:"Twòp esè. Tann 15 minit epi eseye ankò.",
+mfa_reset_ok_h:"2FA reyinisyalize",
+mfa_reset_ok_p:"2FA a retire sou kont ou. Reaktive l nan meni Sekirite 2FA.",
+// Titre du hero (14/10) : traduit en anglais seulement, FR = texte creole
+lp_h1:"<span>GENYEN LAJAN</span> <span>CHAK JOU AK</span> <span><em class=\"lp-pill\">FICH</em> <b>VIP YO</b></span>",
+lp_kicker:"Cote <span>ParyajPam ParyajLakay</span>",
+// Carte Stripe bientot disponible (13/10)
+stripe_soon_badge:"Byento",
+stripe_soon_h:"Peman ak kat ap vini byento",
+stripe_soon_p:"Pou kounye a, tanpri peye ak MonCash oswa NatCash. Abònman ou ap aktive rapidman.",
+stripe_soon_btn:"Peye ak MonCash / NatCash",
+// Landing (refonte 13/10)
+lp_live:"Fich jodi a disponib",
+lp_cta_results:"Wè rezilta yo",
+lp_books:"Fich pou pi gwo platfòm paryaj yo",
+lp_how_tag:"Kijan li mache",
+lp_how_h2:"4 etap pou w kòmanse genyen",
+lp_how_p:"Enskripsyon an pran mwens pase 2 minit. Answit, fich yo rive chak jou dirèkteman nan dashboard ou.",
+lp_s1_t:"Kreye yon kont",
+lp_s1_d:"Enskri gratis ak imel ou an kèk segonn, san okenn angajman.",
+lp_s2_t:"Chwazi yon abònman",
+lp_s2_d:"Chwazi plan ki fèt pou ou a epi peye ak MonCash, NatCash oswa kat.",
+lp_s3_t:"Resevwa fich yo",
+lp_s3_d:"Chak jou, fich ki deja analize rive nan dashboard ou ak nan gwoup Telegram VIP la.",
+lp_s4_t:"Parye epi genyen",
+lp_s4_d:"Jwe fich yo sou ParyajPam, ParyajLakay oswa 1xBet epi swiv rezilta yo.",
+lp_why_tag:"Avantaj yo",
+lp_why_p:"Yon sèvis serye, transparan e fèt espesyalman pou parayè ayisyen yo.",
+lp_f1_t:"Analiz ekspè chak jou",
+lp_f1_d:"Ekip nou an etidye match foutbòl ak NBA yo, mache yo ak cote yo anvan li pibliye chak fich.",
+lp_f2_t:"Garanti ranbousman",
+lp_f2_d:"Si w pa genyen yon sèl fwa pandan abònman w lan, nou ranbouse w.",
+lp_f3_t:"Istorik transparan",
+lp_f3_d:"Chak fich anrejistre ak rezilta reyèl li, kit li genyen kit li pèdi.",
+lp_f4_t:"Peman lokal an Gdes",
+lp_f4_d:"MonCash, NatCash, kat Visa/Mastercard ak PayPal. Aktivasyon rapid.",
+lp_f5_t:"Dashboard + Telegram",
+lp_f5_d:"Fich ou yo disponib nan dashboard ou epi nan gwoup Telegram VIP la.",
+lp_sim_tag:"Similatè",
+lp_sim_b1:"Cote chak fòmil VIP",
+lp_sim_b2:"Kalkil an Goud (HTG)",
+lp_sim_b3:"Valab pou ParyajPam, ParyajLakay ak 1xBet",
+lp_sim_note:"Egzanp ilistratif. Rezilta ki pase yo pa garanti rezilta k ap vini yo.",
+lp_pay_secure:"Peman sekirize",
+lp_proof_zoom:"Klike sou yon fich pou wè l an gwo",
+lp_help_t:"Ou gen yon lòt kesyon ?",
+lp_help_d:"Ekip nou an disponib sou WhatsApp ak Telegram pou ede w.",
+lp_faq_all:"Wè tout kesyon yo",
+lp_resp:"Jwe ak responsablite. Mize sèlman sa ou ka pèdi.",
+lp_foot_desc:"Fich ak pronostik foutbòl ak NBA, analize chak jou pa ekip ekspè nou an pou ParyajPam, ParyajLakay ak 1xBet.",
+lp_copy:"&copy; VIPBETCOTE. Tout dwa rezève. Jwe ak responsablite.",
 nav_tickets:"FICH REYISI", nav_simulateur:"ESEYE DEMO", nav_abonnements:"Abònman", nav_faq:"FAQ",
 btn_connect:"Konekte", btn_signup:"Enskri", btn_signup_free:"Enskri gratis",
 tick_won:"GENYEN",
 hero_badge:"EKSPÈ AN LIY &nbsp;•&nbsp; +42 PRONOSTIK JODI A",
 hero_t1:"EKSELANS", hero_t2:"NAN", hero_t3:"PRONOSTIK", hero_t4:"PREMIUM",
-hero_sub:"Pi gwo platfòm pronostic kap ede w genyen sou ParyajPam, ParyajLakay ak 1xBet. Nou gen 6 an eksperyans. Si w vle sispann pèdi kòb ou, chwazi yon plan anba a kounye a.",
+hero_sub:"6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.",
 hero_cta1:"KÒMANSE KOUNYE A",
 rating_label:"Excellent sur Trustpilot",
 stat_garanti:"GARANTI", stat_garanti_lab:"RANBOUSMAN SIW PA GENYEN 1 FWA",
@@ -1043,7 +1263,7 @@ ab_btn_vip:"Vin VIP",
 ab_btn_lifetime:"S&rsquo;ABONNER", ab_btn_sabonner:"S&rsquo;ABONNER",
 faq_h2:"Kesyon yo poze souvan",
 faq1_q:"Kijan pronostik yo seleksyone?", faq1_a:"Chak pronostik pwopoze epi egzamine pa ekip ekspè nou an. Chak jou nou etidye match foutbòl ak NBA ki disponib yo, nou evalye mache yo pwopoze yo, epi nou pibliye seleksyon senp ak kombine, chak youn ak yon nòt konfyans analis nou yo detèmine.",
-faq2_a:"Apre analiz ak estatistik yo, nou gen yon score 83% fich valide, plis pase 8 390 fich reyisi. Istorik konplè nou an rete disponib, ak fich ki pèdi yo tou.",
+faq2_a:"Apre analiz ak estatistik yo, nou gen yon score <span data-stat=\"rate\">83%</span> fich valide, plis pase <span data-stat=\"won\">6 390</span> fich reyisi. Istorik konplè nou an rete disponib, ak fich ki pèdi yo tou.",
 faq3_q:"Kijan pou m peye abònman m?", faq3_a:"Ak MonCash, NatCash, Carte/PayPal. Selon metòd ou chwazi a, abònman an aktive otomatikman oswa apre validasyon administratè a.",
 faq4_q:"Ki espò ak ki kalite paryaj ki kouvri?", faq4_a:"Foutbòl, NBA, elatriye. Mache yo disponib sou ParyajPam, ParyajLakay, 1xBet, elatriye: 1X2, Doub Chans, Tou de ekip make, Plus/Mwens Gòl, Andikap, Bitè, Total NBA, elatriye.",
 faq5_q:"Èske m ka anile abònman m?", faq5_a:"Wi. Abònman chak mwa yo senpleman fini nan dat ekspirasyon yo si ou pa renouvle. Plan Lifetime a se yon sèl peman, san renouvèlman.",
@@ -1138,8 +1358,8 @@ dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
 fiche_note_x2:"Jwe pa de match",
-adm_fiche_gen_btn:"⚡ JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
-adm_fiche_gen_exact_btn:"🎯 JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
+adm_fiche_gen_btn:"JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
+adm_fiche_gen_exact_btn:"JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
 adm_fiche_gen_basket_h:"Jenere yon fich basketball",
 adm_fiche_gen_nbmatchs:"Konbyen match",
 adm_fiche_gen_date:"Dat match yo", adm_fiche_gen_hdebut:"Lè kòmanse (PAP)", adm_fiche_gen_hfin:"Lè fini (PAP)", adm_fiche_gen_sport:"Espò",
@@ -1157,20 +1377,20 @@ adm_fiche_gen_ok_prog:"pwograme pou {h}", adm_fiche_gen_clamped:"kòt max redwi 
 dash_conf:"Konfyans mwayèn pou chak seleksyon", dash_totalodd:"Cote total",
 adm_quota_lbl:"Quota API-Sports · {used}/{max} itilize · {left} rete jodi a",
 adm_quota_sport_foot:"Foutbòl", adm_quota_sport_basket:"Basketbòl",
-adm_quota_gen_epuise:"⛔ Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"⚠️ Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
+adm_quota_gen_epuise:"Quota fini pou jodi a — jenerasyon pa posib jiskaske li reset (minwi UTC).", adm_quota_gen_bas:"Se sèlman {left} apèl ki rete — fich la pral genyen mwens match pase dabitid.",
 adm_quota_lbl_reel:"Quota API-Sports · {used}/{max} itilize · {remaining} rete (verifye a {time})",
-adm_quota_inconnu:"⚠️ Vrè quota pa konnen depi minwi UTC — pa gen okenn apèl API-Sports jodi a.",
-adm_quota_gen_inconnu:"⚠️ Quota pa konnen depi minwi UTC. Lanse yon dyagnostik (?diag=quota-status) anvan ou jenere pou w sèten.",
+adm_quota_inconnu:"Vrè quota pa konnen depi minwi UTC — pa gen okenn apèl API-Sports jodi a.",
+adm_quota_gen_inconnu:"Quota pa konnen depi minwi UTC. Lanse yon dyagnostik (?diag=quota-status) anvan ou jenere pou w sèten.",
 adm_apprentissage_btn:"Rapò aprantisaj",
 adm_apprentissage_indispo:"Rapò a pa disponib kounye a.",
 adm_apprentissage_vide:"Poko gen ase rezilta regle pou yon rapò.",
 adm_apprentissage_labels:"Pa etikèt konfyans (A-E)",
 adm_apprentissage_marches:"Pa chanpyona + mache",
 adm_fiche_gen_basket_p:"Fich basketball konbine — pa gen kòt minimòm obligatwa, se sèlman kòt maks anwo a ki yon plafon strik. Vizib pou plan yo ou koche ak tout plan ki pi wo (kaskad aksè).",
-adm_fiche_gen_basket_submit:"🏀 JENERE FICH BASKETBALL",
+adm_fiche_gen_basket_submit:"JENERE FICH BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
-dtk_cd_min:"⏱ Premye match nan {n} min", dtk_cd_h:"⏱ Premye match nan {h}è{m}", dtk_cd_j:"⏱ Premye match nan {j} jou", dtk_cd_bientot:"⏱ Premye match pral kòmanse", dtk_cd_encours:"⏱ Premye match ap jwe",
+dtk_cd_min:"Premye match nan {n} min", dtk_cd_h:"Premye match nan {h}è{m}", dtk_cd_j:"Premye match nan {j} jou", dtk_cd_bientot:"Premye match pral kòmanse", dtk_cd_encours:"Premye match ap jwe",
 dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe yon fason responsab", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
@@ -1214,7 +1434,8 @@ wiz_p_stripe_indispo:"Peman ak kat pa disponib pou plan sa a kounye a.",
 stripe_back_h:"Nou resevwa peman an",
 stripe_back_p:"Nou byen resevwa peman ou. Abònman ou ap aktive nan kèk segond.",
 legal_updated:"Mizajou : out 2026",
-hero_why:"POUKISA'W DWE ENSKRI NAN VIPBETCOTE??",
+hero_why:"POUKISA CHWAZI VIPBETCOTE ?",
+hero_price_from:"Abònman apati",
 auth_lbl_username:"Non itilizatè", auth_ph_username:"Chwazi yon non itilizatè",
 auth_optional:"(fakiltatif)",
 auth_err_email_temp:"Nou pa aksepte imèl tanporè",
@@ -1276,7 +1497,7 @@ adm_rev_total:"Total revni konfime", adm_rev_total_note:"Tout istorik, sèlman p
 adm_rev_mois:"Revni mwa sa a", adm_rev_paiements:"Peman konfime mwa sa a",
 adm_rev_attente:"Ap tann validasyon", adm_rev_attente_note:"{n} peman — pa janm konte kòm revni jiskaske li valide.",
 adm_rev_tx_h:"Istorik tranzaksyon", adm_rev_tx_more:"Chaje pi ansyen yo",
-adm_settings_h:"Paramèt", adm_settings_p:"Modpas ou ak sekirite kont admin ou.",
+adm_settings_h:"Paramèt", adm_settings_p:"Modpas kont admin ou.",
 adm_settings_pw_h:"Chanje modpas",
 adm_settings_pw_new:"Nouvo modpas", adm_settings_pw_confirm:"Konfime nouvo modpas la",
 adm_settings_pw_save:"Anrejistre modpas la",
@@ -1287,7 +1508,7 @@ adm_settings_pw_err:"Chanjman an echwe.",
 adm_settings_pw_toast_h:"Modpas chanje", adm_settings_pw_toast_p:"Modpas ou chanje avèk siksè.",
 adm_settings_2fa_h:"Doub otantifikasyon (2FA)",
 adm_settings_2fa_on_p:"2FA aktif sou kont sa a. Y ap mande yon kòd chak fwa ou konekte.",
-adm_settings_2fa_off_p:"2FA pa aktif. Aktive li pou ranfòse sekirite kont admin sa a — se opsyonèl nèt.",
+adm_settings_2fa_off_p:"2FA a pa aktive. Li pa obligatwa : depi w aktive l, y ap mande kòd la chak fwa w konekte.",
 adm_settings_2fa_enable:"Aktive 2FA", adm_settings_2fa_disable:"Dezaktive 2FA",
 adm_settings_2fa_err:"Aksyon an echwe.",
 adm_settings_2fa_on_h:"2FA aktif", adm_settings_2fa_on_toast:"Doub otantifikasyon aktif kounye a sou kont sa a.",
@@ -1339,6 +1560,10 @@ adm_fiche_err_save:"Anrejistreman echwe.",
 adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li pibliye.",
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
 adm_menu_exit:"Dekonekte",
+tg_h:"Gwoup Telegram VIP", tg_membre:"Ou nan gwoup Telegram VIP ou a.", tg_a_rejoindre:"Plan ou aktif: antre nan gwoup Telegram prive ou a. Lyen an mache yon sèl fwa epi sèlman pou kont ou.", tg_btn:"Antre nan gwoup Telegram mwen", tg_btn_wait:"Ap kreye lyen an…", tg_indispo:"Gwoup Telegram ou a pa disponib ankò. Kontakte sèvis kliyan.", tg_attente:"Chanjman gwoup ou a ap fèt. Eseye ankò nan kèk minit.", tg_err:"Pa kapab kreye lyen an kounye a. Eseye ankò.", tg_perdu:"Aksè ou nan gwoup la fini lè plan ou ekspire oswa li chanje.",
+adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
+ov_live:"An dirèk", ov_kpis_h:"Endikatè kle", ov_quick_h:"Aksè rapid", ov_q_pay:"Peman", ov_q_users:"Itilizatè", ov_q_fiches:"Fich", ov_q_rev:"Revni",
+st_pending:"An kou", hf_search_ph:"Chèche yon kòd, yon match, yon lig…", hf_sport:"Espò", hf_count:"{n} fich jwenn", hf_reset:"Reyinisyalize",
 adm_home_h:"Vi jeneral", adm_home_p:"Chif reyèl, dirèkteman soti nan baz done a.",
 adm_refresh:"Rafrechi", adm_updated_at:"Mizajou a {t}",
 adm_k_loading:"Chajman...", adm_k_offline:"Koneksyon pa disponib", adm_k_error:"Erè lekti",
@@ -1474,8 +1699,8 @@ mfa_error_nofactor:"Pa gen okenn kòd otantifikasyon aktif.",
 mfa_btn_retry:"Eseye ankò",
 mfa_copy:"Kopye", mfa_copied:"Kopye!",
 mfa_remember:"Sonje aparèy sa a pandan 30 jou",
-mfa_use_backup:"Sèvi ak yon kòd sekou",
-mfa_backup_h:"Kòd sekou", mfa_backup_p:"Antre youn nan kòd sekou ou te telechaje yo.",
+mfa_use_backup:"Mwen pa ka resevwa kòd la",
+mfa_backup_h:"Reyinisyalize 2FA", mfa_backup_p:"Antre youn nan kòd sekou ou yo. 2FA a ap retire sou kont ou, epi w ap ka reaktive l.",
 mfa_backup_err:"Kòd sa a envalid oswa deja itilize.",
 mfa_back_to_code:"Retounen nan kòd la",
 mfa_codes_h:"Kòd sekou ou yo",
@@ -1650,8 +1875,9 @@ function applyLang(lang){
     if(val!=null)el.setAttribute('placeholder',val);
   });
   document.querySelectorAll('.mnav-lang-opt').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
-  const flags={ht:'\uD83C\uDDED\uD83C\uDDF9',fr:'\uD83C\uDDEB\uD83C\uDDF7',en:'\uD83C\uDDFA\uD83C\uDDF8'};
-  document.querySelectorAll('.langdd-flag').forEach(fl=>{fl.textContent=flags[lang]||flags.ht;});
+  // Drapeaux en SVG : rendu identique sur tous les appareils (Windows n'affiche pas les emojis drapeaux)
+  const flags={ht:'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="10" fill="#00209F"/><rect y="10" width="30" height="10" fill="#D21034"/><rect x="11" y="7" width="8" height="6" rx=".6" fill="#fff"/><path d="M15 8.3v3.4M13.4 11.7h3.2" stroke="#016A16" stroke-width=".9" stroke-linecap="round"/></svg>',fr:'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ED2939"/></svg>',en:'<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#B22234"/><path d="M0 2.3h30M0 5.4h30M0 8.5h30M0 11.6h30M0 14.7h30M0 17.8h30" stroke="#fff" stroke-width="1.55"/><rect width="13" height="10.8" fill="#3C3B6E"/><g fill="#fff"><circle cx="2.2" cy="2" r=".6"/><circle cx="5.2" cy="2" r=".6"/><circle cx="8.2" cy="2" r=".6"/><circle cx="11" cy="2" r=".6"/><circle cx="3.7" cy="4.2" r=".6"/><circle cx="6.7" cy="4.2" r=".6"/><circle cx="9.6" cy="4.2" r=".6"/><circle cx="2.2" cy="6.4" r=".6"/><circle cx="5.2" cy="6.4" r=".6"/><circle cx="8.2" cy="6.4" r=".6"/><circle cx="11" cy="6.4" r=".6"/><circle cx="3.7" cy="8.6" r=".6"/><circle cx="6.7" cy="8.6" r=".6"/><circle cx="9.6" cy="8.6" r=".6"/></g></svg>'};
+  document.querySelectorAll('.langdd-flag').forEach(fl=>{fl.innerHTML=flags[lang]||flags.ht;});
   document.documentElement.setAttribute('lang',lang);
   document.querySelectorAll('.langdd-opt').forEach(o=>{o.hidden=(o.dataset.lang===lang)});
   updateSim2();
@@ -1880,11 +2106,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      paiement reste TOUJOURS ecrit en 'pending' cote base — seul un
      admin peut faire passer un abonnement a 'active', jamais le site
      lui-meme ni un retour de Stripe. */
+  /* Interrupteur du paiement par carte (13/10, demande de James) :
+     false = le bouton "Peye ak Stripe" n'ouvre plus Stripe et n'enregistre
+     aucun paiement ; il affiche la carte "bientot disponible" qui oriente
+     vers MonCash/NatCash. Les liens ci-dessous sont CONSERVES tels quels :
+     repasser a true suffit pour reactiver Stripe. */
+  const STRIPE_ACTIF=true;
+  /* Liens du 15/10 : p1 249 G = 1,99 $ · p2 499 G = 3,99 $ · p3 999 G = 7,99 $ ·
+     p4 2500 G = 19,99 $. Les anciens liens (01..04) sont retires. */
   const STRIPE_LINKS={
-    p1:'https://buy.stripe.com/4gM14ngfD0PSesRe2c9MY01',
-    p2:'https://buy.stripe.com/bJe9AT3sR7eg5Wl7DO9MY02',
-    p3:'https://buy.stripe.com/28E3cvfbzbuw70pf6g9MY03',
-    p4:'https://buy.stripe.com/4gMaEXd3rbuwckJe2c9MY04'
+    p1:'https://buy.stripe.com/5kQ9AT3sRcyA4Sh2ju9MY07',
+    p2:'https://buy.stripe.com/6oUaEXd3r1TW70pcY89MY08',
+    p3:'https://buy.stripe.com/5kQ8wP4wV6ac70p3ny9MY09',
+    p4:'https://buy.stripe.com/6oUfZh1kJ1TW1G56zK9MY0a'
   };
   const planById=id=>PLANS.find(p=>p.id===id)||null;
   const T=()=>translations[currentLang]||translations.fr;
@@ -2632,8 +2866,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      numeros, noms de compte et QR plus tard ; une seule ligne a changer par
      marque, plus le fichier QR a deposer dans assets/. */
   const DEPOT_MANUEL={
-    moncash:{ numero:'+509 0000 0000', nom:'À REMPLIR', qr:'' },
-    natcash:{ numero:'+509 0000 0000', nom:'À REMPLIR', qr:'' }
+    moncash:{ numero:'+509 4729 1392', nom:'Louima Christianne', qr:'' },
+    natcash:{ numero:'+509 5677 0711', nom:'Louima Christianne', qr:'' }
   };
 
   const brandWrap=document.getElementById('wizPayBrands');
@@ -3708,22 +3942,55 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      via completePayment('stripe') (meme chemin que les methodes manuelles).
      La confirmation reste 100% manuelle par l'admin — le webhook automatique
      stripe-webhook.js N'EST PAS utilise dans ce flux et reste non deploye. */
-  document.getElementById('wizStripeBtn').addEventListener('click',()=>{
+  /* NOUVEAU FLUX STRIPE (15/10, demande de James : paiement automatique,
+     jamais de faux « en attente ») :
+       1. le clic n'ecrit RIEN en base : aucun paiement, aucun abonnement ;
+       2. la personne est envoyee sur le lien Stripe du plan, avec son
+          identifiant (client_reference_id = <user_id>__<plan>) et son e-mail ;
+       3. SEUL le webhook signe par Stripe (stripe-webhook.js), apres un
+          paiement reellement encaisse, cree le paiement et active le plan.
+     Formulaire vide, fausse carte, carte refusee, onglet ferme : Stripe
+     n'envoie rien, donc rien n'existe chez nous.
+     Au retour (adresse configuree dans chaque lien : ?paiement=ok), le site
+     relit seulement l'etat reel (voir « Retour depuis la page de paiement »). */
+  document.getElementById('wizStripeBtn').addEventListener('click',async ev=>{
     payErr.style.display='none';
+    if(!STRIPE_ACTIF){
+      if(window.VB_stripeBientot)window.VB_stripeBientot(ev.currentTarget);
+      return;
+    }
+    if(sessionPerimee){
+      if(window.VB_toast)window.VB_toast('session_stale_h',t('session_stale_p'));
+      return;
+    }
     const planCible=state.pendingPlanId||state.planId;
     const lien=STRIPE_LINKS[planCible]||null;
-    /* L'ouverture de la page Stripe doit rester DANS le geste de clic :
-       un window.open place apres un 'await' est bloque par les
-       navigateurs mobiles. On ne l'ouvre que si le paiement est
-       reellement permis — sinon completePayment affiche le refus et
-       aucune page de paiement ne doit s'ouvrir pour rien. Si le
-       navigateur bloque quand meme l'onglet, l'etape 4 propose un lien
-       de secours (voir renderStep4). */
     const permis=renouvellementPermis(state,planCible);
-    if(lien&&permis&&permis.ok){
-      try{window.open(lien,'_blank','noopener');}catch(e){}
+    if(!permis.ok){afficherRefusPaiement(permis.raison);return;}
+    if(!lien){afficherRefusPaiement('renew_err_encours');return;}
+    // Identifiant du compte : le webhook en a besoin pour rattacher le paiement.
+    let uid=state.supabaseUserId||null;
+    try{
+      const sb=window.VB_getSupabase&&window.VB_getSupabase();
+      if(sb){
+        const {data:sd}=await sb.auth.getSession();
+        if(sd&&sd.session&&sd.session.user)uid=sd.session.user.id;
+        // Une demande MonCash/NatCash deja en attente bloque aussi (meme regle que partout).
+        if(uid){
+          const {data:pend}=await sb.from('payments').select('id').eq('user_id',uid).eq('status','pending').limit(1);
+          if(pend&&pend.length){afficherRefusPaiement('renew_err_pending');return;}
+        }
+      }
+    }catch(e){}
+    if(!uid){
+      if(window.VB_toast)window.VB_toast('session_stale_h',t('session_stale_p'));
+      return;
     }
-    completePayment('stripe');
+    const url=lien+'?client_reference_id='+encodeURIComponent(uid+'__'+planCible)+
+      (state.email?'&prefilled_email='+encodeURIComponent(state.email.trim()):'');
+    // Meme onglet : une navigation n'est jamais bloquee par les navigateurs
+    // mobiles, et Stripe ramene la personne ici apres le paiement.
+    window.location.href=url;
   });
 
   /* ================= ETAPE 4 : acces ================= */
@@ -4535,7 +4802,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     });
   });
   // "Commencer" sur un plan : le plan est memorise puis le wizard s'ouvre
-  document.querySelectorAll('[data-plan]').forEach(b=>{
+  // Les formules du simulateur (.sim2-formule) portent aussi data-plan (pour la
+  // synchro des noms) : elles ne doivent QUE recalculer la demo, jamais ouvrir l'inscription.
+  document.querySelectorAll('[data-plan]:not(.sim2-formule)').forEach(b=>{
     b.addEventListener('click',ev=>{
       ev.preventDefault();ev.stopPropagation();
       if(mnav.classList.contains('on'))closeMenu();
@@ -4726,7 +4995,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         }
       });
       if(changed){
-        syncerCartesTarifsLanding();syncerSimulateurFormules();
+        syncerCartesTarifsLanding();syncerSimulateurFormules();syncerPrixHero();
         // CHANGÉ (31/08 v7, demande explicite de James : "lorsque admin
         // modifie les jours/prix des plans, sur la page de paiement où
         // l'utilisateur choisit son plan, ça doit aussi se synchroniser,
@@ -4780,6 +5049,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      selecteur est volontairement limite a la section #abonnements : le
      simulateur, plus haut sur la page, utilise desormais lui aussi
      data-plan, il ne faut jamais confondre les deux. */
+  // Prix d'appel du Hero ("Abonman apati 249 HTG") : plan le moins cher reel.
+  function syncerPrixHero(){
+    const el=document.getElementById('hxPrice');
+    if(!el)return;
+    const prix=(window.VB_allPlans?window.VB_allPlans():[]).map(pl=>+pl.prix).filter(n=>n>0);
+    if(prix.length)el.textContent=money(Math.min(...prix));
+  }
   function syncerCartesTarifsLanding(){
     (window.VB_allPlans?window.VB_allPlans():[]).forEach(pl=>{
       const btn=document.querySelector('#abonnements [data-plan="'+pl.id+'"]');
@@ -4874,12 +5150,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const lang=(currentLang==='en'||currentLang==='ht')?currentLang:'fr';
       list.innerHTML=data.map((f,i)=>{
         const q=stripTags(f['question_'+lang]||f.question_fr||'');
-        const a=stripTags(f['answer_'+lang]||f.answer_fr||'');
+        const a=stripTags(f['answer_'+lang]||f.answer_fr||'')
+          // Chiffres synchronises avec les statistiques du haut de page :
+          // jetons {won}/{rate} (a utiliser dans l'admin) + anciens chiffres
+          // ecrits en dur dans la reponse "Garantissez-vous des gains ?".
+          .replace(/\{won\}|\b8[\s,.\u00a0\u202f]?390\b/g,'<span data-stat="won">$&</span>')
+          .replace(/\{rate\}|\b83\s?%/g,'<span data-stat="rate">$&</span>');
         return '<details'+(i===0?' open':'')+'>'+
           '<summary><span>'+q+'</span>'+
           '<span class="pl"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>'+
           '</summary><p>'+a+'</p></details>';
       }).join('');
+      if(window.VB_majChiffresFAQ)window.VB_majChiffresFAQ(list);
     }catch(e){ /* le contenu statique deja present reste affiche */ }
   };
   window.VB_renderFAQ();
@@ -5262,7 +5544,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.fillText('VIP BETCOTE',W/2,90);
     ctx.fillStyle='#2ED47F';
     ctx.font='800 54px sans-serif';
-    ctx.fillText('✅ '+t('dtk_share_titre'),W/2,160);
+    // Coche dessinee (l'emoji n'est pas rendu pareil selon les appareils)
+    const titrePartage=t('dtk_share_titre');
+    const rCoche=24,ecart=16,largeurTitre=ctx.measureText(titrePartage).width;
+    const x0=W/2-(rCoche*2+ecart+largeurTitre)/2;
+    ctx.beginPath();ctx.arc(x0+rCoche,141,rCoche,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.strokeStyle='#06140C';ctx.lineWidth=6;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(x0+rCoche-11,141);ctx.lineTo(x0+rCoche-3,149);ctx.lineTo(x0+rCoche+12,133);ctx.stroke();ctx.restore();
+    ctx.textAlign='left';ctx.fillText(titrePartage,x0+rCoche*2+ecart,160);ctx.textAlign='center';
 
     // Liste des selections (jusqu'a 8 lignes, puis "+N autres" pour ne
     // jamais deborder du cadre quel que soit le nombre de legs).
@@ -6110,10 +6399,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const niveauInfo=niveauSelonCote(totalOdd(tk));
     const lvl=niveauInfo.niveau==='haut'?'':(niveauInfo.niveau==='moyen'?' mid':' low');
     const niveauCle=niveauInfo.niveau;
-    const niveauEmoji=niveauInfo.niveau==='haut'?'🟢':(niveauInfo.niveau==='moyen'?'🟡':'🔴');
+    const niveauEmoji='<i class="dtk-niv-dot" aria-hidden="true"></i>';
     conf.innerHTML='<div class="dtk-conf-top"><span class="dtk-conf-lbl">'+t('dash_conf')+'</span>'+
       '<span style="display:flex;align-items:center;gap:6px"><span class="dtk-conf-val">'+niveauInfo.pct+'%</span>'+
-      '<span class="dtk-badge-niveau '+niveauCle+'">'+niveauEmoji+' '+t('dtk_niveau_'+niveauCle)+'</span></span></div>'+
+      '<span class="dtk-badge-niveau '+niveauCle+'">'+niveauEmoji+t('dtk_niveau_'+niveauCle)+'</span></span></div>'+
       '<div class="dtk-conf-bar"><span class="dtk-conf-fill'+lvl+'" style="width:'+niveauInfo.pct+'%"></span></div>';
     el.appendChild(conf);
 
@@ -6690,6 +6979,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // meme si un plan etait actif au moment de la suspension (il est mis
     // en pause cote serveur, voir admin_suspend_user).
     if(susp){
+      const tgS=document.getElementById('dashTgCard');if(tgS)tgS.hidden=true;
       document.getElementById('dashSubUpgrade').hidden=true;
       document.querySelectorAll('.dash-sub-planblock').forEach(elB=>{elB.hidden=true;});
       document.getElementById('dashSubNoPlan').hidden=true;
@@ -6712,6 +7002,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // rappel de renouvellement — pour le message dedie ci-dessous.
     const bientotExpire=!changementEnAttente&&!pend&&!rej&&!exp&&
       !!(window.VB_inRenewWindow&&window.VB_inRenewWindow());
+    if(window.VB_majTelegram)window.VB_majTelegram();
     const upg=document.getElementById('dashSubUpgrade');
     upg.hidden=life||pend||changementEnAttente;
     // CORRECTIF : "Activer mon plan" pour qui n'a jamais ete confirme,
@@ -7173,6 +7464,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='testimonials')renderTestiList();
     if(view==='landing')renderLandingStatsAdmin();
     if(view==='settings')renderSettings();
+    if(view==='security')renderSecurity();
+    if(view==='telegram')renderTelegramAdmin();
   }
   document.querySelectorAll('#admDash [data-adback]').forEach(b=>{
     b.addEventListener('click',()=>{
@@ -7310,10 +7603,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ]);
       const subsActives=(typeof subsActivesData==='number')?subsActivesData:null;
       box.innerHTML=
-        revCard(IC_USERS,null,badgeVariation(usersMois||0,usersMoisPrec||0),t('adm_k_users'),(users!=null?String(users):'—'),null,t('adm_k_users_note'),'users') +
-        revCard(IC_CHECK,'green','',t('adm_k_subs_active'),(subsActives!=null?String(subsActives):'—'),'green',t('adm_k_subs_note'),'users') +
-        revCard(IC_CLOCK,null,'',t('adm_k_pay_pending'),(paysPending!=null?String(paysPending):'—'),'gold',t('adm_k_pay_note'),'payments') +
-        revCard(IC_TICKET,null,'',t('adm_k_tickets'),(tickets!=null?String(tickets):'—'),null,t('adm_k_tickets_note'),'fiches');
+        ovKpi('blue',IC_USERS,badgeVariation(usersMois||0,usersMoisPrec||0),t('adm_k_users'),(users!=null?String(users):'—'),t('adm_k_users_note'),'users') +
+        ovKpi('green',IC_CHECK,'',t('adm_k_subs_active'),(subsActives!=null?String(subsActives):'—'),t('adm_k_subs_note'),'users') +
+        ovKpi('gold',IC_CLOCK,'',t('adm_k_pay_pending'),(paysPending!=null?String(paysPending):'—'),t('adm_k_pay_note'),'payments') +
+        ovKpi('red',IC_TICKET,'',t('adm_k_tickets'),(tickets!=null?String(tickets):'—'),t('adm_k_tickets_note'),'fiches');
       document.getElementById('admHomeUpdated').textContent=t('adm_updated_at').replace('{t}',new Date().toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'}));
       box.querySelectorAll('[data-nav]').forEach(card=>{
         const aller=()=>setView(card.dataset.nav);
@@ -7338,6 +7631,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
   }
   document.getElementById('admHomeRefresh').addEventListener('click',renderHome);
+  document.querySelectorAll('[data-ovgo]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.ovgo)));
 
   // ============================================================
   // BADGE DE QUOTA API-SPORTS (29/08)
@@ -7389,7 +7683,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // de la page de génération manuelle (renderQuotaBadgeGen).
   function htmlBadgeQuota(q,labelSport){
     if(!q || !q.est_du_jour){
-      return '<div class="adm-quota-badge or"><span class="adm-quota-badge-txt">'+
+      return '<div class="adm-quota-badge or"><svg class="ic adm-quota-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4.5M12 17h.01"/></svg><span class="adm-quota-badge-txt">'+
         (labelSport?'<b>'+stripTags(labelSport)+'</b> — ':'')+t('adm_quota_inconnu')+'</span></div>';
     }
     const pct=q.real_limit?Math.round((q.real_limit-q.real_remaining)/q.real_limit*100):0;
@@ -7498,6 +7792,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const sens=pct>=0?'up':'down';
     const fleche=pct>=0?'↑':'↓';
     return '<span class="rev-card-badge '+sens+'">'+fleche+' '+(pct>=0?'+':'')+pct+'%</span>';
+  }
+  // Carte KPI de la nouvelle Vue d'ensemble (15/10) : affichage seul, memes donnees que revCard.
+  function ovKpi(tone,iconPath,badgeHtml,label,valeurHtml,note,nav){
+    return '<div class="ov-kpi '+tone+(nav?' dash-kpi-clickable':'')+'"'+(nav?' data-nav="'+nav+'" role="button" tabindex="0"':'')+'>'+
+      '<div class="ov-kpi-top"><span class="ov-kpi-ic">'+icRev(iconPath)+'</span>'+(badgeHtml||'')+'</div>'+
+      '<div class="ov-kpi-val">'+valeurHtml+'</div>'+
+      '<div class="ov-kpi-lbl">'+label+'</div>'+
+      (note?'<div class="ov-kpi-note">'+note+'</div>':'')+
+      (nav?'<span class="ov-kpi-go" aria-hidden="true">›</span>':'')+
+    '</div>';
   }
   function revCard(iconPath,iconTone,badgeHtml,label,valeurHtml,valueClass,note,nav){
     return '<div class="rev-card'+(nav?' dash-kpi-clickable':'')+'"'+(nav?' data-nav="'+nav+'" role="button" tabindex="0"':'')+'>'+
@@ -8664,7 +8968,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }catch(e){}
     if(!row){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
 
+    /* Vraies donnees (lecture seule, 14/10) : evite toute confusion entre
+       les chiffres D'AFFICHAGE de l'accueil (chiffre de depart + vraies
+       donnees) et la realite. Memes regles que les statistiques des fiches
+       de l'admin : fiches PUBLIEES passees a 'won' (bot ou admin). */
+    let reelGagnees=null,reelUsers=null;
+    try{
+      const [a,b]=await Promise.all([
+        sb.from('tickets').select('id',{count:'exact',head:true}).eq('published',true).eq('status','won'),
+        sb.from('profiles').select('id',{count:'exact',head:true}).eq('role','user').eq('email_verified',true)
+      ]);
+      if(!a.error)reelGagnees=a.count;
+      if(!b.error)reelUsers=b.count;
+    }catch(e){}
+    const nf=n=>n==null?'—':Number(n).toLocaleString(currentLang==='en'?'en-US':'fr-FR');
+
     box.innerHTML=
+      '<div class="admdash-section-h">'+t('adm_landing_shown_h')+'</div>'+
       '<label class="field"><span class="field-lbl">'+t('adm_landing_users_lbl')+'</span>'+
       '<input type="number" min="0" step="1" id="admLandUsers" value="'+row.active_users+'"></label>'+
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_landing_tickets_lbl')+'</span>'+
@@ -8674,7 +8994,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_landing_trust_lbl')+'</span>'+
       '<input type="number" min="0" max="5" step="0.1" id="admLandTrust" value="'+row.trustpilot_rating+'"></label>'+
       '<button type="button" class="btn btn-confirm" id="admLandSave" style="width:100%;margin-top:14px">'+t('adm_plans_save')+'</button>'+
-      '<div id="admLandErr" class="field-err" style="display:none;margin-top:8px"></div>';
+      '<div id="admLandErr" class="field-err" style="display:none;margin-top:8px"></div>'+
+      '<div class="admdash-section-h" style="margin-top:22px">'+t('adm_landing_real_h')+'</div>'+
+      '<div class="admland-real">'+
+        '<div class="admland-real-row"><span>'+t('adm_landing_real_won')+'</span><b>'+nf(reelGagnees)+'</b></div>'+
+        '<div class="admland-real-row"><span>'+t('adm_landing_real_users')+'</span><b>'+nf(reelUsers)+'</b></div>'+
+        '<p>'+t('adm_landing_real_note')+'</p>'+
+      '</div>';
 
     document.getElementById('admLandSave').addEventListener('click',function(){
       const err=document.getElementById('admLandErr');
@@ -8885,7 +9211,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         :'<span class="admdash-row-badge aucun">'+t('adm_draft')+'</span>';
       return '<button type="button" class="admdash-row" data-testiid="'+x.id+'">'+
         '<span class="admdash-row-av">'+initiales(x.author_name||'?')+'</span>'+
-        '<span class="admdash-row-tx"><b>'+(x.author_name||'—')+'</b><span>'+('★'.repeat(x.rating||0))+'</span></span>'+
+        '<span class="admdash-row-tx"><b>'+(x.author_name||'—')+'</b><span class="adm-stars" aria-label="'+(x.rating||0)+'/5">'+('<svg class="adm-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9Z"/></svg>'.repeat(x.rating||0))+'</span></span>'+
         badge+
         '</button>';
     }).join('');
@@ -8995,47 +9321,147 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const box=document.getElementById('admSettingsBody');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
-    const mfaStatus=window.VB_mfaStatus?await window.VB_mfaStatus():{actif:false};
-
     box.innerHTML=
       '<div class="admdash-section-h">'+t('adm_settings_pw_h')+'</div>'+
-      '<div id="admSetPwBox"></div>'+
-
-      '<div class="admdash-section-h">'+t('adm_settings_2fa_h')+'</div>'+
-      '<p style="font-size:13px;color:var(--gris);margin-bottom:14px;line-height:1.5">'+
-        (mfaStatus.actif?t('adm_settings_2fa_on_p'):t('adm_settings_2fa_off_p'))+
-      '</p>'+
-      (mfaStatus.actif?
-        '<button type="button" class="btn btn-reject" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_disable')+'</button>'
-        :
-        '<button type="button" class="btn btn-confirm" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_enable')+'</button>')+
-      '<div id="admSet2faErr" class="field-err" style="display:none;margin-top:8px"></div>';
-
+      '<div id="admSetPwBox"></div>';
     admPwStage='start';admPwCode='';
     renderAdmPwSection();
+  }
 
+  /* ---- Sekirite 2FA (14/10) : activer / desactiver quand l'admin le
+     veut, codes de secours. Facultative ; une fois activee, la base
+     exige le code a chaque nouvelle session (voir is_admin). ---- */
+  /* ---- Telegram (15/10) : etat du robot, des 4 groupes et des acces ---- */
+  async function appelTelegramAdmin(fn,action){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    const {data}=await sb.auth.getSession();
+    const j=data&&data.session&&data.session.access_token;
+    if(!j)return null;
+    try{
+      const r=await fetch('/.netlify/functions/'+fn,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+j},body:JSON.stringify({action:action})});
+      return await r.json();
+    }catch(e){return null;}
+  }
+  async function renderTelegramAdmin(){
+    const box=document.getElementById('admTelegramBody');
+    if(!box)return;
+    box.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
+    const e=await appelTelegramAdmin('telegram-admin','etat');
+    if(!e){box.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';return;}
+    if(e.configure===false){box.innerHTML='<div class="admdash-empty">Robot non configuré : '+stripTags(e.raison||'')+'</div>';return;}
+    const ok=b=>'<span class="admdash-row-badge '+(b?'won':'lost')+'">'+(b?'OK':'NON')+'</span>';
+    const noms={p1:'VIP 7 JOU',p2:'VIP 21 JOU',p3:'VIP 30 JOU',p4:'LIFETIME'};
+    let acces={};
+    try{
+      const sb=window.VB_getSupabase();
+      const {data}=await sb.from('telegram_access').select('status');
+      (data||[]).forEach(x=>{acces[x.status]=(acces[x.status]||0)+1;});
+    }catch(err){}
+    box.innerHTML=
+      '<div class="admdash-panel">'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Robot</b><span>@'+stripTags(e.robot||'?')+'</span></span></div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Retraits automatiques</b><span>'+(e.retraits_actifs?'Actifs : le robot retire réellement':'Mode essai : rien n\'est retiré (TELEGRAM_VIP_ENFORCE=1 pour activer)')+'</span></span>'+ok(e.retraits_actifs)+'</div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Webhook</b><span>'+stripTags((e.webhook&&e.webhook.url)||'non branché')+(e.webhook&&e.webhook.erreur?' — '+stripTags(e.webhook.erreur):'')+'</span></span>'+ok(!!(e.webhook&&e.webhook.url))+'</div>'+
+      '</div>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">Groupes VIP</div>'+
+      (e.groupes||[]).map(g=>
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>'+stripTags(noms[g.plan]||g.plan)+' — '+stripTags(g.nom||'(non configuré)')+'</b>'+
+        '<span>'+(g.configure?('Privé : '+(g.prive?'oui':'NON')+' · Robot admin : '+(g.robot_admin?'oui':'NON')+' · Inviter : '+(g.droit_inviter?'oui':'NON')+' · Bannir : '+(g.droit_bannir?'oui':'NON')+' · Membres : '+(g.effectif!=null?g.effectif:'?')+' · Reliés : '+(g.relies||0)+(g.erreur?' · '+stripTags(g.erreur):'')):'Variable TELEGRAM_VIP_CHAT_'+g.plan.toUpperCase()+' absente')+'</span></span>'+
+        ok(g.configure&&g.robot_admin&&g.droit_inviter&&g.droit_bannir&&g.prive)+'</div>').join('')+
+      '</div>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">Accès enregistrés</div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Membres reliés</b><span>'+(acces.joined||0)+' · liens en attente '+(acces.issued||0)+' · retirés '+(acces.revoked||0)+' · sortis '+(acces.left||0)+' · expirés '+(acces.expired||0)+'</span></span></div>'+
+      '</div>'+
+      '<div class="admdash-panel admdash-panel-toolbar">'+
+        '<button type="button" class="btn btn-or" id="admTgWebhook">Brancher le webhook</button>'+
+        '<button type="button" class="btn btn-or-soft" id="admTgSync">Synchroniser maintenant</button>'+
+        '<button type="button" class="wiz-change" id="admTgRefresh">'+t('adm_refresh')+'</button>'+
+      '</div><div id="admTgMsg" class="admdash-count"></div>';
+    const msg=document.getElementById('admTgMsg');
+    document.getElementById('admTgRefresh').addEventListener('click',renderTelegramAdmin);
+    document.getElementById('admTgWebhook').addEventListener('click',async()=>{
+      msg.textContent='…';const r=await appelTelegramAdmin('telegram-admin','webhook');
+      msg.textContent=r&&r.ok?'Webhook branché : '+r.url:'Échec : '+stripTags((r&&(r.raison||r.detail))||'erreur');
+      if(r&&r.ok)setTimeout(renderTelegramAdmin,800);
+    });
+    document.getElementById('admTgSync').addEventListener('click',async()=>{
+      msg.textContent='…';const r=await appelTelegramAdmin('telegram-sync','sync');
+      msg.textContent=r&&r.ok?'Synchronisation faite : '+JSON.stringify(r.rapport):'Échec de la synchronisation';
+    });
+  }
+
+  async function renderSecurity(){
+    const box=document.getElementById('admSecurityBody');
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){box.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+    const mfaStatus=window.VB_mfaStatus?await window.VB_mfaStatus():{actif:false};
+    let restants=null, serveurPret=false;
+    // admin_mfa_pret() est installee EN DERNIER : elle n'existe que si
+    // toutes les fonctions serveur de la 2FA sont en place.
+    try{const {data,error}=await sb.rpc('admin_mfa_pret');serveurPret=!error&&data===true;}catch(e){}
+    if(mfaStatus.actif){
+      try{const {data}=await sb.rpc('admin_mfa_codes_restants');restants=(typeof data==='number')?data:null;}catch(e){}
+    }
+    // Securite : tant que les fonctions serveur (codes de secours,
+    // reinitialisation) ne sont pas installees dans Supabase, on n'autorise
+    // pas l'activation — sinon un admin pourrait activer la 2FA sans codes
+    // de secours fonctionnels et rester bloque s'il perd son telephone.
+    if(!serveurPret&&!mfaStatus.actif){
+      box.innerHTML='<div class="admsec-card"><div class="admsec-head"><span class="admsec-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>'+
+        '<div><b>'+t('adm_settings_2fa_h')+'</b><span class="admsec-pill">'+t('adm_sec_off')+'</span></div></div>'+
+        '<p class="admsec-p">'+t('adm_sec_pas_pret')+'</p></div>';
+      return;
+    }
+    box.innerHTML=
+      '<div class="admsec-card'+(mfaStatus.actif?' on':'')+'">'+
+        '<div class="admsec-head">'+
+          '<span class="admsec-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.6c0 4.5 3.1 8.2 7.5 9.4 4.4-1.2 7.5-4.9 7.5-9.4V6Z"/>'+(mfaStatus.actif?'<path d="m8.6 12.2 2.4 2.4 4.4-4.6"/>':'<path d="M12 9v4M12 16h.01"/>')+'</svg></span>'+
+          '<div><b>'+t('adm_settings_2fa_h')+'</b><span class="admsec-pill">'+t(mfaStatus.actif?'adm_sec_on':'adm_sec_off')+'</span></div>'+
+        '</div>'+
+        '<p class="admsec-p">'+(mfaStatus.actif?t('adm_settings_2fa_on_p'):t('adm_settings_2fa_off_p'))+'</p>'+
+        (mfaStatus.actif?
+          '<button type="button" class="btn btn-reject" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_disable')+'</button>'
+          :
+          '<button type="button" class="btn btn-confirm" id="admSet2faToggle" style="width:100%">'+t('adm_settings_2fa_enable')+'</button>')+
+      '</div>'+
+      (mfaStatus.actif?
+        '<div class="admsec-card">'+
+          '<div class="admsec-head"><span class="admsec-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 7.7-7.7M15.5 7.5l2.5 2.5M18 5l2 2"/></svg></span>'+
+          '<div><b>'+t('mfa_codes_h')+'</b><span class="admsec-pill'+(restants===0?' warn':'')+'">'+(restants==null?'—':t('adm_sec_codes_left').replace('{n}',restants))+'</span></div></div>'+
+          '<p class="admsec-p">'+t('adm_sec_codes_p')+'</p>'+
+          '<button type="button" class="btn btn-or-soft" id="admSecRegen" style="width:100%">'+t('adm_sec_codes_regen')+'</button>'+
+        '</div>'
+      :'')+
+      '<div id="admSet2faErr" class="field-err" style="display:none;margin-top:8px"></div>';
+
+    const afficherErreur=msg=>{
+      const err=document.getElementById('admSet2faErr');
+      if(err){err.textContent=t('adm_settings_2fa_err')+(msg?' — '+msg:'');err.style.display='block';}
+    };
     document.getElementById('admSet2faToggle').addEventListener('click',function(){
       if(mfaStatus.actif){
-        // Desactiver une protection existante est la seule des deux
-        // actions assez sensible pour meriter une confirmation Oui/Non —
-        // l'activation, elle, a deja sa propre etape de verification
-        // (le QR code + le code a 6 chiffres).
-        demanderConfirmation(this,t('adm_confirm_q_2fa_disable'),async()=>{
-          const res=await window.VB_disableMfa();
-          if(!res||!res.ok){
-            const err=document.getElementById('admSet2faErr');
-            if(err){err.textContent=t('adm_settings_2fa_err')+' — '+((res&&res.erreur)||'');err.style.display='block';}
-            return;
-          }
-          if(window.VB_toast)window.VB_toast('adm_settings_2fa_off_h',t('adm_settings_2fa_off_toast'));
-          renderSettings();
+        // Desactiver une protection existante merite une confirmation
+        // Oui/Non ; l'activation a deja sa propre verification (QR + code).
+        demanderConfirmation(this,t('adm_confirm_q_2fa_disable'),()=>{
+          window.VB_demanderDesactivationMfa(()=>{
+            if(window.VB_toast)window.VB_toast('adm_settings_2fa_off_h',t('adm_settings_2fa_off_toast'));
+            renderSecurity();
+          });
         },'shield');
       }else{
         window.VB_startMfaEnrollment(()=>{
           if(window.VB_toast)window.VB_toast('adm_settings_2fa_on_h',t('adm_settings_2fa_on_toast'));
-          renderSettings();
+          renderSecurity();
         },(currentUser&&currentUser.id)||null);
       }
+    });
+    const regen=document.getElementById('admSecRegen');
+    if(regen)regen.addEventListener('click',function(){
+      demanderConfirmation(this,t('adm_sec_codes_regen_q'),async()=>{
+        const res=await window.VB_mfaRegenererCodes(()=>renderSecurity());
+        if(!res||!res.ok)afficherErreur(res&&res.erreur);
+      },'shield');
     });
   }
 
@@ -9359,6 +9785,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>
         x.classList.toggle('is-on',x.dataset.fstatus==='pending'));
     }
+    // Filtre "An kou" retire de l'Historique (14/10, demande de James) :
+    // une fiche encore en cours n'a pas sa place dans l'historique. S'il
+    // etait actif au moment de passer sur l'Historique, on retombe sur "Tout".
+    const chipEnCours=document.querySelector('#admFichesFilters [data-fstatus="pending"]');
+    if(chipEnCours){
+      const estHist=admFichesTab==='hist';
+      chipEnCours.style.display=estHist?'none':'';
+      if(estHist && admFichesStatut==='pending'){
+        admFichesStatut='all';
+        document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>
+          x.classList.toggle('is-on',x.dataset.fstatus==='all'));
+      }
+    }
   }
   // Pagination "Charger plus" (Phase 3 roadmap, 27/08) — Historique
   // uniquement (le jour courant reste petit par nature, jamais paginé).
@@ -9556,11 +9995,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // synchro, boutons de création/génération) : jamais un contrôle sans effet à l'écran.
     const st=admFichesTab==='stats';
     const dateEl=document.getElementById('admFichesDate');
-    [dateEl&&dateEl.closest('label'),
-     document.getElementById('admFichesFilters'),document.getElementById('admFichesSync'),
-     document.getElementById('admFichesNew'),document.getElementById('admFicheGenererBtn'),
-     document.getElementById('admFicheGenererExactBtn'),document.getElementById('admFicheGenererBasketBtn')
+    const dateLbl=dateEl&&dateEl.closest('label');
+    // Istorik : la date unique n'a aucun effet (le filtre par periode la remplace) -> masquee.
+    if(dateLbl)dateLbl.style.display=(st||admFichesTab==='hist')?'none':'';
+    const hf=document.getElementById('admHistFilters');
+    if(hf)hf.style.display=(admFichesTab==='hist')?'':'none';
+    [document.getElementById('admFichesFilters'),document.getElementById('admFichesSync')
     ].forEach(el=>{if(el)el.style.display=st?'none':'';});
+    // Les 4 boutons de creation / generation n'existent que sur « Jodi a » (jamais Istorik ni Estatistik).
+    ['admFichesNew','admFicheGenererBtn','admFicheGenererExactBtn','admFicheGenererBasketBtn'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.style.display=(admFichesTab==='day')?'':'none';});
     const fs=document.getElementById('admFichesStatsFilters');
     if(fs)fs.style.display=st?'':'none';
     const cu=document.getElementById('admStatsCustom');
@@ -9577,16 +10021,41 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       foot:bloc(c.foot||{}),basket:bloc(c.basket||{})
     };
   }
-  function admfCarteStatsHtml(titre,b){
-    const taux=b.taux==null?'—':String(b.taux).replace('.',',')+' %';
-    return '<div class="admf-stat-card">'+
-      '<div class="admf-stat-title">'+stripTags(titre)+'</div>'+
-      '<div class="admf-stat-row">'+
-        '<div class="admf-stat"><b class="gagne">'+b.won+'</b><span>'+stripTags(t('adm_fiches_st_won'))+'</span></div>'+
-        '<div class="admf-stat"><b class="perdu">'+b.lost+'</b><span>'+stripTags(t('adm_fiches_st_lost'))+'</span></div>'+
-        '<div class="admf-stat"><b class="taux">'+taux+'</b><span>'+stripTags(t('adm_fiches_st_rate'))+'</span></div>'+
+  // Statistiques (15/10) : meme calcul, nouvel affichage (anneau + barres).
+  function admfPct(n,tot){return tot>0?Math.round(n/tot*1000)/10:0;}
+  function admfTauxTxt(b){return b.taux==null?'—':String(b.taux).replace('.',',')+' %';}
+  function admfHeroStatsHtml(titre,b){
+    const tot=b.won+b.lost+b.pending;
+    const C=2*Math.PI*52;
+    const arc=b.taux==null?0:C*b.taux/100;
+    return '<div class="st-hero">'+
+      '<div class="st-kicker">'+stripTags(titre)+'</div>'+
+      '<div class="st-ring"><svg viewBox="0 0 124 124" aria-hidden="true">'+
+        '<defs><linearGradient id="stGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17A860"/><stop offset="1" stop-color="#2ED47F"/></linearGradient></defs>'+
+        '<circle class="bg" cx="62" cy="62" r="52"/>'+
+        '<circle class="fg" cx="62" cy="62" r="52" stroke-dasharray="'+arc.toFixed(1)+' '+C.toFixed(1)+'"/></svg>'+
+        '<div class="st-ring-tx"><b>'+admfTauxTxt(b)+'</b><span>'+stripTags(t('adm_fiches_st_rate'))+'</span></div></div>'+
+      '<div class="st-legend">'+
+        '<div class="st-lg st-won"><i></i><span>'+stripTags(t('adm_fiches_st_won'))+'</span><b>'+b.won+'</b></div>'+
+        '<div class="st-lg st-lost"><i></i><span>'+stripTags(t('adm_fiches_st_lost'))+'</span><b>'+b.lost+'</b></div>'+
+        '<div class="st-lg st-pend"><i></i><span>'+stripTags(t('st_pending'))+'</span><b>'+b.pending+'</b></div>'+
       '</div>'+
-      '<div class="admf-stat-foot">'+stripTags(t('adm_fiches_st_line').replace('{s}',b.reglees).replace('{p}',b.pending))+'</div>'+
+      '<div class="st-bar" role="img" aria-label="'+stripTags(titre)+'">'+
+        (tot?'<s class="w" style="width:'+admfPct(b.won,tot)+'%"></s><s class="l" style="width:'+admfPct(b.lost,tot)+'%"></s><s class="p" style="width:'+admfPct(b.pending,tot)+'%"></s>':'')+'</div>'+
+      '<div class="st-foot">'+stripTags(t('adm_fiches_st_line').replace('{s}',b.reglees).replace('{p}',b.pending))+'</div>'+
+    '</div>';
+  }
+  function admfCarteStatsHtml(titre,b,icone){
+    const empty=b.taux==null;
+    return '<div class="st-sport">'+
+      '<div class="st-sport-h">'+(icone||'')+'<span>'+stripTags(titre)+'</span></div>'+
+      '<div class="st-sport-rate">'+admfTauxTxt(b)+'<small>'+stripTags(t('adm_fiches_st_rate'))+'</small></div>'+
+      '<div class="st-meter'+(empty?' empty':'')+'"><s style="width:'+(empty?0:b.taux)+'%"></s></div>'+
+      '<div class="st-mini">'+
+        '<div class="w"><b>'+b.won+'</b><span>'+stripTags(t('adm_fiches_st_won'))+'</span></div>'+
+        '<div class="l"><b>'+b.lost+'</b><span>'+stripTags(t('adm_fiches_st_lost'))+'</span></div>'+
+        '<div class="p"><b>'+b.pending+'</b><span>'+stripTags(t('st_pending'))+'</span></div>'+
+      '</div>'+
     '</div>';
   }
   async function admfRenderStats(body,sb){
@@ -9605,14 +10074,54 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         c[x.sp][x.st]=x.r.count||0;
       });
       const st=admfCalculerStats(c);
+      const IC_FOOT='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 8 3.6 2.6-1.4 4.2H9.8l-1.4-4.2z"/><path d="M12 3v5M20.5 9.5 15.6 10.6M17.5 19.5l-3.3-4.7M6.5 19.5l3.3-4.7M3.5 9.5l4.9 1.1"/></svg>';
+      const IC_BASK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/><path d="M5.6 5.6c3.2 3.4 3.2 9.4 0 12.8M18.4 5.6c-3.2 3.4-3.2 9.4 0 12.8"/></svg>';
       body.innerHTML=
-        admfCarteStatsHtml(t('adm_fiches_st_total'),st.total)+
-        admfCarteStatsHtml(t('adm_fiches_st_foot'),st.foot)+
-        admfCarteStatsHtml(t('adm_fiches_st_basket'),st.basket)+
-        '<div class="admf-stat-note">'+stripTags(t('adm_fiches_st_note'))+'</div>';
+        admfHeroStatsHtml(t('adm_fiches_st_total'),st.total)+
+        '<div class="st-sports">'+
+          admfCarteStatsHtml(t('adm_fiches_st_foot'),st.foot,IC_FOOT)+
+          admfCarteStatsHtml(t('adm_fiches_st_basket'),st.basket,IC_BASK)+
+        '</div>'+
+        '<div class="st-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>'+stripTags(t('adm_fiches_st_note'))+'</span></div>';
     }catch(e){
       body.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';
     }
+  }
+
+  // ---- Filtres de l'Istorik (15/10) : recherche + sport + type + periode ----
+  // Lecture seule : simples filtres ajoutes a la requete d'affichage existante.
+  let admHistQ='',admHistSport='all',admHistType='all',admHistDu='',admHistAu='';
+  function admHistFiltresActifs(){return !!(admHistQ||admHistSport!=='all'||admHistType!=='all'||admHistDu||admHistAu||admFichesStatut!=='all');}
+  function admHistNettoyerQ(q){return String(q||'').replace(/[*%,()\\"'`]/g,' ').replace(/\s+/g,' ').trim().slice(0,60);}
+  async function admHistAppliquer(req,sb){
+    if(admHistSport==='foot')req=req.eq('sport','foot');
+    else if(admHistSport==='basket')req=req.in('sport',ADMF_STATS_SPORTS.basket);
+    if(admHistType==='normal')req=req.eq('score_legs_count',0);
+    else if(admHistType==='exact')req=req.gt('score_legs_count',0);
+    let du=admHistDu,au=admHistAu;
+    if(du&&au&&du>au){const x=du;du=au;au=x;}
+    if(du)req=req.gte('play_date',du);
+    if(au)req=req.lte('play_date',au);
+    const q=admHistNettoyerQ(admHistQ);
+    if(q){
+      // Le texte est cherche dans le code de la fiche ET dans ses matchs / ligues.
+      let ids=[];
+      try{
+        const {data}=await sb.from('ticket_legs').select('ticket_id')
+          .or('match_label.ilike.*'+q+'*,league.ilike.*'+q+'*').order('kickoff_at',{ascending:false}).limit(600);
+        ids=[...new Set((data||[]).map(x=>x.ticket_id))].slice(0,200);   // URL raisonnable
+      }catch(e){}
+      req=req.or('code.ilike.*'+q+'*'+(ids.length?',id.in.('+ids.join(',')+')':''));
+    }
+    return req;
+  }
+  function admHistMajCompteur(total){
+    const el=document.getElementById('admHistCount');
+    if(el)el.innerHTML=(total==null)?'':stripTags(t('hf_count')).replace('{n}','<b>'+total+'</b>');
+    const rs=document.getElementById('admHistReset');
+    if(rs)rs.style.visibility=admHistFiltresActifs()?'visible':'hidden';
+    const cl=document.getElementById('admHistQClr');
+    if(cl)cl.hidden=!admHistQ;
   }
 
   async function renderFiches(){
@@ -9627,7 +10136,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     majSyncBot();
     try{
       let req=sb.from('tickets')
-        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,created_at,legs_count,total_odd,score_legs_count,source,settled_at');
+        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,created_at,legs_count,total_odd,score_legs_count,source,settled_at',
+          admFichesTab==='hist'?{count:'exact'}:undefined);
       if(admFichesTab==='day'){
         // Vue du jour : les fiches de la date choisie. Filtre de statut
         // (Partie 3 roadmap, 27/08 : zones "En cours/Gagné/Perdu") — mêmes
@@ -9652,9 +10162,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
                .order('play_date',{ascending:false}).order('min_plan_rank',{ascending:true})
                .limit(admFichesHistLimit);
         if(admFichesStatut!=='all')req=req.eq('status',admFichesStatut);
+        req=await admHistAppliquer(req,sb);
       }
-      const {data:tickets,error}=await req;
+      const {data:tickets,error,count:totalHist}=await req;
       if(error)throw error;
+      if(admFichesTab==='hist')admHistMajCompteur(totalHist!=null?totalHist:(tickets||[]).length);
       if(!tickets||!tickets.length){
         body.innerHTML='<div class="admdash-empty">'+
           t(admFichesTab==='hist'?'adm_fiches_hist_empty':'adm_fiches_empty')+'</div>';
@@ -9797,6 +10309,41 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       renderFiches();
     });
   });
+  // Filtres de l'Istorik (recherche, sport, type, periode, reinitialisation)
+  (function(){
+    const qEl=document.getElementById('admHistQ');
+    if(!qEl)return;
+    const relancer=()=>{admFichesHistLimit=ADMF_HIST_PAGE;renderFiches();};
+    let timer=null;
+    qEl.addEventListener('input',()=>{
+      admHistQ=qEl.value;
+      const cl=document.getElementById('admHistQClr');if(cl)cl.hidden=!admHistQ;
+      clearTimeout(timer);timer=setTimeout(relancer,350);
+    });
+    qEl.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();clearTimeout(timer);relancer();qEl.blur();}});
+    document.getElementById('admHistQClr').addEventListener('click',()=>{qEl.value='';admHistQ='';relancer();qEl.focus();});
+    const chips=(sel,attr,set)=>document.querySelectorAll(sel+' ['+attr+']').forEach(b=>b.addEventListener('click',()=>{
+      set(b.getAttribute(attr));
+      document.querySelectorAll(sel+' ['+attr+']').forEach(x=>x.classList.toggle('is-on',x===b));
+      relancer();
+    }));
+    chips('#admHistSport','data-hsport',v=>{admHistSport=v;});
+    chips('#admHistType','data-htype',v=>{admHistType=v;});
+    ['admHistFrom','admHistTo'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.classList.add('is-empty');
+      el.addEventListener('change',()=>el.classList.toggle('is-empty',!el.value));
+      el.addEventListener('change',()=>{if(id==='admHistFrom')admHistDu=el.value;else admHistAu=el.value;relancer();});
+    });
+    document.getElementById('admHistReset').addEventListener('click',()=>{
+      admHistQ='';admHistSport='all';admHistType='all';admHistDu='';admHistAu='';admFichesStatut='all';
+      qEl.value='';['admHistFrom','admHistTo'].forEach(i=>{const e=document.getElementById(i);e.value='';e.classList.add('is-empty');});
+      document.querySelectorAll('#admHistSport [data-hsport],#admHistType [data-htype]').forEach(x=>
+        x.classList.toggle('is-on',x.dataset.hsport==='all'||x.dataset.htype==='all'));
+      document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(x=>x.classList.toggle('is-on',x.dataset.fstatus==='all'));
+      relancer();
+    });
+  })();
   // Filtres de statut (les 2 onglets depuis le 27/08 — Phase 3 roadmap)
   document.querySelectorAll('#admFichesFilters [data-fstatus]').forEach(b=>{
     b.addEventListener('click',()=>{
@@ -10499,7 +11046,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // Un tour complet du ballon de football, puis un tour complet du
   // ballon de basket, et ainsi de suite (alternance a chaque tour).
   let tour='foot';
-  ring.addEventListener('animationiteration',()=>{
+  ring.addEventListener('animationiteration',e=>{
+    if(e.target!==ring)return;   // l'animation du ballon (enfant) remonte aussi ici : un seul basculement par tour
     tour=(tour==='foot')?'bask':'foot';
     foot.style.display=(tour==='foot')?'':'none';
     bask.style.display=(tour==='bask')?'':'none';
@@ -10510,7 +11058,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   // Lancement initial du site : duree minimale pour eviter un flash,
   // et filet de securite pour ne jamais bloquer l'affichage.
-  const MIN_SHOW=1400,MAX_SHOW=4000;
+  const MIN_SHOW=600,MAX_SHOW=2500;
   const t0=Date.now();
   function finirLancement(){
     const attente=Math.max(0,MIN_SHOW-(Date.now()-t0));
@@ -10542,6 +11090,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const stageBackup=overlay.querySelector('[data-mfa="backup"]');
   const stageCodes=overlay.querySelector('[data-mfa="codes"]');
   const stageError=overlay.querySelector('[data-mfa="error"]');
+  const stageDisable=overlay.querySelector('[data-mfa="disable"]');
+  const disableOtp=[...document.getElementById('mfaDisableOtp').querySelectorAll('input')];
+  const disableErr=document.getElementById('mfaDisableErr');
+  let retourDepuisSecours='challenge';
   const enrollOtp=[...document.getElementById('mfaEnrollOtp').querySelectorAll('input')];
   const challengeOtp=[...document.getElementById('mfaChallengeOtp').querySelectorAll('input')];
   const enrollErr=document.getElementById('mfaEnrollErr');
@@ -10601,29 +11153,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   window.VB_mfaVerifiedThisTab=mfaVerifieCetOnglet;
 
-  /* ---- Codes de secours : jamais stockes en clair — seul un hachage
-     SHA-256 est ecrit en base. Le code en clair n'existe qu'un instant,
-     le temps de l'afficher/telecharger, jamais conserve ensuite. */
-  function genererUnCode(){
-    const bytes=new Uint8Array(4);
-    crypto.getRandomValues(bytes);
-    const hex=[...bytes].map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
-    return hex.slice(0,4)+'-'+hex.slice(4,8);
-  }
-  async function hacherCode(code){
-    const norm=code.toUpperCase().replace(/[^0-9A-F]/g,'');
-    const enc=new TextEncoder().encode(norm);
-    const buf=await crypto.subtle.digest('SHA-256',enc);
-    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
-  async function genererEtEnregistrerCodesSecours(sb,adminId){
-    const codes=Array.from({length:10},genererUnCode);
-    try{
-      const hashes=await Promise.all(codes.map(hacherCode));
-      const lignes=hashes.map(h=>({admin_id:adminId,code_hash:h,used:false}));
-      await sb.from('admin_mfa_backup_codes').insert(lignes);
-    }catch(e){}
-    return codes;
+  /* Codes de secours (14/10) : generes ET stockes par le serveur
+     (fonction admin_mfa_generer_codes, hachage bcrypt), uniquement avec
+     une session 2FA validee. Le navigateur n'a plus aucun acces a la
+     table des codes : il recoit seulement les codes en clair, une fois. */
+  async function genererEtEnregistrerCodesSecours(sb){
+    const {data,error}=await sb.rpc('admin_mfa_generer_codes');
+    if(error||!Array.isArray(data)||!data.length)throw error||new Error('codes');
+    return data;
   }
   function afficherCodesSecours(codes){
     dernierCodesGeneres=codes;
@@ -10678,6 +11215,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   brancherOtp(enrollOtp,enrollErr);
   brancherOtp(challengeOtp,challengeErr);
+  brancherOtp(disableOtp,disableErr);
 
   document.getElementById('mfaSecretCopy').addEventListener('click',async function(){
     const texte=document.getElementById('mfaSecret').textContent||'';
@@ -10706,6 +11244,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     stageBackup.hidden=(stage!=='backup');
     stageCodes.hidden=(stage!=='codes');
     stageError.hidden=(stage!=='error');
+    stageDisable.hidden=(stage!=='disable');
     if(stage==='error'){
       errorDetail.textContent=detail?(t('mfa_error_p')+' — '+String(detail).slice(0,160)):t('mfa_error_p');
       return;
@@ -10716,9 +11255,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
     if(stage==='codes')return;   // deja rempli par afficherCodesSecours
-    const inputs=stage==='enroll'?enrollOtp:challengeOtp;
+    const inputs=stage==='enroll'?enrollOtp:(stage==='disable'?disableOtp:challengeOtp);
     inputs.forEach(i=>i.value='');
-    (stage==='enroll'?enrollErr:challengeErr).style.display='none';
+    (stage==='enroll'?enrollErr:(stage==='disable'?disableErr:challengeErr)).style.display='none';
     if(window.innerWidth>860)inputs[0].focus({preventScroll:true});
   }
   function hideOverlay(){overlay.hidden=true;}
@@ -10746,7 +11285,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // Un facteur verifie existe : la personne a deja active le 2FA
         // elle-meme depuis Parametres. Si cet appareil est deja reconnu
         // (et toujours valide), on ne redemande rien.
-        if(mfaEstDigneDeConfiance(emailCourant)){onSuccess();return;}
+        // 2FA activee : le code est TOUJOURS demande pour une nouvelle
+        // session (la base refuse de toute facon les droits admin sans
+        // lui). Un simple rafraichissement de l'onglet garde la session
+        // deja validee (aal2) et ne redemande rien.
         await ouvrirChallenge(sb);
         return;
       }
@@ -10810,6 +11352,81 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     adminIdCourant=adminId||adminIdCourant;
     ouvrirInscription(sb);
   };
+  /* Alerte e-mail de securite (comme Google/GitHub) : envoyee a l'adresse
+     du compte admin connecte apres chaque changement de 2FA. Best effort :
+     un echec d'envoi ne bloque jamais l'action elle-meme. */
+  async function alerteSecurite(evenement){
+    try{
+      const sb=window.VB_getSupabase&&window.VB_getSupabase();
+      const {data}=sb?await sb.auth.getSession():{data:null};
+      const jeton=data&&data.session&&data.session.access_token;
+      if(!jeton)return;
+      await fetch('/.netlify/functions/alerte-securite-admin',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+jeton},
+        body:JSON.stringify({evenement})
+      });
+    }catch(e){}
+  }
+  window.VB_mfaAlerte=alerteSecurite;
+
+  /* Desactivation (14/10) : comme un vrai 2FA, il faut retaper un code
+     6 chiffres FRAIS de l'application avant de retirer la protection.
+     Telephone perdu : "Je ne recois pas mon code" -> code de secours. */
+  let desactivationOnDone=null;
+  window.VB_demanderDesactivationMfa=async function(onDone){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return;
+    try{
+      const {data:factors}=await sb.auth.mfa.listFactors();
+      const verifie=((factors&&factors.totp)||[]).find(f=>f.status==='verified');
+      if(!verifie){if(onDone)onDone();return;}
+      factorIdCourant=verifie.id;
+      desactivationOnDone=onDone||null;
+      showOverlay('disable');
+    }catch(e){showOverlay('error',e&&e.message);}
+  };
+  document.getElementById('mfaDisableCancel').addEventListener('click',()=>{hideOverlay();});
+  document.getElementById('mfaDisableLost').addEventListener('click',()=>{
+    onSuccessCourant=desactivationOnDone;
+    retourDepuisSecours='disable';
+    showOverlay('backup');
+  });
+  document.getElementById('mfaDisableSubmit').addEventListener('click',async function(){
+    const code=disableOtp.map(i=>i.value.trim()).join('');
+    if(code.length!==6){disableErr.textContent=t('mfa_err_code');disableErr.style.display='block';return;}
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!factorIdCourant)return;
+    this.disabled=true;
+    try{
+      const {data:ch,error:chErr}=await sb.auth.mfa.challenge({factorId:factorIdCourant});
+      if(chErr||!ch)throw chErr||new Error('challenge');
+      const {error:vErr}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:ch.id,code});
+      if(vErr){disableErr.textContent=t('mfa_err_code');disableErr.style.display='block';this.disabled=false;return;}
+      const res=await window.VB_disableMfa();
+      if(!res||!res.ok)throw new Error((res&&res.erreur)||'');
+      this.disabled=false;
+      hideOverlay();
+      alerteSecurite('mfa_desactive');
+      if(desactivationOnDone)desactivationOnDone();
+    }catch(e){
+      this.disabled=false;
+      disableErr.textContent=t('adm_settings_2fa_err')+(e&&e.message?' — '+e.message:'');
+      disableErr.style.display='block';
+    }
+  });
+
+  window.VB_mfaRegenererCodes=async function(onDone){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return {ok:false};
+    try{
+      const codes=await genererEtEnregistrerCodesSecours(sb);
+      onSuccessCourant=onDone||null;
+      afficherCodesSecours(codes);
+      alerteSecurite('mfa_codes_regeneres');
+      return {ok:true};
+    }catch(e){return {ok:false,erreur:(e&&e.message)||''};}
+  };
   window.VB_disableMfa=async function(){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return {ok:false};
@@ -10819,6 +11436,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(!verifie)return {ok:true};   // deja desactive
       const {error}=await sb.auth.mfa.unenroll({factorId:verifie.id});
       if(error)return {ok:false, erreur:error.message};
+      // Les codes de secours n'ont plus de raison d'exister sans 2FA.
+      try{await sb.rpc('admin_mfa_supprimer_codes');}catch(e){}
+      try{await sb.auth.refreshSession();}catch(e){}
       return {ok:true};
     }catch(e){
       return {ok:false, erreur:e.message};
@@ -10886,15 +11506,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(chErr){enrollErr.textContent=t('mfa_err_code')+(chErr.message?(' — '+chErr.message):'');enrollErr.style.display='block';return;}
       const {error:vErr}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:ch.id,code});
       if(vErr){enrollErr.textContent=t('mfa_err_code')+(vErr.message?(' — '+vErr.message):'');enrollErr.style.display='block';return;}
-      if(seSouvenirCourant)mfaFaireConfiance(emailCourant);
       mfaMarquerOngletVerifie(emailCourant);
       // Premiere activation : on genere les codes de secours et on les
       // montre UNE FOIS avant de continuer — c'est la seule occasion de
       // les voir en clair.
+      alerteSecurite('mfa_active');
       if(adminIdCourant){
-        const codes=await genererEtEnregistrerCodesSecours(sb,adminIdCourant);
-        afficherCodesSecours(codes);
-        return;   // mfaCodesContinue termine le parcours (voir plus haut)
+        try{
+          const codes=await genererEtEnregistrerCodesSecours(sb);
+          afficherCodesSecours(codes);
+          return;   // mfaCodesContinue termine le parcours (voir plus haut)
+        }catch(eCodes){
+          // La 2FA est bien active ; les codes pourront etre generes plus
+          // tard depuis le menu Sekirite 2FA.
+          if(window.VB_toast)window.VB_toast('mfa_codes_h',t('adm_sec_codes_err'));
+        }
       }
       hideOverlay();
       if(onSuccessCourant)onSuccessCourant();
@@ -10919,7 +11545,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{
       const {error}=await sb.auth.mfa.verify({factorId:factorIdCourant,challengeId:challengeIdCourant,code});
       if(error){challengeErr.textContent=t('mfa_err_code')+(error.message?(' — '+error.message):'');challengeErr.style.display='block';return;}
-      if(seSouvenirCourant)mfaFaireConfiance(emailCourant);
       mfaMarquerOngletVerifie(emailCourant);
       hideOverlay();
       if(onSuccessCourant)onSuccessCourant();
@@ -10929,8 +11554,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   });
 
   /* ---- Chemin alternatif : code de secours, si le telephone est perdu ---- */
-  document.getElementById('mfaUseBackup').addEventListener('click',()=>{showOverlay('backup');});
-  document.getElementById('mfaBackToChallenge').addEventListener('click',()=>{showOverlay('challenge');});
+  document.getElementById('mfaUseBackup').addEventListener('click',()=>{retourDepuisSecours='challenge';showOverlay('backup');});
+  document.getElementById('mfaBackToChallenge').addEventListener('click',()=>{showOverlay(retourDepuisSecours);});
   document.getElementById('mfaBackupSubmit').addEventListener('click',async function(){
     const saisi=document.getElementById('mfaBackupInput').value.trim();
     if(!saisi){backupErr.textContent=t('mfa_err_code');backupErr.style.display='block';return;}
@@ -10938,17 +11563,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!sb||!adminIdCourant)return;
     this.disabled=true;
     try{
-      const hash=await hacherCode(saisi);
-      const {data:rows}=await sb.from('admin_mfa_backup_codes')
-        .select('id').eq('admin_id',adminIdCourant).eq('code_hash',hash).eq('used',false).limit(1);
-      if(!rows||!rows.length){
-        backupErr.textContent=t('mfa_backup_err');backupErr.style.display='block';
+      // Verification 100 % serveur (admin_mfa_reinitialiser) : code a
+      // usage unique, 5 essais rates max par 15 minutes. Code bon : la 2FA
+      // de ce compte est retiree, il peut la reactiver depuis le menu.
+      const {data:statut,error}=await sb.rpc('admin_mfa_reinitialiser',{p_code:saisi});
+      if(error||statut!=='ok'){
+        backupErr.textContent=t(statut==='trop_essais'?'mfa_reset_trop':'mfa_backup_err');
+        backupErr.style.display='block';
         this.disabled=false;return;
       }
-      // Usage unique : jamais reutilisable, meme s'il n'est pas expire.
-      await sb.from('admin_mfa_backup_codes').update({used:true}).eq('id',rows[0].id);
-      mfaMarquerOngletVerifie(emailCourant);
+      try{await sb.auth.refreshSession();}catch(e){}
+      this.disabled=false;
+      document.getElementById('mfaBackupInput').value='';
       hideOverlay();
+      if(window.VB_toast)window.VB_toast('mfa_reset_ok_h',t('mfa_reset_ok_p'));
+      alerteSecurite('mfa_reinitialise');
       if(onSuccessCourant)onSuccessCourant();
     }catch(e){
       backupErr.textContent=t('mfa_err_code')+(e&&e.message?(' — '+e.message):'');backupErr.style.display='block';
@@ -11053,6 +11682,34 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const elWon=document.getElementById('statWon');
   const elRate=document.getElementById('statRate');
   const elTrust=document.getElementById('statTrustpilot');
+
+  /* Chiffres de la FAQ (14/10) : "score de X % ... Y fiches reussies"
+     reprennent TOUJOURS les memes valeurs que les statistiques du haut
+     (data-count = la valeur cible, jamais le compteur en cours d'animation).
+     Remplit tous les <span data-stat="won|rate"> ; racine = zone a traiter. */
+  /* Un chiffre de la FAQ n'est montre qu'une fois les VRAIES valeurs lues
+     dans landing_stats : tant que la lecture n'a pas abouti, les
+     chiffres restent invisibles (jamais la valeur de secours du HTML).
+     Si la base est injoignable plus de 6 s, on montre les valeurs de
+     secours plutot que des trous dans la phrase. */
+  let statsLues=false;
+  setTimeout(()=>{statsLues=true;majChiffresFAQ();},6000);
+  function majChiffresFAQ(racine){
+    const lang=(typeof currentLang!=='undefined'&&currentLang)||'ht';
+    const nb=parseInt(elWon&&elWon.dataset.count,10);
+    const pct=parseInt(elRate&&elRate.dataset.count,10);
+    const txtWon=isFinite(nb)?nb.toLocaleString(lang==='en'?'en-US':'fr-FR').replace(/\u202f/g,'\u00a0'):null;
+    const txtRate=isFinite(pct)?(lang==='fr'?pct+'\u00a0%':pct+'%'):null;
+    (racine||document).querySelectorAll('[data-stat]').forEach(el=>{
+      const v=el.dataset.stat==='won'?txtWon:txtRate;
+      if(v!=null)el.textContent=v;
+      el.classList.toggle('stat-ok',statsLues);
+    });
+  }
+  window.VB_majChiffresFAQ=majChiffresFAQ;
+  document.addEventListener('vb:langchange',()=>majChiffresFAQ());
+  majChiffresFAQ();
+
   if(!elUsers&&!elWon&&!elRate&&!elTrust)return;
 
   /* Ecrase directement le texte affiche, meme si l'animation au scroll a
@@ -11082,6 +11739,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const n=Number(row.trustpilot_rating);
       elTrust.textContent=isFinite(n)?n.toFixed(1):String(row.trustpilot_rating);
     }
+    statsLues=true;
+    majChiffresFAQ();
   }
 
   async function chargerLandingStats(){
@@ -11261,18 +11920,14 @@ async function tenterRestaurationSession(){
     if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(session.user.id);
 
     if(profil&&profil.role==='admin'){
-      // Un simple F5 pendant la meme visite ne redemande jamais le 2FA
-      // (marque "verifie cet onglet"), ni si l'appareil est retenu
-      // ("se souvenir de moi", 30 jours) — sinon le code est redemande,
-      // jamais un contournement silencieux.
-      const dejaOk=(window.VB_mfaVerifiedThisTab&&window.VB_mfaVerifiedThisTab(emailSession))
-                 ||(window.VB_mfaEstDigneDeConfiance&&window.VB_mfaEstDigneDeConfiance(emailSession));
-      if(dejaOk){
-        if(window.VB_openAdminDash)window.VB_openAdminDash(session.user);
-      }else if(window.VB_handleAdminMFA){
+      // VB_handleAdminMFA laisse passer directement une session deja
+      // validee en 2FA (aal2, ex. simple F5) et demande le code sinon.
+      if(window.VB_handleAdminMFA){
         window.VB_handleAdminMFA(()=>{
           if(window.VB_openAdminDash)window.VB_openAdminDash(session.user);
         },session.user.email,session.user.id,false);
+      }else if(window.VB_openAdminDash){
+        window.VB_openAdminDash(session.user);
       }
       return;
     }
@@ -11350,6 +12005,7 @@ window.addEventListener('pageshow',(ev)=>{
    ecrit l'abonnement, au lieu de laisser la personne devant une page
    d'accueil muette. */
 (function(){
+  const t=k=>{const D=translations[currentLang]||translations.fr;return D[k]!=null?D[k]:(translations.fr[k]||'');};
   let params;
   try{params=new URLSearchParams(window.location.search);}catch(e){return;}
   if(params.get('paiement')!=='ok')return;
@@ -11380,3 +12036,122 @@ window.addEventListener('pageshow',(ev)=>{
   },4000);
 })();
 
+
+/* ---------- Groupe Telegram VIP du plan (15/10) ----------
+   Carte dans « Mon abonnement ». Le serveur (telegram-lien.js) relit le droit
+   EN BASE et cree un lien a usage unique pour le groupe du plan REEL.
+   Affichage seul : rien n'est decide ici. */
+(function(){
+  const t=k=>{const D=translations[currentLang]||translations.fr;return D[k]!=null?D[k]:(translations.fr[k]||'');};
+  async function jeton(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{const {data}=await sb.auth.getSession();return (data&&data.session&&data.session.access_token)||null;}catch(e){return null;}
+  }
+  async function appeler(action){
+    const j=await jeton();
+    if(!j)return null;
+    try{
+      const r=await fetch('/.netlify/functions/telegram-lien',{method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+j},body:JSON.stringify({action:action})});
+      if(!r.ok)return null;
+      return await r.json();
+    }catch(e){return null;}
+  }
+  window.VB_majTelegram=async function(){
+    const card=document.getElementById('dashTgCard');
+    if(!card)return;
+    const st=(window.VB_getState&&window.VB_getState())||{};
+    const actif=!!(st.paid&&st.planId&&st.payStatus==='confirmed'&&
+      !(window.VB_isExpired&&window.VB_isExpired())&&!(window.VB_isPending&&window.VB_isPending())&&
+      !(window.VB_isRejected&&window.VB_isRejected())&&!(window.VB_estSuspendu&&window.VB_estSuspendu()));
+    if(!actif){card.hidden=true;return;}
+    const txt=document.getElementById('dashTgTxt'),btn=document.getElementById('dashTgBtn');
+    const r=await appeler('etat');
+    if(!r||r.etat==='inactif'){card.hidden=true;return;}
+    card.hidden=false;
+    const dit=cle=>{txt.textContent=t(cle);};
+    if(r.etat==='membre'){dit('tg_membre');btn.hidden=true;}
+    else if(r.etat==='indisponible'){dit('tg_indispo');btn.hidden=true;}
+    else if(r.etat==='en_attente'){dit('tg_attente');btn.hidden=true;}
+    else{dit('tg_a_rejoindre');btn.hidden=false;btn.disabled=false;btn.textContent=t('tg_btn');}
+  };
+  const btn=document.getElementById('dashTgBtn');
+  if(btn)btn.addEventListener('click',async()=>{
+    const txt=document.getElementById('dashTgTxt');
+    btn.disabled=true;btn.textContent=t('tg_btn_wait');
+    const r=await appeler('lien');
+    if(r&&r.etat==='lien'&&r.url){
+      // Meme onglet : jamais bloque par les navigateurs mobiles, et ouvre l'app Telegram.
+      window.location.href=r.url;
+      setTimeout(()=>{btn.disabled=false;btn.textContent=t('tg_btn');},4000);
+      return;
+    }
+    if(r&&r.etat==='membre'){window.VB_majTelegram();return;}
+    txt.textContent=t(r&&r.etat==='indisponible'?'tg_indispo':(r&&r.etat==='en_attente'?'tg_attente':'tg_err'));
+    btn.disabled=false;btn.textContent=t('tg_btn');
+  });
+  document.addEventListener('vb:langchange',()=>{if(window.VB_majTelegram)window.VB_majTelegram();});
+})();
+
+// ---------- Header transparent sur le Hero : fond floute des qu'on defile ----------
+(function(){
+  const nav=document.querySelector('nav');
+  if(!nav)return;
+  const maj=()=>nav.classList.toggle('nav-solid',window.scrollY>12);
+  maj();
+  window.addEventListener('scroll',maj,{passive:true});
+})();
+
+/* ---------- Carte "Stripe bientot disponible" (13/10) ----------
+   Ouverte par le bouton Stripe du wizard tant que STRIPE_ACTIF=false.
+   Se ferme avec le X, un toucher en dehors de la carte ou Echap — sans
+   jamais fermer la page de paiement qui est en dessous. Le bouton vert
+   ramene l'utilisateur sur les choix MonCash / NatCash. */
+(function(){
+  const box=document.getElementById('vbStripeSoon');
+  if(!box)return;
+  const card=box.querySelector('.vbsoon-card');
+  const btnX=document.getElementById('vbStripeSoonX');
+  const btnOk=document.getElementById('vbStripeSoonOk');
+  let opener=null,timer=0;
+
+  function ouvrir(from){
+    opener=from||document.activeElement;
+    clearTimeout(timer);
+    box.hidden=false;
+    requestAnimationFrame(()=>{box.classList.add('on');btnX.focus();});
+  }
+  function fermer(versPaiement){
+    if(box.hidden)return;
+    box.classList.remove('on');
+    timer=setTimeout(()=>{box.hidden=true;},230);
+    // Choix de la marque (MonCash / NatCash) : toujours visible, contrairement
+    // aux sous-options (#wizPayMethods) masquees tant qu'aucune marque n'est choisie.
+    const methodes=document.getElementById('wizPayBrands');
+    if(versPaiement&&methodes){
+      methodes.scrollIntoView({behavior:'smooth',block:'center'});
+      const premier=methodes.querySelector('button,input,[tabindex]');
+      if(premier)premier.focus({preventScroll:true});
+    }else if(opener&&opener.focus){
+      opener.focus({preventScroll:true});
+    }
+    opener=null;
+  }
+  btnX.addEventListener('click',()=>fermer(false));
+  btnOk.addEventListener('click',()=>fermer(true));
+  // Toucher / clic en dehors de la carte
+  box.addEventListener('click',ev=>{ if(!card.contains(ev.target))fermer(false); });
+  // Echap : ferme la carte SEULEMENT (capture + arret de propagation,
+  // sinon le gestionnaire du wizard fermerait aussi la page de paiement)
+  document.addEventListener('keydown',ev=>{
+    if(box.hidden)return;
+    if(ev.key==='Escape'){ev.preventDefault();ev.stopImmediatePropagation();fermer(false);}
+    else if(ev.key==='Tab'){
+      const f=[btnX,btnOk];
+      if(ev.shiftKey&&document.activeElement===f[0]){ev.preventDefault();f[1].focus();}
+      else if(!ev.shiftKey&&document.activeElement===f[1]){ev.preventDefault();f[0].focus();}
+    }
+  },true);
+  window.VB_stripeBientot=ouvrir;
+})();

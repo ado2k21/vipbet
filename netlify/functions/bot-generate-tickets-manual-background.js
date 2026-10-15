@@ -102,6 +102,16 @@ async function verifierAdmin(authHeader) {
   const profils = await sbSelect('profiles', `select=role&id=eq.${user.id}&limit=1`);
   const role = profils && profils[0] && profils[0].role;
   if (role !== 'admin') return { ok: false, code: 403, message: 'Réservé aux administrateurs.' };
+  // 2FA (14/10) : meme regle que la base, evaluee avec la session de
+  // l'admin lui-meme (is_admin) — si la 2FA est activee sur ce compte,
+  // la session doit avoir valide le code (aal2).
+  const rpc = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/is_admin`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+    body: '{}'
+  });
+  const estAdmin = rpc.ok ? await rpc.json().catch(() => false) : false;
+  if (estAdmin !== true) return { ok: false, code: 403, message: 'Validation 2FA requise.' };
   return { ok: true, userId: user.id };
 }
 
