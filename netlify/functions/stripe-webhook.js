@@ -221,7 +221,10 @@ exports.handler = async function (event) {
     let montantSuspect = false;
     const attendu = MONTANTS_ATTENDUS[planId];
     if (attendu) {
-      const memeMontant = Number(session.amount_total) === Number(attendu.montant);
+      // Montant HORS taxes : si la collecte de taxes de Stripe est activee, le total
+      // peut depasser le prix du plan sans que le client ait mal paye.
+      const montantRecu = session.amount_subtotal != null ? session.amount_subtotal : session.amount_total;
+      const memeMontant = Number(montantRecu) === Number(attendu.montant);
       const memeDevise = String(session.currency || '').toLowerCase() === String(attendu.devise).toLowerCase();
       if (!memeMontant || !memeDevise) {
         montantSuspect = true;
