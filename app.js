@@ -406,6 +406,8 @@ adm_fiche_err_save:"L'enregistrement a échoué.",
 adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatement si publiée.",
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
 adm_menu_exit:"Déconnecter",
+tg_h:"Groupe Telegram VIP", tg_membre:"Vous êtes dans votre groupe Telegram VIP.", tg_a_rejoindre:"Votre plan est actif : rejoignez votre groupe Telegram privé. Le lien ne fonctionne qu'une seule fois et uniquement pour votre compte.", tg_btn:"Rejoindre mon groupe Telegram", tg_btn_wait:"Création du lien…", tg_indispo:"Votre groupe Telegram n'est pas encore disponible. Contactez le support.", tg_attente:"Votre changement de groupe est en cours. Réessayez dans quelques minutes.", tg_err:"Impossible de créer le lien pour le moment. Réessayez.", tg_perdu:"Votre accès au groupe s'arrête quand votre plan expire ou change.",
+adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
 ov_live:"En direct", ov_kpis_h:"Indicateurs clés", ov_quick_h:"Accès rapide", ov_q_pay:"Paiements", ov_q_users:"Utilisateurs", ov_q_fiches:"Fiches", ov_q_rev:"Revenus",
 st_pending:"En cours", hf_search_ph:"Rechercher un code, un match, une ligue…", hf_sport:"Sport", hf_count:"{n} fiche(s) trouvée(s)", hf_reset:"Réinitialiser",
 adm_home_h:"Vue d'ensemble", adm_home_p:"Chiffres réels, directement issus de la base de données.",
@@ -981,6 +983,8 @@ adm_fiche_err_save:"Save failed.",
 adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if published.",
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
 adm_menu_exit:"Log out",
+tg_h:"VIP Telegram group", tg_membre:"You are in your VIP Telegram group.", tg_a_rejoindre:"Your plan is active: join your private Telegram group. The link works only once and only for your account.", tg_btn:"Join my Telegram group", tg_btn_wait:"Creating link…", tg_indispo:"Your Telegram group is not available yet. Please contact support.", tg_attente:"Your group change is in progress. Try again in a few minutes.", tg_err:"Unable to create the link right now. Please try again.", tg_perdu:"Your access to the group ends when your plan expires or changes.",
+adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
 ov_live:"Live", ov_kpis_h:"Key metrics", ov_quick_h:"Quick access", ov_q_pay:"Payments", ov_q_users:"Users", ov_q_fiches:"Slips", ov_q_rev:"Revenue",
 st_pending:"In progress", hf_search_ph:"Search a code, match or league…", hf_sport:"Sport", hf_count:"{n} slip(s) found", hf_reset:"Reset",
 adm_home_h:"Overview", adm_home_p:"Real figures, taken directly from the database.",
@@ -1556,6 +1560,8 @@ adm_fiche_err_save:"Anrejistreman echwe.",
 adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li pibliye.",
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
 adm_menu_exit:"Dekonekte",
+tg_h:"Gwoup Telegram VIP", tg_membre:"Ou nan gwoup Telegram VIP ou a.", tg_a_rejoindre:"Plan ou aktif: antre nan gwoup Telegram prive ou a. Lyen an mache yon sèl fwa epi sèlman pou kont ou.", tg_btn:"Antre nan gwoup Telegram mwen", tg_btn_wait:"Ap kreye lyen an…", tg_indispo:"Gwoup Telegram ou a pa disponib ankò. Kontakte sèvis kliyan.", tg_attente:"Chanjman gwoup ou a ap fèt. Eseye ankò nan kèk minit.", tg_err:"Pa kapab kreye lyen an kounye a. Eseye ankò.", tg_perdu:"Aksè ou nan gwoup la fini lè plan ou ekspire oswa li chanje.",
+adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
 ov_live:"An dirèk", ov_kpis_h:"Endikatè kle", ov_quick_h:"Aksè rapid", ov_q_pay:"Peman", ov_q_users:"Itilizatè", ov_q_fiches:"Fich", ov_q_rev:"Revni",
 st_pending:"An kou", hf_search_ph:"Chèche yon kòd, yon match, yon lig…", hf_sport:"Espò", hf_count:"{n} fich jwenn", hf_reset:"Reyinisyalize",
 adm_home_h:"Vi jeneral", adm_home_p:"Chif reyèl, dirèkteman soti nan baz done a.",
@@ -6973,6 +6979,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // meme si un plan etait actif au moment de la suspension (il est mis
     // en pause cote serveur, voir admin_suspend_user).
     if(susp){
+      const tgS=document.getElementById('dashTgCard');if(tgS)tgS.hidden=true;
       document.getElementById('dashSubUpgrade').hidden=true;
       document.querySelectorAll('.dash-sub-planblock').forEach(elB=>{elB.hidden=true;});
       document.getElementById('dashSubNoPlan').hidden=true;
@@ -6995,6 +7002,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // rappel de renouvellement — pour le message dedie ci-dessous.
     const bientotExpire=!changementEnAttente&&!pend&&!rej&&!exp&&
       !!(window.VB_inRenewWindow&&window.VB_inRenewWindow());
+    if(window.VB_majTelegram)window.VB_majTelegram();
     const upg=document.getElementById('dashSubUpgrade');
     upg.hidden=life||pend||changementEnAttente;
     // CORRECTIF : "Activer mon plan" pour qui n'a jamais ete confirme,
@@ -7457,6 +7465,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='landing')renderLandingStatsAdmin();
     if(view==='settings')renderSettings();
     if(view==='security')renderSecurity();
+    if(view==='telegram')renderTelegramAdmin();
   }
   document.querySelectorAll('#admDash [data-adback]').forEach(b=>{
     b.addEventListener('click',()=>{
@@ -9322,6 +9331,66 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   /* ---- Sekirite 2FA (14/10) : activer / desactiver quand l'admin le
      veut, codes de secours. Facultative ; une fois activee, la base
      exige le code a chaque nouvelle session (voir is_admin). ---- */
+  /* ---- Telegram (15/10) : etat du robot, des 4 groupes et des acces ---- */
+  async function appelTelegramAdmin(fn,action){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    const {data}=await sb.auth.getSession();
+    const j=data&&data.session&&data.session.access_token;
+    if(!j)return null;
+    try{
+      const r=await fetch('/.netlify/functions/'+fn,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+j},body:JSON.stringify({action:action})});
+      return await r.json();
+    }catch(e){return null;}
+  }
+  async function renderTelegramAdmin(){
+    const box=document.getElementById('admTelegramBody');
+    if(!box)return;
+    box.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
+    const e=await appelTelegramAdmin('telegram-admin','etat');
+    if(!e){box.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';return;}
+    if(e.configure===false){box.innerHTML='<div class="admdash-empty">Robot non configuré : '+stripTags(e.raison||'')+'</div>';return;}
+    const ok=b=>'<span class="admdash-row-badge '+(b?'won':'lost')+'">'+(b?'OK':'NON')+'</span>';
+    const noms={p1:'VIP 7 JOU',p2:'VIP 21 JOU',p3:'VIP 30 JOU',p4:'LIFETIME'};
+    let acces={};
+    try{
+      const sb=window.VB_getSupabase();
+      const {data}=await sb.from('telegram_access').select('status');
+      (data||[]).forEach(x=>{acces[x.status]=(acces[x.status]||0)+1;});
+    }catch(err){}
+    box.innerHTML=
+      '<div class="admdash-panel">'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Robot</b><span>@'+stripTags(e.robot||'?')+'</span></span></div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Retraits automatiques</b><span>'+(e.retraits_actifs?'Actifs : le robot retire réellement':'Mode essai : rien n\'est retiré (TELEGRAM_VIP_ENFORCE=1 pour activer)')+'</span></span>'+ok(e.retraits_actifs)+'</div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Webhook</b><span>'+stripTags((e.webhook&&e.webhook.url)||'non branché')+(e.webhook&&e.webhook.erreur?' — '+stripTags(e.webhook.erreur):'')+'</span></span>'+ok(!!(e.webhook&&e.webhook.url))+'</div>'+
+      '</div>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">Groupes VIP</div>'+
+      (e.groupes||[]).map(g=>
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>'+stripTags(noms[g.plan]||g.plan)+' — '+stripTags(g.nom||'(non configuré)')+'</b>'+
+        '<span>'+(g.configure?('Privé : '+(g.prive?'oui':'NON')+' · Robot admin : '+(g.robot_admin?'oui':'NON')+' · Inviter : '+(g.droit_inviter?'oui':'NON')+' · Bannir : '+(g.droit_bannir?'oui':'NON')+' · Membres : '+(g.effectif!=null?g.effectif:'?')+' · Reliés : '+(g.relies||0)+(g.erreur?' · '+stripTags(g.erreur):'')):'Variable TELEGRAM_VIP_CHAT_'+g.plan.toUpperCase()+' absente')+'</span></span>'+
+        ok(g.configure&&g.robot_admin&&g.droit_inviter&&g.droit_bannir&&g.prive)+'</div>').join('')+
+      '</div>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">Accès enregistrés</div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Membres reliés</b><span>'+(acces.joined||0)+' · liens en attente '+(acces.issued||0)+' · retirés '+(acces.revoked||0)+' · sortis '+(acces.left||0)+' · expirés '+(acces.expired||0)+'</span></span></div>'+
+      '</div>'+
+      '<div class="admdash-panel admdash-panel-toolbar">'+
+        '<button type="button" class="btn btn-or" id="admTgWebhook">Brancher le webhook</button>'+
+        '<button type="button" class="btn btn-or-soft" id="admTgSync">Synchroniser maintenant</button>'+
+        '<button type="button" class="wiz-change" id="admTgRefresh">'+t('adm_refresh')+'</button>'+
+      '</div><div id="admTgMsg" class="admdash-count"></div>';
+    const msg=document.getElementById('admTgMsg');
+    document.getElementById('admTgRefresh').addEventListener('click',renderTelegramAdmin);
+    document.getElementById('admTgWebhook').addEventListener('click',async()=>{
+      msg.textContent='…';const r=await appelTelegramAdmin('telegram-admin','webhook');
+      msg.textContent=r&&r.ok?'Webhook branché : '+r.url:'Échec : '+stripTags((r&&(r.raison||r.detail))||'erreur');
+      if(r&&r.ok)setTimeout(renderTelegramAdmin,800);
+    });
+    document.getElementById('admTgSync').addEventListener('click',async()=>{
+      msg.textContent='…';const r=await appelTelegramAdmin('telegram-sync','sync');
+      msg.textContent=r&&r.ok?'Synchronisation faite : '+JSON.stringify(r.rapport):'Échec de la synchronisation';
+    });
+  }
+
   async function renderSecurity(){
     const box=document.getElementById('admSecurityBody');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
@@ -11936,6 +12005,7 @@ window.addEventListener('pageshow',(ev)=>{
    ecrit l'abonnement, au lieu de laisser la personne devant une page
    d'accueil muette. */
 (function(){
+  const t=k=>{const D=translations[currentLang]||translations.fr;return D[k]!=null?D[k]:(translations.fr[k]||'');};
   let params;
   try{params=new URLSearchParams(window.location.search);}catch(e){return;}
   if(params.get('paiement')!=='ok')return;
@@ -11966,6 +12036,63 @@ window.addEventListener('pageshow',(ev)=>{
   },4000);
 })();
 
+
+/* ---------- Groupe Telegram VIP du plan (15/10) ----------
+   Carte dans « Mon abonnement ». Le serveur (telegram-lien.js) relit le droit
+   EN BASE et cree un lien a usage unique pour le groupe du plan REEL.
+   Affichage seul : rien n'est decide ici. */
+(function(){
+  const t=k=>{const D=translations[currentLang]||translations.fr;return D[k]!=null?D[k]:(translations.fr[k]||'');};
+  async function jeton(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    try{const {data}=await sb.auth.getSession();return (data&&data.session&&data.session.access_token)||null;}catch(e){return null;}
+  }
+  async function appeler(action){
+    const j=await jeton();
+    if(!j)return null;
+    try{
+      const r=await fetch('/.netlify/functions/telegram-lien',{method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+j},body:JSON.stringify({action:action})});
+      if(!r.ok)return null;
+      return await r.json();
+    }catch(e){return null;}
+  }
+  window.VB_majTelegram=async function(){
+    const card=document.getElementById('dashTgCard');
+    if(!card)return;
+    const st=(window.VB_getState&&window.VB_getState())||{};
+    const actif=!!(st.paid&&st.planId&&st.payStatus==='confirmed'&&
+      !(window.VB_isExpired&&window.VB_isExpired())&&!(window.VB_isPending&&window.VB_isPending())&&
+      !(window.VB_isRejected&&window.VB_isRejected())&&!(window.VB_estSuspendu&&window.VB_estSuspendu()));
+    if(!actif){card.hidden=true;return;}
+    const txt=document.getElementById('dashTgTxt'),btn=document.getElementById('dashTgBtn');
+    const r=await appeler('etat');
+    if(!r||r.etat==='inactif'){card.hidden=true;return;}
+    card.hidden=false;
+    const dit=cle=>{txt.textContent=t(cle);};
+    if(r.etat==='membre'){dit('tg_membre');btn.hidden=true;}
+    else if(r.etat==='indisponible'){dit('tg_indispo');btn.hidden=true;}
+    else if(r.etat==='en_attente'){dit('tg_attente');btn.hidden=true;}
+    else{dit('tg_a_rejoindre');btn.hidden=false;btn.disabled=false;btn.textContent=t('tg_btn');}
+  };
+  const btn=document.getElementById('dashTgBtn');
+  if(btn)btn.addEventListener('click',async()=>{
+    const txt=document.getElementById('dashTgTxt');
+    btn.disabled=true;btn.textContent=t('tg_btn_wait');
+    const r=await appeler('lien');
+    if(r&&r.etat==='lien'&&r.url){
+      // Meme onglet : jamais bloque par les navigateurs mobiles, et ouvre l'app Telegram.
+      window.location.href=r.url;
+      setTimeout(()=>{btn.disabled=false;btn.textContent=t('tg_btn');},4000);
+      return;
+    }
+    if(r&&r.etat==='membre'){window.VB_majTelegram();return;}
+    txt.textContent=t(r&&r.etat==='indisponible'?'tg_indispo':(r&&r.etat==='en_attente'?'tg_attente':'tg_err'));
+    btn.disabled=false;btn.textContent=t('tg_btn');
+  });
+  document.addEventListener('vb:langchange',()=>{if(window.VB_majTelegram)window.VB_majTelegram();});
+})();
 
 // ---------- Header transparent sur le Hero : fond floute des qu'on defile ----------
 (function(){

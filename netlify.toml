@@ -33,6 +33,11 @@
 [functions."subscription-reminders"]
   schedule = "0 14 * * *"
 
+# Groupes Telegram VIP : retire / corrige les acces toutes les 2 minutes
+# (plan expire, retire, change ou compte suspendu).
+[functions."telegram-sync"]
+  schedule = "*/2 * * * *"
+
 [functions."database-backup"]
   schedule = "0 6 * * *"
 

@@ -3614,6 +3614,16 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .hf-foot b{color:var(--or-clair)}
 .hf-reset{border:1px solid rgba(244,243,237,.12);background:transparent;color:#F4F3ED;border-radius:999px;padding:6px 13px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer}
 .hf-reset:hover{border-color:rgba(46,212,127,.45);color:#2ED47F}
+
+/* ---- Carte Groupe Telegram VIP (Mon abonnement) ---- */
+.tgcard{margin:16px 0 4px;padding:15px;border-radius:16px;border:1px solid rgba(46,212,127,.28);background:linear-gradient(180deg,rgba(46,212,127,.09),rgba(46,212,127,.02))}
+.tgcard[hidden],.tgcard .btn[hidden]{display:none}
+.tgcard-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-family:var(--display);font-size:15px;color:#F4F3ED}
+.tgcard-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(46,212,127,.16);color:var(--vert-vif)}
+.tgcard p{margin:0 0 12px;font-size:13px;line-height:1.5;color:#C5D0DC}
+.tgcard-note{display:block;margin-top:9px;font-size:11px;color:var(--gris);line-height:1.4}
+
+.admdash-row-tx span{overflow-wrap:anywhere}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -5149,6 +5159,15 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
           </div>
           <div class="dash-sub-prog-bar"><span class="dash-sub-prog-fill" id="dashSubProgFill"></span></div>
         </div>
+        <div class="tgcard" id="dashTgCard" hidden>
+          <div class="tgcard-top">
+            <span class="tgcard-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 3.5 2.8 10.7c-.9.4-.8 1.6.1 1.9l4.6 1.5 1.8 5.6c.3.9 1.4 1 1.9.3l2.5-3 4.8 3.6c.7.5 1.6.1 1.8-.7L22.9 4.9c.2-.9-.6-1.7-1.4-1.4Z"/><path d="m8 14 9-6.5"/></svg></span>
+            <b data-i18n="tg_h">Gwoup Telegram VIP</b>
+          </div>
+          <p id="dashTgTxt"></p>
+          <button type="button" class="btn btn-or" id="dashTgBtn" data-i18n="tg_btn" style="width:100%">Antre nan gwoup Telegram mwen</button>
+          <small class="tgcard-note" data-i18n="tg_perdu">Aksè ou nan gwoup la fini lè plan ou ekspire oswa li chanje.</small>
+        </div>
         <button type="button" class="btn btn-or dash-sub-cta" id="dashSubUpgrade" data-i18n="dash_sub_upgrade">Chanje oswa renouvle plan an</button>
         <button type="button" class="btn btn-ghost dash-sub-cta" id="dashChangePass">
           <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="9.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
@@ -5232,6 +5251,10 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="security">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.6c0 4.5 3.1 8.2 7.5 9.4 4.4-1.2 7.5-4.9 7.5-9.4V6Z"/><rect x="9.2" y="10.8" width="5.6" height="4.4" rx="1"/><path d="M10.4 10.8V9.6a1.6 1.6 0 0 1 3.2 0v1.2"/></svg>
             <span data-i18n="adm_nav_security">Sekirite 2FA</span>
+          </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="telegram">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 3.5 2.8 10.7c-.9.4-.8 1.6.1 1.9l4.6 1.5 1.8 5.6c.3.9 1.4 1 1.9.3l2.5-3 4.8 3.6c.7.5 1.6.1 1.8-.7L22.9 4.9c.2-.9-.6-1.7-1.4-1.4Z"/></svg>
+            <span data-i18n="adm_nav_telegram">Telegram</span>
           </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="settings">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -5649,6 +5672,18 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
         <p data-i18n="adm_security_p">Double otantifikasyon kont admin ou.</p>
       </div>
       <div id="admSecurityBody"></div>
+    </div>
+
+    <div class="dash-view" data-adview="telegram">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="dash-hi">
+        <h2 data-i18n="adm_tg_h">Gwoup Telegram</h2>
+        <p data-i18n="adm_tg_p">Eta robo a, gwoup VIP yo ak aksè yo.</p>
+      </div>
+      <div id="admTelegramBody"></div>
     </div>
 
     <div class="dash-view" data-adview="settings">
