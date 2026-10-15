@@ -30,8 +30,9 @@
  * nouvel essai dans 30 minutes.
  * ANTI-COPIES : (1) UN SEUL message par passage, même si plusieurs alertes se
  * déclenchent ensemble (les alertes « ancienne clé » A et B sont fusionnées) ;
- * (2) UN SEUL canal par message : WhatsApp, puis email si WhatsApp échoue, puis
- * Telegram. Seul le test d'envoi (relais ?test=1) essaie tous les canaux.
+ * (2) UN SEUL canal par message : Telegram, puis email si Telegram échoue, puis
+ * WhatsApp (facultatif, quota CallMeBot limité). EXCEPTION : « compte API suspendu » est
+ * PRIORITAIRE : préfixe « 🚨 PRIORITÉ », tous les canaux à la fois, rappel toutes les heures. Seul le test d'envoi (relais ?test=1) essaie tous les canaux.
  *
  * Variables Netlify :
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   (déjà présentes)
@@ -346,21 +347,22 @@ async function rpc(nom, args) {
   return r.json();
 }
 
-// Canaux, dans l'ordre de priorité : WhatsApp, email, Telegram.
+// Canaux, dans l'ordre de priorité : Telegram (gratuit, sans quota), email, puis
+// WhatsApp (CallMeBot, quota limité : dernier recours, facultatif).
 // Chaque fonction retourne true/false (envoi réussi ou non) ; l'appelant sait
 // déjà, via canalConfigure(), si le canal est configuré.
 const CANAUX = [
   {
-    nom: 'whatsapp',
-    configure: () => !!(process.env.WHATSAPP_PHONE && process.env.WHATSAPP_APIKEY),
+    nom: 'telegram',
+    configure: () => !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
     async envoyer(sujet, lignes, courtes) {
-      // CallMeBot : requête GET, texte court. Il supprime l'apostrophe droite : on la remplace.
       const texteCourt = (courtes && courtes.length) ? courtes.join('\n') : lignes.join('\n');
-      const court = `${sujet}\n\n${texteCourt}`.slice(0, 1000).replace(/'/g, '\u2019');
-      const url = 'https://api.callmebot.com/whatsapp.php?phone=' + encodeURIComponent(process.env.WHATSAPP_PHONE) +
-        '&text=' + encodeURIComponent(court) + '&apikey=' + encodeURIComponent(process.env.WHATSAPP_APIKEY);
-      const r = await fetchAvecDelai(url, { method: 'GET' }, 15000);
-      if (!r.ok) console.log('[ALERTE] WhatsApp HTTP', r.status);
+      const r = await fetchAvecDelai(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text: `${sujet}\n\n${texteCourt}`.slice(0, 3900) })
+      });
+      if (!r.ok) console.log('[ALERTE] Telegram HTTP', r.status, (await r.text()).slice(0, 200));
       return r.ok;
     }
   },
@@ -384,15 +386,16 @@ const CANAUX = [
     }
   },
   {
-    nom: 'telegram',
-    configure: () => !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID),
+    nom: 'whatsapp',
+    configure: () => !!(process.env.WHATSAPP_PHONE && process.env.WHATSAPP_APIKEY),
     async envoyer(sujet, lignes, courtes) {
+      // CallMeBot : requête GET, texte court. Il supprime l'apostrophe droite : on la remplace.
       const texteCourt = (courtes && courtes.length) ? courtes.join('\n') : lignes.join('\n');
-      const r = await fetchAvecDelai(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHAT_ID, text: `${sujet}\n\n${texteCourt}`.slice(0, 3900) })
-      });
+      const court = `${sujet}\n\n${texteCourt}`.slice(0, 1000).replace(/'/g, '\u2019');
+      const url = 'https://api.callmebot.com/whatsapp.php?phone=' + encodeURIComponent(process.env.WHATSAPP_PHONE) +
+        '&text=' + encodeURIComponent(court) + '&apikey=' + encodeURIComponent(process.env.WHATSAPP_APIKEY);
+      const r = await fetchAvecDelai(url, { method: 'GET' }, 15000);
+      if (!r.ok) console.log('[ALERTE] WhatsApp HTTP', r.status);
       return r.ok;
     }
   }
@@ -421,7 +424,7 @@ async function handler(event) {
     .filter(k => !process.env[k]);
   const testAutorise = qs.test === '1' && process.env.BOT_TEST_TOKEN && qs.token === process.env.BOT_TEST_TOKEN;
 
-  if (!CANAUX.some(c => c.configure())) manquantes.push('un canal d\'envoi (WHATSAPP_PHONE + WHATSAPP_APIKEY, ou ALERT_EMAIL + RESEND_API_KEY, ou TELEGRAM_*)');
+  if (!CANAUX.some(c => c.configure())) manquantes.push('un canal d\'envoi (TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID, ou ALERT_EMAIL + RESEND_API_KEY, ou WHATSAPP_*)');
   if (manquantes.length) {
     const msg = 'Configuration incomplète. Variables manquantes : ' + manquantes.join(', ');
     console.log('[ALERTE]', msg);
@@ -478,7 +481,10 @@ async function handler(event) {
   if (aEnvoyer.length) {
     try {
       const m = grouperAlertes(aEnvoyer.map(x => x.l));
-      const r = await envoyer(m.sujet, m.lignes, m.courtes);
+      // ALERTE PRIORITAIRE (compte API suspendu) : préfixe + TOUS les canaux à la fois.
+      const prioritaire = aEnvoyer.some(x => /:SUSPENDU$/.test(x.cle));
+      const sujet = prioritaire ? '🚨 PRIORITÉ — ' + m.sujet : m.sujet;
+      const r = await envoyer(sujet, m.lignes, m.courtes, prioritaire);
       if (!envoiReussi(r)) {
         // Envoi raté sur tous les canaux : nouvel essai dans 30 minutes (on ne martèle pas la messagerie).
         for (const x of aEnvoyer) {
