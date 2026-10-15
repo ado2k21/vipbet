@@ -408,6 +408,7 @@ adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaî
 adm_menu_exit:"Déconnecter",
 tg_h:"Groupe Telegram VIP", tg_membre:"Vous êtes dans votre groupe Telegram VIP.", tg_a_rejoindre:"Votre plan est actif : rejoignez votre groupe Telegram privé. Le lien ne fonctionne qu'une seule fois et uniquement pour votre compte.", tg_btn:"Rejoindre mon groupe Telegram", tg_btn_wait:"Création du lien…", tg_indispo:"Votre groupe Telegram n'est pas encore disponible. Contactez le support.", tg_attente:"Votre changement de groupe est en cours. Réessayez dans quelques minutes.", tg_err:"Impossible de créer le lien pour le moment. Réessayez.", tg_perdu:"Votre accès au groupe s'arrête quand votre plan expire ou change.",
 adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
+ov_stripe_h:"Stripe — paiements par carte (en dollars)", ov_stripe_total:"Total encaissé Stripe", ov_stripe_total_note:"Confirmés automatiquement. Toujours en dollars, même si le client a payé en gourdes.", ov_stripe_mois:"Stripe ce mois-ci", ov_stripe_count:"Paiements Stripe", ov_stripe_verif:"Stripe à vérifier", ov_stripe_verif_note:"En attente d'une vérification manuelle (montant ou compte inattendu).", ov_stripe_plans:"Par plan (lien de paiement)", ov_stripe_recent:"Derniers paiements Stripe", ov_stripe_payeen:"payé en {d}", ov_stripe_none:"Aucun paiement Stripe pour l'instant.",
 ov_live:"En direct", ov_kpis_h:"Indicateurs clés", ov_quick_h:"Accès rapide", ov_q_pay:"Paiements", ov_q_users:"Utilisateurs", ov_q_fiches:"Fiches", ov_q_rev:"Revenus",
 st_pending:"En cours", hf_search_ph:"Rechercher un code, un match, une ligue…", hf_sport:"Sport", hf_count:"{n} fiche(s) trouvée(s)", hf_reset:"Réinitialiser",
 adm_home_h:"Vue d'ensemble", adm_home_p:"Chiffres réels, directement issus de la base de données.",
@@ -985,6 +986,7 @@ adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appe
 adm_menu_exit:"Log out",
 tg_h:"VIP Telegram group", tg_membre:"You are in your VIP Telegram group.", tg_a_rejoindre:"Your plan is active: join your private Telegram group. The link works only once and only for your account.", tg_btn:"Join my Telegram group", tg_btn_wait:"Creating link…", tg_indispo:"Your Telegram group is not available yet. Please contact support.", tg_attente:"Your group change is in progress. Try again in a few minutes.", tg_err:"Unable to create the link right now. Please try again.", tg_perdu:"Your access to the group ends when your plan expires or changes.",
 adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
+ov_stripe_h:"Stripe — card payments (in dollars)", ov_stripe_total:"Total collected via Stripe", ov_stripe_total_note:"Confirmed automatically. Always in dollars, even if the customer paid in gourdes.", ov_stripe_mois:"Stripe this month", ov_stripe_count:"Stripe payments", ov_stripe_verif:"Stripe to review", ov_stripe_verif_note:"Waiting for a manual check (unexpected amount or account).", ov_stripe_plans:"By plan (payment link)", ov_stripe_recent:"Latest Stripe payments", ov_stripe_payeen:"paid in {d}", ov_stripe_none:"No Stripe payment yet.",
 ov_live:"Live", ov_kpis_h:"Key metrics", ov_quick_h:"Quick access", ov_q_pay:"Payments", ov_q_users:"Users", ov_q_fiches:"Slips", ov_q_rev:"Revenue",
 st_pending:"In progress", hf_search_ph:"Search a code, match or league…", hf_sport:"Sport", hf_count:"{n} slip(s) found", hf_reset:"Reset",
 adm_home_h:"Overview", adm_home_p:"Real figures, taken directly from the database.",
@@ -1562,6 +1564,7 @@ adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn ko
 adm_menu_exit:"Dekonekte",
 tg_h:"Gwoup Telegram VIP", tg_membre:"Ou nan gwoup Telegram VIP ou a.", tg_a_rejoindre:"Plan ou aktif: antre nan gwoup Telegram prive ou a. Lyen an mache yon sèl fwa epi sèlman pou kont ou.", tg_btn:"Antre nan gwoup Telegram mwen", tg_btn_wait:"Ap kreye lyen an…", tg_indispo:"Gwoup Telegram ou a pa disponib ankò. Kontakte sèvis kliyan.", tg_attente:"Chanjman gwoup ou a ap fèt. Eseye ankò nan kèk minit.", tg_err:"Pa kapab kreye lyen an kounye a. Eseye ankò.", tg_perdu:"Aksè ou nan gwoup la fini lè plan ou ekspire oswa li chanje.",
 adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
+ov_stripe_h:"Stripe — peman pa kat (an dola)", ov_stripe_total:"Total Stripe resevwa", ov_stripe_total_note:"Konfime otomatikman. Toujou an dola, menm si kliyan an peye an goud.", ov_stripe_mois:"Stripe mwa sa a", ov_stripe_count:"Peman Stripe", ov_stripe_verif:"Stripe pou verifye", ov_stripe_verif_note:"Ap tann yon verifikasyon manyèl (montan oswa kont ki pa atann).", ov_stripe_plans:"Pa plan (lyen peman)", ov_stripe_recent:"Dènye peman Stripe", ov_stripe_payeen:"peye an {d}", ov_stripe_none:"Pa gen peman Stripe pou kounye a.",
 ov_live:"An dirèk", ov_kpis_h:"Endikatè kle", ov_quick_h:"Aksè rapid", ov_q_pay:"Peman", ov_q_users:"Itilizatè", ov_q_fiches:"Fich", ov_q_rev:"Revni",
 st_pending:"An kou", hf_search_ph:"Chèche yon kòd, yon match, yon lig…", hf_sport:"Espò", hf_count:"{n} fich jwenn", hf_reset:"Reyinisyalize",
 adm_home_h:"Vi jeneral", adm_home_p:"Chif reyèl, dirèkteman soti nan baz done a.",
@@ -7626,6 +7629,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       // reellement la generation si le quota est epuise) n'est jamais touche
       // par ce retrait -- uniquement l'affichage disparait.
       renderRevenue();
+      renderStripeUsd();
     }catch(e){
       box.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';
     }
@@ -7813,6 +7817,42 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<div class="rev-card-val'+(valueClass?' '+valueClass:'')+'">'+valeurHtml+'</div>'+
       (note?'<div class="rev-card-note">'+note+'</div>':'')+
     '</div>';
+  }
+  /* Stripe a part, en DOLLARS (15/10) : montants d'origine en USD (provider_amount), jamais le
+     montant en gourdes eventuellement paye par le client. Lecture seule (RPC get_stripe_stats). */
+  const usd=n=>Number(n||0).toLocaleString(currentLang==='en'?'en-US':'fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/\u202f|\u00a0/g,' ')+' $';
+  async function renderStripeUsd(){
+    const cards=document.getElementById('admStripeCards'),det=document.getElementById('admStripeDetail');
+    if(!cards)return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){cards.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_offline')+'</span></div>';return;}
+    try{
+      const {data,error}=await sb.rpc('get_stripe_stats');
+      if(error)throw error;
+      const r=data||{};
+      cards.innerHTML=
+        revCard(IC_TREND,null,'',t('ov_stripe_total'),usd(r.total_usd),'gold',t('ov_stripe_total_note'))+
+        revCard(IC_CALENDAR,'green',badgeVariation(Number(r.mois_usd||0),Number(r.prec_usd||0)),t('ov_stripe_mois'),usd(r.mois_usd))+
+        revCard(IC_CHECK,'green','',t('ov_stripe_count'),String(r.total_count||0))+
+        revCard(IC_CLOCK,'neutre','',t('ov_stripe_verif'),String(r.a_verifier||0),null,t('ov_stripe_verif_note'));
+      const nomPlan=id=>{const pl=window.VB_planById?window.VB_planById(id):null;return pl?stripTags(window.VB_planLabel(pl)):String(id||'?');};
+      const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+      const parPlan=(r.par_plan||[]);
+      const recents=(r.recents||[]);
+      det.innerHTML=
+        '<div class="ov-sec-h" style="margin-top:4px">'+t('ov_stripe_plans')+'</div>'+
+        (parPlan.length?'<div class="admdash-list">'+parPlan.map(x=>
+          '<div class="admdash-row" style="cursor:default"><span class="admdash-row-av">'+stripTags(String(x.plan_id||'?')).toUpperCase().slice(0,2)+'</span>'+
+          '<span class="admdash-row-tx"><b>'+nomPlan(x.plan_id)+'</b><span>'+x.n+' '+t('ov_stripe_count').toLowerCase()+'</span></span>'+
+          '<span class="admdash-row-badge won">'+usd(x.usd)+'</span></div>').join('')+'</div>':'<div class="admdash-empty">'+t('ov_stripe_none')+'</div>')+
+        (recents.length?'<div class="ov-sec-h" style="margin-top:16px">'+t('ov_stripe_recent')+'</div><div class="admdash-list">'+recents.map(x=>
+          '<div class="admdash-row" style="cursor:default"><span class="admdash-row-av">'+stripTags(String(x.plan_id||'?')).toUpperCase().slice(0,2)+'</span>'+
+          '<span class="admdash-row-tx"><b>'+nomPlan(x.plan_id)+' — '+usd(x.usd)+'</b><span>'+fmt(x.at)+
+          (x.devise&&x.devise!=='usd'&&x.montant?' · '+t('ov_stripe_payeen').replace('{d}',Number(x.montant).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+stripTags(String(x.devise)).toUpperCase()):'')+
+          '</span></span></div>').join('')+'</div>':'');
+    }catch(e){
+      cards.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';
+    }
   }
   async function renderRevenue(){
     const boxes=[document.getElementById('admRevCards'),document.getElementById('admRevCardsFull')].filter(Boolean);

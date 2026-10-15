@@ -203,6 +203,7 @@ exports.handler = async function (event) {
     return { statusCode: 200, body: 'orphelin journalise' };
   }
 
+  const orig = montantOrigine(session);
   try {
     /* ---- 1. Idempotence -------------------------------------
        Stripe reessaie tant qu'il ne recoit pas 200. La reference du
@@ -244,7 +245,6 @@ exports.handler = async function (event) {
        Accepte PRIX_TEST_P1.cents (0,50 $) SEULEMENT jusqu'a PRIX_TEST_P1.jusqua : passee cette
        date il est IGNORE automatiquement. A retirer du code apres le test. */
     if (planId === 'p1' && Date.now() < Date.parse(PRIX_TEST_P1.jusqua)) {
-      const orig = montantOrigine(session);
       if (orig.montant === PRIX_TEST_P1.cents && orig.devise === 'usd') {
         attendu = { montant: PRIX_TEST_P1.cents, devise: 'usd' };
         await journaliser('stripe_webhook_prix_test', 'Prix de TEST accepte pour p1 (' + PRIX_TEST_P1.cents + ' cents). session=' + refStripe);
@@ -253,7 +253,6 @@ exports.handler = async function (event) {
     if (attendu) {
       // Montant HORS taxes : si la collecte de taxes de Stripe est activee, le total
       // peut depasser le prix du plan sans que le client ait mal paye.
-      const orig = montantOrigine(session);
       const montantRecu = orig.montant;
       const memeMontant = Number(montantRecu) === Number(attendu.montant);
       const memeDevise = orig.devise === String(attendu.devise).toLowerCase();
@@ -355,6 +354,15 @@ exports.handler = async function (event) {
       body: {
         status: 'confirmed', confirmed_at: new Date().toISOString(), subscription_id: aboId,
         // Tracabilite : paiement automatique Stripe (badge « Auto » cote admin).
+        // Montant D'ORIGINE en dollars (jamais le montant en gourdes eventuellement paye) + detail du paiement.
+        provider_amount: Math.round(orig.montant) / 100,
+        provider_payload: {
+          devise_origine: orig.devise, montant_origine_cents: Math.round(orig.montant),
+          devise_paiement: String(session.currency || '').toLowerCase(),
+          montant_paiement: session.amount_subtotal != null ? Number(session.amount_subtotal) / 100 : Number(session.amount_total) / 100,
+          taux: (session.currency_conversion && session.currency_conversion.fx_rate) || null,
+          session: refStripe
+        },
         provider: 'stripe', provider_reference: refStripe,
         provider_transaction_id: session.payment_intent ? String(session.payment_intent) : null,
         provider_status: 'paid', provider_checked_at: new Date().toISOString(),
