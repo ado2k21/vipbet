@@ -57,10 +57,10 @@ function baseSupabase() {
    bloque l'activation automatique pour ce plan.
    ------------------------------------------------------------ */
 const MONTANTS_ATTENDUS = {
-  // p1: { montant: 0, devise: 'usd' },
-  // p2: { montant: 0, devise: 'usd' },
-  // p3: { montant: 0, devise: 'usd' },
-  // p4: { montant: 0, devise: 'usd' }
+  p1: { montant: 199,  devise: 'usd' },   // 249 G  = 1,99 $
+  p2: { montant: 399,  devise: 'usd' },   // 499 G  = 3,99 $
+  p3: { montant: 799,  devise: 'usd' },   // 999 G  = 7,99 $
+  p4: { montant: 1999, devise: 'usd' }    // 2500 G = 19,99 $
 };
 
 /* ---- Petit client Supabase (REST, cle service_role) --------- */
@@ -160,7 +160,7 @@ exports.handler = async function (event) {
 
   // Un seul evenement nous interesse. Tous les autres recoivent 200 :
   // sans ca, Stripe les considererait en echec et reessaierait sans fin.
-  if (evenement.type !== 'checkout.session.completed') {
+  if (evenement.type !== 'checkout.session.completed' && evenement.type !== 'checkout.session.async_payment_succeeded') {
     return { statusCode: 200, body: 'ignore' };
   }
   const session = (evenement.data && evenement.data.object) || {};
@@ -202,6 +202,18 @@ exports.handler = async function (event) {
       return { statusCode: 200, body: 'plan inconnu' };
     }
     const plan = plans[0];
+
+    /* ---- 2b. Compte suspendu : meme regle que l'admin et que MonCash —
+       l'argent est trace, mais aucun acces n'est ouvert automatiquement. */
+    let compteSuspendu = false;
+    try {
+      const prof = await sb('profiles?id=eq.' + encodeURIComponent(uid) + '&select=id,suspended_at');
+      if (!Array.isArray(prof) || !prof.length) {
+        await journaliser('stripe_webhook_utilisateur_inconnu', 'Utilisateur ' + uid + ' introuvable. session=' + refStripe);
+        return { statusCode: 200, body: 'utilisateur inconnu' };
+      }
+      compteSuspendu = !!prof[0].suspended_at;
+    } catch (e) { throw e; }
 
     /* ---- 3. Verification du montant reellement encaisse ------
        Empeche qu'une adresse modifiee a la main fasse payer le prix
@@ -245,8 +257,9 @@ exports.handler = async function (event) {
     /* Montant douteux : on s'arrete ici volontairement. L'argent est
        bien trace (paiement en attente, visible dans l'espace admin),
        mais aucun acces n'est ouvert automatiquement. */
-    if (montantSuspect) {
-      return { statusCode: 200, body: 'montant a verifier — laisse en attente' };
+    if (montantSuspect || compteSuspendu) {
+      if (compteSuspendu) await journaliser('stripe_webhook_suspendu', 'Compte suspendu : paiement laisse en attente. session=' + refStripe);
+      return { statusCode: 200, body: 'a verifier — laisse en attente' };
     }
 
     /* ---- 5. Fermeture de l'ancien abonnement actif -----------
@@ -279,7 +292,14 @@ exports.handler = async function (event) {
     /* ---- 7. Le paiement passe a confirme ---------------------- */
     await sb('payments?id=eq.' + encodeURIComponent(paiementId), {
       method: 'PATCH', prefer: 'return=minimal',
-      body: { status: 'confirmed', confirmed_at: new Date().toISOString(), subscription_id: aboId }
+      body: {
+        status: 'confirmed', confirmed_at: new Date().toISOString(), subscription_id: aboId,
+        // Tracabilite : paiement automatique Stripe (badge « Auto » cote admin).
+        provider: 'stripe', provider_reference: refStripe,
+        provider_transaction_id: session.payment_intent ? String(session.payment_intent) : null,
+        provider_status: 'paid', provider_checked_at: new Date().toISOString(),
+        confirmation_source: 'provider'
+      }
     });
 
     /* ---- 8. Notification + journal d'audit -------------------

@@ -2105,12 +2105,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      aucun paiement ; il affiche la carte "bientot disponible" qui oriente
      vers MonCash/NatCash. Les liens ci-dessous sont CONSERVES tels quels :
      repasser a true suffit pour reactiver Stripe. */
-  const STRIPE_ACTIF=false;
+  const STRIPE_ACTIF=true;
+  /* Liens du 15/10 : p1 249 G = 1,99 $ · p2 499 G = 3,99 $ · p3 999 G = 7,99 $ ·
+     p4 2500 G = 19,99 $. Les anciens liens (01..04) sont retires. */
   const STRIPE_LINKS={
-    p1:'https://buy.stripe.com/4gM14ngfD0PSesRe2c9MY01',
-    p2:'https://buy.stripe.com/bJe9AT3sR7eg5Wl7DO9MY02',
-    p3:'https://buy.stripe.com/28E3cvfbzbuw70pf6g9MY03',
-    p4:'https://buy.stripe.com/4gMaEXd3rbuwckJe2c9MY04'
+    p1:'https://buy.stripe.com/5kQ9AT3sRcyA4Sh2ju9MY07',
+    p2:'https://buy.stripe.com/6oUaEXd3r1TW70pcY89MY08',
+    p3:'https://buy.stripe.com/5kQ8wP4wV6ac70p3ny9MY09',
+    p4:'https://buy.stripe.com/6oUfZh1kJ1TW1G56zK9MY0a'
   };
   const planById=id=>PLANS.find(p=>p.id===id)||null;
   const T=()=>translations[currentLang]||translations.fr;
@@ -3934,26 +3936,55 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      via completePayment('stripe') (meme chemin que les methodes manuelles).
      La confirmation reste 100% manuelle par l'admin — le webhook automatique
      stripe-webhook.js N'EST PAS utilise dans ce flux et reste non deploye. */
-  document.getElementById('wizStripeBtn').addEventListener('click',ev=>{
+  /* NOUVEAU FLUX STRIPE (15/10, demande de James : paiement automatique,
+     jamais de faux « en attente ») :
+       1. le clic n'ecrit RIEN en base : aucun paiement, aucun abonnement ;
+       2. la personne est envoyee sur le lien Stripe du plan, avec son
+          identifiant (client_reference_id = <user_id>__<plan>) et son e-mail ;
+       3. SEUL le webhook signe par Stripe (stripe-webhook.js), apres un
+          paiement reellement encaisse, cree le paiement et active le plan.
+     Formulaire vide, fausse carte, carte refusee, onglet ferme : Stripe
+     n'envoie rien, donc rien n'existe chez nous.
+     Au retour (adresse configuree dans chaque lien : ?paiement=ok), le site
+     relit seulement l'etat reel (voir « Retour depuis la page de paiement »). */
+  document.getElementById('wizStripeBtn').addEventListener('click',async ev=>{
     payErr.style.display='none';
     if(!STRIPE_ACTIF){
       if(window.VB_stripeBientot)window.VB_stripeBientot(ev.currentTarget);
       return;
     }
+    if(sessionPerimee){
+      if(window.VB_toast)window.VB_toast('session_stale_h',t('session_stale_p'));
+      return;
+    }
     const planCible=state.pendingPlanId||state.planId;
     const lien=STRIPE_LINKS[planCible]||null;
-    /* L'ouverture de la page Stripe doit rester DANS le geste de clic :
-       un window.open place apres un 'await' est bloque par les
-       navigateurs mobiles. On ne l'ouvre que si le paiement est
-       reellement permis — sinon completePayment affiche le refus et
-       aucune page de paiement ne doit s'ouvrir pour rien. Si le
-       navigateur bloque quand meme l'onglet, l'etape 4 propose un lien
-       de secours (voir renderStep4). */
     const permis=renouvellementPermis(state,planCible);
-    if(lien&&permis&&permis.ok){
-      try{window.open(lien,'_blank','noopener');}catch(e){}
+    if(!permis.ok){afficherRefusPaiement(permis.raison);return;}
+    if(!lien){afficherRefusPaiement('renew_err_encours');return;}
+    // Identifiant du compte : le webhook en a besoin pour rattacher le paiement.
+    let uid=state.supabaseUserId||null;
+    try{
+      const sb=window.VB_getSupabase&&window.VB_getSupabase();
+      if(sb){
+        const {data:sd}=await sb.auth.getSession();
+        if(sd&&sd.session&&sd.session.user)uid=sd.session.user.id;
+        // Une demande MonCash/NatCash deja en attente bloque aussi (meme regle que partout).
+        if(uid){
+          const {data:pend}=await sb.from('payments').select('id').eq('user_id',uid).eq('status','pending').limit(1);
+          if(pend&&pend.length){afficherRefusPaiement('renew_err_pending');return;}
+        }
+      }
+    }catch(e){}
+    if(!uid){
+      if(window.VB_toast)window.VB_toast('session_stale_h',t('session_stale_p'));
+      return;
     }
-    completePayment('stripe');
+    const url=lien+'?client_reference_id='+encodeURIComponent(uid+'__'+planCible)+
+      (state.email?'&prefilled_email='+encodeURIComponent(state.email.trim()):'');
+    // Meme onglet : une navigation n'est jamais bloquee par les navigateurs
+    // mobiles, et Stripe ramene la personne ici apres le paiement.
+    window.location.href=url;
   });
 
   /* ================= ETAPE 4 : acces ================= */
