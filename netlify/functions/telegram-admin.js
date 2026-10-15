@@ -16,7 +16,24 @@ exports.handler = async (event) => {
   try { action = JSON.parse(event.body || '{}').action || 'etat'; } catch (e) { /* defaut */ }
   if (!T.jeton()) return T.reponse(200, { configure: false, raison: 'jeton du robot absent' });
 
+  let corps = {};
+  try { corps = JSON.parse(event.body || '{}'); } catch (e) { /* defaut */ }
+
   try {
+    if (action === 'autoriser' || action === 'retirer_manuel') {
+      const chatId = T.groupePourPlan(corps.plan);
+      const tgId = Number(String(corps.telegram_id || '').trim());
+      if (!chatId || !Number.isInteger(tgId) || tgId <= 0) return T.reponse(200, { ok: false, raison: 'groupe ou identifiant Telegram invalide' });
+      if (action === 'autoriser') {
+        await T.sb('telegram_manuels?on_conflict=chat_id,telegram_user_id', {
+          method: 'POST', prefer: 'resolution=ignore-duplicates,return=minimal',
+          body: [{ chat_id: chatId, telegram_user_id: tgId, note: String(corps.note || '').slice(0, 200) || null, origine: 'panneau' }]
+        });
+      } else {
+        await T.sb('telegram_manuels?chat_id=eq.' + chatId + '&telegram_user_id=eq.' + tgId, { method: 'DELETE', prefer: 'return=minimal' });
+      }
+      return T.reponse(200, { ok: true });
+    }
     if (action === 'webhook') {
       const secret = (process.env.TELEGRAM_WEBHOOK_SECRET || '').trim();
       if (!secret) return T.reponse(200, { ok: false, raison: 'TELEGRAM_WEBHOOK_SECRET absent dans Netlify' });
@@ -48,6 +65,8 @@ exports.handler = async (event) => {
         } catch (e) { g.erreur = String(e.message || e).slice(0, 160); }
         const j = await T.sb('telegram_access?chat_id=eq.' + chatId + '&status=eq.joined&select=id');
         g.relies = Array.isArray(j) ? j.length : 0;
+        const mm = await T.sb('telegram_manuels?chat_id=eq.' + chatId + '&select=telegram_user_id');
+        g.manuels = Array.isArray(mm) ? mm.length : 0;
       }
       groupes.push(g);
     }

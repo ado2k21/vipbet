@@ -9367,11 +9367,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<div class="admdash-panel"><div class="admdash-section-h">Groupes VIP</div>'+
       (e.groupes||[]).map(g=>
         '<div class="admdash-row"><span class="admdash-row-tx"><b>'+stripTags(noms[g.plan]||g.plan)+' — '+stripTags(g.nom||'(non configuré)')+'</b>'+
-        '<span>'+(g.configure?('Privé : '+(g.prive?'oui':'NON')+' · Robot admin : '+(g.robot_admin?'oui':'NON')+' · Inviter : '+(g.droit_inviter?'oui':'NON')+' · Bannir : '+(g.droit_bannir?'oui':'NON')+' · Membres : '+(g.effectif!=null?g.effectif:'?')+' · Reliés : '+(g.relies||0)+(g.erreur?' · '+stripTags(g.erreur):'')):'Variable TELEGRAM_VIP_CHAT_'+g.plan.toUpperCase()+' absente')+'</span></span>'+
+        '<span>'+(g.configure?('Privé : '+(g.prive?'oui':'NON')+' · Robot admin : '+(g.robot_admin?'oui':'NON')+' · Inviter : '+(g.droit_inviter?'oui':'NON')+' · Bannir : '+(g.droit_bannir?'oui':'NON')+' · Membres : '+(g.effectif!=null?g.effectif:'?')+' · Reliés : '+(g.relies||0)+' · Manuels : '+(g.manuels||0)+(g.erreur?' · '+stripTags(g.erreur):'')):'Variable TELEGRAM_VIP_CHAT_'+g.plan.toUpperCase()+' absente')+'</span></span>'+
         ok(g.configure&&g.robot_admin&&g.droit_inviter&&g.droit_bannir&&g.prive)+'</div>').join('')+
       '</div>'+
       '<div class="admdash-panel"><div class="admdash-section-h">Accès enregistrés</div>'+
         '<div class="admdash-row"><span class="admdash-row-tx"><b>Membres reliés</b><span>'+(acces.joined||0)+' · liens en attente '+(acces.issued||0)+' · retirés '+(acces.revoked||0)+' · sortis '+(acces.left||0)+' · expirés '+(acces.expired||0)+'</span></span></div>'+
+      '</div>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">Invité manuel (jamais retiré par le robot)</div>'+
+        '<p class="admdash-count" style="margin:0 0 10px">Les personnes que vous ajoutez vous-même au groupe (ajout direct ou lien créé à la main) sont reconnues automatiquement. Pour garder un membre déjà présent, entrez son identifiant Telegram ici.</p>'+
+        '<div class="hf-dates" style="grid-template-columns:1fr 1fr">'+
+          '<label class="field"><span class="field-lbl">Groupe</span><select id="admTgManPlan">'+(e.groupes||[]).filter(g=>g.configure).map(g=>'<option value="'+g.plan+'">'+stripTags(noms[g.plan]||g.plan)+'</option>').join('')+'</select></label>'+
+          '<label class="field"><span class="field-lbl">Identifiant Telegram</span><input type="text" inputmode="numeric" id="admTgManId" placeholder="123456789" autocomplete="off"></label>'+
+        '</div>'+
+        '<label class="field"><span class="field-lbl">Note (facultatif)</span><input type="text" id="admTgManNote" maxlength="120" placeholder="ex. partenaire"></label>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-or" id="admTgManAdd">Autoriser</button><button type="button" class="btn btn-or-soft" id="admTgManDel">Retirer de la liste</button></div>'+
       '</div>'+
       '<div class="admdash-panel admdash-panel-toolbar">'+
         '<button type="button" class="btn btn-or" id="admTgWebhook">Brancher le webhook</button>'+
@@ -9380,6 +9389,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '</div><div id="admTgMsg" class="admdash-count"></div>';
     const msg=document.getElementById('admTgMsg');
     document.getElementById('admTgRefresh').addEventListener('click',renderTelegramAdmin);
+    const manuel=async action=>{
+      const plan=document.getElementById('admTgManPlan').value,id=document.getElementById('admTgManId').value.trim(),note=document.getElementById('admTgManNote').value.trim();
+      if(!/^\d{5,15}$/.test(id)){msg.textContent='Identifiant Telegram invalide (chiffres seulement).';return;}
+      msg.textContent='…';
+      const sb=window.VB_getSupabase();const {data}=await sb.auth.getSession();const j=data&&data.session&&data.session.access_token;
+      try{
+        const r=await (await fetch('/.netlify/functions/telegram-admin',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+j},body:JSON.stringify({action:action,plan:plan,telegram_id:id,note:note})})).json();
+        msg.textContent=r&&r.ok?(action==='autoriser'?'Autorisé : ce membre ne sera plus retiré.':'Retiré de la liste.'):'Échec : '+stripTags((r&&r.raison)||'erreur');
+        if(r&&r.ok)setTimeout(renderTelegramAdmin,700);
+      }catch(err){msg.textContent='Échec de la requête.';}
+    };
+    document.getElementById('admTgManAdd').addEventListener('click',()=>manuel('autoriser'));
+    document.getElementById('admTgManDel').addEventListener('click',()=>manuel('retirer_manuel'));
     document.getElementById('admTgWebhook').addEventListener('click',async()=>{
       msg.textContent='…';const r=await appelTelegramAdmin('telegram-admin','webhook');
       msg.textContent=r&&r.ok?'Webhook branché : '+r.url:'Échec : '+stripTags((r&&(r.raison||r.detail))||'erreur');

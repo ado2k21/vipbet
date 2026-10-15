@@ -28,10 +28,38 @@ function secretValide(entete) {
 
 const nomAffiche = u => [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || '';
 
-async function traiterEntree(chatId, membre, lienUtilise) {
+/* Invite MANUEL : ajoute directement par un administrateur du groupe, ou entre avec un lien cree
+   a la main par un administrateur (pas par le robot). Memorise, jamais retire par le robot. */
+async function memoriserManuel(chatId, membre, origine) {
+  try {
+    await T.sb('telegram_manuels?on_conflict=chat_id,telegram_user_id', {
+      method: 'POST', prefer: 'resolution=ignore-duplicates,return=minimal',
+      body: [{ chat_id: chatId, telegram_user_id: Number(membre.id), telegram_name: nomAffiche(membre).slice(0, 120), origine }]
+    });
+  } catch (e) { throw e; }
+}
+async function estManuel(chatId, tgId) {
+  const l = await T.sb('telegram_manuels?chat_id=eq.' + chatId + '&telegram_user_id=eq.' + tgId + '&select=chat_id&limit=1');
+  return Array.isArray(l) && l.length > 0;
+}
+
+async function traiterEntree(chatId, membre, lienUtilise, acteur) {
   const tgId = Number(membre.id);
   if (membre.is_bot) return 'bot ignore';
   if (await T.estAdminDuGroupe(chatId, tgId)) return 'admin ignore';
+
+  if (await estManuel(chatId, tgId)) return 'invite manuel (deja autorise)';
+  // Ajoute DIRECTEMENT par un administrateur du groupe (l'acteur n'est pas la personne elle-meme).
+  if (acteur && !acteur.is_bot && Number(acteur.id) !== tgId && await T.estAdminDuGroupe(chatId, Number(acteur.id))) {
+    await memoriserManuel(chatId, membre, 'admin_groupe');
+    return 'invite manuel (ajoute par un administrateur)';
+  }
+  // Entre avec un lien cree a la main par un administrateur (et non par le robot).
+  const createur = lienUtilise && lienUtilise.creator;
+  if (createur && !createur.is_bot && Number(createur.id) !== tgId && await T.estAdminDuGroupe(chatId, Number(createur.id))) {
+    await memoriserManuel(chatId, membre, 'lien_admin');
+    return 'invite manuel (lien d\'administrateur)';
+  }
 
   const lienTexte = lienUtilise && lienUtilise.invite_link ? lienUtilise.invite_link : '';
   let ligne = null;
@@ -80,6 +108,7 @@ async function traiterMessage(chatId, expediteur) {
   const tgId = Number(expediteur.id);
   const l = await T.sb('telegram_access?telegram_user_id=eq.' + tgId + '&chat_id=eq.' + chatId + '&status=eq.joined&select=id&limit=1');
   if (Array.isArray(l) && l.length) return 'membre relie';
+  if (await estManuel(chatId, tgId)) return 'invite manuel';
   if (await T.estAdminDuGroupe(chatId, tgId)) return 'admin ignore';
   const r = await T.retirerDuGroupe(chatId, tgId, 'membre_non_relie');
   return r.simule ? 'retrait simule' : 'retire';
@@ -103,7 +132,7 @@ exports.handler = async (event) => {
         const avant = cm.old_chat_member && cm.old_chat_member.status;
         const apres = cm.new_chat_member && cm.new_chat_member.status;
         const dedans = s => s === 'member' || s === 'restricted';
-        if (!dedans(avant) && dedans(apres)) resultat = await traiterEntree(chatId, cm.new_chat_member.user, cm.invite_link);
+        if (!dedans(avant) && dedans(apres)) resultat = await traiterEntree(chatId, cm.new_chat_member.user, cm.invite_link, cm.from);
         else if (dedans(avant) && (apres === 'left' || apres === 'kicked')) resultat = await traiterSortie(chatId, cm.new_chat_member.user);
       }
     } else if (maj.message && maj.message.chat && T.planPourGroupe(maj.message.chat.id)) {
