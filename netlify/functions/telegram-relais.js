@@ -123,6 +123,34 @@ function coteTexte(tk) {
   return Number.isFinite(total) && total > 0 ? total.toFixed(2) : '';
 }
 
+// Libelle du choix, identique au message texte (« Les deux équipes marquent : Oui »).
+function choixLeg(l) {
+  const pick = libellePick(l.pick);
+  const marche = libelleMarche(l.market);
+  return pick.includes(':') ? pick : (marche ? marche + ' : ' + pick : pick);
+}
+function dateCourte(jour) {
+  if (!jour) return '';
+  try {
+    return new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', day: 'numeric', month: 'short' })
+      .format(new Date(String(jour).slice(0, 10) + 'T12:00:00Z')).replace('.', '').toUpperCase();
+  } catch (_) { return ''; }
+}
+// Image + legende courte (16/10). Aucune mention de « bot », aucun code de fiche.
+async function imageFiche(tk, legs) {
+  const { rendrePng } = require('./lib/image-fiche');
+  const cote = coteTexte(tk);
+  const type = typeFiche(tk, legs);
+  const png = await rendrePng({ type, cote, confiance: tk.confidence, date: dateCourte(tk.play_date) },
+    legs.map(l => ({ match_label: l.match_label, league: l.league, league_country: l.league_country, pick: choixLeg(l), odd: l.odd, heure: heureLeg(l) })),
+    'fiche');
+  const icone = tk.sport === 'basket' || tk.sport === 'nba' ? '🏀' : '⚽';
+  const legende = [`🎟 <b>FICHE ${type}${cote ? ' — COTE ' + cote : ''}</b>`,
+    `${icone} ${legs.length} match${legs.length > 1 ? 's' : ''}${tk.confidence != null ? ' · 📊 Confiance ' + Number(tk.confidence) + '%' : ''}`,
+    '', '<i>Jeu responsable, 18+. Jouez avec contrôle.</i>'].join('\n');
+  return { png, legende };
+}
+
 // Aucun code de fiche, aucun identifiant interne : titre = type + cote totale.
 function formaterMessage(tk, legs) {
   const icone = tk.sport === 'basket' || tk.sport === 'nba' ? '🏀' : '⚽';
@@ -170,8 +198,29 @@ async function fetchDelai(url, opts, ms) {
   finally { clearTimeout(t); }
 }
 
+// Envoi d'une IMAGE avec legende (16/10). Retourne le meme format que envoyerTelegram.
+async function envoyerPhoto(token, chat, image) {
+  const fd = new FormData();
+  fd.append('chat_id', String(chat));
+  fd.append('caption', image.legende);
+  fd.append('parse_mode', 'HTML');
+  fd.append('photo', new Blob([image.png], { type: 'image/png' }), 'fiche.png');
+  const r = await fetchDelai(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: fd }, 30000);
+  let j = null;
+  try { j = await r.json(); } catch (_) { /* ignoré */ }
+  if (r.ok && j && j.ok) return { ok: true, messageId: j.result && j.result.message_id };
+  return { ok: false, status: r.status, description: j && j.description, retryAfter: j && j.parameters && j.parameters.retry_after };
+}
+
 // Envoi Telegram. Retourne {ok, messageId} ou {ok:false, retryAfter?, fatal?}.
-async function envoyerTelegram(token, chat, texte, repondreA) {
+// Avec `image` ({png, legende}) : envoie l'image ; si l'image est refusee (hors limite de debit),
+// le message TEXTE habituel part a la place — une fiche n'est jamais perdue a cause de l'image.
+async function envoyerTelegram(token, chat, texte, repondreA, image) {
+  if (image && image.png) {
+    let p;
+    try { p = await envoyerPhoto(token, chat, image); } catch (e) { p = { ok: false, description: e.message }; }
+    if (p.ok || p.retryAfter) return p;
+  }
   const corps = { chat_id: chat, text: texte, parse_mode: 'HTML', disable_web_page_preview: true };
   if (repondreA) { corps.reply_to_message_id = repondreA; corps.allow_sending_without_reply = true; }
   const r = await fetchDelai(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -231,6 +280,9 @@ async function passage(cfg, fetchEnvoi, dormir) {
         legs.some(l => !l.match_label || !l.market || !l.pick || !(Number(l.odd) > 1))) { ignores++; continue; }
 
     const texte = formaterMessage(tk, legs);
+    let image = null;
+    try { image = await imageFiche(tk, legs); }
+    catch (e) { await journaliser(cfg, 'telegram_relais_image', e.message); }
     for (const g of aFaire) {
       // 1) réserver (anti-doublon) — 2) envoyer — 3) confirmer
       const res = await fetchDelai(`${cfg.url}/rest/v1/telegram_envois?on_conflict=ticket_id,groupe`, {
@@ -242,7 +294,7 @@ async function passage(cfg, fetchEnvoi, dormir) {
       if (!lignes.length) continue; // pris par un autre passage
 
       let out;
-      try { out = await fetchEnvoi(cfg.token, cfg.groupes[g], texte); }
+      try { out = await fetchEnvoi(cfg.token, cfg.groupes[g], texte, null, image); }
       catch (e) { out = { ok: false, description: 'réseau: ' + e.message }; }
 
       if (out.ok) {
@@ -340,4 +392,4 @@ async function handler() {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, libellePick, passage, passageResultats, dateHaiti };
+module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, libellePick, choixLeg, heureLeg, coteTexte, envoyerTelegram, imageFiche, passage, passageResultats, dateHaiti };

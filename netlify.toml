@@ -127,10 +127,14 @@
 # Relais Telegram (additif, lecture seule sur les fiches) — voir telegram-relais.js
 [functions."telegram-relais"]
   schedule = "*/5 * * * *"
+  # Image des fiches (moteur WebAssembly + police Inter, integres au projet)
+  included_files = ["netlify/functions/lib/resvg/**", "netlify/functions/lib/fonts/**"]
 
 # Canal Telegram PUBLIC : fiches gagnantes (additif) — voir telegram-public.js
 [functions."telegram-public"]
   schedule = "*/10 * * * *"
+  # Image des fiches (moteur WebAssembly + police Inter, integres au projet)
+  included_files = ["netlify/functions/lib/resvg/**", "netlify/functions/lib/fonts/**"]
 
 # ============================================================================
 # 20/09/2026 — SURVEILLANCE + ALERTES ADMIN (alerte-watchdog.js)

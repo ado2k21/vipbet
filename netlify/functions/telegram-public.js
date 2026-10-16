@@ -73,15 +73,23 @@ function formaterGagnante(tk, legs) {
   return lignes.join('\n').slice(0, 4000);
 }
 
-async function envoyerTelegram(token, chat, texte) {
-  const r = await fetchDelai(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chat, text: texte, parse_mode: 'HTML', disable_web_page_preview: false })
-  });
-  let j = null;
-  try { j = await r.json(); } catch (_) { /* ignore */ }
-  if (r.ok && j && j.ok) return { ok: true, messageId: j.result && j.result.message_id };
-  return { ok: false, status: r.status, description: j && j.description, retryAfter: j && j.parameters && j.parameters.retry_after };
+// Envoi : image + legende, repli automatique sur le texte (meme fonction que le relais).
+const envoyerTelegram = R.envoyerTelegram;
+
+// Image « fiche gagnee » + legende courte (16/10). ✓/✗ = resultat REEL de chaque match.
+async function imageGagnante(tk, legs) {
+  const { rendrePng } = require('./lib/image-fiche');
+  const total = Number(tk.total_odd);
+  const cote = Number.isFinite(total) && total > 0 ? total.toFixed(2) : '';
+  const type = R.typeFiche(tk, legs);
+  const perdus = legs.filter(l => l.result === 'lost').length;
+  const sousTitre = perdus ? 'Un seul bon score suffit — résultats réels de chaque match' : 'Tous les matchs gagnés';
+  const png = await rendrePng({ type, cote, sousTitre },
+    legs.map(l => ({ match_label: l.match_label, league: l.league, league_country: l.league_country, pick: R.choixLeg(l), odd: l.odd, result: l.result })),
+    'gagnante');
+  const legende = [`✅ <b>FICHE ${type} GAGNÉE${cote ? ' — COTE ' + cote : ''}</b>`, '',
+    `🔓 Fiches VIP chaque jour : ${LIEN}`, '<i>Jeu responsable, 18+. Jouez avec contrôle.</i>'].join('\n');
+  return { png, legende };
 }
 
 async function journaliser(cfg, contexte, message) {
@@ -119,7 +127,9 @@ async function passage(cfg, fetchEnvoi, dormir, maintenant) {
     let out;
     if (!legs.length) out = { ok: false, description: 'fiche sans selections' };
     else {
-      try { out = await fetchEnvoi(cfg.token, cfg.chat, formaterGagnante(tk, legs)); }
+      let image = null;
+      try { image = await imageGagnante(tk, legs); } catch (e) { await journaliser(cfg, 'telegram_public_image', e.message); }
+      try { out = await fetchEnvoi(cfg.token, cfg.chat, formaterGagnante(tk, legs), null, image); }
       catch (e) { out = { ok: false, description: 'reseau: ' + e.message }; }
     }
     if (out.ok) {
@@ -157,4 +167,4 @@ async function handler() {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports.__test = { lireConfig, formaterGagnante, passage };
+module.exports.__test = { lireConfig, formaterGagnante, imageGagnante, passage };

@@ -1,0 +1,2 @@
+Police Inter (c) The Inter Project Authors — SIL Open Font License 1.1 (https://openfontlicense.org).
+Moteur de rendu @resvg/resvg-wasm 2.6.2 — Mozilla Public License 2.0 (https://github.com/yisibl/resvg-js).
