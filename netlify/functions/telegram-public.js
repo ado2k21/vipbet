@@ -58,7 +58,10 @@ function formaterGagnante(tk, legs) {
     const marche = R.libelleMarche(l.market);
     const choix = pick.includes(':') ? pick : (marche ? marche + ' : ' + pick : pick);
     const ligue = (String(l.league || '') + (l.league_country ? ' (' + l.league_country + ')' : '')).toUpperCase();
-    lignes.push(`✅ <b>${echapper(l.match_label)}</b>`);
+    // Fiche score exact gagnee avec un seul bon score : chaque match garde SON vrai resultat
+    // (✅ gagne, ❌ perdu) — jamais de faux resultat, la regle de la fiche ne change pas.
+    const marque = l.result === 'lost' ? '❌' : l.result === 'void' ? '➖' : '✅';
+    lignes.push(`${marque} <b>${echapper(l.match_label)}</b>`);
     if (ligue) lignes.push(`   ${echapper(ligue)}`);
     lignes.push(`   ${echapper(choix)} — cote <b>${Number(l.odd).toFixed(2)}</b>`);
   });
@@ -110,7 +113,7 @@ async function passage(cfg, fetchEnvoi, dormir, maintenant) {
     });
     if (!res.ok) throw new Error(`reservation HTTP ${res.status}`);
     if (!(await res.json()).length) continue;   // deja postee (ou en cours)
-    const rl = await fetchDelai(`${cfg.url}/rest/v1/ticket_legs?select=league,league_country,match_label,market,pick,odd,position,kickoff_at` +
+    const rl = await fetchDelai(`${cfg.url}/rest/v1/ticket_legs?select=league,league_country,match_label,market,pick,odd,position,kickoff_at,result` +
       `&ticket_id=eq.${tk.id}&order=kickoff_at.asc,position.asc`, { headers: entetes(cfg.cle) });
     const legs = rl.ok ? await rl.json() : [];
     let out;

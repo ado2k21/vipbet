@@ -310,7 +310,7 @@ notif_expired:"Votre abonnement a expiré",
 notif_soon:"Votre abonnement expire dans {n} jour(s)",
 notif_today:"{n} fiche(s) disponible(s) aujourd'hui",
 notif_won_foot:"Une de vos fiches Football est gagnante", notif_won_basket:"Une de vos fiches Basketball est gagnante", notif_won_exact:"Votre fiche Score Exact est gagnante",
-notif_ago_min:"Il y a {n} min", notif_ago_h:"Il y a {n} h", notif_ago_d:"Il y a {n} j",
+notif_plan_removed:"Votre plan a été retiré", notif_cat_pay:"Paiement", notif_cat_plan:"Abonnement", notif_cat_fiche:"Fiches", notif_grp_today:"Aujourd'hui", notif_grp_week:"Cette semaine", notif_grp_older:"Plus ancien", notif_unread_n:"{n} non lue(s)", notif_ago_now:"À l'instant", notif_ago_min:"Il y a {n} min", notif_ago_h:"Il y a {n} h", notif_ago_d:"Il y a {n} j",
 dash_badge_none:"Aucun plan",
 err_action_unavailable_h:"Action indisponible", err_action_unavailable_p:"Cette action est temporairement indisponible. Veuillez réessayer dans quelques secondes.",
 notif_pay_pending:"Votre paiement pour {plan} est en attente de validation", notif_pay_confirmed:"Votre paiement pour {plan} a été confirmé", notif_pay_rejected:"Votre paiement pour {plan} a été refusé : {raison}", notif_pay_rejected_defaut:"raison non précisée",
@@ -888,7 +888,7 @@ notif_expired:"Your plan has expired",
 notif_soon:"Your plan expires in {n} day(s)",
 notif_today:"{n} slip(s) available today",
 notif_won_foot:"One of your Football tickets is a winner", notif_won_basket:"One of your Basketball tickets is a winner", notif_won_exact:"Your Exact Score ticket is a winner",
-notif_ago_min:"{n} min ago", notif_ago_h:"{n} h ago", notif_ago_d:"{n} d ago",
+notif_plan_removed:"Your plan was removed", notif_cat_pay:"Payment", notif_cat_plan:"Subscription", notif_cat_fiche:"Tickets", notif_grp_today:"Today", notif_grp_week:"This week", notif_grp_older:"Older", notif_unread_n:"{n} unread", notif_ago_now:"Just now", notif_ago_min:"{n} min ago", notif_ago_h:"{n} h ago", notif_ago_d:"{n} d ago",
 dash_badge_none:"No plan",
 err_action_unavailable_h:"Action unavailable", err_action_unavailable_p:"This action is temporarily unavailable. Please try again in a few seconds.",
 notif_pay_pending:"Your payment for {plan} is awaiting validation", notif_pay_confirmed:"Your payment for {plan} has been confirmed", notif_pay_rejected:"Your payment for {plan} was declined: {raison}", notif_pay_rejected_defaut:"no reason given",
@@ -1466,7 +1466,7 @@ notif_expired:"Abònman ou ekspire",
 notif_soon:"Abònman ou ap ekspire nan {n} jou",
 notif_today:"{n} fich disponib jodi a",
 notif_won_foot:"Youn nan fich Foutbòl ou yo genyen", notif_won_basket:"Youn nan fich Basketball ou yo genyen", notif_won_exact:"Fich Score Egzat ou an genyen",
-notif_ago_min:"Gen {n} min", notif_ago_h:"Gen {n} è", notif_ago_d:"Gen {n} jou",
+notif_plan_removed:"Plan ou retire", notif_cat_pay:"Peman", notif_cat_plan:"Abònman", notif_cat_fiche:"Fich", notif_grp_today:"Jodi a", notif_grp_week:"Semèn sa a", notif_grp_older:"Pi ansyen", notif_unread_n:"{n} pa li", notif_ago_now:"Kounye a", notif_ago_min:"Gen {n} min", notif_ago_h:"Gen {n} è", notif_ago_d:"Gen {n} jou",
 dash_badge_none:"Okenn plan",
 err_action_unavailable_h:"Aksyon pa disponib", err_action_unavailable_p:"Aksyon sa a pa disponib pou kounye a. Tanpri eseye ankò nan kèk segond.",
 notif_pay_pending:"Peman ou pou {plan} ap tann validasyon", notif_pay_confirmed:"Peman ou pou {plan} konfime", notif_pay_rejected:"Peman ou pou {plan} refize : {raison}", notif_pay_rejected_defaut:"pa gen rezon presize",
@@ -6018,6 +6018,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   function ilYA(ts){
     const min=Math.floor((Date.now()-ts)/60000);
+    if(min<1)return t('notif_ago_now');
     if(min<60)return t('notif_ago_min').replace('{n}',Math.max(1,min));
     const h=Math.floor(min/60);
     if(h<24)return t('notif_ago_h').replace('{n}',h);
@@ -6037,7 +6038,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     // 1. Evenements pousses (changement de plan, renouvellement) —
     //    generes localement par CE navigateur au moment de l'action.
-    pushed.forEach(n=>out.push({id:n.id,type:n.type,texte:n.texte,ts:n.ts}));
+    pushed.forEach(n=>{
+      const texte=String(n.texte||'').replace(/\s*:\s*—\s*$/,'');
+      out.push({id:n.id,type:n.type,kind:n.type==='plan'?'swap':n.type==='won'?'won':n.type==='new'?'new':'alert',cat:'plan',texte:texte,ts:n.ts});
+    });
 
     // 1bis. Evenements REELS survenus cote serveur (paiement confirme ou
     //       refuse par un admin, changement de plan force par un admin) —
@@ -6046,18 +6050,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     notifsReels.forEach(n=>{
       const plObj=(n.plan_id&&window.VB_planById)?window.VB_planById(n.plan_id):null;
       const plNom=plObj?String(t(plObj.nameKey||'')).replace(/<[^>]*>/g,''):'—';
-      let texte='', type='sub';
+      let texte='', type='sub', kind='alert', cat='plan';
       if(n.type==='payment_confirmed'){
-        texte=t('notif_pay_confirmed').replace('{plan}',plNom); type='plan';
+        texte=t('notif_pay_confirmed').replace('{plan}',plNom); type='plan'; kind='ok'; cat='pay';
       }else if(n.type==='payment_rejected'){
         texte=t('notif_pay_rejected').replace('{plan}',plNom)
-          .replace('{raison}',n.reason||t('notif_pay_rejected_defaut')); type='sub';
+          .replace('{raison}',n.reason||t('notif_pay_rejected_defaut')); type='sub'; kind='ko'; cat='pay';
       }else if(n.type==='admin_plan_change'){
-        texte=t('notif_plan_change').replace('{plan}',plNom); type='plan';
+        // Sans plan = plan RETIRE (jamais « Ou chanje abònman ou : — »).
+        if(plObj){texte=t('notif_plan_change').replace('{plan}',plNom); kind='swap';}
+        else{texte=t('notif_plan_removed'); kind='ko';}
+        type='plan';
       }else if(n.type==='payment_pending'){
-        texte=t('notif_pay_pending').replace('{plan}',plNom); type='sub';
+        texte=t('notif_pay_pending').replace('{plan}',plNom); type='sub'; kind='wait'; cat='pay';
       }else return;
-      out.push({id:'sb'+n.id, sbId:n.id, type:type, texte:texte,
+      out.push({id:'sb'+n.id, sbId:n.id, type:type, kind:kind, cat:cat, texte:texte,
         ts:new Date(n.created_at).getTime(), sbRead:!!n.read});
     });
 
@@ -6065,17 +6072,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const d=st.endDate?Math.ceil((new Date(st.endDate).getTime()-Date.now())/86400000):null;
       // 2. Plan termine
       if(d!==null&&d<=0){
-        out.push({id:'exp',type:'sub',texte:t('notif_expired'),ts:new Date(st.endDate).getTime()});
+        out.push({id:'exp',type:'sub',kind:'ko',cat:'plan',texte:t('notif_expired'),ts:new Date(st.endDate).getTime()});
       }
       // 3. Rappel de fin de plan
       else if(d!==null&&RAPPEL[st.planId]!=null&&d<=RAPPEL[st.planId]){
-        out.push({id:'soon'+d,type:'sub',texte:t('notif_soon').replace('{n}',d),ts:Date.now()});
+        out.push({id:'soon'+d,type:'sub',kind:'warn',cat:'plan',texte:t('notif_soon').replace('{n}',d),ts:Date.now()});
       }
     }
 
     // 4. Fiches du jour reellement accessibles avec le plan actif
     const dispo=DATA.tickets.filter(k=>estDuJour(k)&&accessibleTk(k)).length;
-    if(dispo>0)out.push({id:'today'+dispo,type:'new',texte:t('notif_today').replace('{n}',dispo),ts:Date.now()});
+    if(dispo>0)out.push({id:'today'+dispo,type:'new',kind:'new',cat:'fiche',texte:t('notif_today').replace('{n}',dispo),ts:Date.now()});
 
     // 5. Dernier resultat gagnant de l'historique
     const won=DATA.tickets.filter(k=>k.status==='won'&&accessibleTk(k))
@@ -6089,11 +6096,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(won){
       const estExact=won.scoreCount>0&&won.scoreCount>=won.legsCount;
       const cle=estExact?'notif_won_exact':((won.sport==='basket'||won.sport==='nba')?'notif_won_basket':'notif_won_foot');
-      out.push({id:'won'+won.uid,type:'won',texte:t(cle),
+      out.push({id:'won'+won.uid,type:'won',kind:'won',cat:'fiche',texte:t(cle),
                      ts:Date.now()-won.day*86400000});
     }
 
     out.sort((a,b)=>b.ts-a.ts);
+    // Doublons : meme message a moins de 10 min d'intervalle -> une seule ligne.
+    for(let i=out.length-1;i>0;i--){
+      const a=out[i],b=out[i-1];
+      if(a.texte===b.texte&&Math.abs(a.ts-b.ts)<600000){
+        if(a.sbId!=null&&!a.sbRead&&b.sbId!=null)b.sbRead=false;
+        out.splice(i,1);
+      }
+    }
     // Une notification issue du serveur (prefixe 'sb') se base sur son
     // propre statut 'read' en base, jamais sur le seul marqueur local —
     // sinon deux appareils du meme compte se desynchroniseraient l'un
@@ -7110,26 +7125,50 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     notifs=construireNotifs();
     const list=document.getElementById('dashNotifList');
     list.innerHTML='';
+    const nonLues=notifs.filter(n=>n.unread).length;
+    const cpt=document.getElementById('dashNotifCount');
+    if(cpt){cpt.textContent=nonLues?t('notif_unread_n').replace('{n}',nonLues):'';cpt.hidden=!nonLues;}
+    const clear=document.getElementById('dashNotifClear');
+    if(clear)clear.hidden=!nonLues;
     if(!notifs.length){
-      list.innerHTML='<div class="dash-notif-empty">'+t('dash_notif_empty')+'</div>';
+      list.innerHTML='<div class="dash-notif-empty"><span class="dash-notif-empty-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10.5 20a2 2 0 0 0 3 0"/></svg></span>'+t('dash_notif_empty')+'</div>';
     }else{
-      const tone={won:'',new:'gold',sub:'red',plan:'gold'};
-      const ico={
-        won:'<path d="M5 12l4 4 10-10"/>',
-        new:'<path d="M12 5v14M5 12h14"/>',
-        sub:'<path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/>',
-        plan:'<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/>'
+      // Icone + couleur selon la NATURE de l'evenement (et non plus une icone unique).
+      const ICO={
+        ok:'<path d="M5 12.5l4.2 4.2L19 7"/>',
+        ko:'<path d="M7 7l10 10M17 7 7 17"/>',
+        wait:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+        swap:'<path d="M4 8h13l-3-3M20 16H7l3 3"/>',
+        warn:'<path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4M12 17v.01"/>',
+        alert:'<circle cx="12" cy="12" r="8.5"/><path d="M12 8v5M12 16v.01"/>',
+        new:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 12v6M9 15h6"/>',
+        won:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>'
       };
+      const CAT={pay:'notif_cat_pay',plan:'notif_cat_plan',fiche:'notif_cat_fiche'};
+      const debutJour=new Date();debutJour.setHours(0,0,0,0);
+      const groupe=ts=>ts>=debutJour.getTime()?'notif_grp_today':(Date.now()-ts<7*86400000?'notif_grp_week':'notif_grp_older');
+      let courant='';
       notifs.forEach(n=>{
+        const g=groupe(n.ts);
+        if(g!==courant){
+          courant=g;
+          const h=document.createElement('div');
+          h.className='dash-notif-grp';h.textContent=t(g);
+          list.appendChild(h);
+        }
+        const kind=n.kind||'alert';
         const d=document.createElement('div');
-        d.className='dash-notif-item'+(n.unread?' unread':'');
-        d.innerHTML='<span class="dash-notif-ic '+(tone[n.type]||'')+'"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">'+(ico[n.type]||'')+'</svg></span>'+
-          '<span class="dash-notif-tx"><b></b><span>'+ilYA(n.ts)+'</span></span>';
+        d.className='dash-notif-item k-'+kind+(n.unread?' unread':'');
+        d.innerHTML='<span class="dash-notif-ic"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+(ICO[kind]||ICO.alert)+'</svg></span>'+
+          '<span class="dash-notif-tx"><span class="dash-notif-meta"><em></em><time></time></span><b></b></span>'+
+          (n.unread?'<span class="dash-notif-dot" aria-hidden="true"></span>':'');
+        d.querySelector('em').textContent=t(CAT[n.cat]||'notif_cat_plan');
+        d.querySelector('time').textContent=ilYA(n.ts);
         d.querySelector('.dash-notif-tx b').textContent=n.texte;
         list.appendChild(d);
       });
     }
-    document.getElementById('dashBellDot').hidden=!notifs.some(n=>n.unread);
+    document.getElementById('dashBellDot').hidden=!nonLues;
   }
 
   /* ---- Bascule de vue ---- */
