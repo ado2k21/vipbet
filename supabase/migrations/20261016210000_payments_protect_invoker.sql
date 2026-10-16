@@ -1,0 +1,12 @@
+-- ============================================================================
+-- VIP BETCOTE — 16/10 : CORRECTIF DE SECURITE (audit paiements).
+-- payments_protect_provider_cols() etait SECURITY DEFINER : dans une telle
+-- fonction, current_user vaut le PROPRIETAIRE (postgres), jamais le role de
+-- l'appelant. Le test « current_user in (service_role, postgres, ...) » etait
+-- donc toujours vrai : le trigger laissait un client connecte ecrire lui-meme
+-- provider, provider_reference, expected_amount_htg, etc. (verifie par un test
+-- annule). En SECURITY INVOKER, current_user est le vrai role de l'appelant :
+-- service_role (fonctions Netlify) passe, authenticated/anon sont neutralises.
+-- La fonction ne lit ni n'ecrit aucune table : aucun droit supplementaire requis.
+-- ============================================================================
+alter function public.payments_protect_provider_cols() security invoker;

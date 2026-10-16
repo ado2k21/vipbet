@@ -59,9 +59,12 @@ exports.handler = async function () {
     const paiements = await C.sbSelect(
       cfg, 'payments',
       'status=eq.failed&provider=not.is.null&provider_reference=not.is.null' +
-      '&updated_at=gte.' + encodeURIComponent(depuis) +
+      /* 16/10 : la table payments n'a PAS de colonne updated_at (l'ancien
+         filtre faisait echouer chaque passage). Un paiement expire par TTL
+         porte toujours expires_at : c'est la bonne fenetre de recherche. */
+      '&expires_at=gte.' + encodeURIComponent(depuis) +
       '&select=id,status,method,plan_id,reference,provider,provider_reference,expires_at' +
-      '&order=updated_at.asc&limit=' + MAX_PAR_PASSAGE
+      '&order=expires_at.asc&limit=' + MAX_PAR_PASSAGE
     );
 
     if (paiements && paiements.length) {

@@ -2870,7 +2870,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      marque, plus le fichier QR a deposer dans assets/. */
   const DEPOT_MANUEL={
     moncash:{ numero:'+509 4729 1392', nom:'Louima Christianne', qr:'' },
-    natcash:{ numero:'+509 5677 0711', nom:'Louima Christianne', qr:'' }
+    natcash:{ numero:'+509 5677 0711', nom:'Louima Christianne', qr:'assets/qr-natcash.png' }
   };
 
   const brandWrap=document.getElementById('wizPayBrands');
