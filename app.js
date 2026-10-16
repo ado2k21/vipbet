@@ -381,7 +381,7 @@ adm_fiches_load_more:"Charger plus",
 adm_fiches_sync_last:"Dernière synchronisation : {d}", adm_fiches_sync_never:"Aucune synchronisation enregistrée",
 adm_fiches_sync_next:"Prochaine génération automatique : {d}",
 adm_fiche_leg_locked:"Match terminé — résultat réglé, modification protégée",
-adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_leg_edit:"Modifier ce match",
+adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_partager:"Partager la carte", adm_fiche_leg_edit:"Modifier ce match",
 adm_fiche_odds_total:"Cote totale : {n}", adm_fiche_odds_range:"plage autorisée {min} – {max}",
 adm_fiche_odds_unlimited:"illimitée", adm_fiche_odds_risky:"{n} sélection(s) au-dessus de {max}",
 adm_fiche_err_odds_range:"Cote totale {n} hors de la plage autorisée ({min} – {max}).",
@@ -959,7 +959,7 @@ adm_fiches_load_more:"Load more",
 adm_fiches_sync_last:"Last sync: {d}", adm_fiches_sync_never:"No sync recorded yet",
 adm_fiches_sync_next:"Next automatic generation: {d}",
 adm_fiche_leg_locked:"Match finished — result settled, editing protected",
-adm_fiche_leg_unlock:"Edit anyway", adm_fiche_leg_edit:"Edit this match",
+adm_fiche_leg_unlock:"Edit anyway", adm_fiche_partager:"Share the card", adm_fiche_leg_edit:"Edit this match",
 adm_fiche_odds_total:"Total odds: {n}", adm_fiche_odds_range:"allowed range {min} – {max}",
 adm_fiche_odds_unlimited:"unlimited", adm_fiche_odds_risky:"{n} selection(s) above {max}",
 adm_fiche_err_odds_range:"Total odds {n} outside the allowed range ({min} – {max}).",
@@ -1537,7 +1537,7 @@ adm_fiches_load_more:"Chaje plis",
 adm_fiches_sync_last:"Dènye senkronizasyon : {d}", adm_fiches_sync_never:"Pa gen senkronizasyon anrejistre",
 adm_fiches_sync_next:"Pwochen jenerasyon otomatik : {d}",
 adm_fiche_leg_locked:"Match fini — rezilta regle, modifikasyon pwoteje",
-adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_leg_edit:"Modifye match sa a",
+adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_partager:"Pataje kat la", adm_fiche_leg_edit:"Modifye match sa a",
 adm_fiche_odds_total:"Kòt total : {n}", adm_fiche_odds_range:"plaj otorize {min} – {max}",
 adm_fiche_odds_unlimited:"san limit", adm_fiche_odds_risky:"{n} seleksyon pi wo pase {max}",
 adm_fiche_err_odds_range:"Kòt total {n} deyò plaj otorize a ({min} – {max}).",
@@ -5613,7 +5613,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+235);
 
     // Bandeau lien (lien de parrainage s'il existe, sinon le site)
-    const lien=(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com';
+    const lien=lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com';
     ctx.fillStyle='#C9A44C';rr(60,1640,W-120,150,36);ctx.fill();
     ctx.fillStyle='#1A1405';ctx.font='800 44px '+SORA;ctx.fillText(tronqueTexte(lien,34),W/2,1712);
     ctx.font='700 30px '+INTER;ctx.globalAlpha=.85;ctx.fillText(t('share_cta_sub'),W/2,1758);ctx.globalAlpha=1;
@@ -5626,15 +5626,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   function tronqueTexte(s,max){
     return s.length>max?s.slice(0,max-1)+'…':s;
   }
-  async function partagerTicketGagnant(tk){
+  let lienImpose=null;   // lien force (partage depuis l'admin : le site, jamais un code de parrainage)
+  async function partagerTicketGagnant(tk,opts){
+    lienImpose=(opts&&opts.lien)||null;
     // Lien de parrainage du client sur la carte (si disponible ; sinon le site).
-    try{if(window.VB_chargerLienParrainage)await window.VB_chargerLienParrainage();}catch(e){}
+    if(!lienImpose){try{if(window.VB_chargerLienParrainage)await window.VB_chargerLienParrainage();}catch(e){}}
     try{
       const blob=await genererImageTicketGagnant(tk);
       if(!blob)throw new Error('image');
       const fichier=new File([blob],'vip-betcote-ticket.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[fichier]})){
-        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t('dtk_share_texte')+' '+('https://'+((window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
+        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t('dtk_share_texte')+' '+('https://'+(lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
       }else{
         // Repli (29/08) : navigateur sans partage de fichier (surtout
         // desktop) -- telechargement direct plutot que rien.
@@ -5650,6 +5652,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       // ici (generation d'image cote client, rien de critique en jeu).
     }
   }
+
+  window.VB_partagerTicket=partagerTicketGagnant;
 
   /* Heure d'un match, toujours a l'heure d'Haiti. 'jour' reste vide quand
      le match tombe bien le jour de la fiche, et porte la date (JJ/MM)
@@ -10180,7 +10184,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           (tk.confidence!=null?' · '+tk.confidence+'%':'')+'</span>'+
         '<span class="admf-card-total">'+Number(tk.total_odd||0).toFixed(2)+'</span>'+
       '</div>'+
-      (ficheTerminee?'':'<button type="button" class="admf-edit" data-editfid="'+tk.id+'">'+t('adm_fiche_leg_edit')+'</button>')+
+      (ficheTerminee
+        ?(tk.status==='won'?'<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'">'+t('adm_fiche_partager')+'</button>':'')
+        :'<button type="button" class="admf-edit" data-editfid="'+tk.id+'">'+t('adm_fiche_leg_edit')+'</button>')+
     '</div>';
   }
 
@@ -10514,11 +10520,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
 
       // Clic sur un match : ouvre l'editeur existant, positionne sur ce match.
-      body.querySelectorAll('.admf-leg').forEach(b=>{
+      // UNIQUEMENT les matchs modifiables (bouton) : un match ou une fiche TERMINEE
+      // (li verrouille, sans data-fid) ne reagit plus a aucun clic.
+      body.querySelectorAll('button.admf-leg[data-fid]').forEach(b=>{
         b.addEventListener('click',()=>{
           selectedFicheId=b.dataset.fid;
           admFicheLegCible=parseInt(b.dataset.legidx,10);
           setView('fichedetail');renderFicheDetail();
+        });
+      });
+      // Fiche GAGNEE (Historique) : seul bouton = partage de la carte verticale, lien du site.
+      body.querySelectorAll('[data-sharefid]').forEach(b=>{
+        b.addEventListener('click',async()=>{
+          const tk=tickets.find(x=>x.id===b.dataset.sharefid);
+          if(!tk||!window.VB_partagerTicket)return;
+          const ls=(parFiche[tk.id]||[]);
+          b.disabled=true;
+          try{
+            await window.VB_partagerTicket({sport:tk.sport,scoreCount:Number(tk.score_legs_count)||0,legsCount:Number(tk.legs_count)||ls.length,
+              totalOdd:Number(tk.total_odd)||0,
+              legs:ls.map(l=>({match:l.match_label||'',league:l.league||'',leagueCountry:l.league_country||'',pick:l.pick||'',odd:Number(l.odd)||0,result:l.result||null}))},
+              {lien:'vipbetcote.com'});
+          }finally{b.disabled=false;}
         });
       });
       // Bouton "Modifier ce match" : ouvre l'editeur complet de la fiche.
