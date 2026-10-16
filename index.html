@@ -1790,6 +1790,41 @@ details p{
 .dash-notif-empty{padding:34px 16px;text-align:center;font-size:13px;color:var(--gris);display:flex;flex-direction:column;align-items:center;gap:10px}
 .dash-notif-empty-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(244,243,237,.05);color:#8592A8}
 
+/* --- Parrainage (16/10) --- */
+.parr{display:flex;flex-direction:column;gap:14px}
+.parr-hero{display:flex;gap:14px;align-items:flex-start;padding:18px;border-radius:18px;border:1px solid rgba(232,206,138,.28);
+  background:radial-gradient(120% 140% at 100% 0%,rgba(201,164,76,.22),transparent 60%),linear-gradient(180deg,#0E1A2F,#0A1324)}
+.parr-hero-ic{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:rgba(232,206,138,.14);color:#E8CE8A;border:1px solid rgba(232,206,138,.3)}
+.parr-hero b{display:block;font-family:var(--display);font-size:17px;color:#fff;line-height:1.3;margin-bottom:4px}
+.parr-hero p{margin:0;font-size:13px;color:var(--gris);line-height:1.5}
+.parr-card{padding:16px;border-radius:18px;border:1px solid rgba(244,243,237,.08);background:linear-gradient(180deg,#0E1A2F,#0A1324)}
+.parr-lbl{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin-bottom:10px}
+.parr-lien{padding:13px 14px;border-radius:12px;border:1px dashed rgba(232,206,138,.45);background:rgba(232,206,138,.06);color:#E8CE8A;font-family:var(--mono);font-size:14px;font-weight:700;overflow-wrap:anywhere}
+.parr-acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.parr-acts .btn{width:100%}
+.parr-wa{background:#1FA855;color:#fff;border:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.parr-wa:hover{background:#25C063}
+.parr-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.parr-st{padding:14px 10px;border-radius:16px;border:1px solid rgba(244,243,237,.08);background:rgba(244,243,237,.03);text-align:center}
+.parr-st b{display:block;font-family:var(--display);font-size:24px;color:#fff;font-variant-numeric:tabular-nums}
+.parr-st span{font-size:11.5px;color:var(--gris)}
+.parr-st-or b{color:#2ED47F}
+.parr-attente{padding:12px 14px;border-radius:14px;background:rgba(232,206,138,.08);border:1px solid rgba(232,206,138,.25);color:#E8CE8A;font-size:13px;line-height:1.5}
+.parr-bareme{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.parr-b{display:flex;justify-content:space-between;align-items:center;padding:11px 12px;border-radius:12px;background:rgba(244,243,237,.03);border:1px solid rgba(244,243,237,.07);font-size:13px;color:#C9CED8}
+.parr-b b{color:#2ED47F;font-family:var(--display);font-size:15px;white-space:nowrap}
+.parr-b span{min-width:0;font-size:12.5px;line-height:1.3}
+.parr-how{margin:14px 0 0;padding-left:20px;font-size:13px;color:#C9CED8;line-height:1.75}
+.parr-regle{margin:10px 0 0;font-size:11.5px;color:#7C8CA0;line-height:1.5}
+.parr-liste{display:flex;flex-direction:column;gap:7px}
+.parr-f{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:12px;background:rgba(244,243,237,.03);border:1px solid rgba(244,243,237,.07)}
+.parr-f b{font-size:13.5px;color:#F4F3ED}
+.parr-f small{display:block;font-size:11.5px;color:var(--gris)}
+.parr-badge{flex:none;font-family:var(--mono);font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(232,206,138,.12);color:#E8CE8A}
+.parr-badge.ok{background:rgba(46,212,127,.14);color:#7FF0B5}
+.parr-badge.ko{background:rgba(143,155,176,.14);color:#8F9BB0}
+.parr-vide{padding:16px 6px;text-align:center;font-size:13px;color:var(--gris)}
+
 /* --- Onglets --- */
 .dash-tabs{
   position:sticky;top:0;z-index:11;
@@ -3508,7 +3543,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
    ADMIN REDESIGN (15/10) : Vue d'ensemble, Statistiques, filtres Istorik.
    Affichage uniquement : aucune donnee, requete ou configuration modifiee.
    ===================================================================== */
-[data-adview="home"],[data-adview="revenus"],[data-adview="sources"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
+[data-adview="home"],[data-adview="revenus"],[data-adview="sources"],[data-adview="parrainage"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
 .ov-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 22px}
 .ov-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ov-green)}
 .ov-live{width:7px;height:7px;border-radius:50%;background:var(--ov-green);box-shadow:0 0 0 0 rgba(46,212,127,.6);animation:ovPulse 2s infinite}
@@ -3559,6 +3594,13 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .adm-src-lien:empty{display:none}
 .adm-src-stats{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--gris)}
 .adm-src-stats b{color:#F4F3ED}
+.adm-parr-row{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:13px;background:rgba(244,243,237,.03);border:1px solid var(--ov-line)}
+.adm-parr-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.adm-parr-top b{font-size:13.5px;color:#F4F3ED;overflow-wrap:anywhere}
+.adm-parr-top small{display:block;font-size:11.5px;color:var(--gris);margin-top:2px}
+.adm-parr-bas{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;color:var(--gris)}
+.adm-parr-annuler{background:none;border:1px solid rgba(240,115,94,.4);color:#F0735E;border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer}
+.adm-parr-annuler:hover{background:rgba(240,115,94,.1)}
 .ov-card .admdash-row{background:rgba(244,243,237,.03);border-color:var(--ov-line);border-radius:13px}
 .ov-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .ov-q{display:flex;align-items:center;gap:10px;padding:12px;border-radius:13px;border:1px solid var(--ov-line);background:rgba(244,243,237,.03);color:#F4F3ED;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-align:left;transition:background .18s,border-color .18s}
@@ -5032,6 +5074,10 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5.3 5.6.7-4.2 3.9 1.1 5.6L12 15.8 7.1 18.5l1.1-5.6L4 9l5.6-.7L12 3Z"/></svg>
             <span data-i18n="dash_t_sub">Abònman m</span>
           </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-dmenu="parrain">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8Zm0 0c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8Z"/></svg>
+            <span data-i18n="dash_t_parrain">Parenaj</span>
+          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-dmenu="subhistory">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="17" rx="2.3"/><path d="M8 2.5v3M16 2.5v3M3.5 9.5h17"/><path d="M8 13.5h3M8 16.5h5"/></svg>
             <span data-i18n="dash_t_subhistory">Istorik abònman</span>
@@ -5067,6 +5113,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
       <button class="dash-tab" data-dview="history" type="button" role="tab" data-i18n="dash_t_history">Istorik</button>
       <button class="dash-tab" data-dview="stats" type="button" role="tab" data-i18n="dash_t_stats">Estatistik</button>
       <button class="dash-tab" data-dview="sub" type="button" role="tab" data-i18n="dash_t_sub">Abònman m</button>
+      <button class="dash-tab" data-dview="parrain" type="button" role="tab" data-i18n="dash_t_parrain">Parenaj</button>
     </div>
   </div>
 
@@ -5237,6 +5284,55 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
       </div>
     </div>
 
+    <!-- VUE : PARRAINAGE (16/10) -->
+    <div class="dash-view" data-dview="parrain">
+      <button class="dash-back" type="button" data-dback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="dash-hi">
+        <h2 data-i18n="parr_h">Parenaj</h2>
+        <p data-i18n="parr_p">Envite zanmi w, genyen jou VIP gratis.</p>
+      </div>
+      <div class="parr" id="parrBody">
+        <div class="parr-hero">
+          <span class="parr-hero-ic"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8Zm0 0c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8Z"/></svg></span>
+          <div>
+            <b data-i18n="parr_hero_t">Chak zanmi ki peye = jou VIP pou ou</b>
+            <p data-i18n="parr_hero_p">Lè yon zanmi kreye kont li ak lyen ou epi li peye premye plan li, ou resevwa jou gratis sou plan ou.</p>
+          </div>
+        </div>
+        <div class="parr-card">
+          <div class="parr-lbl" data-i18n="parr_lien_lbl">Lyen pèsonèl ou</div>
+          <div class="parr-lien" id="parrLien">…</div>
+          <div class="parr-acts">
+            <button type="button" class="btn btn-or" id="parrCopier" data-i18n="parr_copier">Kopye</button>
+            <button type="button" class="btn parr-wa" id="parrWa"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.5-.3Z"/></svg><span>WhatsApp</span></button>
+          </div>
+        </div>
+        <div class="parr-stats">
+          <div class="parr-st"><b id="parrInscrits">0</b><span data-i18n="parr_st_inscrits">Enskri</span></div>
+          <div class="parr-st"><b id="parrPayants">0</b><span data-i18n="parr_st_payants">Peye</span></div>
+          <div class="parr-st parr-st-or"><b id="parrJours">0</b><span data-i18n="parr_st_jours">Jou genyen</span></div>
+        </div>
+        <div class="parr-attente" id="parrAttente" hidden></div>
+        <div class="parr-card">
+          <div class="parr-lbl" data-i18n="parr_bareme_h">Konbyen jou ou genyen</div>
+          <div class="parr-bareme" id="parrBareme"></div>
+          <ol class="parr-how">
+            <li data-i18n="parr_how_1">Pataje lyen ou</li>
+            <li data-i18n="parr_how_2">Zanmi w kreye kont li ak lyen sa a</li>
+            <li data-i18n="parr_how_3">Lè premye peman li konfime, jou yo ajoute sou plan ou otomatikman</li>
+          </ol>
+          <p class="parr-regle" data-i18n="parr_regle">Maksimòm 10 rekonpans pa mwa. Se sèlman premye plan zanmi w lan ki konte. Kont an doub oswa fwod pa konte.</p>
+        </div>
+        <div class="parr-card">
+          <div class="parr-lbl" data-i18n="parr_filleuls_h">Zanmi ou yo</div>
+          <div id="parrListe" class="parr-liste"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- VUE : HISTORIQUE ABONNEMENT (01/09) -->
     <div class="dash-view" data-dview="subhistory">
       <button class="dash-back" type="button" data-dback>
@@ -5316,6 +5412,10 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="telegram">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 3.5 2.8 10.7c-.9.4-.8 1.6.1 1.9l4.6 1.5 1.8 5.6c.3.9 1.4 1 1.9.3l2.5-3 4.8 3.6c.7.5 1.6.1 1.8-.7L22.9 4.9c.2-.9-.6-1.7-1.4-1.4Z"/></svg>
             <span data-i18n="adm_nav_telegram">Telegram</span>
+          </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="parrainage">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8Zm0 0c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8Z"/></svg>
+            <span data-i18n="adm_nav_parr">Parrainage</span>
           </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="sources">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
@@ -5780,6 +5880,36 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
       <div id="admTelegramBody"></div>
     </div>
 
+    <!-- VUE : PARRAINAGE (16/10) -->
+    <div class="dash-view" data-adview="parrainage">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="ov-head">
+        <div>
+          <span class="ov-eyebrow"><span class="ov-live"></span><span data-i18n="ov_live">En direct</span></span>
+          <h2 data-i18n="adm_parr_h">Parrainage</h2>
+          <p data-i18n="adm_parr_p">Parrains, filleuls et jours offerts (2 j P1 · 5 j P2 · 7 j P3 · 15 j Lifetime).</p>
+        </div>
+        <div class="ov-head-act">
+          <button type="button" class="ov-refresh" id="admParrRefresh">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+            <span data-i18n="adm_refresh">Rafrechi</span>
+          </button>
+        </div>
+      </div>
+      <section class="ov-sec">
+        <div class="ov-rev" id="admParrKpis">
+          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+        </div>
+      </section>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_parr_liste">Parrain → filleul</div>
+        <div class="ov-card"><div id="admParrListe" class="admdash-list"></div></div>
+      </section>
+    </div>
+
     <!-- VUE : SOURCES DES CLIENTS (16/10) — liens traces ?src=... -->
     <div class="dash-view" data-adview="sources">
       <button class="dash-back" type="button" data-adback>
@@ -5909,6 +6039,6 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 </footer>
 
 
-<script src="app.js?v=20261016e"></script>
+<script src="app.js?v=20261016f"></script>
 </body>
 </html>

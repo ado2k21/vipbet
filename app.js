@@ -193,7 +193,7 @@ wiz_lock_r1:"Vous devez d'abord créer un compte pour accéder au tableau de bor
 wiz_lock_r2:"Votre adresse e-mail n'est pas encore vérifiée. Terminez la vérification pour continuer.",
 wiz_lock_r3:"Aucun abonnement actif. Réglez votre abonnement pour débloquer le tableau de bord.",
 dash_t_today:"Fiches du jour", dash_t_history:"Historique", dash_t_stats:"Statistiques", dash_t_sub:"Mon abonnement",
-dash_t_subhistory:"Historique abonnement", dash_subhistory_h:"Historique abonnement", dash_subhistory_p:"Tous vos plans confirmés, anciens et actuel.",
+dash_t_parrain:"Parrainage", parr_h:"Parrainage", parr_p:"Invitez vos amis, gagnez des jours VIP offerts.", parr_hero_t:"Chaque ami qui paie = des jours VIP pour vous", parr_hero_p:"Quand un ami crée son compte avec votre lien et paie son premier plan, vous recevez des jours offerts sur votre plan.", parr_lien_lbl:"Votre lien personnel", parr_copier:"Copier", parr_copie:"Copié ✓", parr_st_inscrits:"Inscrits", parr_st_payants:"Ont payé", parr_st_jours:"Jours gagnés", parr_bareme_h:"Jours gagnés selon le plan de votre ami", parr_how_1:"Partagez votre lien", parr_how_2:"Votre ami crée son compte avec ce lien", parr_how_3:"Dès son premier paiement confirmé, les jours sont ajoutés automatiquement à votre plan", parr_regle:"Maximum 10 récompenses par mois. Seul le premier plan de votre ami compte. Les comptes en double ou frauduleux ne comptent pas.", parr_filleuls_h:"Vos amis", parr_vide:"Aucun ami inscrit pour le moment. Partagez votre lien !", parr_attente:"{n} jour(s) en attente : ils seront ajoutés dès que vous aurez un plan actif.", parr_s_inscrit:"Pas encore payé", parr_s_rec:"+{n} j", parr_s_plafond:"Plafond du mois", parr_s_hors:"Non compté", parr_jours:"{n} j", parr_wa_msg:"Rejoins VIP BETCOTE : fiches de foot et basket chaque jour 👉 {lien}", parr_erreur:"Impossible de charger votre parrainage. Réessayez.", dash_t_subhistory:"Historique abonnement", dash_subhistory_h:"Historique abonnement", dash_subhistory_p:"Tous vos plans confirmés, anciens et actuel.",
 dash_subh_actif:"Actif", dash_subh_expire:"Expiré", dash_subhistory_empty:"Aucun plan confirmé pour l'instant.",
 dash_hello:"Bonjour {name}", dash_hello_p:"Voici les fiches publiées aujourd'hui par notre équipe d'experts.",
 dash_notif_h:"Notifications", dash_notif_clear:"Tout marquer comme lu", dash_notif_empty:"Aucune notification.",
@@ -407,7 +407,7 @@ adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatemen
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
 adm_menu_exit:"Déconnecter",
 tg_h:"Groupe Telegram VIP", tg_membre:"Vous êtes dans votre groupe Telegram VIP.", tg_a_rejoindre:"Votre plan est actif : rejoignez votre groupe Telegram privé. Le lien ne fonctionne qu'une seule fois et uniquement pour votre compte.", tg_btn:"Rejoindre mon groupe Telegram", tg_btn_wait:"Création du lien…", tg_indispo:"Votre groupe Telegram n'est pas encore disponible. Contactez le support.", tg_attente:"Votre changement de groupe est en cours. Réessayez dans quelques minutes.", tg_err:"Impossible de créer le lien pour le moment. Réessayez.", tg_perdu:"Votre accès au groupe s'arrête quand votre plan expire ou change.",
-adm_nav_sources:"Sources", adm_src_h:"Sources des clients", adm_src_p:"D'où viennent vos inscrits et vos clients payants.", adm_src_7j:"7 jours", adm_src_30j:"30 jours", adm_src_par:"Par source", adm_src_lien_h:"Créer un lien tracé", adm_src_lien_p:"Choisissez où vous publiez le lien (ou tapez un nom, ex. un influenceur). Chaque nouveau compte créé depuis ce lien sera compté dans cette source.", adm_src_nom_ph:"ex. influenceur_jean", adm_src_copier:"Copier le lien", adm_src_copie:"Lien copié ✓", adm_src_inconnu:"Inconnue / direct", adm_src_k_inscrits:"Nouveaux inscrits", adm_src_k_inscrits_note:"Comptes créés sur la période (admins exclus).", adm_src_k_payants:"Clients payants", adm_src_k_conv:"Taux de conversion", adm_src_k_top:"Meilleure source", adm_src_inscrits:"inscrits", adm_src_payants:"payants", adm_src_conv:"conversion", adm_src_vide:"Aucun inscrit sur cette période.", adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
+adm_nav_parr:"Parrainage", adm_parr_h:"Parrainage", adm_parr_p:"Parrains, filleuls et jours offerts (2 j P1 · 5 j P2 · 7 j P3 · 15 j Lifetime).", adm_parr_liste:"Parrain → filleul", adm_parr_k_filleuls:"Filleuls inscrits", adm_parr_k_filleuls_note:"Comptes créés avec un lien de parrainage.", adm_parr_k_payants:"Filleuls payants", adm_parr_k_jours:"Jours offerts", adm_parr_k_attente:"Jours en attente", adm_parr_k_attente_note:"Parrains sans plan actif : ajoutés à leur prochain plan.", adm_parr_s_inscrit:"Pas encore payé", adm_parr_s_rec:"+{n} j", adm_parr_s_plafond:"Plafond du mois", adm_parr_s_hors:"Payé avant le lien", adm_parr_s_annule:"Annulé", adm_parr_s_attente:"en attente", adm_parr_annuler:"Annuler", adm_parr_annuler_conf:"Annuler ce parrainage ? Les jours déjà ajoutés au parrain seront retirés.", adm_parr_vide:"Aucun parrainage pour le moment.", adm_nav_sources:"Sources", adm_src_h:"Sources des clients", adm_src_p:"D'où viennent vos inscrits et vos clients payants.", adm_src_7j:"7 jours", adm_src_30j:"30 jours", adm_src_par:"Par source", adm_src_lien_h:"Créer un lien tracé", adm_src_lien_p:"Choisissez où vous publiez le lien (ou tapez un nom, ex. un influenceur). Chaque nouveau compte créé depuis ce lien sera compté dans cette source.", adm_src_nom_ph:"ex. influenceur_jean", adm_src_copier:"Copier le lien", adm_src_copie:"Lien copié ✓", adm_src_inconnu:"Inconnue / direct", adm_src_k_inscrits:"Nouveaux inscrits", adm_src_k_inscrits_note:"Comptes créés sur la période (admins exclus).", adm_src_k_payants:"Clients payants", adm_src_k_conv:"Taux de conversion", adm_src_k_top:"Meilleure source", adm_src_inscrits:"inscrits", adm_src_payants:"payants", adm_src_conv:"conversion", adm_src_vide:"Aucun inscrit sur cette période.", adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
 ov_rev_htg_h:"MonCash / NatCash (en gourdes)", ov_stripe_h:"Stripe — paiements par carte (en dollars)", ov_stripe_total:"Total encaissé Stripe", ov_stripe_total_note:"Confirmés automatiquement. Toujours en dollars, même si le client a payé en gourdes.", ov_stripe_mois:"Stripe ce mois-ci", ov_stripe_count:"Paiements Stripe", ov_stripe_verif:"Stripe à vérifier", ov_stripe_verif_note:"En attente d'une vérification manuelle (montant ou compte inattendu).", ov_stripe_plans:"Par plan (lien de paiement)", ov_stripe_recent:"Derniers paiements Stripe", ov_stripe_payeen:"payé en {d}", ov_stripe_none:"Aucun paiement Stripe pour l'instant.",
 ov_live:"En direct", ov_kpis_h:"Indicateurs clés", ov_quick_h:"Accès rapide", ov_q_pay:"Paiements", ov_q_users:"Utilisateurs", ov_q_fiches:"Fiches", ov_q_rev:"Revenus",
 st_pending:"En cours", hf_search_ph:"Rechercher un code, un match, une ligue…", hf_sport:"Sport", hf_count:"{n} fiche(s) trouvée(s)", hf_reset:"Réinitialiser",
@@ -771,7 +771,7 @@ wiz_lock_r1:"You need to create an account first to access the dashboard.",
 wiz_lock_r2:"Your email address isn't verified yet. Complete verification to continue.",
 wiz_lock_r3:"No active plan. Complete your payment to unlock the dashboard.",
 dash_t_today:"Today's picks", dash_t_history:"History", dash_t_stats:"Statistics", dash_t_sub:"My plan",
-dash_t_subhistory:"Plan history", dash_subhistory_h:"Plan history", dash_subhistory_p:"All your confirmed plans, past and current.",
+dash_t_parrain:"Referral", parr_h:"Referral", parr_p:"Invite your friends, earn free VIP days.", parr_hero_t:"Every friend who pays = VIP days for you", parr_hero_p:"When a friend creates an account with your link and pays for their first plan, you get free days added to your plan.", parr_lien_lbl:"Your personal link", parr_copier:"Copy", parr_copie:"Copied ✓", parr_st_inscrits:"Signed up", parr_st_payants:"Paid", parr_st_jours:"Days earned", parr_bareme_h:"Days earned by your friend's plan", parr_how_1:"Share your link", parr_how_2:"Your friend creates an account with this link", parr_how_3:"As soon as their first payment is confirmed, the days are added to your plan automatically", parr_regle:"Up to 10 rewards per month. Only your friend's first plan counts. Duplicate or fraudulent accounts do not count.", parr_filleuls_h:"Your friends", parr_vide:"No friends signed up yet. Share your link!", parr_attente:"{n} day(s) pending: they will be added as soon as you have an active plan.", parr_s_inscrit:"Not paid yet", parr_s_rec:"+{n} d", parr_s_plafond:"Monthly cap", parr_s_hors:"Not counted", parr_jours:"{n} d", parr_wa_msg:"Join VIP BETCOTE: football and basketball slips every day 👉 {lien}", parr_erreur:"Could not load your referral. Try again.", dash_t_subhistory:"Plan history", dash_subhistory_h:"Plan history", dash_subhistory_p:"All your confirmed plans, past and current.",
 dash_subh_actif:"Active", dash_subh_expire:"Expired", dash_subhistory_empty:"No confirmed plan yet.",
 dash_hello:"Hello {name}", dash_hello_p:"Here are the slips published today by our expert team.",
 dash_notif_h:"Notifications", dash_notif_clear:"Mark all as read", dash_notif_empty:"No notifications.",
@@ -985,7 +985,7 @@ adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if publ
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
 adm_menu_exit:"Log out",
 tg_h:"VIP Telegram group", tg_membre:"You are in your VIP Telegram group.", tg_a_rejoindre:"Your plan is active: join your private Telegram group. The link works only once and only for your account.", tg_btn:"Join my Telegram group", tg_btn_wait:"Creating link…", tg_indispo:"Your Telegram group is not available yet. Please contact support.", tg_attente:"Your group change is in progress. Try again in a few minutes.", tg_err:"Unable to create the link right now. Please try again.", tg_perdu:"Your access to the group ends when your plan expires or changes.",
-adm_nav_sources:"Sources", adm_src_h:"Customer sources", adm_src_p:"Where your sign-ups and paying customers come from.", adm_src_7j:"7 days", adm_src_30j:"30 days", adm_src_par:"By source", adm_src_lien_h:"Create a tracked link", adm_src_lien_p:"Pick where you post the link (or type a name, e.g. an influencer). Every new account created from this link is counted in that source.", adm_src_nom_ph:"e.g. influencer_john", adm_src_copier:"Copy link", adm_src_copie:"Link copied ✓", adm_src_inconnu:"Unknown / direct", adm_src_k_inscrits:"New sign-ups", adm_src_k_inscrits_note:"Accounts created in the period (admins excluded).", adm_src_k_payants:"Paying customers", adm_src_k_conv:"Conversion rate", adm_src_k_top:"Best source", adm_src_inscrits:"sign-ups", adm_src_payants:"paying", adm_src_conv:"conversion", adm_src_vide:"No sign-ups in this period.", adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
+adm_nav_parr:"Referral", adm_parr_h:"Referral", adm_parr_p:"Referrers, referred users and free days (2 d P1 · 5 d P2 · 7 d P3 · 15 d Lifetime).", adm_parr_liste:"Referrer → referred", adm_parr_k_filleuls:"Referred sign-ups", adm_parr_k_filleuls_note:"Accounts created with a referral link.", adm_parr_k_payants:"Referred who paid", adm_parr_k_jours:"Days given", adm_parr_k_attente:"Days pending", adm_parr_k_attente_note:"Referrers without an active plan: added to their next plan.", adm_parr_s_inscrit:"Not paid yet", adm_parr_s_rec:"+{n} d", adm_parr_s_plafond:"Monthly cap", adm_parr_s_hors:"Paid before link", adm_parr_s_annule:"Cancelled", adm_parr_s_attente:"pending", adm_parr_annuler:"Cancel", adm_parr_annuler_conf:"Cancel this referral? Days already added to the referrer will be removed.", adm_parr_vide:"No referrals yet.", adm_nav_sources:"Sources", adm_src_h:"Customer sources", adm_src_p:"Where your sign-ups and paying customers come from.", adm_src_7j:"7 days", adm_src_30j:"30 days", adm_src_par:"By source", adm_src_lien_h:"Create a tracked link", adm_src_lien_p:"Pick where you post the link (or type a name, e.g. an influencer). Every new account created from this link is counted in that source.", adm_src_nom_ph:"e.g. influencer_john", adm_src_copier:"Copy link", adm_src_copie:"Link copied ✓", adm_src_inconnu:"Unknown / direct", adm_src_k_inscrits:"New sign-ups", adm_src_k_inscrits_note:"Accounts created in the period (admins excluded).", adm_src_k_payants:"Paying customers", adm_src_k_conv:"Conversion rate", adm_src_k_top:"Best source", adm_src_inscrits:"sign-ups", adm_src_payants:"paying", adm_src_conv:"conversion", adm_src_vide:"No sign-ups in this period.", adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
 ov_rev_htg_h:"MonCash / NatCash (in gourdes)", ov_stripe_h:"Stripe — card payments (in dollars)", ov_stripe_total:"Total collected via Stripe", ov_stripe_total_note:"Confirmed automatically. Always in dollars, even if the customer paid in gourdes.", ov_stripe_mois:"Stripe this month", ov_stripe_count:"Stripe payments", ov_stripe_verif:"Stripe to review", ov_stripe_verif_note:"Waiting for a manual check (unexpected amount or account).", ov_stripe_plans:"By plan (payment link)", ov_stripe_recent:"Latest Stripe payments", ov_stripe_payeen:"paid in {d}", ov_stripe_none:"No Stripe payment yet.",
 ov_live:"Live", ov_kpis_h:"Key metrics", ov_quick_h:"Quick access", ov_q_pay:"Payments", ov_q_users:"Users", ov_q_fiches:"Slips", ov_q_rev:"Revenue",
 st_pending:"In progress", hf_search_ph:"Search a code, match or league…", hf_sport:"Sport", hf_count:"{n} slip(s) found", hf_reset:"Reset",
@@ -1349,7 +1349,7 @@ wiz_lock_r1:"Ou dwe kreye yon kont anvan pou w jwenn dashboard la.",
 wiz_lock_r2:"Imèl ou poko verifye. Fini verifikasyon an pou w kontinye.",
 wiz_lock_r3:"Pa gen abònman aktif. Peye abònman ou pou w debloke dashboard la.",
 dash_t_today:"Fich jodi a", dash_t_history:"Istorik", dash_t_stats:"Estatistik", dash_t_sub:"Abònman m",
-dash_t_subhistory:"Istorik abònman", dash_subhistory_h:"Istorik abònman", dash_subhistory_p:"Tout plan konfime ou yo, ansyen kou aktyèl.",
+dash_t_parrain:"Parenaj", parr_h:"Parenaj", parr_p:"Envite zanmi w, genyen jou VIP gratis.", parr_hero_t:"Chak zanmi ki peye = jou VIP pou ou", parr_hero_p:"Lè yon zanmi kreye kont li ak lyen ou epi li peye premye plan li, ou resevwa jou gratis sou plan ou.", parr_lien_lbl:"Lyen pèsonèl ou", parr_copier:"Kopye", parr_copie:"Kopye ✓", parr_st_inscrits:"Enskri", parr_st_payants:"Peye", parr_st_jours:"Jou genyen", parr_bareme_h:"Jou ou genyen selon plan zanmi w", parr_how_1:"Pataje lyen ou", parr_how_2:"Zanmi w kreye kont li ak lyen sa a", parr_how_3:"Lè premye peman li konfime, jou yo ajoute sou plan ou otomatikman", parr_regle:"Maksimòm 10 rekonpans pa mwa. Se sèlman premye plan zanmi w lan ki konte. Kont an doub oswa fwod pa konte.", parr_filleuls_h:"Zanmi ou yo", parr_vide:"Poko gen zanmi ki enskri. Pataje lyen ou!", parr_attente:"{n} jou ap tann : y ap ajoute lè w gen yon plan aktif.", parr_s_inscrit:"Poko peye", parr_s_rec:"+{n} j", parr_s_plafond:"Plafon mwa a", parr_s_hors:"Pa konte", parr_jours:"{n} j", parr_wa_msg:"Vin jwenn VIP BETCOTE : fich foutbòl ak baskèt chak jou 👉 {lien}", parr_erreur:"Nou pa ka chaje parenaj ou. Eseye ankò.", dash_t_subhistory:"Istorik abònman", dash_subhistory_h:"Istorik abònman", dash_subhistory_p:"Tout plan konfime ou yo, ansyen kou aktyèl.",
 dash_subh_actif:"Aktif", dash_subh_expire:"Ekspire", dash_subhistory_empty:"Pa gen plan konfime pou kounye a.",
 dash_hello:"Bonjou {name}", dash_hello_p:"Men fich ekip ekspè nou an pibliye jodi a.",
 dash_notif_h:"Notifikasyon", dash_notif_clear:"Make tout kòm li", dash_notif_empty:"Pa gen notifikasyon.",
@@ -1563,7 +1563,7 @@ adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li p
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
 adm_menu_exit:"Dekonekte",
 tg_h:"Gwoup Telegram VIP", tg_membre:"Ou nan gwoup Telegram VIP ou a.", tg_a_rejoindre:"Plan ou aktif: antre nan gwoup Telegram prive ou a. Lyen an mache yon sèl fwa epi sèlman pou kont ou.", tg_btn:"Antre nan gwoup Telegram mwen", tg_btn_wait:"Ap kreye lyen an…", tg_indispo:"Gwoup Telegram ou a pa disponib ankò. Kontakte sèvis kliyan.", tg_attente:"Chanjman gwoup ou a ap fèt. Eseye ankò nan kèk minit.", tg_err:"Pa kapab kreye lyen an kounye a. Eseye ankò.", tg_perdu:"Aksè ou nan gwoup la fini lè plan ou ekspire oswa li chanje.",
-adm_nav_sources:"Sous", adm_src_h:"Kote kliyan yo soti", adm_src_p:"Kote moun ki enskri yo ak kliyan ki peye yo soti.", adm_src_7j:"7 jou", adm_src_30j:"30 jou", adm_src_par:"Pa sous", adm_src_lien_h:"Kreye yon lyen swiv", adm_src_lien_p:"Chwazi kote w ap pibliye lyen an (oswa tape yon non, egz. yon enfliyansè). Chak nouvo kont ki kreye ak lyen sa a ap konte nan sous sa a.", adm_src_nom_ph:"egz. enfliyanse_jan", adm_src_copier:"Kopye lyen an", adm_src_copie:"Lyen kopye ✓", adm_src_inconnu:"Pa konnen / dirèk", adm_src_k_inscrits:"Nouvo enskri", adm_src_k_inscrits_note:"Kont ki kreye nan peryòd la (admin pa ladan).", adm_src_k_payants:"Kliyan ki peye", adm_src_k_conv:"To konvèsyon", adm_src_k_top:"Pi bon sous", adm_src_inscrits:"enskri", adm_src_payants:"peye", adm_src_conv:"konvèsyon", adm_src_vide:"Pa gen enskri nan peryòd sa a.", adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
+adm_nav_parr:"Parenaj", adm_parr_h:"Parenaj", adm_parr_p:"Paren, fiyèl ak jou gratis (2 j P1 · 5 j P2 · 7 j P3 · 15 j Lifetime).", adm_parr_liste:"Paren → fiyèl", adm_parr_k_filleuls:"Fiyèl enskri", adm_parr_k_filleuls_note:"Kont ki kreye ak yon lyen parenaj.", adm_parr_k_payants:"Fiyèl ki peye", adm_parr_k_jours:"Jou bay", adm_parr_k_attente:"Jou ap tann", adm_parr_k_attente_note:"Paren ki pa gen plan aktif : y ap ajoute sou pwochen plan yo.", adm_parr_s_inscrit:"Poko peye", adm_parr_s_rec:"+{n} j", adm_parr_s_plafond:"Plafon mwa a", adm_parr_s_hors:"Peye anvan lyen an", adm_parr_s_annule:"Anile", adm_parr_s_attente:"ap tann", adm_parr_annuler:"Anile", adm_parr_annuler_conf:"Anile parenaj sa a? Jou ki te ajoute bay paren an ap retire.", adm_parr_vide:"Poko gen parenaj.", adm_nav_sources:"Sous", adm_src_h:"Kote kliyan yo soti", adm_src_p:"Kote moun ki enskri yo ak kliyan ki peye yo soti.", adm_src_7j:"7 jou", adm_src_30j:"30 jou", adm_src_par:"Pa sous", adm_src_lien_h:"Kreye yon lyen swiv", adm_src_lien_p:"Chwazi kote w ap pibliye lyen an (oswa tape yon non, egz. yon enfliyansè). Chak nouvo kont ki kreye ak lyen sa a ap konte nan sous sa a.", adm_src_nom_ph:"egz. enfliyanse_jan", adm_src_copier:"Kopye lyen an", adm_src_copie:"Lyen kopye ✓", adm_src_inconnu:"Pa konnen / dirèk", adm_src_k_inscrits:"Nouvo enskri", adm_src_k_inscrits_note:"Kont ki kreye nan peryòd la (admin pa ladan).", adm_src_k_payants:"Kliyan ki peye", adm_src_k_conv:"To konvèsyon", adm_src_k_top:"Pi bon sous", adm_src_inscrits:"enskri", adm_src_payants:"peye", adm_src_conv:"konvèsyon", adm_src_vide:"Pa gen enskri nan peryòd sa a.", adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
 ov_rev_htg_h:"MonCash / NatCash (an goud)", ov_stripe_h:"Stripe — peman pa kat (an dola)", ov_stripe_total:"Total Stripe resevwa", ov_stripe_total_note:"Konfime otomatikman. Toujou an dola, menm si kliyan an peye an goud.", ov_stripe_mois:"Stripe mwa sa a", ov_stripe_count:"Peman Stripe", ov_stripe_verif:"Stripe pou verifye", ov_stripe_verif_note:"Ap tann yon verifikasyon manyèl (montan oswa kont ki pa atann).", ov_stripe_plans:"Pa plan (lyen peman)", ov_stripe_recent:"Dènye peman Stripe", ov_stripe_payeen:"peye an {d}", ov_stripe_none:"Pa gen peman Stripe pou kounye a.",
 ov_live:"An dirèk", ov_kpis_h:"Endikatè kle", ov_quick_h:"Aksè rapid", ov_q_pay:"Peman", ov_q_users:"Itilizatè", ov_q_fiches:"Fich", ov_q_rev:"Revni",
 st_pending:"An kou", hf_search_ph:"Chèche yon kòd, yon match, yon lig…", hf_sport:"Espò", hf_count:"{n} fich jwenn", hf_reset:"Reyinisyalize",
@@ -5627,6 +5627,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     return s.length>max?s.slice(0,max-1)+'…':s;
   }
   async function partagerTicketGagnant(tk){
+    // Lien de parrainage du client sur la carte (si disponible ; sinon le site).
+    try{if(window.VB_chargerLienParrainage)await window.VB_chargerLienParrainage();}catch(e){}
     try{
       const blob=await genererImageTicketGagnant(tk);
       if(!blob)throw new Error('image');
@@ -7218,6 +7220,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     else if(view==='history')renderHistory();
     else if(view==='stats')renderStats();
     else if(view==='subhistory')renderSubHistory();
+    else if(view==='parrain'){if(window.VB_renderParrainage)window.VB_renderParrainage();}
     else renderSub();
     renderNotifs();
   }
@@ -7527,6 +7530,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='security')renderSecurity();
     if(view==='telegram')renderTelegramAdmin();
     if(view==='sources')renderSourcesAdmin();
+    if(view==='parrainage')renderParrainageAdmin();
   }
   document.querySelectorAll('#admDash [data-adback]').forEach(b=>{
     b.addEventListener('click',()=>{
@@ -9496,6 +9500,57 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('admSrcRefresh').addEventListener('click',renderSourcesAdmin);
     srcMajLien();
   })();
+  // ============================================================================
+  // PARRAINAGE (16/10) — lecture (get_parrainages_admin) + annulation d'une recompense
+  // ============================================================================
+  async function renderParrainageAdmin(){
+    const kpis=document.getElementById('admParrKpis'),liste=document.getElementById('admParrListe');
+    if(!kpis)return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){kpis.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_offline')+'</span></div>';return;}
+    kpis.innerHTML='<div class="rev-card"><span class="admdash-empty" style="padding:6px 0">'+t('adm_k_loading')+'</span></div>';
+    try{
+      const {data,error}=await sb.rpc('get_parrainages_admin');
+      if(error)throw error;
+      const d=data||{};
+      kpis.innerHTML=
+        revCard(IC_USERS,null,'',t('adm_parr_k_filleuls'),String(d.filleuls||0),'gold',t('adm_parr_k_filleuls_note'))+
+        revCard(IC_CHECK,'green','',t('adm_parr_k_payants'),String(d.payants||0))+
+        revCard(IC_TREND,'green','',t('adm_parr_k_jours'),String(d.jours||0))+
+        revCard(IC_CLOCK,'neutre','',t('adm_parr_k_attente'),String(d.attente||0),null,t('adm_parr_k_attente_note'));
+      const rows=Array.isArray(d.liste)?d.liste:[];
+      const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      const ST={inscrit:['pending','adm_parr_s_inscrit'],recompense:['won','adm_parr_s_rec'],plafond:['aucun','adm_parr_s_plafond'],hors_delai:['aucun','adm_parr_s_hors'],annule:['lost','adm_parr_s_annule']};
+      liste.innerHTML=rows.length?'':'<div class="admdash-empty">'+t('adm_parr_vide')+'</div>';
+      rows.forEach(r=>{
+        const div=document.createElement('div');div.className='adm-parr-row';
+        const st=ST[r.statut]||['aucun','adm_parr_s_inscrit'];
+        let badge=t(st[1]).replace('{n}',r.jours||0);
+        if(r.statut==='recompense'&&!r.applique)badge+=' · '+t('adm_parr_s_attente');
+        div.innerHTML='<div class="adm-parr-top"><span><b></b><small></small></span><span class="admdash-row-badge '+st[0]+'"></span></div>'+
+          '<div class="adm-parr-bas"><span></span>'+((r.statut==='inscrit'||r.statut==='recompense')?'<button type="button" class="adm-parr-annuler"></button>':'')+'</div>';
+        div.querySelector('b').textContent=(r.parrain||'—')+' → '+(r.filleul||'—');
+        div.querySelector('small').textContent=(r.parrain_email||'')+' → '+(r.filleul_email||'');
+        div.querySelector('.admdash-row-badge').textContent=badge;
+        div.querySelector('.adm-parr-bas span').textContent=fmt(r.date)+(r.plan?' · '+String(r.plan).toUpperCase():'')+(r.note?' · '+r.note:'');
+        const b=div.querySelector('.adm-parr-annuler');
+        if(b){
+          b.textContent=t('adm_parr_annuler');
+          b.addEventListener('click',async()=>{
+            if(!confirm(t('adm_parr_annuler_conf')))return;
+            b.disabled=true;
+            try{const {error:e2}=await sb.rpc('admin_annuler_parrainage',{p_filleul:r.filleul_id});if(e2)throw e2;renderParrainageAdmin();}
+            catch(e){b.disabled=false;alert(t('adm_k_error'));}
+          });
+        }
+        liste.appendChild(div);
+      });
+    }catch(e){
+      kpis.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';
+    }
+  }
+  (function(){const b=document.getElementById('admParrRefresh');if(b)b.addEventListener('click',renderParrainageAdmin);})();
+
   async function renderSourcesAdmin(){
     const kpis=document.getElementById('admSrcKpis'),liste=document.getElementById('admSrcListe');
     if(!kpis)return;
@@ -12389,6 +12444,14 @@ window.addEventListener('pageshow',(ev)=>{
     [/(^|\.)(x|twitter|t)\.co(m)?$/,'x'],[/google\./,'google'],[/bing\./,'bing']];
   try{
     const u=new URL(location.href);
+    // Lien de parrainage ?ref=CODE : premier parrain seulement (30 jours), source « parrainage ».
+    const ref=String(u.searchParams.get('ref')||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+    if(ref.length===6){
+      try{const o=JSON.parse(localStorage.getItem('vb_ref')||'null');if(!o||Date.now()-o.at>DUREE)localStorage.setItem('vb_ref',JSON.stringify({c:ref,at:Date.now()}));}catch(e){}
+      if(!lire()&&!u.searchParams.get('src'))ecrire('parrainage');
+      u.searchParams.delete('ref');
+      history.replaceState(history.state,'',u.pathname+(u.searchParams.toString()?'?'+u.searchParams.toString():'')+u.hash);
+    }
     const param=propre(u.searchParams.get('src')||u.searchParams.get('utm_source'));
     if(param){
       if(!lire())ecrire(param);
@@ -12404,8 +12467,25 @@ window.addEventListener('pageshow',(ev)=>{
     }
   }catch(e){ /* jamais bloquant */ }
 
-  let enCours=false;
+  let enCours=false, refEnCours=false;
+  // Rattachement au parrain : une seule fois, des que le filleul est connecte.
+  async function envoyerRef(sb){
+    if(refEnCours)return;
+    let o=null;try{o=JSON.parse(localStorage.getItem('vb_ref')||'null');}catch(e){return;}
+    if(!o||!o.c||Date.now()-o.at>DUREE)return;
+    try{if(localStorage.getItem('vb_ref_envoye')===o.c)return;}catch(e){return;}
+    refEnCours=true;
+    try{
+      const {data:ses}=await sb.auth.getSession();
+      if(!ses||!ses.session)return;
+      const {data,error}=await sb.rpc('enregistrer_parrain',{p_code:o.c});
+      if(!error&&data&&data!=='non_connecte'){try{localStorage.setItem('vb_ref_envoye',o.c);}catch(e){}}
+    }catch(e){ /* nouvel essai plus tard */ }
+    finally{refEnCours=false;}
+  }
   async function envoyer(){
+    const sbR=window.VB_getSupabase&&window.VB_getSupabase();
+    if(sbR&&sbR.auth)envoyerRef(sbR);
     if(enCours)return;
     const o=lire();
     if(!o)return;
@@ -12436,4 +12516,91 @@ window.addEventListener('pageshow',(ev)=>{
   if(!brancher()){
     let n=0;const iv=setInterval(()=>{if(brancher()||++n>30)clearInterval(iv);},1000);
   }
+})();
+
+/* ============================================================================
+   PAGE « PARRAINAGE » DU CLIENT (16/10)
+   ----------------------------------------------------------------------------
+   Lecture seule via mon_parrainage() (le code personnel est cree au premier
+   appel). Les recompenses sont calculees et appliquees EN BASE uniquement
+   (traiter_parrainages) : le navigateur n'attribue jamais de jours.
+   Expose aussi VB_lienPartage() : lien de parrainage utilise sur la carte de
+   partage d'un ticket gagnant.
+   ============================================================================ */
+(function(){
+  const T=()=>(typeof translations!=='undefined'&&translations[currentLang])||{};
+  const t=k=>{const v=T()[k];return v!=null?v:((typeof translations!=='undefined'&&translations.fr&&translations.fr[k])||'');};
+  const BAREME=[['p1',2],['p2',5],['p3',7],['p4',15]];
+  let donnees=null, chargement=null, codeCache=null;
+  const lien=()=>codeCache?'vipbetcote.com/?ref='+codeCache:null;
+  window.VB_lienPartage=lien;
+  const nomPlan=id=>{const p=window.VB_planById?window.VB_planById(id):null;return p&&window.VB_planLabel?String(window.VB_planLabel(p)).replace(/<[^>]*>/g,''):String(id||'').toUpperCase();};
+  const el=id=>document.getElementById(id);
+
+  async function charger(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)throw new Error('hors ligne');
+    const {data,error}=await sb.rpc('mon_parrainage');
+    if(error)throw error;
+    donnees=data||{};
+    if(donnees.code)codeCache=donnees.code;
+    return donnees;
+  }
+  // Precharge discret du code (pour la carte de partage), sans jamais bloquer.
+  window.VB_chargerLienParrainage=async()=>{if(!codeCache){try{await charger();}catch(e){}}return lien();};
+  window.VB_prechargerParrainage=()=>{if(!chargement&&!codeCache){chargement=charger().catch(()=>{}).finally(()=>{chargement=null;});}};
+
+  function afficher(d){
+    const l=lien();
+    el('parrLien').textContent=l||'—';
+    el('parrInscrits').textContent=String(d.inscrits||0);
+    el('parrPayants').textContent=String(d.payants||0);
+    el('parrJours').textContent=t('parr_jours').replace('{n}',d.jours_gagnes||0);
+    const att=Number(d.jours_attente)||0;
+    el('parrAttente').hidden=!att;
+    el('parrAttente').textContent=att?t('parr_attente').replace('{n}',att):'';
+    el('parrBareme').innerHTML=BAREME.map(([p,j])=>'<div class="parr-b"><span></span><b>+'+j+' '+(currentLang==='en'?'d':'j')+'</b></div>').join('');
+    el('parrBareme').querySelectorAll('.parr-b span').forEach((s,i)=>{s.textContent=nomPlan(BAREME[i][0]);});
+    const liste=el('parrListe');
+    const f=Array.isArray(d.filleuls)?d.filleuls:[];
+    if(!f.length){liste.innerHTML='<div class="parr-vide"></div>';liste.firstChild.textContent=t('parr_vide');return;}
+    liste.innerHTML='';
+    const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'';
+    f.forEach(x=>{
+      const row=document.createElement('div');row.className='parr-f';
+      let cls='',txt=t('parr_s_inscrit');
+      if(x.statut==='recompense'){cls='ok';txt=t('parr_s_rec').replace('{n}',x.jours||0);}
+      else if(x.statut==='plafond'){cls='ko';txt=t('parr_s_plafond');}
+      else if(x.statut==='hors_delai'){cls='ko';txt=t('parr_s_hors');}
+      row.innerHTML='<span><b></b><small></small></span><span class="parr-badge '+cls+'"></span>';
+      row.querySelector('b').textContent=x.nom||'—';
+      row.querySelector('small').textContent=fmt(x.date)+(x.plan?' · '+nomPlan(x.plan):'');
+      row.querySelector('.parr-badge').textContent=txt;
+      liste.appendChild(row);
+    });
+  }
+
+  window.VB_renderParrainage=async function(){
+    if(!el('parrBody'))return;
+    if(donnees)afficher(donnees);
+    try{afficher(await charger());}
+    catch(e){if(!donnees){el('parrLien').textContent=t('parr_erreur');}}
+  };
+
+  const copier=async()=>{
+    const l=lien();if(!l)return;
+    const b=el('parrCopier');
+    try{await navigator.clipboard.writeText('https://'+l);}catch(e){
+      const r=document.createRange();r.selectNodeContents(el('parrLien'));const s=getSelection();s.removeAllRanges();s.addRange(r);
+      try{document.execCommand('copy');}catch(_){}
+    }
+    b.textContent=t('parr_copie');setTimeout(()=>{b.textContent=t('parr_copier');},1800);
+  };
+  const btnC=el('parrCopier'),btnW=el('parrWa');
+  if(btnC)btnC.addEventListener('click',copier);
+  if(btnW)btnW.addEventListener('click',()=>{
+    const l=lien();if(!l)return;
+    const msg=t('parr_wa_msg').replace('{lien}','https://'+l);
+    window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener');
+  });
 })();

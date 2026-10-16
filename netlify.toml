@@ -226,3 +226,7 @@
   for = "/"
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
+
+# Parrainage : attribution / application des jours offerts (additif) — voir parrainage-recompenses.js
+[functions."parrainage-recompenses"]
+  schedule = "*/15 * * * *"
