@@ -24,7 +24,12 @@
   # process.env.SUPABASE_URL, et fait echouer le build sur un faux
   # positif en cascade. Cette entree ne cache aucun vrai secret : elle ne
   # contient que des NOMS de variables, jamais leur contenu.
-  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,PLOPPLOP_BASE_URL,SECRETS_SCAN_OMIT_KEYS"
+  #
+  # 16/10 -- TELEGRAM_PUBLIC_CHAT ajoutee pour la MEME raison : sa valeur est le
+  # nom PUBLIC du groupe Telegram (visible par tous, comme le lien TikTok du
+  # site), jamais un secret. Le jeton du robot (TELEGRAM_VIP_BOT_TOKEN) reste,
+  # lui, analyse par le scanner et n'est ecrit nulle part dans le depot.
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_URL,PLOPPLOP_BASE_URL,TELEGRAM_PUBLIC_CHAT,SECRETS_SCAN_OMIT_KEYS"
 
 [functions]
   directory = "netlify/functions"

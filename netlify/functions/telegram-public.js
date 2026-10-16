@@ -12,7 +12,8 @@
  *    a TELEGRAM_VIP_CHAT_P1..P4, rien n'est envoye.
  *
  * Variables Netlify :
- *   TELEGRAM_PUBLIC_CHAT   ex. @VipBetcote (sans elle, la fonction ne fait rien)
+ *   TELEGRAM_PUBLIC_CHAT   nom public (avec @) ou identifiant -100… du canal / groupe public
+ *                          (sans elle, la fonction ne fait rien)
  *   TELEGRAM_VIP_BOT_TOKEN (existant) — le robot doit etre ADMINISTRATEUR du
  *                          canal avec le droit « Publier des messages ».
  * ============================================================================
