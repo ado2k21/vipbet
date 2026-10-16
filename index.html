@@ -3499,7 +3499,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
    ADMIN REDESIGN (15/10) : Vue d'ensemble, Statistiques, filtres Istorik.
    Affichage uniquement : aucune donnee, requete ou configuration modifiee.
    ===================================================================== */
-[data-adview="home"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
+[data-adview="home"],[data-adview="revenus"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
 .ov-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 22px}
 .ov-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ov-green)}
 .ov-live{width:7px;height:7px;border-radius:50%;background:var(--ov-green);box-shadow:0 0 0 0 rgba(46,212,127,.6);animation:ovPulse 2s infinite}
@@ -5406,29 +5406,50 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
       <div id="admUserDetail"></div>
     </div>
 
-    <!-- VUE : REVENUS (01/09) -->
+    <!-- VUE : REVENUS (01/09 ; refonte 16/10 : meme style et memes chiffres que la Vue d'ensemble,
+         Stripe a part en dollars) -->
     <div class="dash-view" data-adview="revenus">
       <button class="dash-back" type="button" data-adback>
         <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         <span data-i18n="dash_back">Retounen</span>
       </button>
-      <div class="dash-hi">
-        <h2 data-i18n="adm_rev_h">Revenus</h2>
-        <p data-i18n="adm_rev_p">Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.</p>
+      <div class="ov-head">
+        <div>
+          <span class="ov-eyebrow"><span class="ov-live"></span><span data-i18n="ov_live">En direct</span></span>
+          <h2 data-i18n="adm_rev_h">Revenus</h2>
+          <p data-i18n="adm_rev_p">Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.</p>
+        </div>
+        <div class="ov-head-act">
+          <span class="admdash-updated" id="admRevUpdated"></span>
+          <button type="button" class="ov-refresh" id="admRevRefresh">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+            <span data-i18n="adm_refresh">Rafrechi</span>
+          </button>
+        </div>
       </div>
-      <div class="rev-cards" id="admRevCardsFull">
-        <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
-      </div>
-      <div class="admdash-refresh-row">
-        <span class="admdash-updated" id="admRevUpdated"></span>
-        <button type="button" class="wiz-change" id="admRevRefresh">
-          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
-          <span data-i18n="adm_refresh">Rafrechi</span>
-        </button>
-      </div>
-      <div class="admdash-section-h" data-i18n="adm_rev_tx_h">Istorik tranzaksyon</div>
-      <div id="admRevTxList" class="admdash-list"></div>
-      <button type="button" class="btn btn-outline" id="admRevTxMore" style="width:100%;margin-top:10px;display:none" data-i18n="adm_rev_tx_more">Chaje pi ansyen yo</button>
+
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="ov_rev_htg_h">MonCash / NatCash (en gourdes)</div>
+        <div class="ov-rev" id="admRevCardsFull">
+          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+        </div>
+      </section>
+
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="ov_stripe_h">Stripe — paiements par carte (en dollars)</div>
+        <div class="ov-rev" id="admStripeCardsFull">
+          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+        </div>
+        <div class="ov-card" id="admStripeDetailFull" style="margin-top:12px"></div>
+      </section>
+
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_rev_tx_h">Istorik tranzaksyon</div>
+        <div class="ov-card">
+          <div id="admRevTxList" class="admdash-list"></div>
+          <button type="button" class="btn btn-outline" id="admRevTxMore" style="width:100%;margin-top:12px;display:none" data-i18n="adm_rev_tx_more">Chaje pi ansyen yo</button>
+        </div>
+      </section>
     </div>
 
     <!-- VUE : PAIEMENTS -->
@@ -5817,6 +5838,6 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 </footer>
 
 
-<script src="app.js?v=20261015b"></script>
+<script src="app.js?v=20261016a"></script>
 </body>
 </html>

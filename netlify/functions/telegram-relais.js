@@ -144,7 +144,7 @@ function formaterMessage(tk, legs) {
   if (cote) lignes.push(`💰 Cote totale : <b>${cote}</b>`);
   if (tk.confidence != null) lignes.push(`📊 Confiance : ${Number(tk.confidence)}%`);
   lignes.push('');
-  lignes.push('<i>Jeu responsable, 18+. Aucun gain garanti.</i>');
+  lignes.push('<i>Jeu responsable, 18+. Jouez avec contrôle.</i>');
   return lignes.join('\n').slice(0, 4000);
 }
 
