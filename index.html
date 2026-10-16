@@ -3500,7 +3500,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
    ADMIN REDESIGN (15/10) : Vue d'ensemble, Statistiques, filtres Istorik.
    Affichage uniquement : aucune donnee, requete ou configuration modifiee.
    ===================================================================== */
-[data-adview="home"],[data-adview="revenus"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
+[data-adview="home"],[data-adview="revenus"],[data-adview="sources"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
 .ov-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 22px}
 .ov-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ov-green)}
 .ov-live{width:7px;height:7px;border-radius:50%;background:var(--ov-green);box-shadow:0 0 0 0 rgba(46,212,127,.6);animation:ovPulse 2s infinite}
@@ -3543,6 +3543,14 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 @media (min-width:980px){.ov-split{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}}
 .ov-card{background:linear-gradient(180deg,var(--ov-card2),var(--ov-card));border:1px solid var(--ov-line);border-radius:18px;padding:16px}
 .ov-card .admdash-list{gap:7px}
+.adm-src-aide{color:var(--gris);font-size:13px;margin:0 0 12px;line-height:1.5}
+.adm-src-chips{display:flex;flex-wrap:wrap;gap:8px}
+.adm-src-chip{padding:7px 12px;border-radius:999px;border:1px solid var(--ov-line);background:rgba(244,243,237,.04);color:#F4F3ED;font-size:12.5px;font-weight:600;cursor:pointer}
+.adm-src-chip.on{background:rgba(46,212,127,.14);border-color:rgba(46,212,127,.5);color:#7FF0B5}
+.adm-src-lien{margin-top:10px;padding:12px 14px;border-radius:12px;border:1px dashed rgba(232,206,138,.4);background:rgba(232,206,138,.06);color:#E8CE8A;font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
+.adm-src-lien:empty{display:none}
+.adm-src-stats{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--gris)}
+.adm-src-stats b{color:#F4F3ED}
 .ov-card .admdash-row{background:rgba(244,243,237,.03);border-color:var(--ov-line);border-radius:13px}
 .ov-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .ov-q{display:flex;align-items:center;gap:10px;padding:12px;border-radius:13px;border:1px solid var(--ov-line);background:rgba(244,243,237,.03);color:#F4F3ED;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-align:left;transition:background .18s,border-color .18s}
@@ -5300,6 +5308,10 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 3.5 2.8 10.7c-.9.4-.8 1.6.1 1.9l4.6 1.5 1.8 5.6c.3.9 1.4 1 1.9.3l2.5-3 4.8 3.6c.7.5 1.6.1 1.8-.7L22.9 4.9c.2-.9-.6-1.7-1.4-1.4Z"/></svg>
             <span data-i18n="adm_nav_telegram">Telegram</span>
           </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="sources">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+            <span data-i18n="adm_nav_sources">Sources</span>
+          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="settings">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="adm_nav_settings">Paramèt</span>
@@ -5759,6 +5771,55 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
       <div id="admTelegramBody"></div>
     </div>
 
+    <!-- VUE : SOURCES DES CLIENTS (16/10) — liens traces ?src=... -->
+    <div class="dash-view" data-adview="sources">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="ov-head">
+        <div>
+          <span class="ov-eyebrow"><span class="ov-live"></span><span data-i18n="ov_live">En direct</span></span>
+          <h2 data-i18n="adm_src_h">Sources des clients</h2>
+          <p data-i18n="adm_src_p">D'où viennent vos inscrits et vos clients payants.</p>
+        </div>
+        <div class="ov-head-act">
+          <button type="button" class="ov-refresh" id="admSrcRefresh">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+            <span data-i18n="adm_refresh">Rafrechi</span>
+          </button>
+        </div>
+      </div>
+      <div class="dash-fgroup" id="admSrcPeriode" style="margin-bottom:16px">
+        <button class="dash-fbtn" data-val="7" type="button" data-i18n="adm_src_7j">7 jours</button>
+        <button class="dash-fbtn on" data-val="30" type="button" data-i18n="adm_src_30j">30 jours</button>
+        <button class="dash-fbtn" data-val="all" type="button" data-i18n="dash_f_all">Tout</button>
+      </div>
+      <section class="ov-sec">
+        <div class="ov-rev" id="admSrcKpis">
+          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+        </div>
+      </section>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_src_par">Par source</div>
+        <div class="ov-card"><div id="admSrcListe" class="admdash-list"></div></div>
+      </section>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_src_lien_h">Créer un lien tracé</div>
+        <div class="ov-card">
+          <p class="adm-src-aide" data-i18n="adm_src_lien_p">Choisissez où vous publiez le lien. Chaque inscription venant de ce lien sera comptée dans cette source.</p>
+          <div class="adm-src-chips" id="admSrcChips"></div>
+          <label class="field" style="margin-top:12px">
+            <span class="field-ic-wrap">
+              <input type="text" id="admSrcNom" maxlength="32" autocomplete="off" data-i18n-ph="adm_src_nom_ph" placeholder="ex. influenceur_jean">
+            </span>
+          </label>
+          <div class="adm-src-lien" id="admSrcLien"></div>
+          <button type="button" class="btn btn-or" id="admSrcCopier" style="width:100%;margin-top:10px" data-i18n="adm_src_copier">Copier le lien</button>
+        </div>
+      </section>
+    </div>
+
     <div class="dash-view" data-adview="settings">
       <button class="dash-back" type="button" data-adback>
         <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
@@ -5839,6 +5900,6 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 </footer>
 
 
-<script src="app.js?v=20261016a"></script>
+<script src="app.js?v=20261016c"></script>
 </body>
 </html>

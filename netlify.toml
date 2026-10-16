@@ -128,6 +128,10 @@
 [functions."telegram-relais"]
   schedule = "*/5 * * * *"
 
+# Canal Telegram PUBLIC : fiches gagnantes (additif) — voir telegram-public.js
+[functions."telegram-public"]
+  schedule = "*/10 * * * *"
+
 # ============================================================================
 # 20/09/2026 — SURVEILLANCE + ALERTES ADMIN (alerte-watchdog.js)
 #

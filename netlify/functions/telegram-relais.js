@@ -340,4 +340,4 @@ async function handler() {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, passage, passageResultats, dateHaiti };
+module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, libellePick, passage, passageResultats, dateHaiti };

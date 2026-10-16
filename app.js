@@ -407,7 +407,7 @@ adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatemen
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
 adm_menu_exit:"Déconnecter",
 tg_h:"Groupe Telegram VIP", tg_membre:"Vous êtes dans votre groupe Telegram VIP.", tg_a_rejoindre:"Votre plan est actif : rejoignez votre groupe Telegram privé. Le lien ne fonctionne qu'une seule fois et uniquement pour votre compte.", tg_btn:"Rejoindre mon groupe Telegram", tg_btn_wait:"Création du lien…", tg_indispo:"Votre groupe Telegram n'est pas encore disponible. Contactez le support.", tg_attente:"Votre changement de groupe est en cours. Réessayez dans quelques minutes.", tg_err:"Impossible de créer le lien pour le moment. Réessayez.", tg_perdu:"Votre accès au groupe s'arrête quand votre plan expire ou change.",
-adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
+adm_nav_sources:"Sources", adm_src_h:"Sources des clients", adm_src_p:"D'où viennent vos inscrits et vos clients payants.", adm_src_7j:"7 jours", adm_src_30j:"30 jours", adm_src_par:"Par source", adm_src_lien_h:"Créer un lien tracé", adm_src_lien_p:"Choisissez où vous publiez le lien (ou tapez un nom, ex. un influenceur). Chaque nouveau compte créé depuis ce lien sera compté dans cette source.", adm_src_nom_ph:"ex. influenceur_jean", adm_src_copier:"Copier le lien", adm_src_copie:"Lien copié ✓", adm_src_inconnu:"Inconnue / direct", adm_src_k_inscrits:"Nouveaux inscrits", adm_src_k_inscrits_note:"Comptes créés sur la période (admins exclus).", adm_src_k_payants:"Clients payants", adm_src_k_conv:"Taux de conversion", adm_src_k_top:"Meilleure source", adm_src_inscrits:"inscrits", adm_src_payants:"payants", adm_src_conv:"conversion", adm_src_vide:"Aucun inscrit sur cette période.", adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
 ov_rev_htg_h:"MonCash / NatCash (en gourdes)", ov_stripe_h:"Stripe — paiements par carte (en dollars)", ov_stripe_total:"Total encaissé Stripe", ov_stripe_total_note:"Confirmés automatiquement. Toujours en dollars, même si le client a payé en gourdes.", ov_stripe_mois:"Stripe ce mois-ci", ov_stripe_count:"Paiements Stripe", ov_stripe_verif:"Stripe à vérifier", ov_stripe_verif_note:"En attente d'une vérification manuelle (montant ou compte inattendu).", ov_stripe_plans:"Par plan (lien de paiement)", ov_stripe_recent:"Derniers paiements Stripe", ov_stripe_payeen:"payé en {d}", ov_stripe_none:"Aucun paiement Stripe pour l'instant.",
 ov_live:"En direct", ov_kpis_h:"Indicateurs clés", ov_quick_h:"Accès rapide", ov_q_pay:"Paiements", ov_q_users:"Utilisateurs", ov_q_fiches:"Fiches", ov_q_rev:"Revenus",
 st_pending:"En cours", hf_search_ph:"Rechercher un code, un match, une ligue…", hf_sport:"Sport", hf_count:"{n} fiche(s) trouvée(s)", hf_reset:"Réinitialiser",
@@ -985,7 +985,7 @@ adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if publ
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
 adm_menu_exit:"Log out",
 tg_h:"VIP Telegram group", tg_membre:"You are in your VIP Telegram group.", tg_a_rejoindre:"Your plan is active: join your private Telegram group. The link works only once and only for your account.", tg_btn:"Join my Telegram group", tg_btn_wait:"Creating link…", tg_indispo:"Your Telegram group is not available yet. Please contact support.", tg_attente:"Your group change is in progress. Try again in a few minutes.", tg_err:"Unable to create the link right now. Please try again.", tg_perdu:"Your access to the group ends when your plan expires or changes.",
-adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
+adm_nav_sources:"Sources", adm_src_h:"Customer sources", adm_src_p:"Where your sign-ups and paying customers come from.", adm_src_7j:"7 days", adm_src_30j:"30 days", adm_src_par:"By source", adm_src_lien_h:"Create a tracked link", adm_src_lien_p:"Pick where you post the link (or type a name, e.g. an influencer). Every new account created from this link is counted in that source.", adm_src_nom_ph:"e.g. influencer_john", adm_src_copier:"Copy link", adm_src_copie:"Link copied ✓", adm_src_inconnu:"Unknown / direct", adm_src_k_inscrits:"New sign-ups", adm_src_k_inscrits_note:"Accounts created in the period (admins excluded).", adm_src_k_payants:"Paying customers", adm_src_k_conv:"Conversion rate", adm_src_k_top:"Best source", adm_src_inscrits:"sign-ups", adm_src_payants:"paying", adm_src_conv:"conversion", adm_src_vide:"No sign-ups in this period.", adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
 ov_rev_htg_h:"MonCash / NatCash (in gourdes)", ov_stripe_h:"Stripe — card payments (in dollars)", ov_stripe_total:"Total collected via Stripe", ov_stripe_total_note:"Confirmed automatically. Always in dollars, even if the customer paid in gourdes.", ov_stripe_mois:"Stripe this month", ov_stripe_count:"Stripe payments", ov_stripe_verif:"Stripe to review", ov_stripe_verif_note:"Waiting for a manual check (unexpected amount or account).", ov_stripe_plans:"By plan (payment link)", ov_stripe_recent:"Latest Stripe payments", ov_stripe_payeen:"paid in {d}", ov_stripe_none:"No Stripe payment yet.",
 ov_live:"Live", ov_kpis_h:"Key metrics", ov_quick_h:"Quick access", ov_q_pay:"Payments", ov_q_users:"Users", ov_q_fiches:"Slips", ov_q_rev:"Revenue",
 st_pending:"In progress", hf_search_ph:"Search a code, match or league…", hf_sport:"Sport", hf_count:"{n} slip(s) found", hf_reset:"Reset",
@@ -1563,7 +1563,7 @@ adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li p
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
 adm_menu_exit:"Dekonekte",
 tg_h:"Gwoup Telegram VIP", tg_membre:"Ou nan gwoup Telegram VIP ou a.", tg_a_rejoindre:"Plan ou aktif: antre nan gwoup Telegram prive ou a. Lyen an mache yon sèl fwa epi sèlman pou kont ou.", tg_btn:"Antre nan gwoup Telegram mwen", tg_btn_wait:"Ap kreye lyen an…", tg_indispo:"Gwoup Telegram ou a pa disponib ankò. Kontakte sèvis kliyan.", tg_attente:"Chanjman gwoup ou a ap fèt. Eseye ankò nan kèk minit.", tg_err:"Pa kapab kreye lyen an kounye a. Eseye ankò.", tg_perdu:"Aksè ou nan gwoup la fini lè plan ou ekspire oswa li chanje.",
-adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
+adm_nav_sources:"Sous", adm_src_h:"Kote kliyan yo soti", adm_src_p:"Kote moun ki enskri yo ak kliyan ki peye yo soti.", adm_src_7j:"7 jou", adm_src_30j:"30 jou", adm_src_par:"Pa sous", adm_src_lien_h:"Kreye yon lyen swiv", adm_src_lien_p:"Chwazi kote w ap pibliye lyen an (oswa tape yon non, egz. yon enfliyansè). Chak nouvo kont ki kreye ak lyen sa a ap konte nan sous sa a.", adm_src_nom_ph:"egz. enfliyanse_jan", adm_src_copier:"Kopye lyen an", adm_src_copie:"Lyen kopye ✓", adm_src_inconnu:"Pa konnen / dirèk", adm_src_k_inscrits:"Nouvo enskri", adm_src_k_inscrits_note:"Kont ki kreye nan peryòd la (admin pa ladan).", adm_src_k_payants:"Kliyan ki peye", adm_src_k_conv:"To konvèsyon", adm_src_k_top:"Pi bon sous", adm_src_inscrits:"enskri", adm_src_payants:"peye", adm_src_conv:"konvèsyon", adm_src_vide:"Pa gen enskri nan peryòd sa a.", adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
 ov_rev_htg_h:"MonCash / NatCash (an goud)", ov_stripe_h:"Stripe — peman pa kat (an dola)", ov_stripe_total:"Total Stripe resevwa", ov_stripe_total_note:"Konfime otomatikman. Toujou an dola, menm si kliyan an peye an goud.", ov_stripe_mois:"Stripe mwa sa a", ov_stripe_count:"Peman Stripe", ov_stripe_verif:"Stripe pou verifye", ov_stripe_verif_note:"Ap tann yon verifikasyon manyèl (montan oswa kont ki pa atann).", ov_stripe_plans:"Pa plan (lyen peman)", ov_stripe_recent:"Dènye peman Stripe", ov_stripe_payeen:"peye an {d}", ov_stripe_none:"Pa gen peman Stripe pou kounye a.",
 ov_live:"An dirèk", ov_kpis_h:"Endikatè kle", ov_quick_h:"Aksè rapid", ov_q_pay:"Peman", ov_q_users:"Itilizatè", ov_q_fiches:"Fich", ov_q_rev:"Revni",
 st_pending:"An kou", hf_search_ph:"Chèche yon kòd, yon match, yon lig…", hf_sport:"Espò", hf_count:"{n} fich jwenn", hf_reset:"Reyinisyalize",
@@ -7469,6 +7469,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='settings')renderSettings();
     if(view==='security')renderSecurity();
     if(view==='telegram')renderTelegramAdmin();
+    if(view==='sources')renderSourcesAdmin();
   }
   document.querySelectorAll('#admDash [data-adback]').forEach(b=>{
     b.addEventListener('click',()=>{
@@ -9401,6 +9402,78 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return await r.json();
     }catch(e){return null;}
   }
+  // ============================================================================
+  // SOURCES DES CLIENTS (16/10) — lecture seule (RPC get_acquisition_stats) +
+  // generateur de liens traces https://vipbetcote.com/?src=...
+  // ============================================================================
+  let srcPeriode='30', srcChoix='tiktok';
+  const SRC_PRESETS=['tiktok','whatsapp','telegram','instagram','facebook','youtube'];
+  const srcPropre=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,32);
+  const srcLibelle=s=>s==='inconnu'?t('adm_src_inconnu'):s.charAt(0).toUpperCase()+s.slice(1);
+  function srcMajLien(){
+    const nom=srcPropre(document.getElementById('admSrcNom').value)||srcChoix;
+    document.getElementById('admSrcLien').textContent=nom?('https://vipbetcote.com/?src='+nom):'';
+    document.querySelectorAll('#admSrcChips .adm-src-chip').forEach(c=>c.classList.toggle('on',!srcPropre(document.getElementById('admSrcNom').value)&&c.dataset.src===srcChoix));
+  }
+  (function(){
+    const chips=document.getElementById('admSrcChips');
+    if(!chips)return;
+    chips.innerHTML=SRC_PRESETS.map(p=>'<button type="button" class="adm-src-chip" data-src="'+p+'">'+srcLibelle(p)+'</button>').join('');
+    chips.querySelectorAll('.adm-src-chip').forEach(c=>c.addEventListener('click',()=>{srcChoix=c.dataset.src;document.getElementById('admSrcNom').value='';srcMajLien();}));
+    document.getElementById('admSrcNom').addEventListener('input',srcMajLien);
+    document.getElementById('admSrcCopier').addEventListener('click',async()=>{
+      const lien=document.getElementById('admSrcLien').textContent;
+      if(!lien)return;
+      const b=document.getElementById('admSrcCopier');
+      try{await navigator.clipboard.writeText(lien);}catch(e){
+        const r=document.createRange();r.selectNodeContents(document.getElementById('admSrcLien'));
+        const sel=getSelection();sel.removeAllRanges();sel.addRange(r);try{document.execCommand('copy');}catch(_){}
+      }
+      b.textContent=t('adm_src_copie');setTimeout(()=>{b.textContent=t('adm_src_copier');},1800);
+    });
+    document.querySelectorAll('#admSrcPeriode .dash-fbtn').forEach(b=>b.addEventListener('click',()=>{
+      srcPeriode=b.dataset.val;
+      document.querySelectorAll('#admSrcPeriode .dash-fbtn').forEach(x=>x.classList.toggle('on',x===b));
+      renderSourcesAdmin();
+    }));
+    document.getElementById('admSrcRefresh').addEventListener('click',renderSourcesAdmin);
+    srcMajLien();
+  })();
+  async function renderSourcesAdmin(){
+    const kpis=document.getElementById('admSrcKpis'),liste=document.getElementById('admSrcListe');
+    if(!kpis)return;
+    srcMajLien();
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){kpis.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_offline')+'</span></div>';return;}
+    kpis.innerHTML='<div class="rev-card"><span class="admdash-empty" style="padding:6px 0">'+t('adm_k_loading')+'</span></div>';
+    liste.innerHTML='';
+    try{
+      const {data,error}=await sb.rpc('get_acquisition_stats',{p_jours:srcPeriode==='all'?null:Number(srcPeriode)});
+      if(error)throw error;
+      const rows=Array.isArray(data)?data:[];
+      const tot=rows.reduce((a,r)=>{a.i+=Number(r.inscrits)||0;a.p+=Number(r.payants)||0;return a;},{i:0,p:0});
+      const connues=rows.filter(r=>r.source!=='inconnu');
+      const meilleure=connues.slice().sort((a,b)=>(b.payants-a.payants)||(b.inscrits-a.inscrits))[0];
+      const pct=(p,i)=>i?Math.round(p*100/i)+'%':'—';
+      kpis.innerHTML=
+        revCard(IC_USERS,null,'',t('adm_src_k_inscrits'),String(tot.i),'gold',t('adm_src_k_inscrits_note'))+
+        revCard(IC_CHECK,'green','',t('adm_src_k_payants'),String(tot.p))+
+        revCard(IC_TREND,'green','',t('adm_src_k_conv'),pct(tot.p,tot.i))+
+        revCard(IC_CLOCK,'neutre','',t('adm_src_k_top'),meilleure?stripTags(srcLibelle(meilleure.source)):'—');
+      liste.innerHTML=rows.length?rows.map(r=>{
+        const nom=stripTags(srcLibelle(String(r.source)));
+        const rev=[Number(r.htg)>0?money(Number(r.htg))+' HTG':'',Number(r.usd)>0?usd(r.usd):''].filter(Boolean).join(' · ')||'—';
+        return '<div class="admdash-row" style="cursor:default"><span class="admdash-row-av">'+nom.slice(0,2).toUpperCase()+'</span>'+
+          '<span class="admdash-row-tx"><b>'+nom+'</b><span class="adm-src-stats">'+
+          '<span><b>'+r.inscrits+'</b> '+t('adm_src_inscrits')+'</span><span><b>'+r.payants+'</b> '+t('adm_src_payants')+'</span>'+
+          '<span>'+t('adm_src_conv')+' <b>'+pct(Number(r.payants),Number(r.inscrits))+'</b></span></span></span>'+
+          '<span class="admdash-row-badge '+(Number(r.payants)?'won':'aucun')+'">'+rev+'</span></div>';
+      }).join(''):'<div class="admdash-empty">'+t('adm_src_vide')+'</div>';
+    }catch(e){
+      kpis.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';
+    }
+  }
+
   async function renderTelegramAdmin(){
     const box=document.getElementById('admTelegramBody');
     if(!box)return;
@@ -12235,4 +12308,75 @@ window.addEventListener('pageshow',(ev)=>{
     }
   },true);
   window.VB_stripeBientot=ouvrir;
+})();
+
+/* ============================================================================
+   PROVENANCE DES INSCRITS (16/10) — liens traces ?src=tiktok, ?src=whatsapp...
+   ----------------------------------------------------------------------------
+   ADDITIF : ne touche ni a l'inscription, ni a la connexion, ni au paiement.
+   1) A l'arrivee : la source du lien (?src= ou ?utm_source=) est memorisee
+      30 jours dans ce navigateur (PREMIERE source seulement). Sans parametre,
+      un site d'origine connu (TikTok, Facebook, Google...) sert de source.
+   2) Des que la personne est connectee, la source est envoyee UNE fois a la
+      base (enregistrer_source). La base n'attribue que les comptes crees
+      depuis moins de 7 jours : un ancien client n'est jamais compte deux fois.
+   Toute erreur est silencieuse : rien ne peut bloquer le site.
+   ============================================================================ */
+(function(){
+  const CLE='vb_src', CLE_ENVOYE='vb_src_envoye', DUREE=30*24*3600*1000;
+  const propre=s=>{const v=String(s||'').trim().toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,32);return v||null;};
+  const lire=()=>{try{const o=JSON.parse(localStorage.getItem(CLE)||'null');return o&&o.s&&(Date.now()-o.at)<DUREE?o:null;}catch(e){return null;}};
+  const ecrire=s=>{try{localStorage.setItem(CLE,JSON.stringify({s,at:Date.now()}));}catch(e){}};
+  const ORIGINES=[[/tiktok\./,'tiktok'],[/(^|\.)(facebook|fb)\.(com|me)$|m\.facebook/,'facebook'],[/instagram\./,'instagram'],
+    [/(^|\.)t\.me$|telegram\./,'telegram'],[/whatsapp\.|wa\.me/,'whatsapp'],[/youtube\.|youtu\.be/,'youtube'],
+    [/(^|\.)(x|twitter|t)\.co(m)?$/,'x'],[/google\./,'google'],[/bing\./,'bing']];
+  try{
+    const u=new URL(location.href);
+    const param=propre(u.searchParams.get('src')||u.searchParams.get('utm_source'));
+    if(param){
+      if(!lire())ecrire(param);
+      // Adresse propre (le lien reste partageable sans ?src=)
+      u.searchParams.delete('src');u.searchParams.delete('utm_source');
+      history.replaceState(history.state,'',u.pathname+(u.searchParams.toString()?'?'+u.searchParams.toString():'')+u.hash);
+    }else if(!lire()&&document.referrer){
+      const h=new URL(document.referrer).hostname.toLowerCase();
+      if(h&&h!==location.hostname){
+        const m=ORIGINES.find(([re])=>re.test(h));
+        if(m)ecrire(m[1]);
+      }
+    }
+  }catch(e){ /* jamais bloquant */ }
+
+  let enCours=false;
+  async function envoyer(){
+    if(enCours)return;
+    const o=lire();
+    if(!o)return;
+    try{if(localStorage.getItem(CLE_ENVOYE)===o.s)return;}catch(e){return;}
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!sb.auth)return;
+    enCours=true;
+    try{
+      const {data:ses}=await sb.auth.getSession();
+      if(!ses||!ses.session)return;
+      const {data,error}=await sb.rpc('enregistrer_source',{p_source:o.s});
+      // ok / deja / trop_ancien / invalide : reponse definitive, on n'insiste plus.
+      if(!error&&data&&data!=='non_connecte'){try{localStorage.setItem(CLE_ENVOYE,o.s);}catch(e){}}
+    }catch(e){ /* nouvel essai plus tard */ }
+    finally{enCours=false;}
+  }
+  let abonne=false;
+  function brancher(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!sb.auth)return false;
+    if(!abonne&&sb.auth.onAuthStateChange){
+      abonne=true;
+      try{sb.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(envoyer,800);});}catch(e){}
+    }
+    envoyer();
+    return true;
+  }
+  if(!brancher()){
+    let n=0;const iv=setInterval(()=>{if(brancher()||++n>30)clearInterval(iv);},1000);
+  }
 })();
