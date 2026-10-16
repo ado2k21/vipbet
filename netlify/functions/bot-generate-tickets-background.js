@@ -551,6 +551,9 @@ function rejeter(raison) {
 async function logFinal() {
   console.log('[BOT]', JSON.stringify(stats, null, 2));
   try {
+    // Identifie le site Netlify qui a execute ce passage : les alertes ne regardent que le site de
+    // production (les autres sites/equipes qui executent les memes taches sont ignores).
+    stats.site = String(process.env.SITE_NAME || String(process.env.URL || process.env.DEPLOY_URL || '').replace(/^https?:\/\//, '') || 'inconnu').slice(0, 80);
     await sbInsert('bot_run_log', [{ bot: 'foot', stats }]);
   } catch (e) {
     console.log('[BOT] échec écriture bot_run_log:', e.message);
