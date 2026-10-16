@@ -76,8 +76,8 @@ const TITRES = {
   API_BLOQUEE_BASKET: 'Problème API (service B)',
   QUOTA_FOOT_BAS: 'Quota API (service A)',
   QUOTA_BASKET_BAS: 'Quota API (service B)',
-  API_SITE_OBSOLETE_A: 'Ancienne clé API (service A)',
-  API_SITE_OBSOLETE_B: 'Ancienne clé API (service B)',
+  API_SITE_OBSOLETE_A: 'Site Netlify en échec (service A)',
+  API_SITE_OBSOLETE_B: 'Site Netlify en échec (service B)',
   PUB_MANQUANTE_A: 'Publications (service A)',
   PUB_MANQUANTE_B: 'Publications (service B)',
   REGLEMENT_BLOQUE_A: 'Calcul des résultats (service A)',
@@ -119,6 +119,15 @@ const CAUSES_API = {
       'Cause fréquente : plusieurs sites Netlify appellent l\'API en même temps. Vérifie qu\'UN SEUL site fait tourner les tâches automatiques.'
     ],
     court: 'Action : vérifier qu\'un seul site Netlify fait tourner les tâches automatiques.'
+  },
+  CLE_ABSENTE: {
+    titre: 'Variable de clé API ABSENTE (aucune exécution ne fonctionne)',
+    resume: 'La variable de clé API n\'existe pas dans Netlify : le fournisseur n\'est même pas appelé. Ce n\'est PAS un compte suspendu ni une clé refusée.',
+    actions: [
+      '1) Netlify > Project configuration > Environment variables : ajoute la variable de clé API (nom exact, sans espace) sur le site qui exécute les tâches.',
+      '2) Netlify > Deploys > Trigger deploy (une variable ajoutée ne s\'applique qu\'après un redéploiement).'
+    ],
+    court: 'Action : ajouter la variable de clé API dans Netlify (nom exact), puis redéployer. Ce n\'est pas un compte suspendu.'
   },
   CLE_INVALIDE: {
     titre: 'Clé API invalide ou absente',
@@ -186,13 +195,22 @@ function messageAutre(l) {
     return { titre, lignes: [titre, '', corps, act], courtes: [corps, act] };
   }
 
-  // --- Site resté sur une ancienne clé : des exécutions refusées ALORS QUE d'autres réussissent ---
+  // --- Un site en échec PENDANT QUE d'autres réussissent : le service marche, c'est un SITE Netlify en trop ---
   if (t === 'API_SITE_OBSOLETE_A' || t === 'API_SITE_OBSOLETE_B') {
-    const titre = `Ancienne clé API sur un site (${S})`;
-    const c1 = 'Certaines exécutions automatiques sont refusées par le fournisseur alors que d\'autres fonctionnent au même moment : le service marche, mais un ou plusieurs sites Netlify utilisent une ancienne clé (compte refusé ou clé absente).';
-    const c2 = `Dernier refus : ${i.dernier_refus || '?'} (heure Haïti) — ${i.refus_30h != null ? i.refus_30h : '?'} refus sur les dernières 30 h ; ${i.succes_simultanes != null ? i.succes_simultanes : '?'} exécution(s) réussie(s) au même moment.`;
-    const a1 = 'Plusieurs sites Netlify exécutent les mêmes tâches (plusieurs exécutions à chaque passage), ce qui consomme aussi le quota plusieurs fois. Garde UN SEUL site actif et supprime les autres, ou mets la clé valide sur chacun puis redéploie.';
-    return { titre, lignes: [titre, '', c1, c2, '', a1], courtes: [c1, c2, 'Action : garder un seul site Netlify actif (ou la clé valide partout), puis redéployer.'] };
+    const absente = l.cause === 'CLE_ABSENTE';
+    const titre = absente ? `Un site Netlify SANS clé API (${S})` : `Un site Netlify refusé par l'API (${S})`;
+    const exact = assainir(i.message_api);
+    const c0 = absente
+      ? 'CE QUI SE PASSE : un site Netlify exécute les tâches automatiques SANS la variable de clé API. Ce n\'est PAS un compte suspendu, PAS une clé refusée : le service fonctionne.'
+      : 'CE QUI SE PASSE : un site Netlify est refusé par le fournisseur alors que les autres fonctionnent au même moment. Le service lui-même fonctionne.';
+    const c1 = `Preuve : à chaque passage (toutes les 15 min), ${i.succes_simultanes != null ? i.succes_simultanes : '?'} exécution(s) réussissent et ${i.refus_simultanes != null ? i.refus_simultanes : '?'} échouent au même moment. Dernier échec : ${i.dernier_refus || '?'} (heure Haïti), ${i.refus_30h != null ? i.refus_30h : '?'} échecs sur 30 h.`;
+    const c2 = exact ? `Message exact de l'exécution en échec : « ${exact} »` : '';
+    const c3 = 'Impact : aucune publication perdue tant que les autres exécutions réussissent. Mais plusieurs sites exécutent les mêmes tâches : chacun consomme le même quota du fournisseur.';
+    const a1 = absente
+      ? 'À FAIRE : trouver le site en trop (Netlify > Team > Sites : tout site relié à ce dépôt, y compris dans une AUTRE équipe) puis le supprimer ou désactiver ses tâches planifiées. Ajouter la variable sur ce site ne sert qu\'à garder un doublon inutile.'
+      : 'À FAIRE : trouver le site en trop (Netlify > Team > Sites, y compris une autre équipe) et le supprimer, ou y mettre la même clé valide puis redéployer.';
+    return { titre, lignes: [titre, '', c0, c1, c2, c3, '', a1].filter((x, idx, arr) => x !== '' || arr[idx - 1] !== ''),
+      courtes: [c0, c1, c2, a1].filter(Boolean) };
   }
 
   // --- Publications manquantes (par service), avec la cause précise ---
