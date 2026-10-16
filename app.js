@@ -237,7 +237,7 @@ adm_fiche_gen_basket_submit:"GÉNÉRER FICHE BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
 dtk_cd_min:"Premier match dans {n} min", dtk_cd_h:"Premier match dans {h}h{m}", dtk_cd_j:"Premier match dans {j} j", dtk_cd_bientot:"Premier match imminent", dtk_cd_encours:"Premier match en cours",
-dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez de façon responsable", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
+dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez avec contrôle", share_type_foot:"FICHE FOOTBALL", share_type_basket:"FICHE BASKETBALL", share_type_exact:"FICHE SCORE EXACT", share_cta_sub:"Fiches VIP chaque jour", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
 dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
@@ -815,7 +815,7 @@ adm_fiche_gen_basket_submit:"GENERATE BASKETBALL SLIP",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
 dtk_cd_min:"First match in {n} min", dtk_cd_h:"First match in {h}h{m}", dtk_cd_j:"First match in {j} d", dtk_cd_bientot:"First match starting soon", dtk_cd_encours:"First match underway",
-dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play responsibly", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
+dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play with control", share_type_foot:"FOOTBALL SLIP", share_type_basket:"BASKETBALL SLIP", share_type_exact:"EXACT SCORE SLIP", share_cta_sub:"VIP slips every day", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
 dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
@@ -1393,7 +1393,7 @@ adm_fiche_gen_basket_submit:"JENERE FICH BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
 dtk_cd_min:"Premye match nan {n} min", dtk_cd_h:"Premye match nan {h}è{m}", dtk_cd_j:"Premye match nan {j} jou", dtk_cd_bientot:"Premye match pral kòmanse", dtk_cd_encours:"Premye match ap jwe",
-dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe yon fason responsab", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
+dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe ak kontwòl", share_type_foot:"FICH FOUTBÒL", share_type_basket:"FICH BASKÈT", share_type_exact:"FICH SKÒ EGZAK", share_cta_sub:"Fich VIP chak jou", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
 dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
@@ -5530,78 +5530,96 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // desktop) : telechargement direct de l'image a la place.
   // ============================================================
   async function genererImageTicketGagnant(tk){
-    const W=1080,H=1350;
+    // Format VERTICAL 9:16 (16/10) : plein ecran du Statut WhatsApp, de TikTok et des Stories.
+    // Chaque match garde son VRAI resultat (✓ gagne, ✗ perdu, – annule) : une fiche score exact
+    // gagnee avec un seul bon score n'affiche jamais de faux resultats. La regle ne change pas.
+    const W=1080,H=1920;
     const cv=document.createElement('canvas');
     cv.width=W;cv.height=H;
     const ctx=cv.getContext('2d');
+    try{if(document.fonts&&document.fonts.load){await Promise.all(['800 40px Sora','700 30px Inter','500 24px Inter'].map(f=>document.fonts.load(f)));}}catch(e){}
+    const SORA='Sora, Inter, sans-serif',INTER='Inter, sans-serif';
+    const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
 
-    // Fond degrade sombre, meme esprit que la charte (noir/vert/or).
-    const grad=ctx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,'#030617');grad.addColorStop(1,'#0A1224');
-    ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+    // Fond : degrade sombre + halos or (haut droite) et vert (bas gauche)
+    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#071022');g.addColorStop(1,'#040811');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    g=ctx.createRadialGradient(W,0,0,W,0,900);g.addColorStop(0,'rgba(201,164,76,.30)');g.addColorStop(1,'rgba(201,164,76,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    g=ctx.createRadialGradient(0,H,0,0,H,900);g.addColorStop(0,'rgba(46,212,127,.18)');g.addColorStop(1,'rgba(46,212,127,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 
-    // Bandeau superieur.
-    ctx.fillStyle='#C9A44C';
-    ctx.font='700 30px sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText('VIP BETCOTE',W/2,90);
-    ctx.fillStyle='#2ED47F';
-    ctx.font='800 54px sans-serif';
-    // Coche dessinee (l'emoji n'est pas rendu pareil selon les appareils)
-    const titrePartage=t('dtk_share_titre');
-    const rCoche=24,ecart=16,largeurTitre=ctx.measureText(titrePartage).width;
-    const x0=W/2-(rCoche*2+ecart+largeurTitre)/2;
-    ctx.beginPath();ctx.arc(x0+rCoche,141,rCoche,0,Math.PI*2);ctx.fill();
-    ctx.save();ctx.strokeStyle='#06140C';ctx.lineWidth=6;ctx.lineCap='round';ctx.lineJoin='round';
-    ctx.beginPath();ctx.moveTo(x0+rCoche-11,141);ctx.lineTo(x0+rCoche-3,149);ctx.lineTo(x0+rCoche+12,133);ctx.stroke();ctx.restore();
-    ctx.textAlign='left';ctx.fillText(titrePartage,x0+rCoche*2+ecart,160);ctx.textAlign='center';
+    // Logo dessine (terrain) + nom
+    const lx=W/2-250,ly=110;
+    g=ctx.createLinearGradient(0,ly,0,ly+88);g.addColorStop(0,'#B3E07A');g.addColorStop(1,'#6FB848');
+    ctx.fillStyle=g;rr(lx,ly,88,88,22);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=3.5;
+    ctx.strokeRect(lx+13,ly+24,62,40);ctx.beginPath();ctx.moveTo(lx+44,ly+24);ctx.lineTo(lx+44,ly+64);ctx.stroke();
+    ctx.beginPath();ctx.arc(lx+44,ly+44,9,0,Math.PI*2);ctx.stroke();
+    ctx.strokeRect(lx+13,ly+34,9,20);ctx.strokeRect(lx+66,ly+34,9,20);
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    ctx.font='800 64px '+SORA;ctx.fillStyle='#fff';ctx.fillText('VIP',lx+112,ly+70);
+    const wVip=ctx.measureText('VIP').width;ctx.fillStyle='#E8CE8A';ctx.fillText('BETCOTE',lx+112+wVip,ly+70);
 
-    // Liste des selections (jusqu'a 8 lignes, puis "+N autres" pour ne
-    // jamais deborder du cadre quel que soit le nombre de legs).
-    const legs=(tk.legs||[]).filter(l=>l.result!=='void');
-    const MAX=8;
-    let y=250;
-    ctx.textAlign='left';
+    // Titre « TIKET GENYEN » avec coche
+    const titre=t('dtk_share_titre');
+    ctx.font='800 84px '+SORA;
+    const wT=ctx.measureText(titre).width,rC=44,ecart=26,x0=W/2-(rC*2+ecart+wT)/2,yT=360;
+    ctx.fillStyle='#2ED47F';ctx.beginPath();ctx.arc(x0+rC,yT-28,rC,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#06140C';ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(x0+rC-18,yT-28);ctx.lineTo(x0+rC-5,yT-15);ctx.lineTo(x0+rC+19,yT-41);ctx.stroke();
+    ctx.fillStyle='#2ED47F';ctx.fillText(titre,x0+rC*2+ecart,yT);
+    const estExact=tk.scoreCount>0&&tk.scoreCount>=tk.legsCount;
+    const typeTxt=estExact?t('share_type_exact'):((tk.sport==='basket'||tk.sport==='nba')?t('share_type_basket'):t('share_type_foot'));
+    ctx.font='600 30px '+INTER;ctx.fillStyle='#8F9BB0';ctx.textAlign='center';
+    ctx.fillText(typeTxt.split('').join(String.fromCharCode(8202)),W/2,430);
+
+    // Selections (jusqu'a 7 cartes, puis « +N autres »)
+    const legs=(tk.legs||[]);
+    const MAX=7,HL=150,X=60,LW=W-120;
+    // Bloc (selections + cote totale) centre verticalement entre le titre et le bandeau du bas.
+    const nAff=Math.min(legs.length,MAX)+(legs.length>MAX?0.4:0);
+    let y=480+Math.max(0,(1130-(nAff*HL+300))/2);
     legs.slice(0,MAX).forEach(lg=>{
-      ctx.fillStyle='rgba(255,255,255,.05)';
-      ctx.fillRect(60,y-38,W-120,74);
-      ctx.fillStyle='#F4F3ED';
-      ctx.font='700 26px sans-serif';
-      ctx.fillText(tronqueTexte(lg.match||'',44),85,y-4);
-      ctx.fillStyle='#9AA7BD';
-      ctx.font='400 22px sans-serif';
-      const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
-      ctx.fillText(tronqueTexte(pickTxt,40),85,y+26);
-      ctx.fillStyle='#E8CE8A';
-      ctx.font='800 26px sans-serif';
-      ctx.textAlign='right';
-      ctx.fillText(Number(lg.odd).toFixed(2),W-85,y+2);
+      ctx.fillStyle='rgba(255,255,255,.04)';rr(X,y,LW,HL-18,28);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=2;ctx.stroke();
+      // Marque du resultat REEL
+      const cx=X+58,cy=y+(HL-18)/2,res=lg.result;
+      const coul=res==='lost'?['rgba(240,115,94,.16)','#F0735E']:res==='void'?['rgba(143,155,176,.16)','#8F9BB0']:['rgba(46,212,127,.16)','#2ED47F'];
+      ctx.fillStyle=coul[0];ctx.beginPath();ctx.arc(cx,cy,27,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=coul[1];ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
+      if(res==='lost'){ctx.moveTo(cx-10,cy-10);ctx.lineTo(cx+10,cy+10);ctx.moveTo(cx+10,cy-10);ctx.lineTo(cx-10,cy+10);}
+      else if(res==='void'){ctx.moveTo(cx-10,cy);ctx.lineTo(cx+10,cy);}
+      else{ctx.moveTo(cx-11,cy+1);ctx.lineTo(cx-3,cy+9);ctx.lineTo(cx+12,cy-8);}
+      ctx.stroke();
       ctx.textAlign='left';
-      y+=92;
+      ctx.fillStyle='#F4F3ED';ctx.font='700 36px '+INTER;ctx.fillText(tronqueTexte(lg.match||'',30),X+112,y+50);
+      const ligue=(String(lg.league||'')+(lg.leagueCountry?' ('+lg.leagueCountry+')':'')).toUpperCase();
+      ctx.fillStyle='#6F7C92';ctx.font='600 21px '+INTER;ctx.fillText(tronqueTexte(ligue,42),X+112,y+84);
+      const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
+      ctx.fillStyle='#C9CED8';ctx.font='500 27px '+INTER;ctx.fillText(tronqueTexte(pickTxt,36),X+112,y+118);
+      ctx.textAlign='right';ctx.fillStyle='#E8CE8A';ctx.font='800 44px '+SORA;ctx.fillText(Number(lg.odd).toFixed(2),X+LW-34,y+82);
+      y+=HL;
     });
     if(legs.length>MAX){
-      ctx.fillStyle='#9AA7BD';
-      ctx.font='400 22px sans-serif';
-      ctx.textAlign='center';
-      ctx.fillText(t('dtk_share_plus').replace('{n}',legs.length-MAX),W/2,y+10);
-      ctx.textAlign='left';
-      y+=50;
+      ctx.textAlign='center';ctx.fillStyle='#8F9BB0';ctx.font='500 28px '+INTER;
+      ctx.fillText(t('dtk_share_plus').replace('{n}',legs.length-MAX),W/2,y+20);y+=60;
     }
 
-    // Cote totale, en grand.
-    y+=40;
+    // Cote totale
     ctx.textAlign='center';
-    ctx.fillStyle='#9AA7BD';
-    ctx.font='700 24px sans-serif';
-    ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y);
-    ctx.fillStyle='#2ED47F';
-    ctx.font='800 96px sans-serif';
-    ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+110);
+    ctx.fillStyle='#8F9BB0';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
+    g=ctx.createLinearGradient(0,y+110,0,y+240);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
+    ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+235);
 
-    // Pied : mention responsable, jamais omise meme sur une image de partage.
-    ctx.fillStyle='#7C8CA0';
-    ctx.font='400 20px sans-serif';
-    ctx.fillText(t('dtk_share_mention'),W/2,H-60);
+    // Bandeau lien (lien de parrainage s'il existe, sinon le site)
+    const lien=(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com';
+    ctx.fillStyle='#C9A44C';rr(60,1640,W-120,150,36);ctx.fill();
+    ctx.fillStyle='#1A1405';ctx.font='800 44px '+SORA;ctx.fillText(tronqueTexte(lien,34),W/2,1712);
+    ctx.font='700 30px '+INTER;ctx.globalAlpha=.85;ctx.fillText(t('share_cta_sub'),W/2,1758);ctx.globalAlpha=1;
+
+    // Mention responsable, jamais omise
+    ctx.fillStyle='#6F7C92';ctx.font='500 26px '+INTER;ctx.fillText(t('dtk_share_mention'),W/2,H-50);
 
     return new Promise(resolve=>cv.toBlob(resolve,'image/png',0.95));
   }
@@ -5614,7 +5632,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(!blob)throw new Error('image');
       const fichier=new File([blob],'vip-betcote-ticket.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[fichier]})){
-        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t('dtk_share_texte')});
+        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t('dtk_share_texte')+' '+('https://'+((window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
       }else{
         // Repli (29/08) : navigateur sans partage de fichier (surtout
         // desktop) -- telechargement direct plutot que rien.
