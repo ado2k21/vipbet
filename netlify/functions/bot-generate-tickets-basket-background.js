@@ -791,7 +791,25 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
     }
     // Total de points du match entier (id 4, "Over/Under").
     if (betType.id === 4) {
+      // 16/10 (audit : totaux = pile ou face, négatifs) : pour une même ligne, on ne garde
+      // que le côté NETTEMENT favori du bookmaker (cote inférieure d'au moins 0,15 à l'autre
+      // côté). Over 1.90 / Under 1.90 = pile ou face -> ignoré. Ligne sans l'autre côté : inchangé.
+      const ECART_MIN_TOTAL = 0.15;
+      const parLigne = new Map();
       betType.values.forEach(v => {
+        const m = String(v.value).match(/^(Over|Under)\s+(.+)$/i);
+        if (!m) return;
+        const e = parLigne.get(m[2].trim()) || {};
+        e[m[1].toLowerCase()] = parseFloat(v.odd);
+        parLigne.set(m[2].trim(), e);
+      });
+      betType.values.forEach(v => {
+        const m = String(v.value).match(/^(Over|Under)\s+(.+)$/i);
+        if (m) {
+          const e = parLigne.get(m[2].trim()) || {};
+          const autre = m[1].toLowerCase() === 'over' ? e.under : e.over;
+          if (isFinite(autre) && !(parseFloat(v.odd) <= autre - ECART_MIN_TOTAL)) return;
+        }
         const c = parseFloat(v.odd);
         const estOver = /^Over/i.test(String(v.value));
         const seuil = parseFloat(String(v.value).replace(/^(Over|Under)\s+/i, ''));
@@ -1021,13 +1039,16 @@ function probaSelectionBasket(b) {
 // par sélection (jamais 5 équipes pour une cote de 4). Poids du tirage : 40 % / 35 % / 25 % (un peu plus de chances pour les fiches courtes,
 // qui gagnent plus souvent, mais aucun nombre n'est jamais garanti). Le tirage est déterministe pour
 // une date donnée (même nombre si le bot repasse ou tourne sur plusieurs sites), varie d'un jour à l'autre.
-const POIDS_NB_SELECTIONS = [0.40, 0.35, 0.25];   // kMin, kMin+1, kMin+2
+// 16/10 (audit : 4 sélections et plus = 0 fiche gagnée sur 11) : le tirage reste ALÉATOIRE
+// mais favorise nettement les fiches courtes — 60 % / 30 % / 10 % (avant 40 / 35 / 25).
+const POIDS_NB_SELECTIONS = [0.60, 0.30, 0.10];   // kMin, kMin+1, kMin+2
 const ECART_MAX_NB_SELECTIONS = 2;
 // Limite contre le trop-combiné : la cote MOYENNE par sélection ne descend pas sous ce seuil
 // (ex. « 5 équipes pour une cote de 4 » = 1,32 par équipe est refusé ; 3 équipes pour une cote de 4,
 // ou 4 équipes pour une cote de 5, restent possibles). Si le pool du jour l'exige, kMin passe
 // toujours : on ne bloque jamais la fiche.
-const COTE_MOYENNE_MIN_PAR_SELECTION = 1.45;
+// 16/10 : 1,45 -> 1,55 (« plus de gain ») : à cote égale, moins de sélections mais mieux payées.
+const COTE_MOYENNE_MIN_PAR_SELECTION = 1.55;
 
 function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
   const n = jeux.length;

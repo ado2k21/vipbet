@@ -1649,6 +1649,23 @@ function construireFiche(pool, plan, options) {
   // meilleur choix pour un match donné, il est choisi quand même — la
   // qualité réelle prime toujours sur la diversité forcée.
   const MALUS_MARCHE_DEJA_UTILISE = 0.06;
+  // ---------------------------------------------------------------------------
+  // AJUSTEMENTS DU 16/10 (bilan réel de toutes les fiches publiées, validé par James).
+  // Toujours des MALUS / BONUS de classement, JAMAIS une interdiction : un pick
+  // nettement meilleur passe quand même.
+  //  - BTTS « Oui » à cote basse : à éviter (réel 50 % contre 62 % promis par la cote,
+  //    seul match perdant de 11 fiches). Sous 1.40 : malus fort ; 1.40-1.49 : malus léger.
+  //  - Victoire 1X2 à 1.55-2.50 (réel 67 % contre 51 % attendus) et « Plus de 1.5 buts »
+  //    (83 % contre 78 %) : léger bonus.
+  //  - Anti-répétition (fiches « humaines », jamais la même formule) : malus proportionnel
+  //    au nombre de fois qu'un marché a déjà servi AUJOURD'HUI (toutes fiches), et malus
+  //    pour les marchés très utilisés dans les fiches de la VEILLE (options.marchesHier).
+  const MALUS_BTTS_TRES_BAS = 0.10;   // BTTS Oui < 1.40
+  const MALUS_BTTS_BAS = 0.04;        // BTTS Oui 1.40-1.49
+  const BONUS_1X2_VALEUR = 0.06;      // Victoire 1X2 entre 1.55 et 2.50
+  const BONUS_PLUS_15 = 0.02;         // Plus de 1.5 buts
+  const MALUS_MARCHE_VEILLE = 0.02;   // par usage au-delà du premier, la veille (max 3)
+  const marchesHier = options.marchesHier || new Map();
 
   // ============================================================================
   // AMERIQUE DU SUD (15/09, ajuste le 16/09, demande explicite de James) —
@@ -1743,7 +1760,20 @@ function construireFiche(pool, plan, options) {
     // Malus léger (voir MALUS_MARCHE_DEJA_UTILISE ci-dessus) — jamais
     // appliqué au buteur (déjà régi par son propre système), jamais aux
     // fiches à cote haute (Palier 3+, où le pool est déjà tendu).
-    if (cibleMax <= 15 && b.market !== 'mk_buteur' && (marchesUtiliseesJour.get(b.market) || 0) > 0) s -= MALUS_MARCHE_DEJA_UTILISE;
+    // 16/10 : proportionnel au nombre d'usages du jour (max 3) et appliqué à TOUTES les
+    // fiches (moitié pour les grosses cotes, où le pool est plus tendu).
+    if (b.market !== 'mk_buteur') {
+      const nJour = marchesUtiliseesJour.get(b.market) || 0;
+      if (nJour > 0) s -= (cibleMax <= 15 ? MALUS_MARCHE_DEJA_UTILISE : MALUS_MARCHE_DEJA_UTILISE / 2) * Math.min(nJour, 3);
+      const nHier = marchesHier.get(b.market) || 0;
+      if (nHier >= 2) s -= MALUS_MARCHE_VEILLE * Math.min(nHier - 1, 3);
+    }
+    if (b.market === 'mk_btts') {
+      if (b.odd < 1.40) s -= MALUS_BTTS_TRES_BAS;
+      else if (b.odd < 1.50) s -= MALUS_BTTS_BAS;
+    }
+    if (b.market === 'mk_1x2' && b.odd >= 1.55 && b.odd <= 2.50) s += BONUS_1X2_VALEUR;
+    if (b.market === 'mk_total_buts' && /Plus de 1\.5/i.test(String(b.pick || ''))) s += BONUS_PLUS_15;
     // Amérique du Sud — DEUX mécanismes distincts, désormais de nature
     // différente (16/09, décision explicite de James : "je supprime
     // précisément ces odd seulement", remplace le malus spécifique du 15/09) :
@@ -1834,7 +1864,7 @@ function construireFiche(pool, plan, options) {
   // MALUS_MARCHE_DEJA_UTILISE, qui porte sur la journée entière). Répond au
   // 3ᵉ point : alterner réellement entre Double chance, totaux et 1X2 au
   // lieu d'empiler le même marché jusqu'au plafond MAX_PAR_MARCHE.
-  const MALUS_MARCHE_DANS_FICHE = 0.05;
+  const MALUS_MARCHE_DANS_FICHE = 0.08;   // 16/10 : 0.05 -> 0.08 (éviter BTTS, BTTS, 1.5, 1.5)
   // Anti-doublon en chaîne (2ᵉ point, demande explicite) : jamais plus de
   // deux sélections D'AFFILÉE à la cote identique, et jamais plus de deux
   // occurrences de la même cote exacte dans toute la fiche. Comparaison en
@@ -1967,7 +1997,7 @@ function construireFiche(pool, plan, options) {
   //     sont concernes, exactement la ou le probleme a ete signale.
   const MAX_SELECTIONS = options.maxSelectionsOverride != null
     ? Number(options.maxSelectionsOverride)
-    : (cibleMax <= 15 ? 6 : 10);
+    : (cibleMax <= 4 ? 4 : cibleMax <= 15 ? 5 : 10);   // 16/10 : 6 -> 5 (4-15) et 4 (2-4). Bilan : 5 matchs et + = 0 gagnée sur 20
   // PLAFOND_PAR_MARCHE dynamique selon la cible : pour une fiche <20, le
   // document d'optimisation (point 11) demande explicitement d'éviter
   // plusieurs "Domicile Plus de X buts"/"Extérieur Plus de X buts" dans la
@@ -2048,7 +2078,7 @@ function construireFiche(pool, plan, options) {
     // l'usage en zone Palier 1/2, jamais pollué par les fiches à cote
     // haute (exemptées du plafond, elles ne doivent pas non plus fausser
     // le compteur d'une future fiche Palier 1/2 dans la même journée).
-    if (cibleMax <= 15) marchesUtiliseesJour.set(bet.market, (marchesUtiliseesJour.get(bet.market) || 0) + 1);
+    marchesUtiliseesJour.set(bet.market, (marchesUtiliseesJour.get(bet.market) || 0) + 1);   // 16/10 : toutes fiches
     coteTotale *= bet.odd;
     return true;
   }
@@ -3390,6 +3420,15 @@ async function handler(event) {
   // MALUS_MARCHE_DEJA_UTILISE, jamais un blocage). Partagé sur toute la
   // génération automatique du jour, tous paliers confondus.
   const marchesUtiliseesJour = new Map();
+  // 16/10 : marchés des fiches publiées la VEILLE de la date cible (anti-répétition d'un jour
+  // à l'autre). Lecture seule, jamais bloquante : en cas d'erreur, la carte reste vide.
+  const marchesHier = new Map();
+  try {
+    const d = new Date(dateCible + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 1);
+    const veille = d.toISOString().slice(0, 10);
+    const lignes = await sbSelect('ticket_legs', `select=market,tickets!inner(play_date,sport,published)&tickets.play_date=eq.${veille}&tickets.sport=eq.foot&tickets.published=eq.true`);
+    (Array.isArray(lignes) ? lignes : []).forEach(l => { if (l.market) marchesHier.set(l.market, (marchesHier.get(l.market) || 0) + 1); });
+  } catch (e) { console.log('[BOT] marchés de la veille non lus :', e.message); }
   // Partie 1/2/9 : sélections déjà utilisées AUJOURD'HUI, relues depuis la
   // base (pas seulement depuis ce lot en mémoire) — protège aussi contre
   // une double-exécution accidentelle du bot le même jour (idempotence,
@@ -3568,7 +3607,9 @@ async function handler(event) {
   // maxSelectionsOverride : borné par le nombre réel de matchs disponibles
   // (impossible de dépasser 1 sélection par match de toute façon, voir
   // matchsUtilises dans tenterAjout), jamais un chiffre arbitraire fixe.
-  const maxSelectionsEffortMax = Math.min(35, Math.max(10, nbMatchsDisponibles));
+  // 16/10 : 35 -> 12 (au-delà, aucune fiche n'a jamais gagné). Les grosses cotes restent visées :
+  // POIDS_PROGRESSION favorise alors des sélections plus hautes plutôt que d'empiler les matchs.
+  const maxSelectionsEffortMax = Math.min(12, Math.max(10, nbMatchsDisponibles));
 
   const PALIERS_JOUR_RICHE = [
     { nom: 'Palier 1 (2-4)',  cibleMin: 2,  cibleMax: 4,     avecRepli: true  },
@@ -3757,7 +3798,7 @@ async function handler(event) {
       buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
       fixturesExclues: partageAvecScoreExact ? fixturesExclusesNormales : fixturesUtiliseesScoreExact,
       scoresExactsParFixture: partageAvecScoreExact ? scoresExactsParFixture : null,
-      nbMatchsDisponibles, marchesUtiliseesJour,
+      nbMatchsDisponibles, marchesUtiliseesJour, marchesHier,
       cibleMinOverride: palier.cibleMin, cibleMaxOverride: palier.cibleMax,
       pousserVersCibleMax: palier.pousserVersCibleMax || false,
       maxSelectionsOverride: palier.maxSelectionsOverride,
