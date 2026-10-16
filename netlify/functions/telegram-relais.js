@@ -137,7 +137,9 @@ function formaterMessage(tk, legs) {
     // Le pick contient deja son libelle (« Les deux équipes marquent : Oui ») : pas de doublon.
     const choix = pick.includes(':') ? pick : (marche ? marche + ' : ' + pick : pick);
     lignes.push(`${icone} <b>${i + 1}. ${echapper(l.match_label)}</b>`);
-    lignes.push(`   ${echapper(l.league || '')}${h ? ' · ' + echapper(h) : ''}`);
+    // Comme sur le site : « LIGA PROFESIONAL DE FÚTBOL (ARGENTINA) ».
+    const ligue = (String(l.league || '') + (l.league_country ? ' (' + l.league_country + ')' : '')).toUpperCase();
+    lignes.push(`   ${echapper(ligue)}${h ? ' · ' + echapper(h) : ''}`);
     lignes.push(`   ${echapper(choix)} — cote <b>${Number(l.odd).toFixed(2)}</b>`);
   });
   lignes.push('');
@@ -222,7 +224,7 @@ async function passage(cfg, fetchEnvoi, dormir) {
     // Fiche complète et stable : publiée depuis > 2 min et legs == legs_count.
     const derniere = Math.max(Date.parse(tk.updated_at) || 0, Date.parse(tk.scheduled_publish_at) || 0, Date.parse(tk.created_at) || 0);
     if (Date.now() - derniere < DELAI_MIN_MS) { ignores++; continue; }
-    const rl = await fetchDelai(`${cfg.url}/rest/v1/ticket_legs?select=match_time,kickoff_at,league,match_label,market,pick,odd,position&ticket_id=eq.${tk.id}&order=kickoff_at.asc,position.asc`, { headers: entetes(cfg.cle) });
+    const rl = await fetchDelai(`${cfg.url}/rest/v1/ticket_legs?select=match_time,kickoff_at,league,league_country,match_label,market,pick,odd,position&ticket_id=eq.${tk.id}&order=kickoff_at.asc,position.asc`, { headers: entetes(cfg.cle) });
     if (!rl.ok) throw new Error(`lecture legs HTTP ${rl.status}`);
     const legs = await rl.json();
     if (!legs.length || legs.length !== Number(tk.legs_count) ||
