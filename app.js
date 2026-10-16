@@ -237,7 +237,7 @@ adm_fiche_gen_basket_submit:"GÉNÉRER FICHE BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
 dtk_cd_min:"Premier match dans {n} min", dtk_cd_h:"Premier match dans {h}h{m}", dtk_cd_j:"Premier match dans {j} j", dtk_cd_bientot:"Premier match imminent", dtk_cd_encours:"Premier match en cours",
-dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez avec contrôle", share_type_foot:"FICHE FOOTBALL", share_type_basket:"FICHE BASKETBALL", share_type_exact:"FICHE SCORE EXACT", share_cta_sub:"Fiches VIP chaque jour", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉",
+dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez avec contrôle", share_type_foot:"FICHE FOOTBALL", share_type_basket:"FICHE BASKETBALL", share_type_exact:"FICHE SCORE EXACT", share_cta_sub:"Fiches VIP chaque jour", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉", dtk_share_titre_encours:"FICHE DU JOUR", dtk_share_texte_encours:"La fiche du jour VIP BETCOTE 🔥",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
 dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
@@ -381,7 +381,7 @@ adm_fiches_load_more:"Charger plus",
 adm_fiches_sync_last:"Dernière synchronisation : {d}", adm_fiches_sync_never:"Aucune synchronisation enregistrée",
 adm_fiches_sync_next:"Prochaine génération automatique : {d}",
 adm_fiche_leg_locked:"Match terminé — résultat réglé, modification protégée",
-adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_partager:"Partager la carte", adm_fiche_leg_edit:"Modifier ce match",
+adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_commencee:"Un match de cette fiche a commencé — modification bloquée", adm_fiche_partager:"Partager la carte", adm_fiche_leg_edit:"Modifier ce match",
 adm_fiche_odds_total:"Cote totale : {n}", adm_fiche_odds_range:"plage autorisée {min} – {max}",
 adm_fiche_odds_unlimited:"illimitée", adm_fiche_odds_risky:"{n} sélection(s) au-dessus de {max}",
 adm_fiche_err_odds_range:"Cote totale {n} hors de la plage autorisée ({min} – {max}).",
@@ -407,7 +407,7 @@ adm_fiche_toast_h:"Fiche enregistrée", adm_fiche_toast_p:"Visible immédiatemen
 adm_fiche_toast_del_h:"Fiche supprimée", adm_fiche_toast_del_p:"Elle n'apparaît plus nulle part.",
 adm_menu_exit:"Déconnecter",
 tg_h:"Groupe Telegram VIP", tg_membre:"Vous êtes dans votre groupe Telegram VIP.", tg_a_rejoindre:"Votre plan est actif : rejoignez votre groupe Telegram privé. Le lien ne fonctionne qu'une seule fois et uniquement pour votre compte.", tg_btn:"Rejoindre mon groupe Telegram", tg_btn_wait:"Création du lien…", tg_indispo:"Votre groupe Telegram n'est pas encore disponible. Contactez le support.", tg_attente:"Votre changement de groupe est en cours. Réessayez dans quelques minutes.", tg_err:"Impossible de créer le lien pour le moment. Réessayez.", tg_perdu:"Votre accès au groupe s'arrête quand votre plan expire ou change.",
-adm_nav_parr:"Parrainage", adm_parr_h:"Parrainage", adm_parr_p:"Parrains, filleuls et jours offerts (2 j P1 · 5 j P2 · 7 j P3 · 15 j Lifetime).", adm_parr_liste:"Parrain → filleul", adm_parr_k_filleuls:"Filleuls inscrits", adm_parr_k_filleuls_note:"Comptes créés avec un lien de parrainage.", adm_parr_k_payants:"Filleuls payants", adm_parr_k_jours:"Jours offerts", adm_parr_k_attente:"Jours en attente", adm_parr_k_attente_note:"Parrains sans plan actif : ajoutés à leur prochain plan.", adm_parr_s_inscrit:"Pas encore payé", adm_parr_s_rec:"+{n} j", adm_parr_s_plafond:"Plafond du mois", adm_parr_s_hors:"Payé avant le lien", adm_parr_s_annule:"Annulé", adm_parr_s_attente:"en attente", adm_parr_annuler:"Annuler", adm_parr_annuler_conf:"Annuler ce parrainage ? Les jours déjà ajoutés au parrain seront retirés.", adm_parr_vide:"Aucun parrainage pour le moment.", adm_nav_sources:"Sources", adm_src_h:"Sources des clients", adm_src_p:"D'où viennent vos inscrits et vos clients payants.", adm_src_7j:"7 jours", adm_src_30j:"30 jours", adm_src_par:"Par source", adm_src_lien_h:"Créer un lien tracé", adm_src_lien_p:"Choisissez où vous publiez le lien (ou tapez un nom, ex. un influenceur). Chaque nouveau compte créé depuis ce lien sera compté dans cette source.", adm_src_nom_ph:"ex. influenceur_jean", adm_src_copier:"Copier le lien", adm_src_copie:"Lien copié ✓", adm_src_inconnu:"Inconnue / direct", adm_src_k_inscrits:"Nouveaux inscrits", adm_src_k_inscrits_note:"Comptes créés sur la période (admins exclus).", adm_src_k_payants:"Clients payants", adm_src_k_conv:"Taux de conversion", adm_src_k_top:"Meilleure source", adm_src_inscrits:"inscrits", adm_src_payants:"payants", adm_src_conv:"conversion", adm_src_vide:"Aucun inscrit sur cette période.", adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
+adm_nav_parr:"Parrainage", adm_parr_h:"Parrainage", adm_parr_p:"Parrains, filleuls et jours offerts (2 j P1 · 5 j P2 · 7 j P3 · 15 j Lifetime).", adm_parr_liste:"Parrain → filleul", adm_parr_k_filleuls:"Filleuls inscrits", adm_parr_k_filleuls_note:"Comptes créés avec un lien de parrainage.", adm_parr_k_payants:"Filleuls payants", adm_parr_k_jours:"Jours offerts", adm_parr_k_attente:"Jours en attente", adm_parr_k_attente_note:"Parrains sans plan actif : ajoutés à leur prochain plan.", adm_parr_s_inscrit:"Pas encore payé", adm_parr_s_rec:"+{n} j", adm_parr_s_plafond:"Plafond du mois", adm_parr_s_hors:"Payé avant le lien", adm_parr_s_annule:"Annulé", adm_parr_s_attente:"en attente", adm_parr_annuler:"Annuler", adm_parr_annuler_conf:"Annuler ce parrainage ? Les jours déjà ajoutés au parrain seront retirés.", adm_parr_vide:"Aucun parrainage pour le moment.", adm_nav_champ:"Championnats", adm_champ_h:"Suivi des championnats", adm_champ_p:"Taux de réussite réel par championnat et par marché, à partir des résultats réglés.", adm_champ_foot:"Football", adm_champ_basket:"Basket", adm_champ_tri_joues:"Plus joués", adm_champ_tri_best:"Meilleurs", adm_champ_tri_worst:"Pires", adm_champ_marches:"Par marché (tous championnats)", adm_champ_liste:"Par championnat + marché", adm_champ_aide:"« Rentable » = gagne plus souvent que ce que promet la cote. Moins de 5 matchs joués : tendance encore fragile.", adm_champ_k_matchs:"Matchs réglés", adm_champ_k_taux:"Taux de réussite", adm_champ_k_best:"Meilleur championnat", adm_champ_k_worst:"À surveiller", adm_champ_joues:"{g}/{n} gagnés", adm_champ_cote:"cote moy. {c}", adm_champ_rentable:"Rentable", adm_champ_perte:"Sous la cote", adm_champ_peu:"Peu de matchs", adm_champ_dernier:"dernier : {d}", adm_champ_vide:"Pas encore de résultats réglés sur cette période.", champ_mk_mk_total_buts:"Total de buts", champ_mk_mk_btts:"Les deux équipes marquent", champ_mk_mk_1x2:"Victoire 1X2", champ_mk_mk_double_chance:"Double chance", champ_mk_mk_score_exact:"Score exact", champ_mk_mk_total_domicile:"Buts de l'équipe à domicile", champ_mk_mk_total_exterieur:"Buts de l'équipe à l'extérieur", champ_mk_mk_buteur:"Buteur", champ_mk_mk_basket_1x2:"Vainqueur (basket)", champ_mk_mk_basket_total:"Total de points (basket)", adm_nav_sources:"Sources", adm_src_h:"Sources des clients", adm_src_p:"D'où viennent vos inscrits et vos clients payants.", adm_src_7j:"7 jours", adm_src_30j:"30 jours", adm_src_par:"Par source", adm_src_lien_h:"Créer un lien tracé", adm_src_lien_p:"Choisissez où vous publiez le lien (ou tapez un nom, ex. un influenceur). Chaque nouveau compte créé depuis ce lien sera compté dans cette source.", adm_src_nom_ph:"ex. influenceur_jean", adm_src_copier:"Copier le lien", adm_src_copie:"Lien copié ✓", adm_src_inconnu:"Inconnue / direct", adm_src_k_inscrits:"Nouveaux inscrits", adm_src_k_inscrits_note:"Comptes créés sur la période (admins exclus).", adm_src_k_payants:"Clients payants", adm_src_k_conv:"Taux de conversion", adm_src_k_top:"Meilleure source", adm_src_inscrits:"inscrits", adm_src_payants:"payants", adm_src_conv:"conversion", adm_src_vide:"Aucun inscrit sur cette période.", adm_nav_telegram:"Telegram", adm_tg_h:"Groupes Telegram", adm_tg_p:"État du robot, des groupes VIP et des accès.",
 ov_rev_htg_h:"MonCash / NatCash (en gourdes)", ov_stripe_h:"Stripe — paiements par carte (en dollars)", ov_stripe_total:"Total encaissé Stripe", ov_stripe_total_note:"Confirmés automatiquement. Toujours en dollars, même si le client a payé en gourdes.", ov_stripe_mois:"Stripe ce mois-ci", ov_stripe_count:"Paiements Stripe", ov_stripe_verif:"Stripe à vérifier", ov_stripe_verif_note:"En attente d'une vérification manuelle (montant ou compte inattendu).", ov_stripe_plans:"Par plan (lien de paiement)", ov_stripe_recent:"Derniers paiements Stripe", ov_stripe_payeen:"payé en {d}", ov_stripe_none:"Aucun paiement Stripe pour l'instant.",
 ov_live:"En direct", ov_kpis_h:"Indicateurs clés", ov_quick_h:"Accès rapide", ov_q_pay:"Paiements", ov_q_users:"Utilisateurs", ov_q_fiches:"Fiches", ov_q_rev:"Revenus",
 st_pending:"En cours", hf_search_ph:"Rechercher un code, un match, une ligue…", hf_sport:"Sport", hf_count:"{n} fiche(s) trouvée(s)", hf_reset:"Réinitialiser",
@@ -815,7 +815,7 @@ adm_fiche_gen_basket_submit:"GENERATE BASKETBALL SLIP",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
 dtk_cd_min:"First match in {n} min", dtk_cd_h:"First match in {h}h{m}", dtk_cd_j:"First match in {j} d", dtk_cd_bientot:"First match starting soon", dtk_cd_encours:"First match underway",
-dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play with control", share_type_foot:"FOOTBALL SLIP", share_type_basket:"BASKETBALL SLIP", share_type_exact:"EXACT SCORE SLIP", share_cta_sub:"VIP slips every day", dtk_share_texte:"I won with VIP BETCOTE! 🎉",
+dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play with control", share_type_foot:"FOOTBALL SLIP", share_type_basket:"BASKETBALL SLIP", share_type_exact:"EXACT SCORE SLIP", share_cta_sub:"VIP slips every day", dtk_share_texte:"I won with VIP BETCOTE! 🎉", dtk_share_titre_encours:"TODAY'S SLIP", dtk_share_texte_encours:"Today's VIP BETCOTE slip 🔥",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
 dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
@@ -959,7 +959,7 @@ adm_fiches_load_more:"Load more",
 adm_fiches_sync_last:"Last sync: {d}", adm_fiches_sync_never:"No sync recorded yet",
 adm_fiches_sync_next:"Next automatic generation: {d}",
 adm_fiche_leg_locked:"Match finished — result settled, editing protected",
-adm_fiche_leg_unlock:"Edit anyway", adm_fiche_partager:"Share the card", adm_fiche_leg_edit:"Edit this match",
+adm_fiche_leg_unlock:"Edit anyway", adm_fiche_commencee:"A match in this slip has started — editing locked", adm_fiche_partager:"Share the card", adm_fiche_leg_edit:"Edit this match",
 adm_fiche_odds_total:"Total odds: {n}", adm_fiche_odds_range:"allowed range {min} – {max}",
 adm_fiche_odds_unlimited:"unlimited", adm_fiche_odds_risky:"{n} selection(s) above {max}",
 adm_fiche_err_odds_range:"Total odds {n} outside the allowed range ({min} – {max}).",
@@ -985,7 +985,7 @@ adm_fiche_toast_h:"Ticket saved", adm_fiche_toast_p:"Visible immediately if publ
 adm_fiche_toast_del_h:"Ticket deleted", adm_fiche_toast_del_p:"It no longer appears anywhere.",
 adm_menu_exit:"Log out",
 tg_h:"VIP Telegram group", tg_membre:"You are in your VIP Telegram group.", tg_a_rejoindre:"Your plan is active: join your private Telegram group. The link works only once and only for your account.", tg_btn:"Join my Telegram group", tg_btn_wait:"Creating link…", tg_indispo:"Your Telegram group is not available yet. Please contact support.", tg_attente:"Your group change is in progress. Try again in a few minutes.", tg_err:"Unable to create the link right now. Please try again.", tg_perdu:"Your access to the group ends when your plan expires or changes.",
-adm_nav_parr:"Referral", adm_parr_h:"Referral", adm_parr_p:"Referrers, referred users and free days (2 d P1 · 5 d P2 · 7 d P3 · 15 d Lifetime).", adm_parr_liste:"Referrer → referred", adm_parr_k_filleuls:"Referred sign-ups", adm_parr_k_filleuls_note:"Accounts created with a referral link.", adm_parr_k_payants:"Referred who paid", adm_parr_k_jours:"Days given", adm_parr_k_attente:"Days pending", adm_parr_k_attente_note:"Referrers without an active plan: added to their next plan.", adm_parr_s_inscrit:"Not paid yet", adm_parr_s_rec:"+{n} d", adm_parr_s_plafond:"Monthly cap", adm_parr_s_hors:"Paid before link", adm_parr_s_annule:"Cancelled", adm_parr_s_attente:"pending", adm_parr_annuler:"Cancel", adm_parr_annuler_conf:"Cancel this referral? Days already added to the referrer will be removed.", adm_parr_vide:"No referrals yet.", adm_nav_sources:"Sources", adm_src_h:"Customer sources", adm_src_p:"Where your sign-ups and paying customers come from.", adm_src_7j:"7 days", adm_src_30j:"30 days", adm_src_par:"By source", adm_src_lien_h:"Create a tracked link", adm_src_lien_p:"Pick where you post the link (or type a name, e.g. an influencer). Every new account created from this link is counted in that source.", adm_src_nom_ph:"e.g. influencer_john", adm_src_copier:"Copy link", adm_src_copie:"Link copied ✓", adm_src_inconnu:"Unknown / direct", adm_src_k_inscrits:"New sign-ups", adm_src_k_inscrits_note:"Accounts created in the period (admins excluded).", adm_src_k_payants:"Paying customers", adm_src_k_conv:"Conversion rate", adm_src_k_top:"Best source", adm_src_inscrits:"sign-ups", adm_src_payants:"paying", adm_src_conv:"conversion", adm_src_vide:"No sign-ups in this period.", adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
+adm_nav_parr:"Referral", adm_parr_h:"Referral", adm_parr_p:"Referrers, referred users and free days (2 d P1 · 5 d P2 · 7 d P3 · 15 d Lifetime).", adm_parr_liste:"Referrer → referred", adm_parr_k_filleuls:"Referred sign-ups", adm_parr_k_filleuls_note:"Accounts created with a referral link.", adm_parr_k_payants:"Referred who paid", adm_parr_k_jours:"Days given", adm_parr_k_attente:"Days pending", adm_parr_k_attente_note:"Referrers without an active plan: added to their next plan.", adm_parr_s_inscrit:"Not paid yet", adm_parr_s_rec:"+{n} d", adm_parr_s_plafond:"Monthly cap", adm_parr_s_hors:"Paid before link", adm_parr_s_annule:"Cancelled", adm_parr_s_attente:"pending", adm_parr_annuler:"Cancel", adm_parr_annuler_conf:"Cancel this referral? Days already added to the referrer will be removed.", adm_parr_vide:"No referrals yet.", adm_nav_champ:"Leagues", adm_champ_h:"League tracking", adm_champ_p:"Real hit rate by league and market, from settled results.", adm_champ_foot:"Football", adm_champ_basket:"Basketball", adm_champ_tri_joues:"Most played", adm_champ_tri_best:"Best", adm_champ_tri_worst:"Worst", adm_champ_marches:"By market (all leagues)", adm_champ_liste:"By league + market", adm_champ_aide:"\"Profitable\" = wins more often than the odds promise. Under 5 matches: trend still weak.", adm_champ_k_matchs:"Settled matches", adm_champ_k_taux:"Hit rate", adm_champ_k_best:"Best league", adm_champ_k_worst:"To watch", adm_champ_joues:"{g}/{n} won", adm_champ_cote:"avg odds {c}", adm_champ_rentable:"Profitable", adm_champ_perte:"Below the odds", adm_champ_peu:"Few matches", adm_champ_dernier:"last: {d}", adm_champ_vide:"No settled results in this period yet.", champ_mk_mk_total_buts:"Total goals", champ_mk_mk_btts:"Both teams to score", champ_mk_mk_1x2:"1X2 win", champ_mk_mk_double_chance:"Double chance", champ_mk_mk_score_exact:"Correct score", champ_mk_mk_total_domicile:"Home team goals", champ_mk_mk_total_exterieur:"Away team goals", champ_mk_mk_buteur:"Goalscorer", champ_mk_mk_basket_1x2:"Winner (basketball)", champ_mk_mk_basket_total:"Total points (basketball)", adm_nav_sources:"Sources", adm_src_h:"Customer sources", adm_src_p:"Where your sign-ups and paying customers come from.", adm_src_7j:"7 days", adm_src_30j:"30 days", adm_src_par:"By source", adm_src_lien_h:"Create a tracked link", adm_src_lien_p:"Pick where you post the link (or type a name, e.g. an influencer). Every new account created from this link is counted in that source.", adm_src_nom_ph:"e.g. influencer_john", adm_src_copier:"Copy link", adm_src_copie:"Link copied ✓", adm_src_inconnu:"Unknown / direct", adm_src_k_inscrits:"New sign-ups", adm_src_k_inscrits_note:"Accounts created in the period (admins excluded).", adm_src_k_payants:"Paying customers", adm_src_k_conv:"Conversion rate", adm_src_k_top:"Best source", adm_src_inscrits:"sign-ups", adm_src_payants:"paying", adm_src_conv:"conversion", adm_src_vide:"No sign-ups in this period.", adm_nav_telegram:"Telegram", adm_tg_h:"Telegram groups", adm_tg_p:"Status of the bot, the VIP groups and the accesses.",
 ov_rev_htg_h:"MonCash / NatCash (in gourdes)", ov_stripe_h:"Stripe — card payments (in dollars)", ov_stripe_total:"Total collected via Stripe", ov_stripe_total_note:"Confirmed automatically. Always in dollars, even if the customer paid in gourdes.", ov_stripe_mois:"Stripe this month", ov_stripe_count:"Stripe payments", ov_stripe_verif:"Stripe to review", ov_stripe_verif_note:"Waiting for a manual check (unexpected amount or account).", ov_stripe_plans:"By plan (payment link)", ov_stripe_recent:"Latest Stripe payments", ov_stripe_payeen:"paid in {d}", ov_stripe_none:"No Stripe payment yet.",
 ov_live:"Live", ov_kpis_h:"Key metrics", ov_quick_h:"Quick access", ov_q_pay:"Payments", ov_q_users:"Users", ov_q_fiches:"Slips", ov_q_rev:"Revenue",
 st_pending:"In progress", hf_search_ph:"Search a code, match or league…", hf_sport:"Sport", hf_count:"{n} slip(s) found", hf_reset:"Reset",
@@ -1393,7 +1393,7 @@ adm_fiche_gen_basket_submit:"JENERE FICH BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
 dtk_cd_min:"Premye match nan {n} min", dtk_cd_h:"Premye match nan {h}è{m}", dtk_cd_j:"Premye match nan {j} jou", dtk_cd_bientot:"Premye match pral kòmanse", dtk_cd_encours:"Premye match ap jwe",
-dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe ak kontwòl", share_type_foot:"FICH FOUTBÒL", share_type_basket:"FICH BASKÈT", share_type_exact:"FICH SKÒ EGZAK", share_cta_sub:"Fich VIP chak jou", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉",
+dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe ak kontwòl", share_type_foot:"FICH FOUTBÒL", share_type_basket:"FICH BASKÈT", share_type_exact:"FICH SKÒ EGZAK", share_cta_sub:"Fich VIP chak jou", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉", dtk_share_titre_encours:"FICH JOU A", dtk_share_texte_encours:"Fich jou a VIP BETCOTE 🔥",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
 dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
@@ -1537,7 +1537,7 @@ adm_fiches_load_more:"Chaje plis",
 adm_fiches_sync_last:"Dènye senkronizasyon : {d}", adm_fiches_sync_never:"Pa gen senkronizasyon anrejistre",
 adm_fiches_sync_next:"Pwochen jenerasyon otomatik : {d}",
 adm_fiche_leg_locked:"Match fini — rezilta regle, modifikasyon pwoteje",
-adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_partager:"Pataje kat la", adm_fiche_leg_edit:"Modifye match sa a",
+adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_commencee:"Yon match nan fich sa a kòmanse — pa ka modifye ankò", adm_fiche_partager:"Pataje kat la", adm_fiche_leg_edit:"Modifye match sa a",
 adm_fiche_odds_total:"Kòt total : {n}", adm_fiche_odds_range:"plaj otorize {min} – {max}",
 adm_fiche_odds_unlimited:"san limit", adm_fiche_odds_risky:"{n} seleksyon pi wo pase {max}",
 adm_fiche_err_odds_range:"Kòt total {n} deyò plaj otorize a ({min} – {max}).",
@@ -1563,7 +1563,7 @@ adm_fiche_toast_h:"Fich anrejistre", adm_fiche_toast_p:"Vizib imedyatman si li p
 adm_fiche_toast_del_h:"Fich efase", adm_fiche_toast_del_p:"Li pa parèt okenn kote ankò.",
 adm_menu_exit:"Dekonekte",
 tg_h:"Gwoup Telegram VIP", tg_membre:"Ou nan gwoup Telegram VIP ou a.", tg_a_rejoindre:"Plan ou aktif: antre nan gwoup Telegram prive ou a. Lyen an mache yon sèl fwa epi sèlman pou kont ou.", tg_btn:"Antre nan gwoup Telegram mwen", tg_btn_wait:"Ap kreye lyen an…", tg_indispo:"Gwoup Telegram ou a pa disponib ankò. Kontakte sèvis kliyan.", tg_attente:"Chanjman gwoup ou a ap fèt. Eseye ankò nan kèk minit.", tg_err:"Pa kapab kreye lyen an kounye a. Eseye ankò.", tg_perdu:"Aksè ou nan gwoup la fini lè plan ou ekspire oswa li chanje.",
-adm_nav_parr:"Parenaj", adm_parr_h:"Parenaj", adm_parr_p:"Paren, fiyèl ak jou gratis (2 j P1 · 5 j P2 · 7 j P3 · 15 j Lifetime).", adm_parr_liste:"Paren → fiyèl", adm_parr_k_filleuls:"Fiyèl enskri", adm_parr_k_filleuls_note:"Kont ki kreye ak yon lyen parenaj.", adm_parr_k_payants:"Fiyèl ki peye", adm_parr_k_jours:"Jou bay", adm_parr_k_attente:"Jou ap tann", adm_parr_k_attente_note:"Paren ki pa gen plan aktif : y ap ajoute sou pwochen plan yo.", adm_parr_s_inscrit:"Poko peye", adm_parr_s_rec:"+{n} j", adm_parr_s_plafond:"Plafon mwa a", adm_parr_s_hors:"Peye anvan lyen an", adm_parr_s_annule:"Anile", adm_parr_s_attente:"ap tann", adm_parr_annuler:"Anile", adm_parr_annuler_conf:"Anile parenaj sa a? Jou ki te ajoute bay paren an ap retire.", adm_parr_vide:"Poko gen parenaj.", adm_nav_sources:"Sous", adm_src_h:"Kote kliyan yo soti", adm_src_p:"Kote moun ki enskri yo ak kliyan ki peye yo soti.", adm_src_7j:"7 jou", adm_src_30j:"30 jou", adm_src_par:"Pa sous", adm_src_lien_h:"Kreye yon lyen swiv", adm_src_lien_p:"Chwazi kote w ap pibliye lyen an (oswa tape yon non, egz. yon enfliyansè). Chak nouvo kont ki kreye ak lyen sa a ap konte nan sous sa a.", adm_src_nom_ph:"egz. enfliyanse_jan", adm_src_copier:"Kopye lyen an", adm_src_copie:"Lyen kopye ✓", adm_src_inconnu:"Pa konnen / dirèk", adm_src_k_inscrits:"Nouvo enskri", adm_src_k_inscrits_note:"Kont ki kreye nan peryòd la (admin pa ladan).", adm_src_k_payants:"Kliyan ki peye", adm_src_k_conv:"To konvèsyon", adm_src_k_top:"Pi bon sous", adm_src_inscrits:"enskri", adm_src_payants:"peye", adm_src_conv:"konvèsyon", adm_src_vide:"Pa gen enskri nan peryòd sa a.", adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
+adm_nav_parr:"Parenaj", adm_parr_h:"Parenaj", adm_parr_p:"Paren, fiyèl ak jou gratis (2 j P1 · 5 j P2 · 7 j P3 · 15 j Lifetime).", adm_parr_liste:"Paren → fiyèl", adm_parr_k_filleuls:"Fiyèl enskri", adm_parr_k_filleuls_note:"Kont ki kreye ak yon lyen parenaj.", adm_parr_k_payants:"Fiyèl ki peye", adm_parr_k_jours:"Jou bay", adm_parr_k_attente:"Jou ap tann", adm_parr_k_attente_note:"Paren ki pa gen plan aktif : y ap ajoute sou pwochen plan yo.", adm_parr_s_inscrit:"Poko peye", adm_parr_s_rec:"+{n} j", adm_parr_s_plafond:"Plafon mwa a", adm_parr_s_hors:"Peye anvan lyen an", adm_parr_s_annule:"Anile", adm_parr_s_attente:"ap tann", adm_parr_annuler:"Anile", adm_parr_annuler_conf:"Anile parenaj sa a? Jou ki te ajoute bay paren an ap retire.", adm_parr_vide:"Poko gen parenaj.", adm_nav_champ:"Chanpyona", adm_champ_h:"Swivi chanpyona yo", adm_champ_p:"Vrè to reyisit pa chanpyona ak pa mache, apati rezilta ki regle yo.", adm_champ_foot:"Foutbòl", adm_champ_basket:"Baskèt", adm_champ_tri_joues:"Plis jwe", adm_champ_tri_best:"Pi bon", adm_champ_tri_worst:"Pi fèb", adm_champ_marches:"Pa mache (tout chanpyona)", adm_champ_liste:"Pa chanpyona + mache", adm_champ_aide:"« Rantab » = genyen pi souvan pase sa kòt la pwomèt. Mwens pase 5 match : tandans lan poko solid.", adm_champ_k_matchs:"Match regle", adm_champ_k_taux:"To reyisit", adm_champ_k_best:"Pi bon chanpyona", adm_champ_k_worst:"Pou veye", adm_champ_joues:"{g}/{n} genyen", adm_champ_cote:"kòt mwayèn {c}", adm_champ_rentable:"Rantab", adm_champ_perte:"Anba kòt la", adm_champ_peu:"Pa anpil match", adm_champ_dernier:"dènye : {d}", adm_champ_vide:"Poko gen rezilta regle nan peryòd sa a.", champ_mk_mk_total_buts:"Total gòl", champ_mk_mk_btts:"De ekip yo make", champ_mk_mk_1x2:"Viktwa 1X2", champ_mk_mk_double_chance:"Doub chans", champ_mk_mk_score_exact:"Eskò egzak", champ_mk_mk_total_domicile:"Gòl ekip lakay", champ_mk_mk_total_exterieur:"Gòl ekip deyò", champ_mk_mk_buteur:"Moun ki make", champ_mk_mk_basket_1x2:"Ganyan (baskèt)", champ_mk_mk_basket_total:"Total pwen (baskèt)", adm_nav_sources:"Sous", adm_src_h:"Kote kliyan yo soti", adm_src_p:"Kote moun ki enskri yo ak kliyan ki peye yo soti.", adm_src_7j:"7 jou", adm_src_30j:"30 jou", adm_src_par:"Pa sous", adm_src_lien_h:"Kreye yon lyen swiv", adm_src_lien_p:"Chwazi kote w ap pibliye lyen an (oswa tape yon non, egz. yon enfliyansè). Chak nouvo kont ki kreye ak lyen sa a ap konte nan sous sa a.", adm_src_nom_ph:"egz. enfliyanse_jan", adm_src_copier:"Kopye lyen an", adm_src_copie:"Lyen kopye ✓", adm_src_inconnu:"Pa konnen / dirèk", adm_src_k_inscrits:"Nouvo enskri", adm_src_k_inscrits_note:"Kont ki kreye nan peryòd la (admin pa ladan).", adm_src_k_payants:"Kliyan ki peye", adm_src_k_conv:"To konvèsyon", adm_src_k_top:"Pi bon sous", adm_src_inscrits:"enskri", adm_src_payants:"peye", adm_src_conv:"konvèsyon", adm_src_vide:"Pa gen enskri nan peryòd sa a.", adm_nav_telegram:"Telegram", adm_tg_h:"Gwoup Telegram", adm_tg_p:"Eta robo a, gwoup VIP yo ak aksè yo.",
 ov_rev_htg_h:"MonCash / NatCash (an goud)", ov_stripe_h:"Stripe — peman pa kat (an dola)", ov_stripe_total:"Total Stripe resevwa", ov_stripe_total_note:"Konfime otomatikman. Toujou an dola, menm si kliyan an peye an goud.", ov_stripe_mois:"Stripe mwa sa a", ov_stripe_count:"Peman Stripe", ov_stripe_verif:"Stripe pou verifye", ov_stripe_verif_note:"Ap tann yon verifikasyon manyèl (montan oswa kont ki pa atann).", ov_stripe_plans:"Pa plan (lyen peman)", ov_stripe_recent:"Dènye peman Stripe", ov_stripe_payeen:"peye an {d}", ov_stripe_none:"Pa gen peman Stripe pou kounye a.",
 ov_live:"An dirèk", ov_kpis_h:"Endikatè kle", ov_quick_h:"Aksè rapid", ov_q_pay:"Peman", ov_q_users:"Itilizatè", ov_q_fiches:"Fich", ov_q_rev:"Revni",
 st_pending:"An kou", hf_search_ph:"Chèche yon kòd, yon match, yon lig…", hf_sport:"Espò", hf_count:"{n} fich jwenn", hf_reset:"Reyinisyalize",
@@ -5562,13 +5562,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const wVip=ctx.measureText('VIP').width;ctx.fillStyle='#E8CE8A';ctx.fillText('BETCOTE',lx+112+wVip,ly+70);
 
     // Titre « TIKET GENYEN » avec coche
-    const titre=t('dtk_share_titre');
+    // Fiche EN COURS (16/10, partage admin) : aucun ✓ / ✗, titre « FICHE DU JOUR », heure de chaque match.
+    const enCours=!!tk.enCours;
+    const titre=t(enCours?'dtk_share_titre_encours':'dtk_share_titre');
     ctx.font='800 84px '+SORA;
-    const wT=ctx.measureText(titre).width,rC=44,ecart=26,x0=W/2-(rC*2+ecart+wT)/2,yT=360;
-    ctx.fillStyle='#2ED47F';ctx.beginPath();ctx.arc(x0+rC,yT-28,rC,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#06140C';ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';
-    ctx.beginPath();ctx.moveTo(x0+rC-18,yT-28);ctx.lineTo(x0+rC-5,yT-15);ctx.lineTo(x0+rC+19,yT-41);ctx.stroke();
-    ctx.fillStyle='#2ED47F';ctx.fillText(titre,x0+rC*2+ecart,yT);
+    if(enCours){
+      ctx.textAlign='center';ctx.fillStyle='#E8CE8A';ctx.fillText(titre,W/2,360);ctx.textAlign='left';
+    }else{
+      const wT=ctx.measureText(titre).width,rC=44,ecart=26,x0=W/2-(rC*2+ecart+wT)/2,yT=360;
+      ctx.fillStyle='#2ED47F';ctx.beginPath();ctx.arc(x0+rC,yT-28,rC,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#06140C';ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.beginPath();ctx.moveTo(x0+rC-18,yT-28);ctx.lineTo(x0+rC-5,yT-15);ctx.lineTo(x0+rC+19,yT-41);ctx.stroke();
+      ctx.fillStyle='#2ED47F';ctx.fillText(titre,x0+rC*2+ecart,yT);
+    }
     const estExact=tk.scoreCount>0&&tk.scoreCount>=tk.legsCount;
     const typeTxt=estExact?t('share_type_exact'):((tk.sport==='basket'||tk.sport==='nba')?t('share_type_basket'):t('share_type_foot'));
     ctx.font='600 30px '+INTER;ctx.fillStyle='#8F9BB0';ctx.textAlign='center';
@@ -5583,8 +5589,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     legs.slice(0,MAX).forEach(lg=>{
       ctx.fillStyle='rgba(255,255,255,.04)';rr(X,y,LW,HL-18,28);ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=2;ctx.stroke();
-      // Marque du resultat REEL
       const cx=X+58,cy=y+(HL-18)/2,res=lg.result;
+      if(enCours){
+        // Heure du match (heure d'Haiti) a la place du resultat.
+        let hr=lg.heure||'';
+        if(!hr&&lg.kickoff){const d=instantDeLeg(lg.kickoff);if(d)hr=partsHaiti(d).heure;}
+        ctx.fillStyle='rgba(232,206,138,.10)';rr(cx-44,cy-30,88,60,16);ctx.fill();
+        ctx.strokeStyle='rgba(232,206,138,.30)';ctx.lineWidth=2;ctx.stroke();
+        ctx.textAlign='center';ctx.fillStyle='#E8CE8A';ctx.font='700 26px '+INTER;ctx.fillText(hr||'—',cx,cy+9);
+      }else{
+      // Marque du resultat REEL
       const coul=res==='lost'?['rgba(240,115,94,.16)','#F0735E']:res==='void'?['rgba(143,155,176,.16)','#8F9BB0']:['rgba(46,212,127,.16)','#2ED47F'];
       ctx.fillStyle=coul[0];ctx.beginPath();ctx.arc(cx,cy,27,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle=coul[1];ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
@@ -5592,6 +5606,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       else if(res==='void'){ctx.moveTo(cx-10,cy);ctx.lineTo(cx+10,cy);}
       else{ctx.moveTo(cx-11,cy+1);ctx.lineTo(cx-3,cy+9);ctx.lineTo(cx+12,cy-8);}
       ctx.stroke();
+      }
       ctx.textAlign='left';
       ctx.fillStyle='#F4F3ED';ctx.font='700 36px '+INTER;ctx.fillText(tronqueTexte(lg.match||'',30),X+112,y+50);
       const ligue=(String(lg.league||'')+(lg.leagueCountry?' ('+lg.leagueCountry+')':'')).toUpperCase();
@@ -5636,7 +5651,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(!blob)throw new Error('image');
       const fichier=new File([blob],'vip-betcote-ticket.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[fichier]})){
-        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t('dtk_share_texte')+' '+('https://'+(lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
+        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t((tk&&tk.enCours)?'dtk_share_texte_encours':'dtk_share_texte')+' '+('https://'+(lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
       }else{
         // Repli (29/08) : navigateur sans partage de fichier (surtout
         // desktop) -- telechargement direct plutot que rien.
@@ -7534,6 +7549,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='security')renderSecurity();
     if(view==='telegram')renderTelegramAdmin();
     if(view==='sources')renderSourcesAdmin();
+    if(view==='championnats')renderChampionnatsAdmin();
     if(view==='parrainage')renderParrainageAdmin();
   }
   document.querySelectorAll('#admDash [data-adback]').forEach(b=>{
@@ -9450,6 +9466,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '<div id="admSetPwBox"></div>';
     admPwStage='start';admPwCode='';
     renderAdmPwSection();
+    renderSecurity();   // 16/10 : la 2FA est affichee dans Parametres (plus d'entree separee au menu)
   }
 
   /* ---- Sekirite 2FA (14/10) : activer / desactiver quand l'admin le
@@ -9554,6 +9571,83 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
   }
   (function(){const b=document.getElementById('admParrRefresh');if(b)b.addEventListener('click',renderParrainageAdmin);})();
+
+  // ============================================================================
+  // SUIVI DES CHAMPIONNATS (16/10) — lecture seule (get_suivi_championnats).
+  // « Rentable » : taux reel > probabilite promise par la cote moyenne (1 / cote).
+  // ============================================================================
+  let champPeriode='all',champSport='all',champTri='joues',champCache=null,champCacheCle='';
+  const champMarche=m=>{const k='champ_mk_'+m;const v=t(k);return v&&v!==k?v:String(m||'').replace(/^mk_/,'').replace(/_/g,' ');};
+  const champPct=(g,n)=>n?Math.round(g*100/n):0;
+  function champLigne(titre,sous,r,peuSeuil){
+    const n=Number(r.joues)||0,g=Number(r.gagnes)||0,c=Number(r.cote_moy)||0;
+    const p=champPct(g,n),attendu=c>0?Math.round(100/c):null;
+    const cls=p>=70?'bon':p>=50?'moyen':'faible';
+    const coul=cls==='bon'?'#2ED47F':cls==='moyen'?'#E8CE8A':'#F0735E';
+    let tag='';
+    if(n<peuSeuil)tag='<span class="adm-champ-tag peu">'+t('adm_champ_peu')+'</span>';
+    else if(attendu!=null)tag=p>attendu?'<span class="adm-champ-tag ok">'+t('adm_champ_rentable')+' · +'+(p-attendu)+' pts</span>'
+                                       :'<span class="adm-champ-tag ko">'+t('adm_champ_perte')+' · '+(p-attendu)+' pts</span>';
+    return '<div class="adm-champ-row"><div class="adm-champ-nom"><b>'+stripTags(titre)+'</b><small>'+stripTags(sous)+'</small></div>'+
+      '<div class="adm-champ-pct '+cls+'">'+p+'%</div>'+
+      '<div class="adm-champ-bar"><i style="width:'+p+'%;background:'+coul+'"></i></div>'+
+      '<div class="adm-champ-tags"><span class="adm-champ-tag">'+t('adm_champ_joues').replace('{g}',g).replace('{n}',n)+'</span>'+
+      (c?'<span class="adm-champ-tag">'+t('adm_champ_cote').replace('{c}',c.toFixed(2))+'</span>':'')+tag+
+      (r.dernier?'<span class="adm-champ-tag">'+t('adm_champ_dernier').replace('{d}',stripTags(String(r.dernier)))+'</span>':'')+'</div></div>';
+  }
+  async function renderChampionnatsAdmin(force){
+    const kpis=document.getElementById('admChampKpis'),liste=document.getElementById('admChampListe'),marches=document.getElementById('admChampMarches');
+    if(!kpis)return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){kpis.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_offline')+'</span></div>';return;}
+    let rows=champCache;
+    if(force||!rows||champCacheCle!==champPeriode){
+      kpis.innerHTML='<div class="rev-card"><span class="admdash-empty" style="padding:6px 0">'+t('adm_k_loading')+'</span></div>';
+      liste.innerHTML='';marches.innerHTML='';
+      try{
+        const {data,error}=await sb.rpc('get_suivi_championnats',{p_jours:champPeriode==='all'?null:Number(champPeriode)});
+        if(error)throw error;
+        rows=Array.isArray(data)?data:[];champCache=rows;champCacheCle=champPeriode;
+      }catch(e){kpis.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';return;}
+    }
+    rows=rows.filter(r=>champSport==='all'||(champSport==='basket'?(r.sport==='basket'||r.sport==='nba'):(r.sport!=='basket'&&r.sport!=='nba')));
+    if(!rows.length){
+      kpis.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_champ_vide')+'</span></div>';
+      liste.innerHTML='';marches.innerHTML='<div class="admdash-empty">'+t('adm_champ_vide')+'</div>';return;
+    }
+    // Totaux et regroupements
+    const tot=rows.reduce((a,r)=>{a.n+=Number(r.joues)||0;a.g+=Number(r.gagnes)||0;return a;},{n:0,g:0});
+    const grouper=cle=>{const m=new Map();rows.forEach(r=>{const k=cle(r);const e=m.get(k)||{joues:0,gagnes:0,sc:0,dernier:null,ex:r};
+      const n=Number(r.joues)||0;e.joues+=n;e.gagnes+=Number(r.gagnes)||0;e.sc+=(Number(r.cote_moy)||0)*n;
+      if(!e.dernier||String(r.dernier)>String(e.dernier))e.dernier=r.dernier;m.set(k,e);});
+      return [...m.entries()].map(([k,e])=>({cle:k,joues:e.joues,gagnes:e.gagnes,cote_moy:e.joues?e.sc/e.joues:0,dernier:e.dernier,ex:e.ex}));};
+    const parLigue=grouper(r=>r.league+'|'+(r.pays||'')).filter(x=>x.joues>=5);
+    const tauxL=x=>x.gagnes/x.joues;
+    const best=parLigue.slice().sort((a,b)=>tauxL(b)-tauxL(a)||b.joues-a.joues)[0];
+    const worst=parLigue.slice().sort((a,b)=>tauxL(a)-tauxL(b)||b.joues-a.joues)[0];
+    const nomL=x=>x?x.ex.league+(x.ex.pays?' ('+x.ex.pays+')':''):'—';
+    kpis.innerHTML=
+      revCard(IC_CHECK,null,'',t('adm_champ_k_matchs'),String(tot.n),'gold')+
+      revCard(IC_TREND,'green','',t('adm_champ_k_taux'),champPct(tot.g,tot.n)+'%')+
+      revCard(IC_TREND,'green','',t('adm_champ_k_best'),best?stripTags(nomL(best))+' · '+champPct(best.gagnes,best.joues)+'%':'—')+
+      revCard(IC_CLOCK,'neutre','',t('adm_champ_k_worst'),worst&&worst!==best?stripTags(nomL(worst))+' · '+champPct(worst.gagnes,worst.joues)+'%':'—');
+    const trier=arr=>{const a=arr.slice();
+      if(champTri==='meilleurs')a.sort((x,y)=>((Number(y.joues)>=5)-(Number(x.joues)>=5))||(y.gagnes/y.joues-x.gagnes/x.joues)||y.joues-x.joues);
+      else if(champTri==='pires')a.sort((x,y)=>((Number(y.joues)>=5)-(Number(x.joues)>=5))||(x.gagnes/x.joues-y.gagnes/y.joues)||y.joues-x.joues);
+      else a.sort((x,y)=>y.joues-x.joues||(y.gagnes/y.joues-x.gagnes/x.joues));
+      return a;};
+    marches.innerHTML=trier(grouper(r=>r.market)).map(x=>champLigne(champMarche(x.cle),'',x,10)).join('');
+    liste.innerHTML=trier(rows.map(r=>({...r,joues:Number(r.joues)||0,gagnes:Number(r.gagnes)||0}))).map(r=>
+      champLigne(r.league+(r.pays?' ('+r.pays+')':''),champMarche(r.market)+((r.sport==='basket'||r.sport==='nba')?' · '+t('adm_champ_basket'):''),r,5)).join('');
+  }
+  (function(){
+    const lier=(id,fn)=>document.querySelectorAll('#'+id+' .dash-fbtn').forEach(b=>b.addEventListener('click',()=>{
+      document.querySelectorAll('#'+id+' .dash-fbtn').forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset.val);renderChampionnatsAdmin();}));
+    lier('admChampPeriode',v=>{champPeriode=v;});
+    lier('admChampSport',v=>{champSport=v;});
+    lier('admChampTri',v=>{champTri=v;});
+    const r=document.getElementById('admChampRefresh');if(r)r.addEventListener('click',()=>renderChampionnatsAdmin(true));
+  })();
 
   async function renderSourcesAdmin(){
     const kpis=document.getElementById('admSrcKpis'),liste=document.getElementById('admSrcListe');
@@ -10129,6 +10223,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   /* Rendu d'une fiche complete — meme information que le Dashboard client.
      Les selections sont cliquables : elles ouvrent l'editeur sur ce match. */
+  /* 16/10 : une fiche dont UN match a deja commence ne s'ouvre plus en modification
+     (coup d'envoi reel kickoff_at ; repli : date de la fiche + heure d'Haiti du match). */
+  function debutLegMs(l,playDate){
+    const d=l&&l.kickoff_at?instantDeLeg(l.kickoff_at):null;
+    if(d)return d.getTime();
+    const m=String((l&&l.match_time)||'').match(/^(\d{1,2}):(\d{2})/);
+    if(!m||!playDate)return null;
+    const base=Date.parse(playDate+'T'+m[1].padStart(2,'0')+':'+m[2]+':00Z');
+    if(isNaN(base))return null;
+    let decal=4;
+    try{const n=new Date();const h=new Date(n.toLocaleString('en-US',{timeZone:'America/Port-au-Prince'}));
+      const u=new Date(n.toLocaleString('en-US',{timeZone:'UTC'}));decal=Math.round((u-h)/3600000);}catch(e){}
+    return base+decal*3600000;
+  }
+  function ficheCommencee(tk,legs){
+    const now=Date.now();
+    return (legs||[]).some(l=>{const ms=debutLegMs(l,tk&&tk.play_date);return ms!=null&&ms<=now;});
+  }
   function ficheCardHtml(tk,legs){
     const badgeCls={pending:'pending',won:'won',lost:'lost'}[tk.status]||'aucun';
     const badgeLbl={pending:'adm_fiche_st_pending',won:'adm_fiche_st_won',lost:'adm_fiche_st_lost'}[tk.status];
@@ -10143,6 +10255,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        proposait "Modifier quand meme") — l'admin ne peut plus jamais
        toucher un resultat deja acquis. */
     const ficheTerminee=(tk.status==='won'||tk.status==='lost');
+    const ficheBloquee=!ficheTerminee&&ficheCommencee(tk,legs);
     // Note "a jouer en 2 tickets separes" (25/08, demande explicite de
     // James) : affichee sur TOUTE fiche 100% score exact, meme detection
     // que titreFiche (estFicheScoreExact), jamais sur une fiche normale.
@@ -10155,7 +10268,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const pickRaw2=String(l.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
       const pick=(pickRaw2.indexOf(' — ')>-1||!(translations.fr||{})[pickRaw2])?pickRaw2:t(pickRaw2);
       const cote=Number(l.odd);
-      const regle=ficheTerminee||!!l.result;
+      const regle=ficheTerminee||ficheBloquee||!!l.result;
       const corps=marqueLeg(l.result)+
         '<span class="admf-leg-body">'+
           '<span class="admf-leg-top"><span class="admf-leg-time">'+stripTags(heure)+'</span>'+
@@ -10178,6 +10291,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<span class="admdash-row-badge '+badgeCls+'">'+(badgeLbl?t(badgeLbl):tk.status)+'</span>'+
       '</div>'+
       noteX2+
+      (ficheBloquee?'<div class="admf-lock" style="margin:8px 12px 0"><span>'+t('adm_fiche_commencee')+'</span></div>':'')+
       '<ul class="admf-legs">'+(legsHtml||'')+'</ul>'+
       '<div class="admf-card-f">'+
         '<span>'+(tk.legs_count||0)+' '+t('adm_fiche_legs')+
@@ -10186,7 +10300,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       '</div>'+
       (ficheTerminee
         ?(tk.status==='won'?'<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'">'+t('adm_fiche_partager')+'</button>':'')
-        :'<button type="button" class="admf-edit" data-editfid="'+tk.id+'">'+t('adm_fiche_leg_edit')+'</button>')+
+        :(ficheBloquee?'':'<button type="button" class="admf-edit" data-editfid="'+tk.id+'">'+t('adm_fiche_leg_edit')+'</button>')+
+         '<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-encours="1">'+t('adm_fiche_partager')+'</button>')+
     '</div>';
   }
 
@@ -10537,9 +10652,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           const ls=(parFiche[tk.id]||[]);
           b.disabled=true;
           try{
+            const enCours=b.dataset.encours==='1';
             await window.VB_partagerTicket({sport:tk.sport,scoreCount:Number(tk.score_legs_count)||0,legsCount:Number(tk.legs_count)||ls.length,
-              totalOdd:Number(tk.total_odd)||0,
-              legs:ls.map(l=>({match:l.match_label||'',league:l.league||'',leagueCountry:l.league_country||'',pick:l.pick||'',odd:Number(l.odd)||0,result:l.result||null}))},
+              totalOdd:Number(tk.total_odd)||0,enCours:enCours,
+              legs:ls.map(l=>({match:l.match_label||'',league:l.league||'',leagueCountry:l.league_country||'',pick:l.pick||'',odd:Number(l.odd)||0,
+                result:enCours?null:(l.result||null),kickoff:l.kickoff_at||null,heure:l.kickoff_at?'':(l.match_time||'')}))},
               {lien:'vipbetcote.com'});
           }finally{b.disabled=false;}
         });
@@ -10889,13 +11006,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     majResumeCote();
   }
 
+  let fbFicheCommencee=false;
   async function renderFicheDetail(){
     const box=document.getElementById('admFicheDetail');
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     box.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
     if(!sb)return;
     let tk={code:'',sport:'foot',min_plan_rank:1,status:'pending',confidence:70,play_date:document.getElementById('admFichesDate').value||dateAujourdhui(),published:false};
-    fbLegsCourantes=[];
+    fbLegsCourantes=[];fbFicheCommencee=false;
     if(selectedFicheId){
       try{
         const {data:tdata}=await sb.from('tickets').select('*').eq('id',selectedFicheId).single();
@@ -10904,6 +11022,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // L'heure est presentee a l'heure d'Haiti. fixture_id et result
         // (renseignes par le bot) sont conserves tels quels : une simple
         // correction de cote ne doit jamais effacer ces informations.
+        fbFicheCommencee=ficheCommencee(tk,ldata||[]);
         fbLegsCourantes=(ldata||[]).map(l=>({
           match_label:l.match_label,
           match_time:heureHaitiDeLeg(l,tk.play_date),
@@ -10916,12 +11035,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        subsiste quelque part, une fiche TERMINEE (won/lost) ne s'ouvre
        jamais en edition — affichage seul, aucun champ, aucun bouton. La
        carte (ficheCardHtml) ne propose deja plus ce chemin normalement. */
-    if(selectedFicheId&&(tk.status==='won'||tk.status==='lost')){
+    if(selectedFicheId&&(tk.status==='won'||tk.status==='lost'||fbFicheCommencee)){
       box.innerHTML='<div class="admf-lock" style="margin:0 0 4px">'+
-        '<span>'+t('adm_fiche_leg_locked')+'</span></div>'+
+        '<span>'+t((tk.status==='won'||tk.status==='lost')?'adm_fiche_leg_locked':'adm_fiche_commencee')+'</span></div>'+
         '<div class="admdash-section-h">'+stripTags(titreFiche(tk,fbLegsCourantes))+'</div>'+
         '<div id="admFicheLegsList"></div>';
       rerenderLegsList();
+      // Blocage TOTAL (16/10) : lecture seule, aucun champ ni bouton actif.
+      document.querySelectorAll('#admFicheLegsList input,#admFicheLegsList select,#admFicheLegsList textarea,#admFicheLegsList button').forEach(x=>{x.disabled=true;});
       return;
     }
     const plans=(window.VB_allPlans?window.VB_allPlans():[]).slice().sort((a,b)=>rank[a.id]-rank[b.id]);

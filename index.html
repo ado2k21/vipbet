@@ -3546,7 +3546,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
    ADMIN REDESIGN (15/10) : Vue d'ensemble, Statistiques, filtres Istorik.
    Affichage uniquement : aucune donnee, requete ou configuration modifiee.
    ===================================================================== */
-[data-adview="home"],[data-adview="revenus"],[data-adview="sources"],[data-adview="parrainage"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
+[data-adview="home"],[data-adview="revenus"],[data-adview="sources"],[data-adview="parrainage"],[data-adview="championnats"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
 .ov-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 22px}
 .ov-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ov-green)}
 .ov-live{width:7px;height:7px;border-radius:50%;background:var(--ov-green);box-shadow:0 0 0 0 rgba(46,212,127,.6);animation:ovPulse 2s infinite}
@@ -3597,6 +3597,24 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .adm-src-lien:empty{display:none}
 .adm-src-stats{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--gris)}
 .adm-src-stats b{color:#F4F3ED}
+/* Suivi des championnats (16/10) */
+.adm-champ-filtres{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.adm-champ-filtres .dash-fgroup{flex-wrap:wrap}
+.adm-champ-aide{color:var(--gris);font-size:12.5px;margin:-4px 0 10px;line-height:1.5}
+.adm-champ-row{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;padding:12px 4px;border-bottom:1px solid rgba(244,243,237,.06)}
+.adm-champ-row:last-child{border-bottom:none}
+.adm-champ-nom{min-width:0}
+.adm-champ-nom b{display:block;color:#F4F3ED;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-champ-nom small{display:block;color:var(--gris);font-size:12px;margin-top:2px}
+.adm-champ-pct{font-family:var(--mono);font-weight:800;font-size:16px;text-align:right}
+.adm-champ-pct.bon{color:var(--ov-green)}.adm-champ-pct.moyen{color:var(--ov-gold)}.adm-champ-pct.faible{color:var(--ov-red)}
+.adm-champ-bar{grid-column:1/-1;height:6px;border-radius:99px;background:rgba(244,243,237,.07);overflow:hidden}
+.adm-champ-bar i{display:block;height:100%;border-radius:99px}
+.adm-champ-tags{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px;color:var(--gris)}
+.adm-champ-tag{padding:2px 8px;border-radius:99px;background:rgba(244,243,237,.06)}
+.adm-champ-tag.ok{background:rgba(46,212,127,.12);color:#7FF0B5}
+.adm-champ-tag.ko{background:rgba(240,115,94,.12);color:#F5A493}
+.adm-champ-tag.peu{background:rgba(143,155,176,.12)}
 .adm-parr-row{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:13px;background:rgba(244,243,237,.03);border:1px solid var(--ov-line)}
 .adm-parr-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .adm-parr-top b{font-size:13.5px;color:#F4F3ED;overflow-wrap:anywhere}
@@ -5396,21 +5414,17 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
             <span data-i18n="adm_nav_fiches">Fich</span>
           </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="championnats">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
+            <span data-i18n="adm_nav_champ">Championnats</span>
+          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="faq">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.8 2.8 0 1 1 3.9 2.6c-.9.4-1.6 1-1.6 2v.3"/><circle cx="12" cy="17" r=".3" fill="currentColor"/></svg>
             <span data-i18n="adm_nav_faq">FAQ</span>
           </button>
-          <button class="dash-menu-item" type="button" role="menuitem" data-adm="testimonials">
-            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4V5Z"/></svg>
-            <span data-i18n="adm_nav_testimonials">Temwayaj</span>
-          </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="landing">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
             <span data-i18n="adm_nav_landing">Estatistik akèy</span>
-          </button>
-          <button class="dash-menu-item" type="button" role="menuitem" data-adm="security">
-            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.6c0 4.5 3.1 8.2 7.5 9.4 4.4-1.2 7.5-4.9 7.5-9.4V6Z"/><rect x="9.2" y="10.8" width="5.6" height="4.4" rx="1"/><path d="M10.4 10.8V9.6a1.6 1.6 0 0 1 3.2 0v1.2"/></svg>
-            <span data-i18n="adm_nav_security">Sekirite 2FA</span>
           </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="telegram">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 3.5 2.8 10.7c-.9.4-.8 1.6.1 1.9l4.6 1.5 1.8 5.6c.3.9 1.4 1 1.9.3l2.5-3 4.8 3.6c.7.5 1.6.1 1.8-.7L22.9 4.9c.2-.9-.6-1.7-1.4-1.4Z"/></svg>
@@ -5494,8 +5508,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
               <button type="button" class="ov-q" data-ovgo="revenus"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span data-i18n="ov_q_rev">Revenus</span></button>
             </div>
             <div class="ov-tools" id="admApprentissageWrap">
-              <button type="button" class="wiz-change" id="admApprentissageBtn" data-i18n="adm_apprentissage_btn">Rapport apprentissage</button>
-              <div id="admApprentissageResultat" style="margin-top:8px"></div>
+              <button type="button" class="wiz-change" data-ovgo="championnats" data-i18n="adm_nav_champ">Championnats</button>
             </div>
           </div>
         </section>
@@ -5868,7 +5881,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
         <h2 data-i18n="adm_security_h">Sekirite 2FA</h2>
         <p data-i18n="adm_security_p">Double otantifikasyon kont admin ou.</p>
       </div>
-      <div id="admSecurityBody"></div>
+      <!-- 16/10 : la 2FA est maintenant dans Parametres (admSecurityBody deplace). -->
     </div>
 
     <div class="dash-view" data-adview="telegram">
@@ -5972,6 +5985,60 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
         <p data-i18n="adm_settings_p">Modpas ou ak sekirite kont admin ou.</p>
       </div>
       <div id="admSettingsBody"></div>
+      <div class="admdash-section-h" style="margin-top:22px" data-i18n="adm_security_h">Sekirite 2FA</div>
+      <div id="admSecurityBody"></div>
+    </div>
+
+    <!-- VUE : SUIVI DES CHAMPIONNATS (16/10) — vrais resultats regles, lecture seule -->
+    <div class="dash-view" data-adview="championnats">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="ov-head">
+        <div>
+          <span class="ov-eyebrow"><span class="ov-live"></span><span data-i18n="ov_live">En direct</span></span>
+          <h2 data-i18n="adm_champ_h">Suivi des championnats</h2>
+          <p data-i18n="adm_champ_p">Taux de réussite réel par championnat et par marché, à partir des résultats réglés.</p>
+        </div>
+        <div class="ov-head-act">
+          <button type="button" class="ov-refresh" id="admChampRefresh">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+            <span data-i18n="adm_refresh">Rafrechi</span>
+          </button>
+        </div>
+      </div>
+      <div class="adm-champ-filtres">
+        <div class="dash-fgroup" id="admChampPeriode">
+          <button class="dash-fbtn" data-val="7" type="button" data-i18n="adm_src_7j">7 jours</button>
+          <button class="dash-fbtn" data-val="30" type="button" data-i18n="adm_src_30j">30 jours</button>
+          <button class="dash-fbtn on" data-val="all" type="button" data-i18n="dash_f_all">Tout</button>
+        </div>
+        <div class="dash-fgroup" id="admChampSport">
+          <button class="dash-fbtn on" data-val="all" type="button" data-i18n="dash_f_all">Tout</button>
+          <button class="dash-fbtn" data-val="foot" type="button" data-i18n="adm_champ_foot">Football</button>
+          <button class="dash-fbtn" data-val="basket" type="button" data-i18n="adm_champ_basket">Basket</button>
+        </div>
+        <div class="dash-fgroup" id="admChampTri">
+          <button class="dash-fbtn on" data-val="joues" type="button" data-i18n="adm_champ_tri_joues">Plus joués</button>
+          <button class="dash-fbtn" data-val="meilleurs" type="button" data-i18n="adm_champ_tri_best">Meilleurs</button>
+          <button class="dash-fbtn" data-val="pires" type="button" data-i18n="adm_champ_tri_worst">Pires</button>
+        </div>
+      </div>
+      <section class="ov-sec">
+        <div class="ov-rev" id="admChampKpis">
+          <div class="rev-card"><span class="admdash-empty" style="padding:6px 0" data-i18n="adm_k_loading">Chajman...</span></div>
+        </div>
+      </section>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_champ_marches">Par marché (tous championnats)</div>
+        <div class="ov-card"><div id="admChampMarches" class="admdash-list"></div></div>
+      </section>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_champ_liste">Par championnat + marché</div>
+        <p class="adm-champ-aide" data-i18n="adm_champ_aide">« Rentable » = gagne plus souvent que ce que promet la cote. Moins de 5 matchs joués : tendance encore fragile.</p>
+        <div class="ov-card"><div id="admChampListe" class="admdash-list"></div></div>
+      </section>
     </div>
 
   </div>
@@ -6042,6 +6109,6 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 </footer>
 
 
-<script src="app.js?v=20261016h"></script>
+<script src="app.js?v=20261016i"></script>
 </body>
 </html>

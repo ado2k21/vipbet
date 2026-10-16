@@ -1997,7 +1997,7 @@ function construireFiche(pool, plan, options) {
   //     sont concernes, exactement la ou le probleme a ete signale.
   const MAX_SELECTIONS = options.maxSelectionsOverride != null
     ? Number(options.maxSelectionsOverride)
-    : (cibleMax <= 4 ? 4 : cibleMax <= 15 ? 5 : 10);   // 16/10 : 6 -> 5 (4-15) et 4 (2-4). Bilan : 5 matchs et + = 0 gagnée sur 20
+    : (cibleMax <= 15 ? 7 : 10);   // 16/10 (James) : cote 15 -> 6/7 matchs logique ; c'est un MAXIMUM, jamais une obligation
   // PLAFOND_PAR_MARCHE dynamique selon la cible : pour une fiche <20, le
   // document d'optimisation (point 11) demande explicitement d'éviter
   // plusieurs "Domicile Plus de X buts"/"Extérieur Plus de X buts" dans la
@@ -3609,7 +3609,9 @@ async function handler(event) {
   // matchsUtilises dans tenterAjout), jamais un chiffre arbitraire fixe.
   // 16/10 : 35 -> 12 (au-delà, aucune fiche n'a jamais gagné). Les grosses cotes restent visées :
   // POIDS_PROGRESSION favorise alors des sélections plus hautes plutôt que d'empiler les matchs.
-  const maxSelectionsEffortMax = Math.min(12, Math.max(10, nbMatchsDisponibles));
+  // 16/10 (James) : une combinaison de 35 matchs est perdue d'avance. Gros plafonds = cotes plus
+  // risquées mais probabilités avantageuses, au maximum 10 à 18 matchs selon les matchs du jour.
+  const maxSelectionsEffortMax = Math.min(18, Math.max(10, nbMatchsDisponibles));
 
   const PALIERS_JOUR_RICHE = [
     { nom: 'Palier 1 (2-4)',  cibleMin: 2,  cibleMax: 4,     avecRepli: true  },
