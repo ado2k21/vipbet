@@ -529,7 +529,7 @@ adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le
 adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
-auth_err_nouser:"Email ou mot de passe incorrect",
+auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion",
 auth_taken_h:"Cette adresse e-mail est déjà enregistrée",
 auth_taken_sub:"Un compte existe déjà avec cet e-mail. Rendez-vous sur la page de connexion pour y accéder.",
 auth_suspended_h:"Compte suspendu",
@@ -1107,7 +1107,7 @@ adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
-auth_err_nouser:"Incorrect email or password",
+auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection",
 auth_taken_h:"This email address is already registered",
 auth_taken_sub:"An account already exists with this email. Head to the login page to sign in.",
 auth_suspended_h:"Account suspended",
@@ -1685,7 +1685,7 @@ adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
-auth_err_nouser:"Imèl oswa modpas pa kòrèk",
+auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon",
 auth_taken_h:"Imèl sa a deja anrejistre",
 auth_taken_sub:"Gen yon kont ki deja gen imèl sa a. Ale nan paj koneksyon an pou w antre.",
 auth_suspended_h:"Kont sispann",
@@ -2493,6 +2493,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
     if(!ok)return;
+    // 17/10 : hors ligne -> on ne passe pas a l'etape suivante (logique), avec un message clair.
+    if(navigator.onLine===false){
+      if(window.VB_toast)window.VB_toast('auth_offline_h',t('auth_err_offline'));
+      return;
+    }
 
     state.fullname=fn.value.trim();
     state.site=sitePickValue();          // site prefere, facultatif
@@ -2515,6 +2520,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       openInlineOtp();
       window.VB_requestSignupCode(state.email,submitBtn).then(res=>{
         if(res.ok&&window.VB_toast)window.VB_toast('toast_mail_h',t('toast_mail_p').replace('{email}',state.email));
+        else if(!res.ok&&(res.reseau||navigator.onLine===false)){
+          closeInlineOtp();
+          if(window.VB_toast)window.VB_toast('auth_offline_h',t('auth_err_offline'));
+        }
         else if(!res.ok){
           if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('envoi_code_signup',res.erreur);
           if(window.VB_toast)window.VB_toast('toast_mail_err_h',t('toast_mail_err_p'));
@@ -4442,6 +4451,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!id.value.trim()){setErr(id.closest('.field'),'auth_err_required');ok=false}else setErr(id.closest('.field'),null);
     if(!pw.value){setErr(pw.closest('.field'),'auth_err_required');ok=false}else setErr(pw.closest('.field'),null);
     if(!ok)return;
+    // 17/10 : hors ligne -> « verifiez votre connexion », jamais « email ou mot de passe incorrect ».
+    if(navigator.onLine===false){setErr(id.closest('.field'),'auth_err_offline');return;}
+    let reseauKO=false;
 
     /* Connexion reelle via Supabase, en priorite. Si Supabase est
        injoignable (reseau, CDN), on se replie sur l'ancien registre local
@@ -4456,6 +4468,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           password:pw.value
         });
         loginBtn.disabled=false;
+        if(error&&(error.status===0||/fetch|network|retryable|load failed/i.test(String(error.name||'')+' '+String(error.message||''))))reseauKO=true;
         if(!error&&data&&data.user){
           /* Verification du role, toujours cote serveur : c'est la table
              "profiles" (protegee par les regles de securite ecrites dans
@@ -4667,6 +4680,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
            a fonctionner via l'ancien registre local ci-dessous. */
       }catch(e){
         loginBtn.disabled=false;
+        reseauKO=true;
       }
     }
 
@@ -4695,7 +4709,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       showStep(pageDe(requiredStep(state)));
       return;
     }
-    setErr(id.closest('.field'),'auth_err_nouser');
+    setErr(id.closest('.field'),(reseauKO||navigator.onLine===false)?'auth_err_offline':'auth_err_nouser');
   });
 
   /* ================= OUVERTURE / FERMETURE ================= */
@@ -11334,7 +11348,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
       return {ok:true};
     }catch(e){
-      return {ok:false, erreur:(e&&e.message)?e.message:String(e)};
+      // fetch rejete = aucune reponse du serveur (reseau coupe)
+      return {ok:false, reseau:true, erreur:(e&&e.message)?e.message:String(e)};
     }finally{
       if(btn){
         btn.disabled=false;
