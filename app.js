@@ -11545,14 +11545,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   // Lancement initial du site : duree minimale pour eviter un flash,
   // et filet de securite pour ne jamais bloquer l'affichage.
-  const MIN_SHOW=600,MAX_SHOW=2500;
+  // 17/10 (vitesse mobile) : on retire l'animation des que la page est
+  // construite (DOMContentLoaded) au lieu d'attendre le chargement de
+  // TOUTES les images ('load') ; duree maxi 2,5 s -> 1,5 s.
+  const MIN_SHOW=400,MAX_SHOW=1500;
   const t0=Date.now();
   function finirLancement(){
     const attente=Math.max(0,MIN_SHOW-(Date.now()-t0));
     setTimeout(hide,attente);
   }
-  if(document.readyState==='complete')finirLancement();
-  else window.addEventListener('load',finirLancement);
+  if(document.readyState!=='loading')finirLancement();
+  else document.addEventListener('DOMContentLoaded',finirLancement);
   setTimeout(hide,MAX_SHOW);
 
   /* Reutilisable pour d'autres transitions (ouverture du dashboard, par
