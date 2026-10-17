@@ -190,7 +190,7 @@ async function reconcilier() {
 /* ---- Verification du jeton d'un utilisateur connecte ----
    La cle ANON (publique par nature) sert aux appels faits AVEC le jeton de
    l'utilisateur : la cle service_role n'est jamais envoyee a ce point d'entree. */
-const CLE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxscWlmamZjcHlkZHdqa2ZlcnBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MTU2MjcsImV4cCI6MjEwMjI5MTYyN30.Bw7-CHFDYV4LmNtt6WyIc5gSt3UCe7n5agbyBEo6-Zc';
+const CLE_ANON = 'sb_publishable_AtGtgVlUNec--OpbCQ-t3A_nU9oCGUF';
 
 async function utilisateurDepuisJeton(entete) {
   const auth = entete || '';

@@ -8750,7 +8750,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          signee juste apres l'insertion HTML (voir le bloc juste apres
          admBox.innerHTML= plus bas). Un clic sur la miniature l'ouvre en
          plein ecran dans un nouvel onglet — utile sur un petit ecran mobile
-         ou une miniature reste illisible. */
+         ou une miniature reste illisible (16/10 : visionneuse dans la page, plus d'onglet externe). */
       (p.manual_proof_path?
         '<div class="admdash-section-h">'+t('adm_pay_proof_h')+'</div>'+
         '<div class="adm-proof-chargement" id="admProofSlot" data-proof="'+echapper(p.manual_proof_path)+'">'+
@@ -8778,6 +8778,38 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        tant que innerHTML n'est pas execute. L'URL signee expire (5 min) :
        elle est generee a chaque ouverture du detail, jamais mise en cache,
        pour ne jamais servir un lien deja perime. */
+    /* Visionneuse plein ecran DANS l'admin (16/10) : avant, un clic ouvrait le
+       lien du fichier dans un autre onglet. Un toucher sur l'image alterne
+       « ajuste a l'ecran » / « taille reelle » (zoom) ; fermeture par le bouton,
+       un toucher sur le fond ou la touche Echap. */
+    function ouvrirVisionneuseRecu(src,alt){
+      const fond=document.createElement('div');
+      fond.setAttribute('role','dialog');fond.setAttribute('aria-modal','true');
+      fond.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(4,8,17,.94);display:flex;align-items:center;justify-content:center;overflow:auto;padding:56px 12px 24px;-webkit-overflow-scrolling:touch';
+      const im=document.createElement('img');
+      im.src=src;im.alt=alt||'';
+      im.style.cssText='max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;cursor:zoom-in;box-shadow:0 10px 40px rgba(0,0,0,.5)';
+      let zoom=false;
+      im.addEventListener('click',ev=>{
+        ev.stopPropagation();zoom=!zoom;
+        im.style.maxWidth=zoom?'none':'100%';im.style.maxHeight=zoom?'none':'100%';
+        im.style.cursor=zoom?'zoom-out':'zoom-in';
+        fond.style.alignItems=zoom?'flex-start':'center';fond.style.justifyContent=zoom?'flex-start':'center';
+      });
+      const fermer=document.createElement('button');
+      fermer.type='button';fermer.setAttribute('aria-label','Fermer');fermer.textContent='✕';
+      fermer.style.cssText='position:fixed;top:12px;right:12px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:20px;cursor:pointer;z-index:100000';
+      const clavier=ev=>{if(ev.key==='Escape')quitter();};
+      function quitter(){fond.remove();fermer.remove();document.removeEventListener('keydown',clavier);document.body.style.overflow=ancienOverflow;}
+      const ancienOverflow=document.body.style.overflow;
+      document.body.style.overflow='hidden';
+      fond.addEventListener('click',quitter);
+      fermer.addEventListener('click',quitter);
+      document.addEventListener('keydown',clavier);
+      fond.appendChild(im);
+      document.body.appendChild(fond);document.body.appendChild(fermer);
+      fermer.focus();
+    }
     const slotPreuve=document.getElementById('admProofSlot');
     if(slotPreuve){
       const chemin=slotPreuve.dataset.proof;
@@ -8789,7 +8821,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           im.className='adm-proof-apercu';
           im.alt=t('adm_pay_proof_h');
           im.src=data.signedUrl;
-          im.addEventListener('click',()=>window.open(data.signedUrl,'_blank','noopener,noreferrer'));
+          im.addEventListener('click',()=>ouvrirVisionneuseRecu(data.signedUrl,t('adm_pay_proof_h')));
           slotPreuve.replaceWith(im);
         }catch(e){slotPreuve.textContent=t('adm_pay_proof_err');}
       })();
@@ -11301,7 +11333,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
    jamais le navigateur — contrairement a l'ancien systeme en localStorage. */
 (function(){
   const SUPABASE_URL='https://llqifjfcpyddwjkferpn.supabase.co';
-  const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxscWlmamZjcHlkZHdqa2ZlcnBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3MTU2MjcsImV4cCI6MjEwMjI5MTYyN30.Bw7-CHFDYV4LmNtt6WyIc5gSt3UCe7n5agbyBEo6-Zc';
+  const SUPABASE_ANON_KEY='sb_publishable_AtGtgVlUNec--OpbCQ-t3A_nU9oCGUF';
 
   function initSupabase(){
     if(typeof window.supabase==='undefined'||!window.supabase.createClient){
