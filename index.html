@@ -72,7 +72,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="VIPBETCOTE">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 <script type="application/ld+json">
 {
@@ -472,6 +472,23 @@ details p{
 
 /* ---------- APPLICATION INSTALLABLE (17/10) ---------- */
 .vbios[hidden],.mnav-install[hidden],.vbios ol[hidden]{display:none!important}
+.gauth-sep{display:flex;align-items:center;gap:12px;margin:16px 0 12px;color:rgba(244,243,237,.55);font-size:13px}
+.gauth-sep::before,.gauth-sep::after{content:"";flex:1;height:1px;background:rgba(244,243,237,.18)}
+.gauth-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:48px;border-radius:14px;border:1px solid rgba(244,243,237,.14);background:rgba(244,243,237,.07);color:#fff;font:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:background .2s}
+.gauth-btn:hover{background:rgba(244,243,237,.12)}
+.gauth-btn[disabled]{opacity:.6;cursor:wait}
+.gprof{position:fixed;inset:0;z-index:420;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.65)}
+.gprof[hidden],.gprof-err[hidden]{display:none!important}
+.gprof-card{width:100%;max-width:380px;padding:18px 16px 16px;border-radius:16px;background:#0a1124;border:1px solid rgba(244,243,237,.12);color:var(--blanc)}
+.gprof-card h3{font-size:17px;margin-bottom:4px}
+.gprof-sub{font-size:13px;color:rgba(244,243,237,.65);margin-bottom:14px}
+.gprof-f{display:block;margin-bottom:10px;font-size:12.5px;font-weight:600;color:rgba(244,243,237,.8)}
+.gprof-f input,.gprof-f select{display:block;width:100%;margin-top:5px;height:42px;padding:0 12px;border-radius:10px;border:1px solid rgba(244,243,237,.16);background:rgba(244,243,237,.05);color:#fff;font:inherit;font-size:15px}
+.gprof-f select option{color:#000}
+.gprof-terms{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.4;color:rgba(244,243,237,.75);margin:4px 0 10px}
+.gprof-terms input{margin-top:2px;flex:0 0 auto}
+.gprof-err{font-size:12.5px;color:#ff7a7a;margin-bottom:8px}
+.gprof-btn{width:100%}
 .lp-store{display:flex;justify-content:center;gap:8px;margin:-6px 0 10px}
 .lp-kicker:has(+ .lp-store){margin-bottom:8px}
 .lp-store[hidden]{display:none!important}
@@ -4605,6 +4622,9 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 
             <button type="submit" class="btn btn-or authpage-submit" id="authLoginSubmit" data-i18n="auth_btn_login">Konekte</button>
 
+            <div class="gauth-sep"><span data-i18n="auth_or_continue">oswa kontinye ak</span></div>
+            <button type="button" class="gauth-btn" data-google-auth><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span>Google</span></button>
+
             <p class="authpage-switch">
               <span data-i18n="auth_switch_to_signup_txt">Ou pa gen kont?</span><button type="button" class="authpage-switch-link" data-auth-switch="signup" data-i18n="auth_switch_to_signup_link">Kreye kont gratis</button>
             </p>
@@ -4719,7 +4739,6 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
               </label>
             </div>
 
-            
             <label class="check check-terms">
               <input type="checkbox" name="terms">
               <span class="check-box"></span>
@@ -4728,6 +4747,9 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
             <span class="field-err field-err-terms" data-i18n="auth_err_terms">Ou dwe koche kaz sa a pou kontinye</span>
 
             <button type="submit" class="btn btn-or authpage-submit" data-i18n="wiz_btn_next1">Kontinye</button>
+
+            <div class="gauth-sep"><span data-i18n="auth_or_continue">oswa kontinye ak</span></div>
+            <button type="button" class="gauth-btn" data-google-auth><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span>Google</span></button>
 
             <p class="authpage-switch">
               <span data-i18n="auth_switch_to_login_txt">Ou gen deja yon kont?</span><button type="button" class="authpage-switch-link" data-auth-switch="login" data-i18n="auth_switch_to_login_link">Konekte</button>
@@ -5448,7 +5470,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
             <li data-i18n="parr_how_2">Zanmi w kreye kont li ak lyen sa a</li>
             <li data-i18n="parr_how_3">Lè premye peman li konfime, jou yo ajoute sou plan ou otomatikman</li>
           </ol>
-          <p class="parr-regle" data-i18n="parr_regle">Maksimòm 10 rekonpans pa mwa. Se sèlman premye plan zanmi w lan ki konte. Kont an doub oswa fwod pa konte.</p>
+          <p class="parr-regle" data-i18n="parr_regle">• Maksimòm 10 rekonpans pa mwa.<br>• Se sèlman premye plan zanmi w lan ki konte.<br>• Kont an doub oswa fwod pa konte.<br>• Si w renouvle oswa chanje plan anvan li fini, jou parenaj ou poko itilize yo ap pase sou nouvo plan an.<br>• Zanmi w lan dwe louvri lyen ou epi kreye kont li sou menm telefòn nan (nan 7 jou).<br>• Si w gen plan Lifetime, aksè ou deja san limit : jou parenaj yo pa ajoute.<br>• W ap resevwa yon imèl ak yon notifikasyon pou chak rekonpans.</p>
         </div>
         <div class="parr-card">
           <div class="parr-lbl" data-i18n="parr_filleuls_h">Zanmi ou yo</div>
@@ -6212,6 +6234,20 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 </footer>
 
 
+<!-- 17/10 : premiere connexion Google -> completer le profil -->
+<div class="gprof" id="vbGoogleProfil" role="dialog" aria-labelledby="vbGpT" hidden>
+  <form class="gprof-card" id="vbGoogleProfilForm" novalidate>
+    <h3 id="vbGpT" data-i18n="gp_title">Fini kreye kont ou</h3>
+    <p class="gprof-sub" data-i18n="gp_sub">Yon dènye etap anvan ou wè fich yo.</p>
+    <label class="gprof-f"><span data-i18n="auth_lbl_username">Non itilizatè</span>
+      <input type="text" name="gpUser" maxlength="40" autocomplete="nickname" required></label>
+    <label class="gprof-f"><span data-i18n="auth_lbl_site">Sit prefere</span>
+      <select name="gpSite"><option value="paryajpam">ParyajPam</option><option value="paryajlakay">ParyajLakay</option><option value="1xbet">1xBet</option><option value="other">Lòt</option></select></label>
+    <label class="gprof-terms"><input type="checkbox" name="gpTerms"> <span data-i18n="auth_terms">Mwen gen 18 an oswa plis, e mwen dakò ak Kondisyon Sèvis yo ak Règleman sou Vi Prive a.</span></label>
+    <p class="gprof-err" id="vbGpErr" hidden></p>
+    <button type="submit" class="btn btn-or gprof-btn" data-i18n="wiz_btn_next1">Kontinye</button>
+  </form>
+</div>
 <!-- Application installable (17/10) : explication d'installation (ouverte seulement au clic) -->
 <div class="vbios" id="vbIosSheet" role="dialog" aria-labelledby="vbIosT" hidden>
   <div class="vbios-card">
@@ -6232,6 +6268,6 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
     <button type="button" class="vbios-ok" id="vbIosOk" data-i18n="app_ios_ok">Mwen konprann</button>
   </div>
 </div>
-<script src="app.js?v=20261017e"></script>
+<script src="app.js?v=20261017g"></script>
 </body>
 </html>

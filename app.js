@@ -193,7 +193,7 @@ wiz_lock_r1:"Vous devez d'abord créer un compte pour accéder au tableau de bor
 wiz_lock_r2:"Votre adresse e-mail n'est pas encore vérifiée. Terminez la vérification pour continuer.",
 wiz_lock_r3:"Aucun abonnement actif. Réglez votre abonnement pour débloquer le tableau de bord.",
 dash_t_today:"Fiches du jour", dash_t_history:"Historique", dash_t_stats:"Statistiques", dash_t_sub:"Mon abonnement",
-dash_t_parrain:"Parrainage", parr_h:"Parrainage", parr_p:"Invitez vos amis, gagnez des jours VIP offerts.", parr_hero_t:"Chaque ami qui paie = des jours VIP pour vous", parr_hero_p:"Quand un ami crée son compte avec votre lien et paie son premier plan, vous recevez des jours offerts sur votre plan.", parr_lien_lbl:"Votre lien personnel", parr_copier:"Copier", parr_copie:"Copié ✓", parr_st_inscrits:"Inscrits", parr_st_payants:"Ont payé", parr_st_jours:"Jours gagnés", parr_bareme_h:"Jours gagnés selon le plan de votre ami", parr_how_1:"Partagez votre lien", parr_how_2:"Votre ami crée son compte avec ce lien", parr_how_3:"Dès son premier paiement confirmé, les jours sont ajoutés automatiquement à votre plan", parr_regle:"Maximum 10 récompenses par mois. Seul le premier plan de votre ami compte. Les comptes en double ou frauduleux ne comptent pas. Si vous renouvelez ou changez de plan avant la fin, vos jours de parrainage non utilisés sont reportés sur le nouveau plan.", parr_filleuls_h:"Vos amis", parr_vide:"Aucun ami inscrit pour le moment. Partagez votre lien !", parr_attente:"{n} jour(s) en attente : ils seront ajoutés dès que vous aurez un plan actif.", parr_s_inscrit:"Pas encore payé", parr_s_rec:"+{n} j", parr_s_plafond:"Plafond du mois", parr_s_hors:"Non compté", parr_jours:"{n} j", parr_wa_msg:"Rejoins VIP BETCOTE : fiches de foot et basket chaque jour 👉 {lien}", parr_erreur:"Impossible de charger votre parrainage. Réessayez.", dash_t_subhistory:"Historique abonnement", dash_subhistory_h:"Historique abonnement", dash_subhistory_p:"Tous vos plans confirmés, anciens et actuel.",
+dash_t_parrain:"Parrainage", parr_h:"Parrainage", parr_p:"Invitez vos amis, gagnez des jours VIP offerts.", parr_hero_t:"Chaque ami qui paie = des jours VIP pour vous", parr_hero_p:"Quand un ami crée son compte avec votre lien et paie son premier plan, vous recevez des jours offerts sur votre plan.", parr_lien_lbl:"Votre lien personnel", parr_copier:"Copier", parr_copie:"Copié ✓", parr_st_inscrits:"Inscrits", parr_st_payants:"Ont payé", parr_st_jours:"Jours gagnés", parr_bareme_h:"Jours gagnés selon le plan de votre ami", parr_how_1:"Partagez votre lien", parr_how_2:"Votre ami crée son compte avec ce lien", parr_how_3:"Dès son premier paiement confirmé, les jours sont ajoutés automatiquement à votre plan", parr_regle:"• Maximum 10 récompenses par mois.<br>• Seul le premier plan de votre ami compte.<br>• Les comptes en double ou frauduleux ne comptent pas.<br>• Si vous renouvelez ou changez de plan avant la fin, vos jours de parrainage non utilisés sont reportés sur le nouveau plan.<br>• Votre ami doit ouvrir votre lien et créer son compte sur le même téléphone (dans les 7 jours).<br>• Si vous avez le plan Lifetime, votre accès est déjà illimité : les jours de parrainage ne s'ajoutent pas.<br>• Vous êtes prévenu par email et notification à chaque récompense.", parr_filleuls_h:"Vos amis", parr_vide:"Aucun ami inscrit pour le moment. Partagez votre lien !", parr_attente:"{n} jour(s) en attente : ils seront ajoutés dès que vous aurez un plan actif.", parr_s_inscrit:"Pas encore payé", parr_s_rec:"+{n} j", parr_s_plafond:"Plafond du mois", parr_s_hors:"Non compté", parr_jours:"{n} j", parr_wa_msg:"Rejoins VIP BETCOTE : fiches de foot et basket chaque jour 👉 {lien}", parr_erreur:"Impossible de charger votre parrainage. Réessayez.", dash_t_subhistory:"Historique abonnement", dash_subhistory_h:"Historique abonnement", dash_subhistory_p:"Tous vos plans confirmés, anciens et actuel.",
 dash_subh_actif:"Actif", dash_subh_expire:"Expiré", dash_subhistory_empty:"Aucun plan confirmé pour l'instant.",
 dash_hello:"Bonjour {name}", dash_hello_p:"Voici les fiches publiées aujourd'hui par notre équipe d'experts.",
 dash_notif_h:"Notifications", dash_notif_clear:"Tout marquer comme lu", dash_notif_empty:"Aucune notification.",
@@ -529,7 +529,7 @@ adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le
 adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
-auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
+auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", notif_ref_added:"Félicitations ! +{n} jours ajoutés à votre plan : un ami a payé son premier plan grâce à votre lien.", notif_ref_pending:"Vous gagnez {n} jours bonus grâce à un ami ! Ils seront ajoutés automatiquement à votre prochain plan.", notif_ref_lifetime:"Merci ! Un ami a payé son premier plan grâce à votre lien. Votre plan Lifetime vous donne déjà un accès illimité.", notif_ref_applied:"Vos {n} jours bonus de parrainage ont été ajoutés à votre nouveau plan.", auth_or_continue:"ou continuer avec", google_err:"La connexion avec Google n'a pas abouti. Réessayez.", google_admin:"Les comptes administrateur se connectent uniquement avec email, mot de passe et code 2FA.", gp_title:"Terminez la création de votre compte", gp_sub:"Une dernière étape avant de voir les fiches.", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
 auth_taken_h:"Cette adresse e-mail est déjà enregistrée",
 auth_taken_sub:"Un compte existe déjà avec cet e-mail. Rendez-vous sur la page de connexion pour y accéder.",
 auth_suspended_h:"Compte suspendu",
@@ -771,7 +771,7 @@ wiz_lock_r1:"You need to create an account first to access the dashboard.",
 wiz_lock_r2:"Your email address isn't verified yet. Complete verification to continue.",
 wiz_lock_r3:"No active plan. Complete your payment to unlock the dashboard.",
 dash_t_today:"Today's picks", dash_t_history:"History", dash_t_stats:"Statistics", dash_t_sub:"My plan",
-dash_t_parrain:"Referral", parr_h:"Referral", parr_p:"Invite your friends, earn free VIP days.", parr_hero_t:"Every friend who pays = VIP days for you", parr_hero_p:"When a friend creates an account with your link and pays for their first plan, you get free days added to your plan.", parr_lien_lbl:"Your personal link", parr_copier:"Copy", parr_copie:"Copied ✓", parr_st_inscrits:"Signed up", parr_st_payants:"Paid", parr_st_jours:"Days earned", parr_bareme_h:"Days earned by your friend's plan", parr_how_1:"Share your link", parr_how_2:"Your friend creates an account with this link", parr_how_3:"As soon as their first payment is confirmed, the days are added to your plan automatically", parr_regle:"Up to 10 rewards per month. Only your friend's first plan counts. Duplicate or fraudulent accounts do not count. If you renew or change plan early, your unused referral days carry over to the new plan.", parr_filleuls_h:"Your friends", parr_vide:"No friends signed up yet. Share your link!", parr_attente:"{n} day(s) pending: they will be added as soon as you have an active plan.", parr_s_inscrit:"Not paid yet", parr_s_rec:"+{n} d", parr_s_plafond:"Monthly cap", parr_s_hors:"Not counted", parr_jours:"{n} d", parr_wa_msg:"Join VIP BETCOTE: football and basketball slips every day 👉 {lien}", parr_erreur:"Could not load your referral. Try again.", dash_t_subhistory:"Plan history", dash_subhistory_h:"Plan history", dash_subhistory_p:"All your confirmed plans, past and current.",
+dash_t_parrain:"Referral", parr_h:"Referral", parr_p:"Invite your friends, earn free VIP days.", parr_hero_t:"Every friend who pays = VIP days for you", parr_hero_p:"When a friend creates an account with your link and pays for their first plan, you get free days added to your plan.", parr_lien_lbl:"Your personal link", parr_copier:"Copy", parr_copie:"Copied ✓", parr_st_inscrits:"Signed up", parr_st_payants:"Paid", parr_st_jours:"Days earned", parr_bareme_h:"Days earned by your friend's plan", parr_how_1:"Share your link", parr_how_2:"Your friend creates an account with this link", parr_how_3:"As soon as their first payment is confirmed, the days are added to your plan automatically", parr_regle:"• Up to 10 rewards per month.<br>• Only your friend's first plan counts.<br>• Duplicate or fraudulent accounts do not count.<br>• If you renew or change plan early, your unused referral days carry over to the new plan.<br>• Your friend must open your link and create their account on the same phone (within 7 days).<br>• If you have the Lifetime plan, your access is already unlimited: referral days are not added.<br>• You are notified by email and notification for each reward.", parr_filleuls_h:"Your friends", parr_vide:"No friends signed up yet. Share your link!", parr_attente:"{n} day(s) pending: they will be added as soon as you have an active plan.", parr_s_inscrit:"Not paid yet", parr_s_rec:"+{n} d", parr_s_plafond:"Monthly cap", parr_s_hors:"Not counted", parr_jours:"{n} d", parr_wa_msg:"Join VIP BETCOTE: football and basketball slips every day 👉 {lien}", parr_erreur:"Could not load your referral. Try again.", dash_t_subhistory:"Plan history", dash_subhistory_h:"Plan history", dash_subhistory_p:"All your confirmed plans, past and current.",
 dash_subh_actif:"Active", dash_subh_expire:"Expired", dash_subhistory_empty:"No confirmed plan yet.",
 dash_hello:"Hello {name}", dash_hello_p:"Here are the slips published today by our expert team.",
 dash_notif_h:"Notifications", dash_notif_clear:"Mark all as read", dash_notif_empty:"No notifications.",
@@ -1107,7 +1107,7 @@ adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
-auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
+auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", notif_ref_added:"Congratulations! +{n} days added to your plan: a friend paid their first plan through your link.", notif_ref_pending:"You earned {n} bonus days thanks to a friend! They will be added automatically to your next plan.", notif_ref_lifetime:"Thank you! A friend paid their first plan through your link. Your Lifetime plan already gives you unlimited access.", notif_ref_applied:"Your {n} referral bonus days have been added to your new plan.", auth_or_continue:"or continue with", google_err:"Google sign-in did not complete. Please try again.", google_admin:"Administrator accounts sign in only with email, password and 2FA code.", gp_title:"Finish creating your account", gp_sub:"One last step before you see the picks.", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
 auth_taken_h:"This email address is already registered",
 auth_taken_sub:"An account already exists with this email. Head to the login page to sign in.",
 auth_suspended_h:"Account suspended",
@@ -1349,7 +1349,7 @@ wiz_lock_r1:"Ou dwe kreye yon kont anvan pou w jwenn dashboard la.",
 wiz_lock_r2:"Imèl ou poko verifye. Fini verifikasyon an pou w kontinye.",
 wiz_lock_r3:"Pa gen abònman aktif. Peye abònman ou pou w debloke dashboard la.",
 dash_t_today:"Fich jodi a", dash_t_history:"Istorik", dash_t_stats:"Estatistik", dash_t_sub:"Abònman m",
-dash_t_parrain:"Parenaj", parr_h:"Parenaj", parr_p:"Envite zanmi w, genyen jou VIP gratis.", parr_hero_t:"Chak zanmi ki peye = jou VIP pou ou", parr_hero_p:"Lè yon zanmi kreye kont li ak lyen ou epi li peye premye plan li, ou resevwa jou gratis sou plan ou.", parr_lien_lbl:"Lyen pèsonèl ou", parr_copier:"Kopye", parr_copie:"Kopye ✓", parr_st_inscrits:"Enskri", parr_st_payants:"Peye", parr_st_jours:"Jou genyen", parr_bareme_h:"Jou ou genyen selon plan zanmi w", parr_how_1:"Pataje lyen ou", parr_how_2:"Zanmi w kreye kont li ak lyen sa a", parr_how_3:"Lè premye peman li konfime, jou yo ajoute sou plan ou otomatikman", parr_regle:"Maksimòm 10 rekonpans pa mwa. Se sèlman premye plan zanmi w lan ki konte. Kont an doub oswa fwod pa konte. Si w renouvle oswa chanje plan anvan li fini, jou parenaj ou poko itilize yo ap pase sou nouvo plan an.", parr_filleuls_h:"Zanmi ou yo", parr_vide:"Poko gen zanmi ki enskri. Pataje lyen ou!", parr_attente:"{n} jou ap tann : y ap ajoute lè w gen yon plan aktif.", parr_s_inscrit:"Poko peye", parr_s_rec:"+{n} j", parr_s_plafond:"Plafon mwa a", parr_s_hors:"Pa konte", parr_jours:"{n} j", parr_wa_msg:"Vin jwenn VIP BETCOTE : fich foutbòl ak baskèt chak jou 👉 {lien}", parr_erreur:"Nou pa ka chaje parenaj ou. Eseye ankò.", dash_t_subhistory:"Istorik abònman", dash_subhistory_h:"Istorik abònman", dash_subhistory_p:"Tout plan konfime ou yo, ansyen kou aktyèl.",
+dash_t_parrain:"Parenaj", parr_h:"Parenaj", parr_p:"Envite zanmi w, genyen jou VIP gratis.", parr_hero_t:"Chak zanmi ki peye = jou VIP pou ou", parr_hero_p:"Lè yon zanmi kreye kont li ak lyen ou epi li peye premye plan li, ou resevwa jou gratis sou plan ou.", parr_lien_lbl:"Lyen pèsonèl ou", parr_copier:"Kopye", parr_copie:"Kopye ✓", parr_st_inscrits:"Enskri", parr_st_payants:"Peye", parr_st_jours:"Jou genyen", parr_bareme_h:"Jou ou genyen selon plan zanmi w", parr_how_1:"Pataje lyen ou", parr_how_2:"Zanmi w kreye kont li ak lyen sa a", parr_how_3:"Lè premye peman li konfime, jou yo ajoute sou plan ou otomatikman", parr_regle:"• Maksimòm 10 rekonpans pa mwa.<br>• Se sèlman premye plan zanmi w lan ki konte.<br>• Kont an doub oswa fwod pa konte.<br>• Si w renouvle oswa chanje plan anvan li fini, jou parenaj ou poko itilize yo ap pase sou nouvo plan an.<br>• Zanmi w lan dwe louvri lyen ou epi kreye kont li sou menm telefòn nan (nan 7 jou).<br>• Si w gen plan Lifetime, aksè ou deja san limit : jou parenaj yo pa ajoute.<br>• W ap resevwa yon imèl ak yon notifikasyon pou chak rekonpans.", parr_filleuls_h:"Zanmi ou yo", parr_vide:"Poko gen zanmi ki enskri. Pataje lyen ou!", parr_attente:"{n} jou ap tann : y ap ajoute lè w gen yon plan aktif.", parr_s_inscrit:"Poko peye", parr_s_rec:"+{n} j", parr_s_plafond:"Plafon mwa a", parr_s_hors:"Pa konte", parr_jours:"{n} j", parr_wa_msg:"Vin jwenn VIP BETCOTE : fich foutbòl ak baskèt chak jou 👉 {lien}", parr_erreur:"Nou pa ka chaje parenaj ou. Eseye ankò.", dash_t_subhistory:"Istorik abònman", dash_subhistory_h:"Istorik abònman", dash_subhistory_p:"Tout plan konfime ou yo, ansyen kou aktyèl.",
 dash_subh_actif:"Aktif", dash_subh_expire:"Ekspire", dash_subhistory_empty:"Pa gen plan konfime pou kounye a.",
 dash_hello:"Bonjou {name}", dash_hello_p:"Men fich ekip ekspè nou an pibliye jodi a.",
 dash_notif_h:"Notifikasyon", dash_notif_clear:"Make tout kòm li", dash_notif_empty:"Pa gen notifikasyon.",
@@ -1685,7 +1685,7 @@ adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
-auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
+auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", notif_ref_added:"Felisitasyon ! +{n} jou ajoute sou plan ou : yon zanmi peye premye plan li gras a lyen ou.", notif_ref_pending:"Ou genyen {n} jou bonis gras a yon zanmi ! Y ap ajoute otomatikman sou pwochen plan ou.", notif_ref_lifetime:"Mèsi ! Yon zanmi peye premye plan li gras a lyen ou. Plan Lifetime ou a ba ou aksè san limit deja.", notif_ref_applied:"{n} jou bonis parenaj ou yo ajoute sou nouvo plan ou.", auth_or_continue:"oswa kontinye ak", google_err:"Koneksyon ak Google la pa mache. Eseye ankò.", google_admin:"Kont administratè yo konekte sèlman ak imèl, modpas ak kòd 2FA.", gp_title:"Fini kreye kont ou", gp_sub:"Yon dènye etap anvan ou wè fich yo.", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
 auth_taken_h:"Imèl sa a deja anrejistre",
 auth_taken_sub:"Gen yon kont ki deja gen imèl sa a. Ale nan paj koneksyon an pou w antre.",
 auth_suspended_h:"Kont sispann",
@@ -4440,6 +4440,282 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     b.addEventListener('click',ev=>{ev.preventDefault();guardDashboard(b);});
   });
 
+  /* 17/10 : routage commun apres une connexion reussie (mot de passe OU
+     Google). Corps identique a l'ancien bloc du formulaire de connexion,
+     simplement extrait pour etre reutilise au retour de Google. */
+  async function routerApresConnexion(user){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    const localAcc=accounts.find(user.email);
+    /* CORRECTIF SYNCHRONISATION (prioritaire) : Supabase est desormais
+       TOUJOURS consulte ici, meme si un compte local complet existe
+       deja sur cet appareil. Un instantane local (ecrit par ce meme
+       appareil a sa derniere transaction) devient perime des qu'un
+       admin agit depuis un autre appareil — changement de plan
+       (changerPlanAdmin), validation ou refus de paiement
+       (traiterPaiement). Le local ne sert plus que de repli si
+       Supabase est REELLEMENT injoignable : aucun etat temporaire du
+       navigateur ne doit pouvoir remplacer l'etat reel en base. */
+    const meta=user.user_metadata||{};
+    const identite={
+      email:user.email,
+      fullname:(localAcc&&localAcc.fullname)||meta.username||'',
+      site:(localAcc&&localAcc.site)||meta.preferred_site||'paryajpam',
+      supabaseUserId:user.id
+    };
+    let abonnementActif=null, abonnementPendant=null, supabaseJoignable=true;
+    let aDejaEuUnAbonnement=false;
+    try{
+      // On lit 'active' ET 'pending' pour cette personne, toutes les
+      // lignes (pas juste la plus recente) : un plan actif et un
+      // changement en attente peuvent coexister, et doivent etre
+      // distingues plutot que confondus en une seule ligne.
+      const {data:subs}=await sb.from('subscriptions')
+        .select('plan_id,status,starts_at,expires_at')
+        .eq('user_id',user.id).in('status',['active','pending'])
+        .order('starts_at',{ascending:false});
+      if(subs&&subs.length){
+        aDejaEuUnAbonnement=true;
+        abonnementActif=subs.find(x=>x.status==='active')||null;
+        const p=subs.find(x=>x.status==='pending')||null;
+        // Un "pending" n'est un CHANGEMENT en attente que s'il existe
+        // deja un plan actif different ; sinon c'est la toute premiere
+        // souscription, encore en attente de validation admin.
+        if(abonnementActif&&p&&p.plan_id!==abonnementActif.plan_id)abonnementPendant=p;
+        else if(!abonnementActif&&p)abonnementActif={...p,__pending:true};
+      }
+      if(!aDejaEuUnAbonnement){
+        /* REGLE : l'inscription terminee et le plan actif sont deux
+           choses distinctes. Un paiement refuse passe l'abonnement
+           en 'cancelled', et une expiration le sort aussi de la
+           liste ci-dessus — sans cette verification, la personne
+           serait renvoyee vers le parcours de paiement comme un
+           nouveau visiteur, et perdrait l'acces a son Dashboard.
+           Des qu'un abonnement a EXISTE, quel que soit son statut,
+           l'inscription est terminee : le Dashboard reste ouvert,
+           seuls les contenus lies a un plan restent verrouilles. */
+        const {data:histo}=await sb.from('subscriptions')
+          .select('id').eq('user_id',user.id).limit(1);
+        if(histo&&histo.length)aDejaEuUnAbonnement=true;
+      }
+    }catch(e){ supabaseJoignable=false; /* Supabase injoignable pour cette lecture */ }
+
+    if(abonnementActif){
+      /* "paid" signifie "a deja paye au moins une fois" — jamais remis
+         a false a l'expiration. C'est isExpired()/subscriptionExpired()
+         qui verrouille les cotes DANS le dashboard ; l'acces au
+         dashboard lui-meme reste ouvert, exactement comme pour un
+         compte cree localement. Ne pas confondre les deux notions. */
+      state=Object.assign(blank(),{
+        step:4, started:false, ...identite,
+        pass:(localAcc&&localAcc.pass)||null,
+        emailVerified:true,
+        planId:abonnementActif.plan_id, paid:true,
+        payStatus:abonnementActif.__pending?'pending':'confirmed',
+        startDate:abonnementActif.starts_at, endDate:abonnementActif.expires_at,
+        pendingPlanId:abonnementPendant?abonnementPendant.plan_id:null,
+        payMethod:(localAcc&&localAcc.payMethod)||null,
+        ref:(localAcc&&!abonnementActif.__pending)?localAcc.ref:null
+      });
+      save();
+      closeAuth();
+      requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
+    }else if(aDejaEuUnAbonnement){
+      /* Inscription terminee, mais aucun plan actif ni en attente
+         (refuse, annule, ou confirme puis arrive a echeance).
+         Dashboard ACCESSIBLE ; fiches/cotes verrouillees dans les
+         deux cas, mais le MESSAGE affiche doit differer :
+         - dernier paiement 'confirmed' => plan reellement expire
+           ("Expire", CTA "Renouveler") ;
+         - dernier paiement 'failed' (ou aucun) => jamais confirme
+           ("Paiement non reussi", CTA "Activer").
+         On distingue les deux via le dernier PAIEMENT (pas le
+         statut de l'abonnement, qui vaut 'cancelled' dans les deux
+         cas et ne permet pas de les differencier). */
+      let dernierPaiementConfirme=false, dateFinReelle=null;
+      // CORRIGÉ (31/08, bug signalé par James) : ne distinguait AVANT
+      // que 'confirmed' vs "tout le reste", écrasant donc un paiement
+      // réellement 'pending' en payStatus:'rejected'. Conséquence : un
+      // utilisateur expiré ayant déjà une demande en attente repartait
+      // avec un état "refusé", et TOUS les contrôles en aval
+      // (renouvellementPermis, bouton renouveler, message de la page
+      // plans) le laissaient passer — d'où plusieurs paiements
+      // 'pending' empilés pour la même personne. On lit désormais le
+      // vrai statut du dernier paiement, et on conserve sa référence.
+      let paiementEnAttente=false, refEnAttente=null, planEnAttente=null;
+      try{
+        const {data:dpays}=await sb.from('payments')
+          .select('status,subscription_id,reference,plan_id').eq('user_id',user.id)
+          .order('created_at',{ascending:false}).limit(1);
+        if(dpays&&dpays.length){
+          if(dpays[0].status==='confirmed'){
+            dernierPaiementConfirme=true;
+            if(dpays[0].subscription_id){
+              const {data:dsub}=await sb.from('subscriptions')
+                .select('expires_at').eq('id',dpays[0].subscription_id).single();
+              if(dsub)dateFinReelle=dsub.expires_at;
+            }
+          }else if(dpays[0].status==='pending'){
+            paiementEnAttente=true;
+            refEnAttente=dpays[0].reference||null;
+            planEnAttente=dpays[0].plan_id||null;
+          }
+        }
+      }catch(e){}
+      state=Object.assign(blank(),{
+        step:4, started:false, ...identite,
+        pass:(localAcc&&localAcc.pass)||null,
+        emailVerified:true,
+        planId:null, paid:true,
+        payStatus:dernierPaiementConfirme?'confirmed':(paiementEnAttente?'pending':'rejected'),
+        startDate:null,
+        // Un plan confirme puis cancelled a forcement une date de fin
+        // reelle dans le passe (sinon il serait encore 'active') ; on
+        // l'utilise telle quelle plutot qu'une date inventee.
+        endDate:dernierPaiementConfirme?(dateFinReelle||new Date(Date.now()-1000).toISOString()):null,
+        // Conserves pour que l'interface puisse afficher "en attente
+        // de validation" (plan visé + référence) au lieu du message
+        // generique d'expiration, et masquer le bouton renouveler.
+        pendingPlanId:paiementEnAttente?planEnAttente:null,
+        pendingRef:paiementEnAttente?refEnAttente:null, ref:null
+      });
+      save();
+      closeAuth();
+      requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
+    }else if(!supabaseJoignable&&localAcc&&isComplete(localAcc)){
+      // Repli degrade UNIQUEMENT si Supabase est reellement
+      // injoignable (panne reseau) : on ne bloque jamais l'acces,
+      // mais des que la connexion revient, VB_syncPayStatus corrige
+      // silencieusement tout ecart avec l'etat reel en base.
+      state=Object.assign(blank(),{
+        step:4, started:false, fullname:localAcc.fullname, email:localAcc.email, pass:localAcc.pass,
+        site:localAcc.site||'paryajpam', supabaseUserId:user.id,
+        planId:localAcc.planId, emailVerified:true, paid:true, payStatus:localAcc.payStatus||'pending',
+        payMethod:localAcc.payMethod,
+        startDate:localAcc.startDate, endDate:localAcc.endDate, ref:localAcc.ref
+      });
+      save();
+      closeAuth();
+      requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
+    }else{
+      // Aucun abonnement, ni en base ni en repli local : parcours de
+      // paiement, avec l'identite reelle deja restauree.
+      state=Object.assign(blank(),{...identite, emailVerified:true, started:false});
+      save();
+      showMode('wizard');
+      showStep(pageDe(requiredStep(state)));
+    }
+  }
+  window.VB_routerApresConnexion=routerApresConnexion;
+
+  /* ================= CONNEXION GOOGLE (17/10) =================
+     1) clic -> Supabase envoie vers Google, puis revient sur le site ;
+     2) au retour : memes controles qu'une connexion par mot de passe
+        (compte suspendu, role) ; un compte admin doit TOUJOURS passer par
+        email + mot de passe + 2FA, jamais par Google ;
+     3) premiere connexion : petite fenetre pour le nom d'utilisateur, le
+        site prefere et la case 18 ans (le parrainage passe par le lien ?ref=) ;
+     4) ensuite, exactement le meme routage qu'une connexion normale.
+     email_verified n'est JAMAIS ecrit par le navigateur : c'est la base
+     (trigger sur auth.identities) qui le met a true pour une identite
+     Google dont l'email est verifie par Google. */
+  const CLE_RETOUR_GOOGLE='vb_google_retour';
+  let retourGoogle=false;
+  try{retourGoogle=sessionStorage.getItem(CLE_RETOUR_GOOGLE)==='1';}catch(e){}
+  // Empeche la restauration de session generique de router en double.
+  if(retourGoogle)window.VB_googleRetourEnCours=true;
+
+  document.querySelectorAll('[data-google-auth]').forEach(btn=>btn.addEventListener('click',async()=>{
+    if(navigator.onLine===false){if(window.VB_toast)window.VB_toast('auth_offline_h',t('auth_err_offline'));return;}
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));return;}
+    btn.disabled=true;
+    try{sessionStorage.setItem(CLE_RETOUR_GOOGLE,'1');}catch(e){}
+    const {error}=await sb.auth.signInWithOAuth({
+      provider:'google',
+      options:{redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}}
+    });
+    if(error){
+      btn.disabled=false;
+      try{sessionStorage.removeItem(CLE_RETOUR_GOOGLE);}catch(e){}
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));
+    }
+  }));
+
+  function demanderProfilGoogle(user,profil){
+    return new Promise(resolve=>{
+      const fen=document.getElementById('vbGoogleProfil');
+      const form=document.getElementById('vbGoogleProfilForm');
+      const err=document.getElementById('vbGpErr');
+      if(!fen||!form){resolve(null);return;}
+      const meta=user.user_metadata||{};
+      form.gpUser.value=(profil&&profil.username)||meta.full_name||meta.name||'';
+      err.hidden=true;
+      fen.hidden=false;
+      form.onsubmit=ev=>{
+        ev.preventDefault();
+        const nom=form.gpUser.value.trim();
+        if(nom.length<2){err.textContent=t('auth_err_required');err.hidden=false;form.gpUser.focus();return;}
+        if(!form.gpTerms.checked){err.textContent=t('auth_err_terms');err.hidden=false;return;}
+        fen.hidden=true;
+        resolve({username:nom,site:form.gpSite.value||'paryajpam'});
+      };
+    });
+  }
+
+  async function traiterRetourGoogle(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    try{sessionStorage.removeItem(CLE_RETOUR_GOOGLE);}catch(e){}
+    if(!sb){window.VB_googleRetourEnCours=false;return;}
+    // Annulation sur la page Google (?error=access_denied...)
+    if(/[?#&]error=/.test(location.search+location.hash)){
+      history.replaceState(null,'',location.pathname);
+      window.VB_googleRetourEnCours=false;
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));
+      return;
+    }
+    let session=null;
+    try{const {data}=await sb.auth.getSession();session=data&&data.session;}catch(e){}
+    if(!session||!session.user){window.VB_googleRetourEnCours=false;return;}
+    const user=session.user;
+    let profil=null;
+    try{
+      const {data:prof}=await sb.from('profiles')
+        .select('role,username,preferred_site,suspended_at,suspended_reason').eq('id',user.id).single();
+      profil=prof;
+    }catch(e){}
+    if(profil&&profil.suspended_at){
+      try{await sb.auth.signOut();}catch(e){}
+      window.VB_googleRetourEnCours=false;
+      if(window.VB_toast)window.VB_toast('auth_suspended_h', profil.suspended_reason?t('auth_suspended_reason_p').replace('{reason}',profil.suspended_reason):t('auth_suspended_p'));
+      return;
+    }
+    if(profil&&profil.role==='admin'){
+      try{await sb.auth.signOut();}catch(e){}
+      window.VB_googleRetourEnCours=false;
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_admin'));
+      return;
+    }
+    if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(user.id);
+    // Premiere connexion Google (aucun nom enregistre) : completer le profil.
+    if(!profil||!profil.username){
+      const choix=await demanderProfilGoogle(user,profil);
+      if(choix){
+        try{await sb.from('profiles').update({username:choix.username,preferred_site:choix.site}).eq('id',user.id);}catch(e){}
+        try{await sb.auth.updateUser({data:{username:choix.username,preferred_site:choix.site}});}catch(e){}
+        user.user_metadata=Object.assign({},user.user_metadata,{username:choix.username,preferred_site:choix.site});
+      }
+    }
+    window.VB_googleRetourEnCours=false;
+    openAuth('signup');
+    await routerApresConnexion(user);
+  }
+  // Differe a 'load' : la bibliotheque Supabase (chargee en defer) et
+  // VB_getSupabase (defini plus loin dans ce fichier) sont alors prets.
+  if(retourGoogle){
+    if(document.readyState==='complete')setTimeout(traiterRetourGoogle,0);
+    else window.addEventListener('load',traiterRetourGoogle,{once:true});
+  }
+
   /* ================= CONNEXION ================= */
   const fL=document.getElementById('authFormLogin');
   fL.addEventListener('submit',async ev=>{
@@ -4508,165 +4784,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
             }
             return;
           }
-          const localAcc=accounts.find(data.user.email);
-          /* CORRECTIF SYNCHRONISATION (prioritaire) : Supabase est desormais
-             TOUJOURS consulte ici, meme si un compte local complet existe
-             deja sur cet appareil. Un instantane local (ecrit par ce meme
-             appareil a sa derniere transaction) devient perime des qu'un
-             admin agit depuis un autre appareil — changement de plan
-             (changerPlanAdmin), validation ou refus de paiement
-             (traiterPaiement). Le local ne sert plus que de repli si
-             Supabase est REELLEMENT injoignable : aucun etat temporaire du
-             navigateur ne doit pouvoir remplacer l'etat reel en base. */
-          const meta=data.user.user_metadata||{};
-          const identite={
-            email:data.user.email,
-            fullname:(localAcc&&localAcc.fullname)||meta.username||'',
-            site:(localAcc&&localAcc.site)||meta.preferred_site||'paryajpam',
-            supabaseUserId:data.user.id
-          };
-          let abonnementActif=null, abonnementPendant=null, supabaseJoignable=true;
-          let aDejaEuUnAbonnement=false;
-          try{
-            // On lit 'active' ET 'pending' pour cette personne, toutes les
-            // lignes (pas juste la plus recente) : un plan actif et un
-            // changement en attente peuvent coexister, et doivent etre
-            // distingues plutot que confondus en une seule ligne.
-            const {data:subs}=await sb.from('subscriptions')
-              .select('plan_id,status,starts_at,expires_at')
-              .eq('user_id',data.user.id).in('status',['active','pending'])
-              .order('starts_at',{ascending:false});
-            if(subs&&subs.length){
-              aDejaEuUnAbonnement=true;
-              abonnementActif=subs.find(x=>x.status==='active')||null;
-              const p=subs.find(x=>x.status==='pending')||null;
-              // Un "pending" n'est un CHANGEMENT en attente que s'il existe
-              // deja un plan actif different ; sinon c'est la toute premiere
-              // souscription, encore en attente de validation admin.
-              if(abonnementActif&&p&&p.plan_id!==abonnementActif.plan_id)abonnementPendant=p;
-              else if(!abonnementActif&&p)abonnementActif={...p,__pending:true};
-            }
-            if(!aDejaEuUnAbonnement){
-              /* REGLE : l'inscription terminee et le plan actif sont deux
-                 choses distinctes. Un paiement refuse passe l'abonnement
-                 en 'cancelled', et une expiration le sort aussi de la
-                 liste ci-dessus — sans cette verification, la personne
-                 serait renvoyee vers le parcours de paiement comme un
-                 nouveau visiteur, et perdrait l'acces a son Dashboard.
-                 Des qu'un abonnement a EXISTE, quel que soit son statut,
-                 l'inscription est terminee : le Dashboard reste ouvert,
-                 seuls les contenus lies a un plan restent verrouilles. */
-              const {data:histo}=await sb.from('subscriptions')
-                .select('id').eq('user_id',data.user.id).limit(1);
-              if(histo&&histo.length)aDejaEuUnAbonnement=true;
-            }
-          }catch(e){ supabaseJoignable=false; /* Supabase injoignable pour cette lecture */ }
-
-          if(abonnementActif){
-            /* "paid" signifie "a deja paye au moins une fois" — jamais remis
-               a false a l'expiration. C'est isExpired()/subscriptionExpired()
-               qui verrouille les cotes DANS le dashboard ; l'acces au
-               dashboard lui-meme reste ouvert, exactement comme pour un
-               compte cree localement. Ne pas confondre les deux notions. */
-            state=Object.assign(blank(),{
-              step:4, started:false, ...identite,
-              pass:(localAcc&&localAcc.pass)||null,
-              emailVerified:true,
-              planId:abonnementActif.plan_id, paid:true,
-              payStatus:abonnementActif.__pending?'pending':'confirmed',
-              startDate:abonnementActif.starts_at, endDate:abonnementActif.expires_at,
-              pendingPlanId:abonnementPendant?abonnementPendant.plan_id:null,
-              payMethod:(localAcc&&localAcc.payMethod)||null,
-              ref:(localAcc&&!abonnementActif.__pending)?localAcc.ref:null
-            });
-            save();
-            closeAuth();
-            requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
-          }else if(aDejaEuUnAbonnement){
-            /* Inscription terminee, mais aucun plan actif ni en attente
-               (refuse, annule, ou confirme puis arrive a echeance).
-               Dashboard ACCESSIBLE ; fiches/cotes verrouillees dans les
-               deux cas, mais le MESSAGE affiche doit differer :
-               - dernier paiement 'confirmed' => plan reellement expire
-                 ("Expire", CTA "Renouveler") ;
-               - dernier paiement 'failed' (ou aucun) => jamais confirme
-                 ("Paiement non reussi", CTA "Activer").
-               On distingue les deux via le dernier PAIEMENT (pas le
-               statut de l'abonnement, qui vaut 'cancelled' dans les deux
-               cas et ne permet pas de les differencier). */
-            let dernierPaiementConfirme=false, dateFinReelle=null;
-            // CORRIGÉ (31/08, bug signalé par James) : ne distinguait AVANT
-            // que 'confirmed' vs "tout le reste", écrasant donc un paiement
-            // réellement 'pending' en payStatus:'rejected'. Conséquence : un
-            // utilisateur expiré ayant déjà une demande en attente repartait
-            // avec un état "refusé", et TOUS les contrôles en aval
-            // (renouvellementPermis, bouton renouveler, message de la page
-            // plans) le laissaient passer — d'où plusieurs paiements
-            // 'pending' empilés pour la même personne. On lit désormais le
-            // vrai statut du dernier paiement, et on conserve sa référence.
-            let paiementEnAttente=false, refEnAttente=null, planEnAttente=null;
-            try{
-              const {data:dpays}=await sb.from('payments')
-                .select('status,subscription_id,reference,plan_id').eq('user_id',data.user.id)
-                .order('created_at',{ascending:false}).limit(1);
-              if(dpays&&dpays.length){
-                if(dpays[0].status==='confirmed'){
-                  dernierPaiementConfirme=true;
-                  if(dpays[0].subscription_id){
-                    const {data:dsub}=await sb.from('subscriptions')
-                      .select('expires_at').eq('id',dpays[0].subscription_id).single();
-                    if(dsub)dateFinReelle=dsub.expires_at;
-                  }
-                }else if(dpays[0].status==='pending'){
-                  paiementEnAttente=true;
-                  refEnAttente=dpays[0].reference||null;
-                  planEnAttente=dpays[0].plan_id||null;
-                }
-              }
-            }catch(e){}
-            state=Object.assign(blank(),{
-              step:4, started:false, ...identite,
-              pass:(localAcc&&localAcc.pass)||null,
-              emailVerified:true,
-              planId:null, paid:true,
-              payStatus:dernierPaiementConfirme?'confirmed':(paiementEnAttente?'pending':'rejected'),
-              startDate:null,
-              // Un plan confirme puis cancelled a forcement une date de fin
-              // reelle dans le passe (sinon il serait encore 'active') ; on
-              // l'utilise telle quelle plutot qu'une date inventee.
-              endDate:dernierPaiementConfirme?(dateFinReelle||new Date(Date.now()-1000).toISOString()):null,
-              // Conserves pour que l'interface puisse afficher "en attente
-              // de validation" (plan visé + référence) au lieu du message
-              // generique d'expiration, et masquer le bouton renouveler.
-              pendingPlanId:paiementEnAttente?planEnAttente:null,
-              pendingRef:paiementEnAttente?refEnAttente:null, ref:null
-            });
-            save();
-            closeAuth();
-            requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
-          }else if(!supabaseJoignable&&localAcc&&isComplete(localAcc)){
-            // Repli degrade UNIQUEMENT si Supabase est reellement
-            // injoignable (panne reseau) : on ne bloque jamais l'acces,
-            // mais des que la connexion revient, VB_syncPayStatus corrige
-            // silencieusement tout ecart avec l'etat reel en base.
-            state=Object.assign(blank(),{
-              step:4, started:false, fullname:localAcc.fullname, email:localAcc.email, pass:localAcc.pass,
-              site:localAcc.site||'paryajpam', supabaseUserId:data.user.id,
-              planId:localAcc.planId, emailVerified:true, paid:true, payStatus:localAcc.payStatus||'pending',
-              payMethod:localAcc.payMethod,
-              startDate:localAcc.startDate, endDate:localAcc.endDate, ref:localAcc.ref
-            });
-            save();
-            closeAuth();
-            requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
-          }else{
-            // Aucun abonnement, ni en base ni en repli local : parcours de
-            // paiement, avec l'identite reelle deja restauree.
-            state=Object.assign(blank(),{...identite, emailVerified:true, started:false});
-            save();
-            showMode('wizard');
-            showStep(pageDe(requiredStep(state)));
-          }
+          await routerApresConnexion(data.user);
           return;
         }
         /* Supabase renvoie EXACTEMENT le meme message "Invalid login
@@ -6147,6 +6265,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         type='plan';
       }else if(n.type==='payment_pending'){
         texte=t('notif_pay_pending').replace('{plan}',plNom); type='sub'; kind='wait'; cat='pay';
+      }else if(/^referral_(added|pending|lifetime|applied)$/.test(n.type)){
+        // 17/10 : recompenses de parrainage (creees par la base, voir parrainage_notifier)
+        const cle={referral_added:'notif_ref_added',referral_pending:'notif_ref_pending',referral_lifetime:'notif_ref_lifetime',referral_applied:'notif_ref_applied'}[n.type];
+        texte=t(cle).replace('{n}',String(parseInt(n.reason,10)||0)); type='plan'; kind='ok'; cat='plan';
       }else return;
       out.push({id:'sb'+n.id, sbId:n.id, type:type, kind:kind, cat:cat, texte:texte,
         ts:new Date(n.created_at).getTime(), sbRead:!!n.read});
@@ -12142,6 +12264,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(ev.key==='Escape'&&page.classList.contains('open'))closeLegal();
   });
   document.addEventListener('vb:langchange',paint);
+  // 17/10 : liens directs (ecran Google, partages) vipbetcote.com/#confidentialite,
+  // #cgu, #jeu-responsable -> ouvrent directement la page legale correspondante.
+  const LIEN_DIRECT={'#confidentialite':'confid','#cgu':'cgu','#jeu-responsable':'jeu'};
+  if(LIEN_DIRECT[location.hash])openLegal(LIEN_DIRECT[location.hash],null);
 })();
 
 /* ---------- Reseaux sociaux : ouverture via data-url ---------- */
@@ -12384,7 +12510,8 @@ window.VB_demarrerSurveillanceSuspension=vbDemarrerSurveillanceSuspension;
 
 let dejaRestaure=false;
 async function tenterRestaurationSession(){
-  if(dejaRestaure)return;   // jamais deux fois : la 2e tentative ne fait rien si la 1re a reussi
+  if(dejaRestaure)return;
+  if(window.VB_googleRetourEnCours)return;   // 17/10 : le retour Google fait son propre routage   // jamais deux fois : la 2e tentative ne fait rien si la 1re a reussi
   const sb=window.VB_getSupabase&&window.VB_getSupabase();
   if(!sb)return;
   try{
