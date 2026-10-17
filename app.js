@@ -529,7 +529,7 @@ adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le
 adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
-auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion",
+auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
 auth_taken_h:"Cette adresse e-mail est déjà enregistrée",
 auth_taken_sub:"Un compte existe déjà avec cet e-mail. Rendez-vous sur la page de connexion pour y accéder.",
 auth_suspended_h:"Compte suspendu",
@@ -1107,7 +1107,7 @@ adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
-auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection",
+auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
 auth_taken_h:"This email address is already registered",
 auth_taken_sub:"An account already exists with this email. Head to the login page to sign in.",
 auth_suspended_h:"Account suspended",
@@ -1685,7 +1685,7 @@ adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
-auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon",
+auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
 auth_taken_h:"Imèl sa a deja anrejistre",
 auth_taken_sub:"Gen yon kont ki deja gen imèl sa a. Ale nan paj koneksyon an pou w antre.",
 auth_suspended_h:"Kont sispann",
@@ -12828,4 +12828,70 @@ window.addEventListener('pageshow',(ev)=>{
     const msg=t('parr_wa_msg').replace('{lien}','https://'+l);
     window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener');
   });
+})();
+
+/* ---------- Application installable (17/10) ----------
+   - enregistre sw.js (il ne garde AUCUNE version du site en cache : seule
+     la page « pas de connexion » est conservee, voir sw.js) ;
+   - boutons « Bientot sur App Store / Google Play » sous le titre : au clic,
+     fenetre d'installation native (Chrome Android) ou explication en 3 etapes ;
+   - jamais affiche si l'application est deja ouverte en mode installe. */
+(function(){
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
+  }
+  const itemMenu=document.getElementById('vbInstallMenu');
+  const ficheIos=document.getElementById('vbIosSheet');
+  const rangee=document.getElementById('vbStoreRow');
+  const etapesIos=document.getElementById('vbStepsIos');
+  const etapesAndroid=document.getElementById('vbStepsAndroid');
+  if(!ficheIos)return;
+
+  const estInstallee=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const ua=navigator.userAgent||'';
+  const estIos=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  let invite=null;
+  let minuterie=null;
+
+  // Rien ne s'affiche tout seul : les explications ne s'ouvrent qu'au clic
+  // sur « App Store » / « Google Play » (ou sur l'entree du menu mobile).
+  function rafraichir(){
+    const deja=estInstallee();
+    if(itemMenu)itemMenu.hidden=deja;
+    if(rangee)rangee.hidden=deja;
+  }
+  function ouvrirFiche(systeme){
+    if(etapesIos)etapesIos.hidden=(systeme!=='ios');
+    if(etapesAndroid)etapesAndroid.hidden=(systeme==='ios');
+    const introIos=document.getElementById('vbIntroIos'),introAndroid=document.getElementById('vbIntroAndroid');
+    if(introIos)introIos.hidden=(systeme!=='ios');
+    if(introAndroid)introAndroid.hidden=(systeme==='ios');
+    ficheIos.hidden=false;
+    // Se ferme toute seule apres 4 secondes, meme sans clic sur « Mwen konprann ».
+    clearTimeout(minuterie);
+    minuterie=setTimeout(fermerFiche,4000);
+  }
+  function fermerFiche(){clearTimeout(minuterie);ficheIos.hidden=true;}
+  // cible : 'ios', 'android' ou rien (on devine d'apres le telephone)
+  async function installer(cible){
+    const systeme=cible||(estIos?'ios':'android');
+    if(systeme==='android'&&invite&&!estIos){
+      // Chrome Android : vraie fenetre d'installation en un geste
+      invite.prompt();
+      try{await invite.userChoice;}catch(e){}
+      invite=null;rafraichir();
+      return;
+    }
+    ouvrirFiche(systeme);
+  }
+
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();invite=e;});
+  window.addEventListener('appinstalled',()=>{invite=null;rafraichir();});
+
+  if(itemMenu)itemMenu.addEventListener('click',()=>installer());
+  document.querySelectorAll('[data-install]').forEach(b=>b.addEventListener('click',()=>installer(b.dataset.install)));
+  document.getElementById('vbIosOk').addEventListener('click',fermerFiche);
+  ficheIos.addEventListener('click',e=>{if(e.target===ficheIos)fermerFiche();});
+
+  rafraichir();
 })();
