@@ -40,7 +40,7 @@
  *     WHATSAPP_PHONE + WHATSAPP_APIKEY        (service CallMeBot, usage personnel)
  *     RESEND_API_KEY + ALERT_EMAIL            (email)
  *     TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID   (Telegram)
- *   Optionnelles : ALERT_FROM (défaut : "Alertes système <contact@mail.vipbetcote.com>"),
+ *   Optionnelles : ALERT_FROM (défaut : "Alertes système <contact@vipbetcote.com>"),
  *   BOT_TEST_TOKEN (test d'envoi via le relais).
  *
  * Planification : voir netlify.toml. Test manuel : alerte-watchdog-relais.js
@@ -401,7 +401,7 @@ const CANAUX = [
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: process.env.ALERT_FROM || 'Alertes système <contact@mail.vipbetcote.com>',
+          from: process.env.ALERT_FROM || 'Alertes système <contact@vipbetcote.com>',
           to: [process.env.ALERT_EMAIL],
           subject: sujet, html, text: lignes.join('\n')
         })

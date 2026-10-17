@@ -5540,14 +5540,36 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{if(document.fonts&&document.fonts.load){await Promise.all(['800 40px Sora','700 30px Inter','500 24px Inter'].map(f=>document.fonts.load(f)));}}catch(e){}
     const SORA='Sora, Inter, sans-serif',INTER='Inter, sans-serif';
     const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
+    // Fiche EN COURS (16/10, partage admin) : aucun ✓ / ✗, titre « FICHE DU JOUR », heure de chaque match.
+    const enCours=!!tk.enCours;
 
-    // Fond : degrade sombre + halos or (haut droite) et vert (bas gauche)
-    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#071022');g.addColorStop(1,'#040811');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    g=ctx.createRadialGradient(W,0,0,W,0,900);g.addColorStop(0,'rgba(201,164,76,.30)');g.addColorStop(1,'rgba(201,164,76,0)');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    g=ctx.createRadialGradient(0,H,0,0,H,900);g.addColorStop(0,'rgba(46,212,127,.18)');g.addColorStop(1,'rgba(46,212,127,0)');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    let g;
+    if(enCours){
+      // Fond : degrade sombre + halos or (haut droite) et vert (bas gauche)
+      g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#071022');g.addColorStop(1,'#040811');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      g=ctx.createRadialGradient(W,0,0,W,0,900);g.addColorStop(0,'rgba(201,164,76,.30)');g.addColorStop(1,'rgba(201,164,76,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      g=ctx.createRadialGradient(0,H,0,0,H,900);g.addColorStop(0,'rgba(46,212,127,.18)');g.addColorStop(1,'rgba(46,212,127,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    }else{
+      // 17/10 : MEME format que la carte « Fiche gagnee » des groupes Telegram : fond vert, halo or,
+      // confettis, cadre dore et trophee — reconnaissable au premier regard.
+      g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0F6B3A');g.addColorStop(.45,'#0A4527');g.addColorStop(1,'#05200F');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      g=ctx.createRadialGradient(W/2,0,0,W/2,0,1000);g.addColorStop(0,'rgba(255,224,138,.42)');g.addColorStop(1,'rgba(255,224,138,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      const couleurs=['#E8CE8A','#2ED47F','#FFFFFF','#FFE08A','#7FF0B5'];
+      for(let i=0;i<60;i++){
+        const x=(i*211+37)%W,y=40+((i*97+13)%560);
+        if(x>170&&x<W-170&&y>85&&y<545)continue;   // jamais sur le logo, le trophee ni le titre
+        ctx.globalAlpha=.35+((i*7)%5)/10;ctx.fillStyle=couleurs[i%couleurs.length];
+        if(i%3===0){ctx.beginPath();ctx.arc(x,y,5+(i%4),0,Math.PI*2);ctx.fill();}
+        else{ctx.save();ctx.translate(x,y);ctx.rotate(((i*53)%180)*Math.PI/180);rr(0,0,10+(i%5)*3,5+(i%3),2);ctx.fill();ctx.restore();}
+      }
+      ctx.globalAlpha=1;
+      ctx.strokeStyle='#E8CE8A';ctx.lineWidth=7;rr(22,22,W-44,H-44,52);ctx.stroke();
+    }
 
     // Logo dessine (terrain) + nom
     const lx=W/2-250,ly=110;
@@ -5561,34 +5583,43 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.font='800 64px '+SORA;ctx.fillStyle='#fff';ctx.fillText('VIP',lx+112,ly+70);
     const wVip=ctx.measureText('VIP').width;ctx.fillStyle='#E8CE8A';ctx.fillText('BETCOTE',lx+112+wVip,ly+70);
 
-    // Titre « TIKET GENYEN » avec coche
-    // Fiche EN COURS (16/10, partage admin) : aucun ✓ / ✗, titre « FICHE DU JOUR », heure de chaque match.
-    const enCours=!!tk.enCours;
     const titre=t(enCours?'dtk_share_titre_encours':'dtk_share_titre');
     ctx.font='800 84px '+SORA;
     if(enCours){
       ctx.textAlign='center';ctx.fillStyle='#E8CE8A';ctx.fillText(titre,W/2,360);ctx.textAlign='left';
     }else{
-      const wT=ctx.measureText(titre).width,rC=44,ecart=26,x0=W/2-(rC*2+ecart+wT)/2,yT=360;
-      ctx.fillStyle='#2ED47F';ctx.beginPath();ctx.arc(x0+rC,yT-28,rC,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#06140C';ctx.lineWidth=9;ctx.lineCap='round';ctx.lineJoin='round';
-      ctx.beginPath();ctx.moveTo(x0+rC-18,yT-28);ctx.lineTo(x0+rC-5,yT-15);ctx.lineTo(x0+rC+19,yT-41);ctx.stroke();
-      ctx.fillStyle='#2ED47F';ctx.fillText(titre,x0+rC*2+ecart,yT);
+      // Trophee dore (meme dessin que la carte Telegram) + grand titre blanc.
+      const tx=W/2,ty=300,k=1.25;
+      ctx.save();ctx.translate(tx-60*k,ty-62*k);ctx.scale(k,k);
+      const gt=ctx.createLinearGradient(0,0,0,114);gt.addColorStop(0,'#FFF1C9');gt.addColorStop(1,'#D9A93C');
+      ctx.fillStyle=gt;ctx.beginPath();ctx.moveTo(24,10);ctx.lineTo(96,10);ctx.lineTo(96,44);
+      ctx.bezierCurveTo(96,70,80,86,60,88);ctx.bezierCurveTo(40,86,24,70,24,44);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='#E8CE8A';ctx.lineWidth=7;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(24,20);ctx.lineTo(8,20);ctx.lineTo(8,34);ctx.bezierCurveTo(8,50,18,60,30,62);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(96,20);ctx.lineTo(112,20);ctx.lineTo(112,34);ctx.bezierCurveTo(112,50,102,60,90,62);ctx.stroke();
+      ctx.fillStyle='#E8CE8A';ctx.fillRect(52,86,16,16);
+      ctx.fillStyle=gt;rr(34,100,52,14,4);ctx.fill();
+      ctx.strokeStyle='#1A1405';ctx.lineWidth=8;ctx.lineJoin='round';
+      ctx.beginPath();ctx.moveTo(44,40);ctx.lineTo(55,51);ctx.lineTo(77,29);ctx.stroke();
+      ctx.restore();
+      ctx.textAlign='center';ctx.fillStyle='#FFFFFF';ctx.fillText(titre,W/2,470);ctx.textAlign='left';
     }
     const estExact=tk.scoreCount>0&&tk.scoreCount>=tk.legsCount;
     const typeTxt=estExact?t('share_type_exact'):((tk.sport==='basket'||tk.sport==='nba')?t('share_type_basket'):t('share_type_foot'));
-    ctx.font='600 30px '+INTER;ctx.fillStyle='#8F9BB0';ctx.textAlign='center';
-    ctx.fillText(typeTxt.split('').join(String.fromCharCode(8202)),W/2,430);
+    ctx.font=(enCours?'600 30px ':'700 32px ')+INTER;ctx.fillStyle=enCours?'#8F9BB0':'#E8CE8A';ctx.textAlign='center';
+    ctx.fillText(typeTxt.split('').join(String.fromCharCode(8202)),W/2,enCours?430:530);
 
     // Selections (jusqu'a 7 cartes, puis « +N autres »)
     const legs=(tk.legs||[]);
     const MAX=7,HL=150,X=60,LW=W-120;
     // Bloc (selections + cote totale) centre verticalement entre le titre et le bandeau du bas.
     const nAff=Math.min(legs.length,MAX)+(legs.length>MAX?0.4:0);
-    let y=480+Math.max(0,(1130-(nAff*HL+300))/2);
+    const yDebut=enCours?480:575,espace=enCours?1130:1035;
+    let y=yDebut+Math.max(0,(espace-(nAff*HL+300))/2);
     legs.slice(0,MAX).forEach(lg=>{
-      ctx.fillStyle='rgba(255,255,255,.04)';rr(X,y,LW,HL-18,28);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=enCours?'rgba(255,255,255,.04)':'rgba(4,23,13,.55)';rr(X,y,LW,HL-18,28);ctx.fill();
+      ctx.strokeStyle=enCours?'rgba(255,255,255,.08)':'rgba(46,212,127,.35)';ctx.lineWidth=2;ctx.stroke();
+      if(!enCours){ctx.fillStyle=lg.result==='lost'?'#F0735E':lg.result==='void'?'#8F9BB0':'#2ED47F';rr(X,y,12,HL-18,6);ctx.fill();}
       const cx=X+58,cy=y+(HL-18)/2,res=lg.result;
       if(enCours){
         // Heure du match (heure d'Haiti) a la place du resultat.
@@ -5610,9 +5641,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ctx.textAlign='left';
       ctx.fillStyle='#F4F3ED';ctx.font='700 36px '+INTER;ctx.fillText(tronqueTexte(lg.match||'',30),X+112,y+50);
       const ligue=(String(lg.league||'')+(lg.leagueCountry?' ('+lg.leagueCountry+')':'')).toUpperCase();
-      ctx.fillStyle='#6F7C92';ctx.font='600 21px '+INTER;ctx.fillText(tronqueTexte(ligue,42),X+112,y+84);
+      ctx.fillStyle=enCours?'#6F7C92':'#8FD9AE';ctx.font='600 21px '+INTER;ctx.fillText(tronqueTexte(ligue,42),X+112,y+84);
       const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
-      ctx.fillStyle='#C9CED8';ctx.font='500 27px '+INTER;ctx.fillText(tronqueTexte(pickTxt,36),X+112,y+118);
+      ctx.fillStyle=enCours?'#C9CED8':'#D9F5E5';ctx.font='500 27px '+INTER;ctx.fillText(tronqueTexte(pickTxt,36),X+112,y+118);
       ctx.textAlign='right';ctx.fillStyle='#E8CE8A';ctx.font='800 44px '+SORA;ctx.fillText(Number(lg.odd).toFixed(2),X+LW-34,y+82);
       y+=HL;
     });
@@ -5623,7 +5654,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     // Cote totale
     ctx.textAlign='center';
-    ctx.fillStyle='#8F9BB0';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
+    ctx.fillStyle=enCours?'#8F9BB0':'#BDEFD3';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
     g=ctx.createLinearGradient(0,y+110,0,y+240);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
     ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+235);
 
@@ -5634,7 +5665,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.font='700 30px '+INTER;ctx.globalAlpha=.85;ctx.fillText(t('share_cta_sub'),W/2,1758);ctx.globalAlpha=1;
 
     // Mention responsable, jamais omise
-    ctx.fillStyle='#6F7C92';ctx.font='500 26px '+INTER;ctx.fillText(t('dtk_share_mention'),W/2,H-50);
+    ctx.fillStyle=enCours?'#6F7C92':'#8FD9AE';ctx.font='500 26px '+INTER;ctx.fillText(t('dtk_share_mention'),W/2,H-50);
 
     return new Promise(resolve=>cv.toBlob(resolve,'image/png',0.95));
   }

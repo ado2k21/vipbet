@@ -151,6 +151,23 @@ async function imageFiche(tk, legs) {
   return { png, legende };
 }
 
+// 17/10 : CARTE « FICHE GAGNEE » dans les groupes VIP (en reponse a la fiche d'origine), au
+// design vert/or tres different de la carte publiee : reconnaissable au premier regard.
+// Chaque match garde son VRAI resultat (score exact gagne avec un seul bon score).
+async function imageGagnanteGroupe(tk, legs) {
+  const { rendrePng } = require('./lib/image-fiche');
+  const cote = coteTexte(tk);
+  const type = typeFiche(tk, legs);
+  const perdus = legs.filter(l => l.result === 'lost').length;
+  const sousTitre = perdus ? 'Un seul bon score suffit — résultats réels de chaque match' : 'Tous les matchs gagnés';
+  const png = await rendrePng({ type, cote, sousTitre, date: dateCourte(tk.play_date) },
+    legs.map(l => ({ match_label: l.match_label, league: l.league, league_country: l.league_country, pick: choixLeg(l), odd: l.odd, result: l.result })),
+    'gagnante');
+  const legende = [`🏆✅ <b>FICHE ${type} GAGNÉE${cote ? ' — COTE ' + cote : ''}</b>`,
+    'Bravo à tous ceux qui l\'ont jouée 🎉', '', '<i>Jeu responsable, 18+. Jouez avec contrôle.</i>'].join('\n');
+  return { png, legende };
+}
+
 // Aucun code de fiche, aucun identifiant interne : titre = type + cote totale.
 function formaterMessage(tk, legs) {
   const icone = tk.sport === 'basket' || tk.sport === 'nba' ? '🏀' : '⚽';
@@ -199,9 +216,10 @@ async function fetchDelai(url, opts, ms) {
 }
 
 // Envoi d'une IMAGE avec legende (16/10). Retourne le meme format que envoyerTelegram.
-async function envoyerPhoto(token, chat, image) {
+async function envoyerPhoto(token, chat, image, repondreA) {
   const fd = new FormData();
   fd.append('chat_id', String(chat));
+  if (repondreA) fd.append('reply_parameters', JSON.stringify({ message_id: Number(repondreA), allow_sending_without_reply: true }));
   fd.append('caption', image.legende);
   fd.append('parse_mode', 'HTML');
   fd.append('photo', new Blob([image.png], { type: 'image/png' }), 'fiche.png');
@@ -218,7 +236,7 @@ async function envoyerPhoto(token, chat, image) {
 async function envoyerTelegram(token, chat, texte, repondreA, image) {
   if (image && image.png) {
     let p;
-    try { p = await envoyerPhoto(token, chat, image); } catch (e) { p = { ok: false, description: e.message }; }
+    try { p = await envoyerPhoto(token, chat, image, repondreA); } catch (e) { p = { ok: false, description: e.message }; }
     if (p.ok || p.retryAfter) return p;
   }
   const corps = { chat_id: chat, text: texte, parse_mode: 'HTML', disable_web_page_preview: true };
@@ -325,7 +343,7 @@ async function passageResultats(cfg, fetchEnvoi, dormir) {
   const rangs = Object.keys(cfg.groupes).map(Number);
   if (!cfg.token || !rangs.length || !cfg.url || !cfg.cle) return { resultats: 0 };
   const depuis = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
-  const r = await fetchDelai(`${cfg.url}/rest/v1/tickets?select=id,sport,status,total_odd,legs_count,score_legs_count` +
+  const r = await fetchDelai(`${cfg.url}/rest/v1/tickets?select=id,sport,status,total_odd,legs_count,score_legs_count,play_date` +
     `&published=eq.true&status=in.(won,lost)&settled_at=gte.${depuis}&order=settled_at.asc&limit=60`, { headers: entetes(cfg.cle) });
   if (!r.ok) throw new Error(`lecture fiches reglees HTTP ${r.status}`);
   const fiches = await r.json();
@@ -337,10 +355,15 @@ async function passageResultats(cfg, fetchEnvoi, dormir) {
     if (!re.ok) throw new Error(`lecture envois HTTP ${re.status}`);
     const envois = await re.json();
     if (!envois.length) continue;
-    const rl = await fetchDelai(`${cfg.url}/rest/v1/ticket_legs?select=market&ticket_id=eq.${tk.id}`, { headers: entetes(cfg.cle) });
+    const rl = await fetchDelai(`${cfg.url}/rest/v1/ticket_legs?select=market,pick,odd,match_label,league,league_country,result,position&ticket_id=eq.${tk.id}&order=position.asc`, { headers: entetes(cfg.cle) });
     const legs = rl.ok ? await rl.json() : [];
     const gagne = tk.status === 'won';
     const texte = formaterResultat(tk, legs, gagne);
+    // Fiche gagnee : carte image (repli automatique sur le texte si l'image echoue). Perdue : texte seul.
+    let image = null;
+    if (gagne && legs.length) {
+      try { image = await imageGagnanteGroupe(tk, legs); } catch (err) { image = null; }
+    }
     for (const e of envois) {
       if (!cfg.groupes[e.groupe]) continue;
       // reserver le resultat (une seule fois)
@@ -351,7 +374,7 @@ async function passageResultats(cfg, fetchEnvoi, dormir) {
       if (!res.ok) throw new Error(`reservation resultat HTTP ${res.status}`);
       if (!(await res.json()).length) continue;
       let out;
-      try { out = await fetchEnvoi(cfg.token, cfg.groupes[e.groupe], texte, e.message_id || null); }
+      try { out = await fetchEnvoi(cfg.token, cfg.groupes[e.groupe], texte, e.message_id || null, image); }
       catch (err) { out = { ok: false, description: 'réseau: ' + err.message }; }
       if (out.ok) {
         await fetchDelai(`${cfg.url}/rest/v1/telegram_envois?ticket_id=eq.${tk.id}&groupe=eq.${e.groupe}`, {
@@ -392,4 +415,4 @@ async function handler() {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, libellePick, choixLeg, heureLeg, coteTexte, envoyerTelegram, imageFiche, passage, passageResultats, dateHaiti };
+module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, libellePick, choixLeg, heureLeg, coteTexte, envoyerTelegram, imageFiche, imageGagnanteGroupe, dateCourte, passage, passageResultats, dateHaiti };

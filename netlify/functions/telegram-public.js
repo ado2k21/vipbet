@@ -85,10 +85,11 @@ async function imageGagnante(tk, legs) {
   const type = R.typeFiche(tk, legs);
   const perdus = legs.filter(l => l.result === 'lost').length;
   const sousTitre = perdus ? 'Un seul bon score suffit — résultats réels de chaque match' : 'Tous les matchs gagnés';
-  const png = await rendrePng({ type, cote, sousTitre },
+  const date = R.dateCourte(tk.play_date);
+  const png = await rendrePng({ type, cote, sousTitre, date },
     legs.map(l => ({ match_label: l.match_label, league: l.league, league_country: l.league_country, pick: R.choixLeg(l), odd: l.odd, result: l.result })),
     'gagnante');
-  const legende = [`✅ <b>FICHE ${type} GAGNÉE${cote ? ' — COTE ' + cote : ''}</b>`, '',
+  const legende = [`✅ <b>FICHE ${type} GAGNÉE${cote ? ' — COTE ' + cote : ''}</b>`, date ? `📅 Fiche du ${date}` : '', '',
     `🔓 Fiches VIP chaque jour : ${LIEN}`, '<i>Jeu responsable, 18+. Jouez avec contrôle.</i>'].join('\n');
   return { png, legende };
 }
@@ -107,7 +108,7 @@ async function passage(cfg, fetchEnvoi, dormir, maintenant) {
   if (cfg.chatEstVip) { await journaliser(cfg, 'telegram_public', 'TELEGRAM_PUBLIC_CHAT est un groupe VIP : envoi BLOQUE'); return { statut: 'bloque_groupe_vip' }; }
   if (!cfg.url || !cfg.cle) return { statut: 'config_supabase_incomplete' };
   const depuis = new Date((maintenant || Date.now()) - FENETRE_MS).toISOString();
-  const r = await fetchDelai(`${cfg.url}/rest/v1/tickets?select=id,sport,total_odd,legs_count,score_legs_count` +
+  const r = await fetchDelai(`${cfg.url}/rest/v1/tickets?select=id,sport,total_odd,legs_count,score_legs_count,play_date` +
     `&published=eq.true&status=eq.won&settled_at=gte.${depuis}&order=settled_at.asc&limit=30`, { headers: entetes(cfg.cle) });
   if (!r.ok) throw new Error(`lecture fiches HTTP ${r.status}`);
   const fiches = await r.json();

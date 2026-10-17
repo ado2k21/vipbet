@@ -104,7 +104,7 @@ Si vous n'&ecirc;tes pas &agrave; l'origine de ce changement, changez imm&eacute
   const envoi = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: 'VipBetcote <noreply@mail.vipbetcote.com>', to: user.email, subject: modele.sujet, html })
+    body: JSON.stringify({ from: 'VipBetcote <contact@vipbetcote.com>', to: user.email, subject: modele.sujet, html })
   });
   if (!envoi.ok) return reponse(502, { error: 'Envoi de l’e-mail impossible' });
   return reponse(200, { ok: true });

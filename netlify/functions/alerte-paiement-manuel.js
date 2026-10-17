@@ -86,7 +86,7 @@ async function envoyerEmail(texte) {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: process.env.ALERT_FROM || 'Alertes système <contact@mail.vipbetcote.com>',
+        from: process.env.ALERT_FROM || 'Alertes système <contact@vipbetcote.com>',
         to: [process.env.ALERT_EMAIL],
         subject: '🚨 PRIORITÉ — Paiement manuel en attente',
         text: texte
