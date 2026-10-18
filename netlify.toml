@@ -235,3 +235,24 @@
 # Parrainage : attribution / application des jours offerts (additif) — voir parrainage-recompenses.js
 [functions."parrainage-recompenses"]
   schedule = "*/15 * * * *"
+
+# ============================================================================
+# 18/10 — UNE SEULE ADRESSE : betcote.netlify.app -> vipbetcote.com (301).
+# Google affichait encore betcote.netlify.app : pour le navigateur c'est un
+# AUTRE site (session, compte connecte, app installee separes), d'ou des
+# comptes « connectes d'un cote mais pas de l'autre ». Seules les PAGES sont
+# redirigees (accueil et index.html) : les fonctions /.netlify/* (webhooks
+# paiement/Telegram, taches planifiees) ne sont jamais touchees. Les
+# parametres (?ref=, ?lang=...) sont conserves par Netlify.
+# ============================================================================
+[[redirects]]
+  from = "https://betcote.netlify.app/"
+  to = "https://vipbetcote.com/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://betcote.netlify.app/index.html"
+  to = "https://vipbetcote.com/"
+  status = 301
+  force = true
