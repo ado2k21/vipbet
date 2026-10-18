@@ -4645,27 +4645,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // Empeche la restauration de session generique de router en double.
   if(retourGoogle)window.VB_googleRetourEnCours=true;
 
-  document.querySelectorAll('[data-google-auth]').forEach(btn=>btn.addEventListener('click',async()=>{
+  /* 18/10 (3) : le bouton ouvre DIRECTEMENT l'adresse de connexion Google de
+     Supabase (meme lien que le test qui a reussi sur iPhone), par une simple
+     navigation, sans attendre la bibliotheque Supabase. Le retour est traite
+     comme avant (traiterRetourGoogle) : la bibliotheque lit la session dans
+     l'adresse de retour. */
+  document.querySelectorAll('[data-google-auth]').forEach(btn=>btn.addEventListener('click',ev=>{
+    ev.preventDefault();
     if(navigator.onLine===false){if(window.VB_toast)window.VB_toast('auth_offline_h',t('auth_err_offline'));return;}
-    btn.disabled=true;
-    // La bibliotheque Supabase (CDN, defer) peut arriver apres le clic sur
-    // un telephone lent : on l'attend jusqu'a 6 s au lieu d'echouer aussitot.
-    let sb=window.VB_getSupabase&&window.VB_getSupabase();
-    for(let i=0;!sb&&i<20;i++){await new Promise(r=>setTimeout(r,300));sb=window.VB_getSupabase&&window.VB_getSupabase();}
-    if(!sb){btn.disabled=false;if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));return;}
+    const base=window.VB_SUPABASE_URL||'https://llqifjfcpyddwjkferpn.supabase.co';
     try{sessionStorage.setItem(CLE_RETOUR_GOOGLE,'1');}catch(e){}
-    let error=null;
-    try{
-      ({error}=await sb.auth.signInWithOAuth({
-        provider:'google',
-        options:{redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}}
-      }));
-    }catch(e){error=e;}
-    if(error){
-      btn.disabled=false;
-      try{sessionStorage.removeItem(CLE_RETOUR_GOOGLE);}catch(e){}
-      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err')+(error.message?' ('+error.message+')':''));
-    }
+    btn.disabled=true;
+    window.location.href=base+'/auth/v1/authorize?provider=google'
+      +'&redirect_to='+encodeURIComponent(location.origin+'/')
+      +'&prompt=select_account';
   }));
   // Retour sur la page (bouton precedent depuis Google) : bouton reactive.
   window.addEventListener('pageshow',()=>document.querySelectorAll('[data-google-auth]').forEach(b=>{b.disabled=false;}));
@@ -11547,6 +11540,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
    jamais le navigateur — contrairement a l'ancien systeme en localStorage. */
 (function(){
   const SUPABASE_URL='https://llqifjfcpyddwjkferpn.supabase.co';
+  window.VB_SUPABASE_URL=SUPABASE_URL;
   const SUPABASE_ANON_KEY='sb_publishable_AtGtgVlUNec--OpbCQ-t3A_nU9oCGUF';
 
   function initSupabase(){
