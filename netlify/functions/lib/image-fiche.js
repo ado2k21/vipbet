@@ -48,16 +48,13 @@ const coupe = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, 
 const W = 1080;
 const VERT = '#2ED47F', OR = '#E8CE8A', ROUGE = '#F0735E', BLANC = '#F4F3ED', GRIS = '#8F9BB0';
 
-function logo(x, y) {
-  return `<g transform="translate(${x},${y})">
-    <rect width="64" height="64" rx="16" fill="url(#gLogo)"/>
-    <rect x="9" y="17" width="46" height="30" rx="2" fill="none" stroke="#fff" stroke-width="2.6"/>
-    <line x1="32" y1="17" x2="32" y2="47" stroke="#fff" stroke-width="2.6"/>
-    <circle cx="32" cy="32" r="7" fill="none" stroke="#fff" stroke-width="2.6"/>
-    <circle cx="32" cy="32" r="2.4" fill="#fff"/>
-    <rect x="9" y="24" width="7" height="16" fill="none" stroke="#fff" stroke-width="2.2"/>
-    <rect x="48" y="24" width="7" height="16" fill="none" stroke="#fff" stroke-width="2.2"/>
-  </g>`;
+// Logo VIPBETCOTE sans fond (18/10) : meme dessin que assets/logo-vipbetcote.svg,
+// ramene a 64 px de large et centre dans l'ancien emplacement 64x64.
+// Blanc sur la carte « fiche gagnee » (fond vert), vert sur les fiches (fond sombre).
+const LOGO_SVG = '<mask id="mLogo"><rect x="0" y="0" width="1254" height="1254" fill="#fff"/><g fill="#000"><rect x="673" y="450" width="34" height="200"/><rect x="627" y="706" width="210" height="34"/><rect x="547" y="670" width="34" height="200"/><rect x="417" y="580" width="200" height="34"/></g></mask><circle cx="627" cy="660" r="154" fill="none" stroke="#17A860" stroke-width="92" mask="url(#mLogo)"/><g fill="#17A860"><rect x="75" y="284" width="1104" height="92"/><rect x="75" y="945" width="1104" height="92"/><rect x="75" y="284" width="92" height="753"/><rect x="1087" y="284" width="92" height="753"/><rect x="75" y="440" width="276" height="92"/><rect x="75" y="788" width="276" height="92"/><rect x="259" y="440" width="92" height="440"/><rect x="903" y="440" width="276" height="92"/><rect x="903" y="788" width="276" height="92"/><rect x="903" y="440" width="92" height="440"/><rect x="581" y="284" width="92" height="76"/><rect x="581" y="960" width="92" height="77"/><rect x="581" y="394" width="92" height="158"/><rect x="581" y="768" width="92" height="158"/><rect x="361" y="614" width="158" height="92"/><rect x="735" y="614" width="158" height="92"/><circle cx="627" cy="660" r="74"/></g>';
+function logo(x, y, couleur = '#17A860') {
+  const k = 64 / 1104, dy = (64 - 753 * k) / 2;
+  return `<g transform="translate(${x},${y + dy}) scale(${k}) translate(-75,-284)">${LOGO_SVG.split('#17A860').join(couleur)}</g>`;
 }
 
 function marque(res, cx, cy) {
@@ -130,7 +127,7 @@ function svgGagnante(info, legs) {
   <rect width="${W}" height="${H}" fill="url(#gHalo)"/>
   ${confettis(W, 470)}
   <rect x="16" y="16" width="${W - 32}" height="${H - 32}" rx="40" fill="none" stroke="${OR}" stroke-width="6"/>
-  ${logo(48, 50)}
+  ${logo(48, 50, '#FFFFFF')}
   <text x="130" y="94" font-size="34" font-weight="800" fill="#fff">VIP<tspan fill="${OR}">BETCOTE</tspan></text>
   <rect x="${W - 280}" y="52" width="232" height="60" rx="30" fill="${VERT}"/>
   <path d="M${W - 248} 82 L${W - 238} 92 L${W - 220} 72" fill="none" stroke="#06140C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>

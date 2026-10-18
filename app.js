@@ -1,3 +1,8 @@
+// 18/10 : vrai si le site est ouvert comme application installee (ecran d'accueil).
+window.VB_estAppInstallee=function(){
+  try{return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}catch(e){return false;}
+};
+
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
@@ -7474,9 +7479,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Deconnexion reelle, pas seulement visuelle : sans ca, la
     // restauration automatique au prochain chargement rouvrirait le
     // Dashboard malgre la demande explicite de sortie.
+    // 18/10 : les donnees gardees pour le mode hors ligne sont effacees.
+    if(window.VB_horsLigneOff)window.VB_horsLigneOff();
     try{
       if(window.VB_getSupabase){
         const sb=window.VB_getSupabase();
+        // Sans reseau, Supabase ne peut pas fermer la session : on l'efface
+        // nous-memes du telephone, sinon l'app la rouvrirait au prochain lancement.
+        if(navigator.onLine===false&&sb&&sb.auth&&sb.auth.storageKey){
+          try{localStorage.removeItem(sb.auth.storageKey);}catch(e){}
+          try{sessionStorage.removeItem(sb.auth.storageKey);}catch(e){}
+        }
         if(sb&&sb.auth&&typeof sb.auth.signOut==='function')sb.auth.signOut().catch(()=>{});
       }
     }catch(e){ /* la sortie visuelle ne doit jamais dependre de ca */ }
@@ -7532,6 +7545,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const logo=document.querySelector('.logo-mark-img img');
     const dl=document.getElementById('dashLogo');
     if(logo&&logo.src&&!dl.getAttribute('src'))dl.src=logo.src;
+    // 18/10 : app installee — les fiches lues sont gardees pour le mode hors ligne.
+    if(window.VB_horsLigneOn)window.VB_horsLigneOn();
     // CORRECTIF : recharger les notifications locales AVANT tout rendu,
     // au cas ou le compte connecte a change depuis le dernier chargement
     // de la page (sinon la liste du compte precedent resterait affichee).
@@ -11518,9 +11533,51 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          Dashboard de l'autre). sessionStorage isole chaque onglet
          completement : sa session survit a un F5 dans CE meme onglet,
          mais n'est jamais partagee avec un autre onglet. */
+      /* 18/10 — APPLICATION INSTALLEE (ecran d'accueil) : la session est
+         gardee dans localStorage pour que l'abonne reste connecte quand il
+         ferme puis rouvre l'app, meme sans reseau. Le probleme des onglets
+         decrit ci-dessus n'existe pas dans l'app installee (une seule
+         fenetre, et un onglet du navigateur garde sessionStorage). */
+      const appInstallee=!!(window.VB_estAppInstallee&&window.VB_estAppInstallee());
+      const stockage=appInstallee?window.localStorage:window.sessionStorage;
       window.VB_supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-        auth:{storage:window.sessionStorage,persistSession:true,autoRefreshToken:true}
+        auth:{storage:stockage,persistSession:true,autoRefreshToken:true}
       });
+      const auth=window.VB_supabase.auth;
+      if(appInstallee){
+        // Une session ouverte avant cette mise a jour (sessionStorage) est reprise.
+        try{
+          const k=auth.storageKey;
+          if(k&&!localStorage.getItem(k)&&sessionStorage.getItem(k))localStorage.setItem(k,sessionStorage.getItem(k));
+        }catch(e){}
+      }
+      /* HORS LIGNE : Supabase essaie de renouveler un jeton expire et, sans
+         reseau, repond « pas de session » — l'abonne serait renvoye a
+         l'accueil. Sans reseau seulement, on rend la session enregistree
+         telle quelle (lecture seule : les donnees viennent alors du cache
+         du telephone). En ligne, comportement Supabase inchange. */
+      const getSessionOrig=auth.getSession.bind(auth);
+      const sessionEnregistree=()=>{
+        try{
+          const raw=stockage.getItem(auth.storageKey);
+          const s=raw?JSON.parse(raw):null;
+          return s&&s.user&&s.access_token?s:null;
+        }catch(e){return null;}
+      };
+      auth.getSession=async function(){
+        if(navigator.onLine===false){const s=sessionEnregistree();if(s)return {data:{session:s},error:null};}
+        const r=await getSessionOrig();
+        const sansReseau=r&&r.error&&/fetch|network|Retryable/i.test(String(r.error.name||'')+' '+String(r.error.message||''));
+        if(sansReseau&&!(r.data&&r.data.session)){const s=sessionEnregistree();if(s)return {data:{session:s},error:null};}
+        return r;
+      };
+      // Deconnexion (quelle qu'en soit la cause) : les donnees gardees sur
+      // le telephone sont effacees aussitot.
+      try{
+        auth.onAuthStateChange((ev)=>{
+          if(ev==='SIGNED_OUT'&&window.VB_horsLigneOff)window.VB_horsLigneOff();
+        });
+      }catch(e){}
     }
     return window.VB_supabase;
   }
@@ -13022,3 +13079,63 @@ window.addEventListener('pageshow',(ev)=>{
 
   rafraichir();
 })();
+
+/* ---------- Mode hors ligne de l'application installee (18/10) ----------
+   Lecture seule : l'abonne garde son Dashboard et ses dernieres fiches
+   quand le reseau coupe (les donnees viennent du cache du telephone, voir
+   sw.js). En ligne, rien ne change.
+   - VB_horsLigneOn  : a l'ouverture du Dashboard, autorise sw.js a garder
+     les donnees de CET utilisateur (app installee uniquement, jamais admin) ;
+   - VB_horsLigneOff : a la deconnexion, efface tout du telephone ;
+   - icone rouge « hors ligne » dans l'en-tete ;
+   - paiement, renouvellement et changement de mot de passe refuses sans
+     reseau, avec le message « Pa gen koneksyon ». */
+(function(){
+  const CACHES_DONNEES=['vbc-donnees-v1','vbc-config-v1'];
+  function versSw(msg){
+    if(!('serviceWorker' in navigator))return;
+    try{if(navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage(msg);}catch(e){}
+    navigator.serviceWorker.ready.then(r=>{try{if(r.active)r.active.postMessage(msg);}catch(e){}}).catch(()=>{});
+  }
+  window.VB_horsLigneOn=async function(){
+    if(!(window.VB_estAppInstallee&&window.VB_estAppInstallee()))return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return;
+    try{
+      const {data}=await sb.auth.getSession();
+      const uid=data&&data.session&&data.session.user&&data.session.user.id;
+      if(uid)versSw({type:'vb-donnees-on',uid});
+    }catch(e){}
+  };
+  window.VB_horsLigneOff=function(){
+    versSw({type:'vb-donnees-off'});
+    try{if(window.caches)CACHES_DONNEES.forEach(n=>caches.delete(n).catch(()=>{}));}catch(e){}
+  };
+
+  // Icone rouge : visible seulement sans reseau.
+  const maj=()=>document.documentElement.classList.toggle('vb-offline',navigator.onLine===false);
+  window.addEventListener('online',maj);
+  window.addEventListener('offline',maj);
+  maj();
+
+  // Actions qui exigent internet : refusees proprement hors ligne.
+  const RESEAU_OBLIGATOIRE='#dashExpiredCta,#dashSoonCta,#dashSubUpgrade,#dashChangePass,#wizPaySubmit,#wizChangePlan,#wizLockCta';
+  function refuser(ev){
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    if(window.VB_toast){
+      const d=(typeof translations!=='undefined'&&(translations[currentLang]||translations.fr))||{};
+      window.VB_toast('auth_offline_h',d.auth_err_offline||'');
+    }
+  }
+  document.addEventListener('click',ev=>{
+    if(navigator.onLine!==false)return;
+    const cible=ev.target&&ev.target.closest&&ev.target.closest(RESEAU_OBLIGATOIRE);
+    if(cible)refuser(ev);
+  },true);
+  document.addEventListener('submit',ev=>{
+    if(navigator.onLine!==false)return;
+    if(ev.target&&ev.target.querySelector&&ev.target.querySelector('#wizPaySubmit'))refuser(ev);
+  },true);
+})();
+

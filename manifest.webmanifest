@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "VIPBETCOTE",
-  "short_name": "VIPBETCOTE",
+  "name": "VipBetcote",
+  "short_name": "VipBetcote",
   "description": "Fich foutbòl analize chak jou pa ekspè pou ParyajPam, ParyajLakay ak 1xBet. Jwe ak kontwòl.",
   "lang": "ht",
   "dir": "ltr",
@@ -13,8 +13,8 @@
   "theme_color": "#030617",
   "categories": ["sports"],
   "icons": [
-    { "src": "/assets/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/assets/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/assets/app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/assets/app/icon-192.png?v=20261018", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/app/icon-512.png?v=20261018", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/app/icon-maskable-512.png?v=20261018", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
