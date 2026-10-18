@@ -2644,6 +2644,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     pendingPlainPassword=null;   // on quitte la verification : plus besoin, on efface
     closeInlineOtp();
     showStep(1);
+    /* 18/10 : si la page a ete rechargee pendant la verification (retour de
+       la boite mail), le formulaire etait vide. On le remplit avec ce que
+       l'utilisateur avait deja saisi (le mot de passe n'est jamais garde). */
+    const f=document.getElementById('wizStep1');
+    if(f){
+      if(!f.fullname.value&&state.fullname)f.fullname.value=state.fullname;
+      if(!f.email.value&&state.email)f.email.value=state.email;
+      if(state.site)sitePickSet(state.site);
+      if(state.started&&f.terms)f.terms.checked=true;
+    }
   });
 
   /* ---- Selecteur de site prefere : choix unique, facultatif ----
@@ -2883,7 +2893,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      numeros, noms de compte et QR plus tard ; une seule ligne a changer par
      marque, plus le fichier QR a deposer dans assets/. */
   const DEPOT_MANUEL={
-    moncash:{ numero:'+509 4729 1392', nom:'Louima Christianne', qr:'' },
+    moncash:{ numero:'+509 4729 1392', nom:'Louima Christianne', qr:'assets/qr-moncash.png' },
     natcash:{ numero:'+509 5677 0711', nom:'Louima Christianne', qr:'assets/qr-natcash.png' }
   };
 
@@ -4157,6 +4167,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('pwrH').textContent=t(titles[stage]);
     document.getElementById('pwrSub').textContent=t(subs[stage]);
     pwrSubmit.textContent=t(btns[stage]);
+    // 18/10 : l'adresse a laquelle le code a ete envoye etait laissee vide.
+    if(stage==='code'){const mt=document.getElementById('pwrMailTo');if(mt)mt.textContent=pwr.email||'';}
     const first=pwrStages.find(x=>x.dataset.pwr===stage).querySelector('input');
     if(first&&window.innerWidth>860)first.focus({preventScroll:true});
   }
@@ -4388,6 +4400,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
   });
 
+  // 18/10 : la fleche de l'en-tete fait exactement comme « Retounen nan koneksyon ».
+  const pwrTopBack=document.getElementById('pwrTopBack');
+  if(pwrTopBack)pwrTopBack.addEventListener('click',()=>document.getElementById('pwrCancel').click());
   document.getElementById('pwrCancel').addEventListener('click',()=>{
     const backToDash=pwr.origin==='dashboard';
     leavePwReset();
@@ -4631,20 +4646,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   document.querySelectorAll('[data-google-auth]').forEach(btn=>btn.addEventListener('click',async()=>{
     if(navigator.onLine===false){if(window.VB_toast)window.VB_toast('auth_offline_h',t('auth_err_offline'));return;}
-    const sb=window.VB_getSupabase&&window.VB_getSupabase();
-    if(!sb){if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));return;}
     btn.disabled=true;
+    // La bibliotheque Supabase (CDN, defer) peut arriver apres le clic sur
+    // un telephone lent : on l'attend jusqu'a 6 s au lieu d'echouer aussitot.
+    let sb=window.VB_getSupabase&&window.VB_getSupabase();
+    for(let i=0;!sb&&i<20;i++){await new Promise(r=>setTimeout(r,300));sb=window.VB_getSupabase&&window.VB_getSupabase();}
+    if(!sb){btn.disabled=false;if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));return;}
     try{sessionStorage.setItem(CLE_RETOUR_GOOGLE,'1');}catch(e){}
-    const {error}=await sb.auth.signInWithOAuth({
-      provider:'google',
-      options:{redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}}
-    });
+    let error=null;
+    try{
+      ({error}=await sb.auth.signInWithOAuth({
+        provider:'google',
+        options:{redirectTo:location.origin+'/',queryParams:{prompt:'select_account'}}
+      }));
+    }catch(e){error=e;}
     if(error){
       btn.disabled=false;
       try{sessionStorage.removeItem(CLE_RETOUR_GOOGLE);}catch(e){}
-      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err')+(error.message?' ('+error.message+')':''));
     }
   }));
+  // Retour sur la page (bouton precedent depuis Google) : bouton reactive.
+  window.addEventListener('pageshow',()=>document.querySelectorAll('[data-google-auth]').forEach(b=>{b.disabled=false;}));
 
   function demanderProfilGoogle(user,profil){
     return new Promise(resolve=>{
@@ -4673,9 +4696,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!sb){window.VB_googleRetourEnCours=false;return;}
     // Annulation sur la page Google (?error=access_denied...)
     if(/[?#&]error=/.test(location.search+location.hash)){
+      // Raison exacte renvoyee par Google/Supabase (ex. access_denied),
+      // affichee entre parentheses pour pouvoir corriger la configuration.
+      let raison='';
+      try{
+        const q=new URLSearchParams(location.search.slice(1)+'&'+location.hash.slice(1));
+        raison=(q.get('error_description')||q.get('error')||'').replace(/\+/g,' ').slice(0,160);
+      }catch(e){}
       history.replaceState(null,'',location.pathname);
       window.VB_googleRetourEnCours=false;
-      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err'));
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err')+(raison?' ('+raison+')':''));
       return;
     }
     let session=null;
@@ -11538,13 +11568,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          ferme puis rouvre l'app, meme sans reseau. Le probleme des onglets
          decrit ci-dessus n'existe pas dans l'app installee (une seule
          fenetre, et un onglet du navigateur garde sessionStorage). */
-      const appInstallee=!!(window.VB_estAppInstallee&&window.VB_estAppInstallee());
-      const stockage=appInstallee?window.localStorage:window.sessionStorage;
+      /* 18/10 (2) — comme un vrai site : la session reste ouverte apres un
+         rechargement, dans un nouvel onglet et apres fermeture du navigateur
+         (localStorage partout). Contrepartie assumee : un meme navigateur ne
+         garde qu'UN compte connecte a la fois (la derniere connexion gagne
+         dans tous les onglets) ; la deconnexion ferme la session partout. */
+      const stockage=window.localStorage;
       window.VB_supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
         auth:{storage:stockage,persistSession:true,autoRefreshToken:true}
       });
       const auth=window.VB_supabase.auth;
-      if(appInstallee){
+      {
         // Une session ouverte avant cette mise a jour (sessionStorage) est reprise.
         try{
           const k=auth.storageKey;
