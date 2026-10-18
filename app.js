@@ -534,7 +534,7 @@ adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le
 adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
-auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", notif_ref_added:"Félicitations ! +{n} jours ajoutés à votre plan : un ami a payé son premier plan grâce à votre lien.", notif_ref_pending:"Vous gagnez {n} jours bonus grâce à un ami ! Ils seront ajoutés automatiquement à votre prochain plan.", notif_ref_lifetime:"Merci ! Un ami a payé son premier plan grâce à votre lien. Votre plan Lifetime vous donne déjà un accès illimité.", notif_ref_applied:"Vos {n} jours bonus de parrainage ont été ajoutés à votre nouveau plan.", auth_or_continue:"ou continuer avec", google_err:"La connexion avec Google n'a pas abouti. Réessayez.", google_admin:"Les comptes administrateur se connectent uniquement avec email, mot de passe et code 2FA.", gp_title:"Terminez la création de votre compte", gp_sub:"Une dernière étape avant de voir les fiches.", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
+auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", notif_ref_added:"Félicitations ! +{n} jours ajoutés à votre plan : un ami a payé son premier plan grâce à votre lien.", notif_ref_pending:"Vous gagnez {n} jours bonus grâce à un ami ! Ils seront ajoutés automatiquement à votre prochain plan.", notif_ref_lifetime:"Merci ! Un ami a payé son premier plan grâce à votre lien. Votre plan Lifetime vous donne déjà un accès illimité.", notif_ref_applied:"Vos {n} jours bonus de parrainage ont été ajoutés à votre nouveau plan.", auth_or_continue:"ou continuer avec", google_err:"La connexion avec Google n'a pas abouti. Réessayez.", google_admin:"Les comptes administrateur se connectent uniquement avec email, mot de passe et code 2FA.", gp_title:"Terminez la création de votre compte", gp_sub:"Une dernière étape avant de voir les fiches.", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", onb_skip:"Passer", onb_next:"Continuer", onb_create:"Créer mon compte", onb_login:"J'ai un compte · Se connecter", onb_tag_today:"FICHE DU JOUR", onb_tag_results:"RÉSULTATS", onb_plan_sub:"Accès aux fiches", onb_s1_h:"Des fiches analysées chaque jour", onb_s1_p:"Nos experts préparent vos fiches pour ParyajPam, ParyajLakay et 1xBet.", onb_s2_h:"Des résultats transparents", onb_s2_p:"Suivez l'historique de chaque fiche, gagnée ou perdue. Rien n'est caché.", onb_s3_h:"Payez facilement, commencez tout de suite", onb_s3_p:"MonCash, NatCash ou carte. Vos fiches se débloquent automatiquement. Jouez avec contrôle.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
 auth_taken_h:"Cette adresse e-mail est déjà enregistrée",
 auth_taken_sub:"Un compte existe déjà avec cet e-mail. Rendez-vous sur la page de connexion pour y accéder.",
 auth_suspended_h:"Compte suspendu",
@@ -1112,7 +1112,7 @@ adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
-auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", notif_ref_added:"Congratulations! +{n} days added to your plan: a friend paid their first plan through your link.", notif_ref_pending:"You earned {n} bonus days thanks to a friend! They will be added automatically to your next plan.", notif_ref_lifetime:"Thank you! A friend paid their first plan through your link. Your Lifetime plan already gives you unlimited access.", notif_ref_applied:"Your {n} referral bonus days have been added to your new plan.", auth_or_continue:"or continue with", google_err:"Google sign-in did not complete. Please try again.", google_admin:"Administrator accounts sign in only with email, password and 2FA code.", gp_title:"Finish creating your account", gp_sub:"One last step before you see the picks.", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
+auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", notif_ref_added:"Congratulations! +{n} days added to your plan: a friend paid their first plan through your link.", notif_ref_pending:"You earned {n} bonus days thanks to a friend! They will be added automatically to your next plan.", notif_ref_lifetime:"Thank you! A friend paid their first plan through your link. Your Lifetime plan already gives you unlimited access.", notif_ref_applied:"Your {n} referral bonus days have been added to your new plan.", auth_or_continue:"or continue with", google_err:"Google sign-in did not complete. Please try again.", google_admin:"Administrator accounts sign in only with email, password and 2FA code.", gp_title:"Finish creating your account", gp_sub:"One last step before you see the picks.", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", onb_skip:"Skip", onb_next:"Continue", onb_create:"Create my account", onb_login:"I have an account · Log in", onb_tag_today:"TODAY'S PICKS", onb_tag_results:"RESULTS", onb_plan_sub:"Access to the picks", onb_s1_h:"Picks analyzed every day", onb_s1_p:"Our experts prepare your picks for ParyajPam, ParyajLakay and 1xBet.", onb_s2_h:"Transparent results", onb_s2_p:"Follow the history of every pick, won or lost. Nothing is hidden.", onb_s3_h:"Pay easily, start right away", onb_s3_p:"MonCash, NatCash or card. Your picks unlock automatically. Play with control.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
 auth_taken_h:"This email address is already registered",
 auth_taken_sub:"An account already exists with this email. Head to the login page to sign in.",
 auth_suspended_h:"Account suspended",
@@ -1690,7 +1690,7 @@ adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
-auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", notif_ref_added:"Felisitasyon ! +{n} jou ajoute sou plan ou : yon zanmi peye premye plan li gras a lyen ou.", notif_ref_pending:"Ou genyen {n} jou bonis gras a yon zanmi ! Y ap ajoute otomatikman sou pwochen plan ou.", notif_ref_lifetime:"Mèsi ! Yon zanmi peye premye plan li gras a lyen ou. Plan Lifetime ou a ba ou aksè san limit deja.", notif_ref_applied:"{n} jou bonis parenaj ou yo ajoute sou nouvo plan ou.", auth_or_continue:"oswa kontinye ak", google_err:"Koneksyon ak Google la pa mache. Eseye ankò.", google_admin:"Kont administratè yo konekte sèlman ak imèl, modpas ak kòd 2FA.", gp_title:"Fini kreye kont ou", gp_sub:"Yon dènye etap anvan ou wè fich yo.", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
+auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", notif_ref_added:"Felisitasyon ! +{n} jou ajoute sou plan ou : yon zanmi peye premye plan li gras a lyen ou.", notif_ref_pending:"Ou genyen {n} jou bonis gras a yon zanmi ! Y ap ajoute otomatikman sou pwochen plan ou.", notif_ref_lifetime:"Mèsi ! Yon zanmi peye premye plan li gras a lyen ou. Plan Lifetime ou a ba ou aksè san limit deja.", notif_ref_applied:"{n} jou bonis parenaj ou yo ajoute sou nouvo plan ou.", auth_or_continue:"oswa kontinye ak", google_err:"Koneksyon ak Google la pa mache. Eseye ankò.", google_admin:"Kont administratè yo konekte sèlman ak imèl, modpas ak kòd 2FA.", gp_title:"Fini kreye kont ou", gp_sub:"Yon dènye etap anvan ou wè fich yo.", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", onb_skip:"Pase", onb_next:"Kontinye", onb_create:"Kreye kont mwen", onb_login:"Mwen gen yon kont · Konekte", onb_tag_today:"FICH JODI A", onb_tag_results:"REZILTA", onb_plan_sub:"Aksè a fich yo", onb_s1_h:"Fich analize chak jou", onb_s1_p:"Ekip ekspè nou an prepare fich ou yo pou ParyajPam, ParyajLakay ak 1xBet.", onb_s2_h:"Rezilta transparan", onb_s2_p:"Swiv istorik chak fich, ki genyen ak ki pèdi. Pa gen anyen kache.", onb_s3_h:"Peye fasil, kòmanse touswit", onb_s3_p:"MonCash, NatCash oswa kat. Fich ou yo debloke otomatikman. Jwe ak kontwòl.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
 auth_taken_h:"Imèl sa a deja anrejistre",
 auth_taken_sub:"Gen yon kont ki deja gen imèl sa a. Ale nan paj koneksyon an pou w antre.",
 auth_suspended_h:"Kont sispann",
@@ -12679,6 +12679,90 @@ async function tenterRestaurationSession(){
 tenterRestaurationSession();
 window.addEventListener('load',tenterRestaurationSession);
 window.VB_tenterRestaurationSession=tenterRestaurationSession;
+
+/* 18/10 — APPLICATION INSTALLEE : jamais la page d'accueil a l'ouverture.
+   Pas de session -> page de connexion ; session -> la restauration
+   ci-dessus ouvre le tableau de bord (ou la 2FA admin, ou l'etape 4).
+   L'ecran sombre (html.vb-app-demarrage, voir index.html) cache l'accueil
+   pendant ce choix. Dans le navigateur, rien ne change. */
+(function(){
+  if(!(window.VB_estAppInstallee&&window.VB_estAppInstallee()))return;
+  const html=document.documentElement;
+  html.classList.add('vb-app');
+  const ouvert=()=>!!document.querySelector('#authpage.open,#dash.open,#admDash.open,#vbGoogleProfil:not([hidden]),#vbOnboard:not([hidden])');
+  const ouvrirConnexion=()=>{const b=document.querySelector('[data-auth-open="login"]');if(b)b.click();};
+  let fini=false;
+  const finDemarrage=()=>{if(fini)return;fini=true;html.classList.remove('vb-app-demarrage');};
+  setTimeout(()=>{if(!ouvert())ouvrirConnexion();finDemarrage();},6000); // securite
+  async function demarrer(){
+    if(window.VB_googleRetourEnCours){finDemarrage();return;}
+    let sb=window.VB_getSupabase&&window.VB_getSupabase();
+    for(let i=0;!sb&&i<10;i++){await new Promise(r=>setTimeout(r,300));sb=window.VB_getSupabase&&window.VB_getSupabase();}
+    let session=null;
+    try{if(sb)session=(await sb.auth.getSession()).data.session;}catch(e){}
+    if(!session||!session.user){if(!ouvert())accueilSansSession(sb);finDemarrage();return;}
+    // Session : on attend que le tableau de bord (ou autre ecran) s'ouvre.
+    for(let i=0;i<40&&!ouvert();i++)await new Promise(r=>setTimeout(r,100));
+    // Inscription pas encore terminee : reprise du parcours la ou il en est.
+    if(!ouvert()){const b=document.querySelector('[data-auth-open="signup"]');if(b)b.click();}
+    finDemarrage();
+  }
+  /* Premier lancement sans compte : apercu en 3 ecrans (une seule fois),
+     puis creation de compte ou connexion. Ensuite : connexion directe.
+     Le prix vient du premier plan en base (suit les changements de l'admin). */
+  const CLE_VU='vb_onboarding_vu';
+  function accueilSansSession(sb){
+    const box=document.getElementById('vbOnboard');
+    let vu=true;
+    try{vu=localStorage.getItem(CLE_VU)==='1';}catch(e){}
+    if(!box||vu){ouvrirConnexion();return;}
+    const piste=document.getElementById('vbOnbPiste');
+    const points=[...document.querySelectorAll('#vbOnbPoints i')];
+    const suivant=document.getElementById('vbOnbSuivant');
+    const fin=document.getElementById('vbOnbFin');
+    const nb=piste.children.length;
+    let idx=0;
+    const aller=i=>{
+      idx=Math.max(0,Math.min(nb-1,i));
+      piste.style.transform='translateX('+(-100*idx)+'%)';
+      points.forEach((p,k)=>p.classList.toggle('on',k===idx));
+      suivant.hidden=idx===nb-1;fin.hidden=idx!==nb-1;
+    };
+    const fermer=mode=>{
+      try{localStorage.setItem(CLE_VU,'1');}catch(e){}
+      box.hidden=true;document.body.style.overflow='';
+      const b=document.querySelector('[data-auth-open="'+mode+'"]');if(b)b.click();
+    };
+    suivant.addEventListener('click',()=>aller(idx+1));
+    document.getElementById('vbOnbPase').addEventListener('click',()=>fermer('login'));
+    document.getElementById('vbOnbCreer').addEventListener('click',()=>fermer('signup'));
+    document.getElementById('vbOnbConnecter').addEventListener('click',()=>fermer('login'));
+    let x0=null;
+    piste.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;},{passive:true});
+    piste.addEventListener('touchend',e=>{
+      if(x0===null)return;
+      const dx=e.changedTouches[0].clientX-x0;x0=null;
+      if(Math.abs(dx)>45)aller(idx+(dx<0?1:-1));
+    },{passive:true});
+    const prix=document.getElementById('vbOnbPlanPrix');
+    const repli=document.getElementById('hxPrice');
+    if(repli&&repli.textContent)prix.textContent=repli.textContent;
+    if(sb){
+      sb.from('plans').select('name,price_htg,rank').order('rank',{ascending:true}).limit(1).then(({data})=>{
+        const p=data&&data[0];if(!p)return;
+        if(p.name)document.getElementById('vbOnbPlanNom').textContent=p.name;
+        if(p.price_htg!=null)prix.textContent=String(p.price_htg).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+      },()=>{});
+    }
+    aller(0);
+    box.hidden=false;document.body.style.overflow='hidden';
+  }
+  if(document.readyState==='complete')demarrer();
+  else window.addEventListener('load',demarrer,{once:true});
+  // Deconnexion dans l'app : retour a la connexion, pas a l'accueil.
+  const sortie=document.getElementById('dashMenuExit');
+  if(sortie)sortie.addEventListener('click',()=>setTimeout(()=>{if(!ouvert())ouvrirConnexion();},50));
+})();
 
 /* AJOUTE (bug signale par James : retour de MonCash/NatCash affiche encore
    l'etape 3 au lieu de l'etape 4). Cause reelle : Safari mobile (et la

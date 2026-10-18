@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- Application installee : la page d'accueil n'est jamais montree a l'ouverture
+     (ecran sombre jusqu'a la connexion ou au tableau de bord, voir app.js). -->
+<script>try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)document.documentElement.classList.add('vb-app','vb-app-demarrage');}catch(e){}</script>
 
 
 <!-- ============== Sentry (rapport d'erreurs) ==============
@@ -3968,6 +3971,11 @@ html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content
   .authpage .authpage-brand{display:none!important}
   .authpage .authpage-grid{grid-template-columns:1fr}
 }
+/* Application installee : ecran de demarrage (logo sur fond sombre) tant que
+   l'app choisit entre connexion et tableau de bord ; pas de bouton X sur la
+   connexion/creation (il ramenerait a la page d'accueil), sauf changement de plan. */
+html.vb-app-demarrage body::after{content:"";position:fixed;inset:0;z-index:2147483000;background:#030617 url(assets/logo-vipbetcote.svg) center/128px auto no-repeat}
+html.vb-app .authpage:not(:has(#authModeWizard.renew.on)) .authpage-close{display:none!important}
 /* Telephone : vraie page d'application plein ecran */
 @media (max-width:760px){
   .authpage{padding:0;align-items:stretch;
@@ -3986,6 +3994,53 @@ html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content
   .authpage:has(#authModeWizard.on:not(.pwreset):not(.renew)) .authpage-panel{padding-top:22px}
   .authpage-close,.authpage-backbtn{top:calc(env(safe-area-inset-top,0px) + 16px)}
 }
+
+/* 18/10 — apercu de l'application installee (premier lancement) */
+.vbonb{position:fixed;inset:0;z-index:140;display:flex;flex-direction:column;overflow:hidden;color:#F4F3ED;
+  background:radial-gradient(70% 45% at 20% 8%,rgba(23,168,96,.20),transparent 60%),radial-gradient(60% 40% at 100% 100%,rgba(232,206,138,.08),transparent 60%),#030617;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 0 calc(env(safe-area-inset-bottom,0px) + 22px)}
+.vbonb[hidden]{display:none}
+.vbonb-top{display:flex;justify-content:space-between;align-items:center;padding:0 22px;height:44px}
+.vbonb-marque{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:-.01em;color:#2ED47F}
+.vbonb-marque img{width:38px;height:26px}
+.vbonb-marque em{font-style:normal;color:var(--or-clair)}
+.vbonb-pase{background:none;border:0;color:rgba(244,243,237,.6);font:600 15px var(--body);padding:10px 4px;cursor:pointer}
+.vbonb-piste{flex:1;display:flex;min-height:0;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+.vbonb-slide{flex:0 0 100%;display:flex;flex-direction:column;padding:0 24px;min-height:0}
+.vbonb-illu{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+.vbonb-illu-col{flex-direction:column;gap:14px}
+.vbonb-h{font-family:var(--display);font-weight:800;font-size:28px;line-height:1.15;margin:8px 0 10px;text-transform:none;letter-spacing:-.01em;color:#F4F3ED}
+.vbonb-top,.vbonb-bas{position:relative;z-index:2;background:transparent}
+.vbonb-p{font-size:16px;line-height:1.55;color:rgba(244,243,237,.6);margin-bottom:8px}
+.vbonb-carte{width:min(300px,100%);background:linear-gradient(180deg,#0F1630,#0A0F22);border:1px solid rgba(244,243,237,.09);border-radius:22px;padding:18px;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.vbonb-carte-h{display:flex;justify-content:space-between;margin-bottom:12px}
+.vbonb-tag{font:700 11px var(--body);letter-spacing:.08em;padding:5px 10px;border-radius:20px;background:rgba(46,212,127,.14);color:#2ED47F}
+.vbonb-tag.or{background:rgba(232,206,138,.14);color:var(--or-clair)}
+.vbonb-ligne{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-top:1px solid rgba(244,243,237,.09)}
+.vbonb-ligne b{display:block;font:600 14px var(--body)}
+.vbonb-ligne small{font-size:12px;color:rgba(244,243,237,.55)}
+.vbonb-cote{font:700 14px var(--body);color:var(--or-clair);background:rgba(232,206,138,.1);padding:6px 10px;border-radius:10px}
+.vbonb-barres{display:flex;align-items:flex-end;gap:10px;height:130px}
+.vbonb-barres i{flex:1;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#34DC88,#17A860)}
+.vbonb-barres i.p{background:rgba(240,82,79,.55)}
+.vbonb-plan{width:min(300px,100%);display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-radius:20px;background:linear-gradient(135deg,rgba(23,168,96,.22),rgba(232,206,138,.10));border:1px solid rgba(46,212,127,.35)}
+.vbonb-plan b{font-family:var(--display);font-size:18px}
+.vbonb-plan small{display:block;font-size:12px;color:rgba(244,243,237,.6);margin-top:3px}
+.vbonb-prix{font-family:var(--display);font-weight:800;font-size:22px;color:var(--or-clair);white-space:nowrap}
+.vbonb-prix small{font-size:12px}
+.vbonb-paie{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(300px,100%)}
+.vbonb-paie div{height:72px;border-radius:16px;background:#0F1630;border:1px solid rgba(244,243,237,.09);display:flex;align-items:center;justify-content:center}
+.vbonb-paie img{max-height:40px;max-width:100px;width:auto;height:auto;border-radius:8px}
+.vbonb-bas{padding:0 24px}
+.vbonb-points{display:flex;gap:7px;margin:14px 0 22px}
+.vbonb-points i{width:8px;height:8px;border-radius:4px;background:rgba(244,243,237,.2);transition:width .3s,background .3s}
+.vbonb-points i.on{width:26px;background:#2ED47F}
+.vbonb-btn{width:100%;height:56px;border-radius:16px;border:0;cursor:pointer;font:700 17px var(--body);
+  background:linear-gradient(180deg,#34DC88,#1FBF6E);color:#04130B;box-shadow:0 10px 28px rgba(46,212,127,.24)}
+.vbonb-btn-c{background:transparent;color:#F4F3ED;border:1.5px solid rgba(244,243,237,.18);box-shadow:none}
+.vbonb-fin{display:flex;flex-direction:column;gap:12px}
+.vbonb-fin[hidden]{display:none}
+@media (max-height:700px){.vbonb-h{font-size:24px}.vbonb-carte{padding:14px}.vbonb-barres{height:90px}}
 </style>
 <!-- Client Supabase : necessaire des lors qu'on parle a une vraie base de
      donnees. Ce script CDN est le seul lien externe du site ; l'ancien
@@ -6391,6 +6446,58 @@ html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content
     <button type="submit" class="btn btn-or gprof-btn" data-i18n="wiz_btn_next1">Kontinye</button>
   </form>
 </div>
+<!-- Application installee (18/10) : apercu en 3 ecrans au premier lancement -->
+<div class="vbonb" id="vbOnboard" role="dialog" aria-modal="true" aria-label="VIPBETCOTE" hidden>
+  <div class="vbonb-top">
+    <span class="vbonb-marque">VipBetcote</span>
+    <button type="button" class="vbonb-pase" id="vbOnbPase" data-i18n="onb_skip">Pase</button>
+  </div>
+  <div class="vbonb-piste" id="vbOnbPiste">
+    <section class="vbonb-slide">
+      <div class="vbonb-illu">
+        <div class="vbonb-carte">
+          <div class="vbonb-carte-h"><span class="vbonb-tag" data-i18n="onb_tag_today">FICH JODI A</span><span class="vbonb-tag or">VIP</span></div>
+          <div class="vbonb-ligne"><div><b>Barcelona — Sevilla</b><small>La Liga · 15:00</small></div><span class="vbonb-cote">1.45</span></div>
+          <div class="vbonb-ligne"><div><b>Arsenal — Chelsea</b><small>Premier League · 12:30</small></div><span class="vbonb-cote">1.62</span></div>
+          <div class="vbonb-ligne"><div><b>Inter — Napoli</b><small>Serie A · 14:45</small></div><span class="vbonb-cote">1.80</span></div>
+        </div>
+      </div>
+      <h2 class="vbonb-h" data-i18n="onb_s1_h">Fich analize chak jou</h2>
+      <p class="vbonb-p" data-i18n="onb_s1_p">Ekip ekspè nou an prepare fich ou yo pou ParyajPam, ParyajLakay ak 1xBet.</p>
+    </section>
+    <section class="vbonb-slide">
+      <div class="vbonb-illu">
+        <div class="vbonb-carte">
+          <div class="vbonb-carte-h"><span class="vbonb-tag" data-i18n="onb_tag_results">REZILTA</span></div>
+          <div class="vbonb-barres"><i style="height:70%"></i><i style="height:90%"></i><i class="p" style="height:35%"></i><i style="height:80%"></i><i style="height:100%"></i><i style="height:75%"></i><i class="p" style="height:30%"></i><i style="height:88%"></i></div>
+        </div>
+      </div>
+      <h2 class="vbonb-h" data-i18n="onb_s2_h">Rezilta transparan</h2>
+      <p class="vbonb-p" data-i18n="onb_s2_p">Swiv istorik chak fich, ki genyen ak ki pèdi. Pa gen anyen kache.</p>
+    </section>
+    <section class="vbonb-slide">
+      <div class="vbonb-illu vbonb-illu-col">
+        <div class="vbonb-plan"><div><b id="vbOnbPlanNom">VIP</b><small data-i18n="onb_plan_sub">Aksè a fich yo</small></div><div class="vbonb-prix"><span id="vbOnbPlanPrix"></span> <small>HTG</small></div></div>
+        <div class="vbonb-paie">
+          <div><img src="assets/moncash.webp" alt="MonCash" width="96" height="60"></div>
+          <div><img src="assets/natcash.webp" alt="NatCash" width="96" height="60"></div>
+          <div><img src="assets/mastercard.webp" alt="Mastercard" width="96" height="60"></div>
+          <div><img src="assets/paypal.webp" alt="PayPal" width="96" height="60"></div>
+        </div>
+      </div>
+      <h2 class="vbonb-h" data-i18n="onb_s3_h">Peye fasil, kòmanse touswit</h2>
+      <p class="vbonb-p" data-i18n="onb_s3_p">MonCash, NatCash oswa kat. Fich ou yo debloke otomatikman. Jwe ak kontwòl.</p>
+    </section>
+  </div>
+  <div class="vbonb-bas">
+    <div class="vbonb-points" id="vbOnbPoints"><i class="on"></i><i></i><i></i></div>
+    <button type="button" class="vbonb-btn" id="vbOnbSuivant"><span data-i18n="onb_next">Kontinye</span> →</button>
+    <div class="vbonb-fin" id="vbOnbFin" hidden>
+      <button type="button" class="vbonb-btn" id="vbOnbCreer" data-i18n="onb_create">Kreye kont mwen</button>
+      <button type="button" class="vbonb-btn vbonb-btn-c" id="vbOnbConnecter" data-i18n="onb_login">Mwen gen yon kont · Konekte</button>
+    </div>
+  </div>
+</div>
 <!-- Application installable (17/10) : explication d'installation (ouverte seulement au clic) -->
 <div class="vbios" id="vbIosSheet" role="dialog" aria-labelledby="vbIosT" hidden>
   <div class="vbios-card">
@@ -6411,6 +6518,6 @@ html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content
     <button type="button" class="vbios-ok" id="vbIosOk" data-i18n="app_ios_ok">Mwen konprann</button>
   </div>
 </div>
-<script src="app.js?v=20261018d"></script>
+<script src="app.js?v=20261018f"></script>
 </body>
 </html>
