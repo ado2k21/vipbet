@@ -11568,17 +11568,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          ferme puis rouvre l'app, meme sans reseau. Le probleme des onglets
          decrit ci-dessus n'existe pas dans l'app installee (une seule
          fenetre, et un onglet du navigateur garde sessionStorage). */
-      /* 18/10 (2) — comme un vrai site : la session reste ouverte apres un
-         rechargement, dans un nouvel onglet et apres fermeture du navigateur
-         (localStorage partout). Contrepartie assumee : un meme navigateur ne
-         garde qu'UN compte connecte a la fois (la derniere connexion gagne
-         dans tous les onglets) ; la deconnexion ferme la session partout. */
-      const stockage=window.localStorage;
+      /* 18/10 (3) — retour a l'isolation par onglet dans le navigateur :
+         localStorage partout melangeait les comptes ouverts dans deux
+         onglets (admin + client). sessionStorage survit au rechargement
+         de l'onglet ; l'app installee garde localStorage. */
+      const appInstallee=!!(window.VB_estAppInstallee&&window.VB_estAppInstallee());
+      const stockage=appInstallee?window.localStorage:window.sessionStorage;
       window.VB_supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
         auth:{storage:stockage,persistSession:true,autoRefreshToken:true}
       });
       const auth=window.VB_supabase.auth;
-      {
+      if(appInstallee){
         // Une session ouverte avant cette mise a jour (sessionStorage) est reprise.
         try{
           const k=auth.storageKey;
@@ -12693,7 +12693,7 @@ window.VB_tenterRestaurationSession=tenterRestaurationSession;
   const ouvrirConnexion=()=>{const b=document.querySelector('[data-auth-open="login"]');if(b)b.click();};
   let fini=false;
   const finDemarrage=()=>{if(fini)return;fini=true;html.classList.remove('vb-app-demarrage');};
-  setTimeout(()=>{if(!ouvert())ouvrirConnexion();finDemarrage();},6000); // securite
+  setTimeout(finDemarrage,12000); // securite : l'ecran sombre ne reste jamais bloque
   async function demarrer(){
     if(window.VB_googleRetourEnCours){finDemarrage();return;}
     let sb=window.VB_getSupabase&&window.VB_getSupabase();
@@ -12702,9 +12702,9 @@ window.VB_tenterRestaurationSession=tenterRestaurationSession;
     try{if(sb)session=(await sb.auth.getSession()).data.session;}catch(e){}
     if(!session||!session.user){if(!ouvert())accueilSansSession(sb);finDemarrage();return;}
     // Session : on attend que le tableau de bord (ou autre ecran) s'ouvre.
-    for(let i=0;i<40&&!ouvert();i++)await new Promise(r=>setTimeout(r,100));
-    // Inscription pas encore terminee : reprise du parcours la ou il en est.
-    if(!ouvert()){const b=document.querySelector('[data-auth-open="signup"]');if(b)b.click();}
+    // Session : on laisse la restauration habituelle ouvrir le bon ecran
+    // (tableau de bord, 2FA admin, paiement en attente) sans rien forcer.
+    for(let i=0;i<100&&!ouvert();i++)await new Promise(r=>setTimeout(r,100));
     finDemarrage();
   }
   /* Premier lancement sans compte : apercu en 3 ecrans (une seule fois),

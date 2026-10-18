@@ -542,7 +542,7 @@ details p{
 .vbsplash.hide{opacity:0;visibility:hidden;pointer-events:none}
 .vbsplash-orbit{position:relative;width:120px;height:120px}
 .vbsplash-logo{
-  position:absolute;inset:0;margin:auto;width:60px;height:60px;border-radius:16px;
+  position:absolute;inset:0;margin:auto;width:64px;height:44px;
   display:block;object-fit:contain;z-index:2;
 }
 .vbsplash-ring{position:absolute;inset:0;animation:vbspin 1.1s linear infinite;z-index:1}
@@ -567,7 +567,7 @@ details p{
 }
 @media (max-width:400px){
   .vbsplash-orbit{width:100px;height:100px}
-  .vbsplash-logo{width:50px;height:50px}
+  .vbsplash-logo{width:54px;height:37px}
   .vbsplash-word{font-size:18px;letter-spacing:.13em}
 }
 
@@ -3971,10 +3971,13 @@ html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content
   .authpage .authpage-brand{display:none!important}
   .authpage .authpage-grid{grid-template-columns:1fr}
 }
-/* Application installee : ecran de demarrage (logo sur fond sombre) tant que
-   l'app choisit entre connexion et tableau de bord ; pas de bouton X sur la
-   connexion/creation (il ramenerait a la page d'accueil), sauf changement de plan. */
-html.vb-app-demarrage body::after{content:"";position:fixed;inset:0;z-index:2147483000;background:#030617 url(assets/logo-vipbetcote.svg) center/128px auto no-repeat}
+/* Application installee : fond sombre permanent sous les ecrans (connexion,
+   tableau de bord...) pour que la page d'accueil ne soit jamais visible ;
+   logo au demarrage pendant le choix connexion / tableau de bord ; pas de
+   bouton X sur la connexion/creation, sauf changement de plan. */
+html.vb-app body::after{content:"";position:fixed;inset:0;z-index:110;background:#030617}
+html.vb-app-demarrage body::after{z-index:2147483000;background:#030617 url(assets/logo-vipbetcote.svg) center/29.7vw auto no-repeat}
+html.vb-app .vbsplash{display:none!important}
 html.vb-app .authpage:not(:has(#authModeWizard.renew.on)) .authpage-close{display:none!important}
 /* Telephone : vraie page d'application plein ecran */
 @media (max-width:760px){
@@ -4061,7 +4064,7 @@ html.vb-app .authpage:not(:has(#authModeWizard.renew.on)) .authpage-close{displa
         <svg viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="vbBb" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="#FFB561"/><stop offset=".5" stop-color="#EE7A22"/><stop offset="1" stop-color="#8A360A"/></radialGradient><clipPath id="vbBbC"><circle cx="32" cy="32" r="29"/></clipPath></defs><circle cx="32" cy="32" r="29" fill="url(#vbBb)"/><g clip-path="url(#vbBbC)" fill="none" stroke="#1E1209" stroke-width="2.2" stroke-linecap="round"><path d="M32 3v58"/><path d="M3 32h58"/><path d="M12 8c9 7 12 16 12 24s-3 17-12 24"/><path d="M52 8c-9 7-12 16-12 24s3 17 12 24"/></g><ellipse cx="22" cy="18" rx="8.5" ry="5" fill="#FFFFFF" opacity=".35" transform="rotate(-30 22 18)"/><circle cx="32" cy="32" r="29" fill="none" stroke="#5A2306" stroke-opacity=".6" stroke-width="1.2"/></svg>
       </span>
     </div>
-    <img class="vbsplash-logo" id="vbSplashLogo" src="data:image/webp;base64,UklGRuQDAABXRUJQVlA4TNgDAAAv/8A/EK/BqG0kSc5AWETLfCntfy4aDNpGcuQ5JOX/eTx/Sm0UtG0jeQ+MgTv+IK5sI9tW8j/ubhn9l0BEDUSkhO6uN775pB9pInlEB4nyariUeNA1KuiBVONQEGV1GvVJmftPpV9DgRxVQEmQQAMXCxkgPoqR0CB+543zQlHiDMSG5kCrEyEoYtAxpCOSsutzXfneflAQADZu2wzjmkNjloOMNMlwTnNMrThni///raIMkDax2xH9nwA6+P/g/8OBG1R3c/DfPw4cSyA1Bhb3Dx9k/Z8vDUu+i/21wJKb/+iA307XP4r8pBnYoGhivQGtwLrHPLBfg0rOOpSegdid6cN0KD8LsTPKsJjjFohWFRssATd6gFcsA19BCf4GS8EbrwLTYznYGwUYzJcF0VSf70vrofLgBkvDG9gTjiUQp2MJEq9YHj5JBBZHnIHF7YcX3AU4VpzF3YC22gzuit7U2o3Yw0OMX7/G+PAghatKsyjaxiOgmXAUWxG0ddZJtEfEeCTSVVmD/K0lUR60FQY9XwQqoIf6GpG9IWkmHKvr+/PI/PxBhfTfaitbOD+HrZ6Z0CvEbDqc7DZm1gfXlTqOOpzdHc2ghskpw6xw65VJUVTQUY+MvUvBoB6LzDZBY4Wdb395uvXx+S8ph+wuQS3H6fn2dYFZ2oTp+XqTsByc1TVQcoWCqwSp5C3hUNQl3jRiEyuZVcJqxE95FPZTXiG/03Qj1UxRr48uEaRCotNLL9XpZZVA8cSjWkAOplZqITlSy2Nuj/roEq3UMtHp5U3qTS99wkrZxLU+0E+BFEwZVEgzRW8ykaYbjYSEl/GJoBGEKYoSkaYBVTImYMm3hMRYX4yOo4cp8gPX4Cn32sKXBJmBZzCkHfQJ8kuOpSf93ECCYNxuBFIQPqWIfJwXPRVZNYYJ3QwiOoqhRWxDPKJSq+aTaz1vB1bNt7aUsxX3H9VFtgx4QnZbX9SW4G+QvaUKO8rPP6GgqzEKImu/nV+jZKAqcyKIN5vzOeebDmVdndGbzI/XXXdz03XXKP5GlQaDWLYD1BqZYTcMhqqN7G6wtBe+sNyfc76z3ArQuAtGErxleT/nvGf5sk3Dku9CgmJ5kSQXLPk2+wKWpS2h9giGsgag6iNYlrQEUgBBLCcCqYBoLKUh8XoiO5QwHJEiyAz5tYZUQRBzi0DKIDIhp+Apz8oiciGX4CjX6iKyv+bQWsq3wmbyOOfcxcfPlLM2qMB/lTphWQTO2wXn3f66W3DeBs4Fy8k2jiXQDt8V+QYW9z8fAquu9u0/IhoW5TYH//3j4OD/g/8P+gU=" alt="VIPBETCOTE">
+    <img class="vbsplash-logo" id="vbSplashLogo" src="assets/logo-vipbetcote.svg" width="64" height="44" alt="VIPBETCOTE">
   </div>
   <div class="vbsplash-word">VIP<span>BETCOTE</span></div>
 </div>
@@ -6518,6 +6521,6 @@ html.vb-app .authpage:not(:has(#authModeWizard.renew.on)) .authpage-close{displa
     <button type="button" class="vbios-ok" id="vbIosOk" data-i18n="app_ios_ok">Mwen konprann</button>
   </div>
 </div>
-<script src="app.js?v=20261018f"></script>
+<script src="app.js?v=20261018h"></script>
 </body>
 </html>
