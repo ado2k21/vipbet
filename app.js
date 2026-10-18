@@ -78,7 +78,7 @@ lp_foot_desc:"Fiches et pronostics football et NBA, analysés chaque jour par no
 lp_copy:"&copy; VIPBETCOTE. Tous droits réservés. Jouez de façon responsable.",
 nav_tickets:"FICHES RÉUSSIES", nav_simulateur:"ESSAYER LA DÉMO", nav_abonnements:"Abonnements", nav_faq:"FAQ",
 btn_connect:"Se connecter", btn_signup:"S'inscrire", btn_signup_free:"S'inscrire gratuitement",
-tick_won:"GAGNÉ",
+tick_won:"GAGNÉ", wf_title:"Fiche gagnée", wf_odd:"Cote totale", wf_more:"+{n} autres sélections", wf_foot:"FOOTBALL", wf_bask:"BASKETBALL",
 hero_badge:"EXPERTS EN LIGNE &nbsp;•&nbsp; +42 PRONOSTICS DU JOUR",
 hero_t1:"L'EXCELLENCE", hero_t2:"DU", hero_t3:"PRONOSTIC", hero_t4:"PREMIUM",
 hero_sub:"6 ans d'expérience dans le pronostic sportif. Chaque jour, notre équipe d'experts vous envoie des fiches déjà analysées pour ParyajPam, ParyajLakay et 1xBet. Choisissez un plan et arrêtez de perdre votre argent.",
@@ -656,7 +656,7 @@ lp_foot_desc:"Football and NBA tickets and predictions, analyzed every day by ou
 lp_copy:"&copy; VIPBETCOTE. All rights reserved. Play responsibly.",
 nav_tickets:"WINNING SLIPS", nav_simulateur:"TRY THE DEMO", nav_abonnements:"Plans", nav_faq:"FAQ",
 btn_connect:"Log in", btn_signup:"Sign up", btn_signup_free:"Sign up for free",
-tick_won:"WON",
+tick_won:"WON", wf_title:"Winning pick", wf_odd:"Total odds", wf_more:"+{n} more selections", wf_foot:"FOOTBALL", wf_bask:"BASKETBALL",
 hero_badge:"EXPERTS ONLINE &nbsp;•&nbsp; +42 PICKS TODAY",
 hero_t1:"PREMIUM", hero_t2:"BETTING", hero_t3:"PICKS", hero_t4:"EXCELLENCE",
 hero_sub:"6 years of sports-tipping experience. Every day, our team of experts sends you fully analyzed picks for ParyajPam, ParyajLakay and 1xBet. Choose a plan and stop losing your money.",
@@ -1234,7 +1234,7 @@ lp_foot_desc:"Fich ak pronostik foutbòl ak NBA, analize chak jou pa ekip ekspè
 lp_copy:"&copy; VIPBETCOTE. Tout dwa rezève. Jwe ak responsablite.",
 nav_tickets:"FICH REYISI", nav_simulateur:"ESEYE DEMO", nav_abonnements:"Abònman", nav_faq:"FAQ",
 btn_connect:"Konekte", btn_signup:"Enskri", btn_signup_free:"Enskri gratis",
-tick_won:"GENYEN",
+tick_won:"GENYEN", wf_title:"Fich ki genyen", wf_odd:"Kòt total", wf_more:"+{n} lòt seleksyon", wf_foot:"FOUTBÒL", wf_bask:"BASKETBÒL",
 hero_badge:"EKSPÈ AN LIY &nbsp;•&nbsp; +42 PRONOSTIK JODI A",
 hero_t1:"EKSELANS", hero_t2:"NAN", hero_t3:"PRONOSTIK", hero_t4:"PREMIUM",
 hero_sub:"6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.",
@@ -1925,15 +1925,15 @@ function makeCarousel(trackId,prevSel,nextSel,dotsId,labelFn){
 
   function step(){
     const gap=parseFloat(getComputedStyle(track).columnGap)||20;
-    return cards[0].getBoundingClientRect().width+gap;
+    return track.children[0].getBoundingClientRect().width+gap;
   }
   function currentIndex(){return Math.round(track.scrollLeft/step());}
   function scrollToCard(i){
-    i=Math.max(0,Math.min(cards.length-1,i));
+    i=Math.max(0,Math.min(track.children.length-1,i));
     track.scrollTo({left:i*step(),behavior:'smooth'});
   }
   function updateUI(){
-    const i=Math.max(0,Math.min(cards.length-1,currentIndex()));
+    const i=Math.max(0,Math.min(track.children.length-1,currentIndex()));
     dots.forEach((d,idx)=>d.classList.toggle('on',idx===i));
     const maxScroll=track.scrollWidth-track.clientWidth-2;
     prevBtn.disabled=track.scrollLeft<=2;
@@ -1951,6 +1951,7 @@ function makeCarousel(trackId,prevSel,nextSel,dotsId,labelFn){
     if(e.key==='ArrowLeft'){e.preventDefault();scrollToCard(currentIndex()-1);}
   });
   window.addEventListener('resize',updateUI);
+  track._majCarrousel=updateUI;
   updateUI();
 }
 makeCarousel('winTrack','.win-prev','.win-next',null,n=>'Aller au ticket '+n);
@@ -11670,7 +11671,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const {data:fiches,error}=await sb.from('tickets')
         .select('id,play_date')
         .eq('published',true).eq('status','won')
-        .lt('play_date',aujourdhui)
+        .lte('play_date',aujourdhui)
         .gte('play_date',depuis.toISOString().slice(0,10))
         .order('play_date',{ascending:false}).limit(8);
 
@@ -11717,6 +11718,81 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   chargerPreuvesAccueil();
   window.addEventListener('load',chargerPreuvesAccueil);
   window.VB_rechargerPreuves=chargerPreuvesAccueil;
+
+  /* 18/10 — FICHES GAGNEES AUTOMATIQUES dans « Tickets gagnants ».
+     Chaque fiche publiee et gagnee (reglee par le bot ou l'admin) devient
+     une carte en tete du carrousel, a cote des photos de tickets. Memes
+     garde-fous que le bandeau : lecture seule, fiches reglees uniquement
+     (RLS), rien d'invente ; sans donnees, le carrousel reste tel quel. */
+  let fichesGagneesCles='';
+  async function chargerFichesGagnees(){
+    const track=document.getElementById('winTrack');
+    const sb=initSupabase();
+    if(!track||!sb)return;
+    const trad=k=>{
+      try{
+        const lang=(typeof currentLang!=='undefined'&&currentLang)?currentLang:'fr';
+        const table=(translations&&translations[lang])||translations.fr||{};
+        return table[k]!=null?table[k]:((translations.fr&&translations.fr[k])||k);
+      }catch(e){return k;}
+    };
+    const echapper=v=>String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    try{
+      const aujourdhui=(window.VB_dateHaiti?window.VB_dateHaiti():new Date().toISOString().slice(0,10));
+      const depuis=new Date(Date.parse(aujourdhui+'T00:00:00Z')-30*86400000).toISOString().slice(0,10);
+      const {data:fiches,error}=await sb.from('tickets')
+        .select('id,play_date,sport,total_odd')
+        .eq('published',true).eq('status','won')
+        .lte('play_date',aujourdhui).gte('play_date',depuis)
+        .order('play_date',{ascending:false}).limit(6);
+      if(error||!fiches||!fiches.length)return;
+      const cles=fiches.map(f=>f.id).join(',')+'|'+(typeof currentLang!=='undefined'?currentLang:'');
+      if(cles===fichesGagneesCles)return;
+      const {data:legs}=await sb.from('ticket_legs')
+        .select('ticket_id,match_label,market,pick,odd,result,position')
+        .in('ticket_id',fiches.map(f=>f.id))
+        .order('position',{ascending:true});
+      const parFiche={};
+      (legs||[]).forEach(l=>{if(l.result!=='void')(parFiche[l.ticket_id]=parFiche[l.ticket_id]||[]).push(l);});
+      const lang=(typeof currentLang!=='undefined'&&currentLang)||'fr';
+      const loc=lang==='en'?'en-US':'fr-FR';
+      const cartes=fiches.filter(f=>(parFiche[f.id]||[]).length).map(f=>{
+        const sel=parFiche[f.id];
+        const lignes=sel.slice(0,3).map(l=>{
+          const brut=String(l.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
+          const pick=(brut.indexOf(' — ')>-1||!(translations.fr||{})[brut])?brut:trad(brut);
+          const cote=Number(l.odd);
+          return '<li><span class="wf-ok" aria-hidden="true"></span><span class="wf-m"><b>'+echapper(l.match_label)+'</b><small>'+echapper(pick)+'</small></span><em>'+(isFinite(cote)?cote.toFixed(2):'')+'</em></li>';
+        }).join('');
+        const reste=sel.length-3;
+        const total=Number(f.total_odd);
+        let date='';
+        try{date=new Date(f.play_date+'T12:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){date=f.play_date;}
+        return '<article class="win win-auto" data-fiche="'+echapper(f.id)+'"><div class="wf">'+
+          '<div class="wf-top"><span class="wf-brand">VIP<span>BETCOTE</span></span><span class="wf-badge">'+echapper(trad('tick_won'))+'</span></div>'+
+          '<p class="wf-h">'+echapper(trad('wf_title'))+'</p>'+
+          '<p class="wf-sub">'+echapper(trad(f.sport==='basket'?'wf_bask':'wf_foot'))+' · '+echapper(date)+'</p>'+
+          '<ul class="wf-legs">'+lignes+'</ul>'+
+          (reste>0?'<p class="wf-more">'+echapper(trad('wf_more').replace('{n}',reste))+'</p>':'')+
+          '<div class="wf-bot"><span>'+echapper(trad('wf_odd'))+'</span><b>'+(isFinite(total)?total.toFixed(2):'')+'</b></div>'+
+          '</div></article>';
+      });
+      if(!cartes.length)return;
+      track.querySelectorAll('.win-auto').forEach(x=>x.remove());
+      const auDebut=track.scrollLeft<40;
+      track.insertAdjacentHTML('afterbegin',cartes.join(''));
+      // Le navigateur garde la photo visible en place : on revient au debut
+      // pour montrer d'abord les fiches gagnees (sauf si le visiteur a deja defile).
+      if(auDebut){const sb2=track.style.scrollBehavior;track.style.scrollBehavior='auto';track.scrollLeft=0;track.style.scrollBehavior=sb2;}
+      fichesGagneesCles=cles;
+      if(track._majCarrousel)track._majCarrousel();
+    }catch(e){ /* sans donnees : le carrousel garde ses photos */ }
+  }
+  chargerFichesGagnees();
+  window.addEventListener('load',chargerFichesGagnees);
+  // Une fiche qui gagne pendant que la page est ouverte apparait au retour sur l'onglet.
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)chargerFichesGagnees();});
+  window.VB_rechargerFichesGagnees=chargerFichesGagnees;
 
   /* Auto-test, utilisable depuis la console du navigateur :
      VB_testSupabase() puis regarder le resultat affiche. Ne modifie rien
