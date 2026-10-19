@@ -11673,8 +11673,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       /* 19/10 : application ajoutee a l'ecran d'accueil (iPhone/Android) : pas d'onglets multiples,
          et iOS vide sessionStorage quand il ferme l'app ou recharge la page (selecteur photo) —
          la session se perdait (« Sesyon ou fini »). On la garde donc sur l'appareil, sauf admin. */
-      const modeApp=()=>{try{return window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);}catch(e){return false;}};
-      const ongletGarde=()=>{const c=lireS(sessionStorage,CLE_ONGLET);return c==='1'||(c===null&&modeApp()&&gardeValide());};
+      /* 19/10 (midi) : une vraie cliente perdait sa session Supabase (stockee seulement dans
+         l'onglet) alors que l'ecran la montrait encore connectee (etat local persistant) :
+         iOS vide la memoire de l'onglet (selecteur de photo, onglet mis en veille) -> « Sesyon ou fini »
+         au depot. La session est donc gardee sur l'appareil par defaut ; seul un compte
+         admin reste « par onglet » ('0'). */
+      const ongletGarde=()=>lireS(sessionStorage,CLE_ONGLET)!=='0';
       const ongletParOnglet=()=>lireS(sessionStorage,CLE_ONGLET)==='0';
       const stockage={
         getItem(k){
@@ -11686,7 +11690,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           return v;
         },
         setItem(k,v){
-          if(ongletGarde()){try{localStorage.setItem(k,v);}catch(e){}}
+          if(ongletGarde()){try{if(!gardeValide())localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_SONJE));localStorage.setItem(k,v);}catch(e){}}
           else{try{sessionStorage.setItem(k,v);}catch(e){}}
         },
         removeItem(k){
@@ -11701,7 +11705,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       /* Avant une connexion par mot de passe : choisit ou la session sera gardee. */
       window.VB_sessionSonje=function(garder){
         try{
-          if(!garder&&modeApp())garder=true;
+          garder=true;   // 19/10 : session gardee par defaut (admin : voir VB_sessionParOnglet)
           if(garder){sessionStorage.setItem(CLE_ONGLET,'1');localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_SONJE));}
           else sessionStorage.setItem(CLE_ONGLET,'0');
         }catch(e){}
