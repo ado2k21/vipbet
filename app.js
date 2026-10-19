@@ -3,6 +3,37 @@ window.VB_estAppInstallee=function(){
   try{return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}catch(e){return false;}
 };
 
+/* 19/10 — Classes posees au plus tot (les <script> ecrits dans la page sont
+   bloques par la politique de securite du site, CSP) :
+   - vb-app / vb-app-demarrage : application installee (ecran de lancement) ;
+   - vb-bot : robots des moteurs de recherche (pas d'animation de lancement
+     ni d'apparition au defilement, sinon leur capture est un ecran vide). */
+try{
+  if(window.VB_estAppInstallee())document.documentElement.classList.add('vb-app','vb-app-demarrage');
+  if(/bot|crawl|spider|slurp|Google-InspectionTool|Lighthouse|facebookexternalhit|bingpreview/i.test(navigator.userAgent))document.documentElement.classList.add('vb-bot');
+}catch(e){}
+
+/* 19/10 — Demarrage des que la bibliotheque Supabase est prete, SANS attendre
+   l'evenement 'load' (qui attend la fin de TOUTES les ressources, y compris des
+   scripts tiers : si une seule tarde, plus rien ne contactait Supabase — retour
+   Google bloque sur le landing, donnees jamais chargees). VB_quandPret(fn) lance
+   fn une seule fois : des que window.supabase existe, ou au plus tard a 'load'. */
+(function(){
+  let pret=false;const file=[];
+  function lancer(){
+    if(pret)return;pret=true;
+    file.splice(0).forEach(fn=>{try{fn();}catch(e){}});
+  }
+  window.VB_quandPret=function(fn){if(pret)setTimeout(fn,0);else file.push(fn);};
+  let essais=0;
+  const t=setInterval(()=>{
+    essais++;
+    if(window.supabase&&window.supabase.createClient){clearInterval(t);lancer();}
+    else if(essais>100){clearInterval(t);} // 15 s : 'load' prend le relais
+  },150);
+  window.addEventListener('load',()=>{clearInterval(t);lancer();},{once:true});
+})();
+
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
@@ -4753,7 +4784,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // VB_getSupabase (defini plus loin dans ce fichier) sont alors prets.
   if(retourGoogle){
     if(document.readyState==='complete')setTimeout(traiterRetourGoogle,0);
-    else window.addEventListener('load',traiterRetourGoogle,{once:true});
+    else window.VB_quandPret(traiterRetourGoogle);
   }
 
   /* ================= CONNEXION ================= */
@@ -5299,7 +5330,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // peut ne pas etre pret au tout premier appel) — sans ce filet, un
   // premier echec silencieux ne se corrigeait plus jamais tout seul.
   window.VB_syncPlansFromSupabase();
-  window.addEventListener('load',()=>{window.VB_syncPlansFromSupabase();});
+  window.VB_quandPret(()=>{window.VB_syncPlansFromSupabase();});
   // Le simulateur doit refleter les vraies durees des le premier
   // affichage, pas seulement apres un changement ulterieur.
   syncerSimulateurFormules();
@@ -5340,7 +5371,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }catch(e){ /* le contenu statique deja present reste affiche */ }
   };
   window.VB_renderFAQ();
-  window.addEventListener('load',()=>{window.VB_renderFAQ();});
+  window.VB_quandPret(()=>{window.VB_renderFAQ();});
   document.addEventListener('vb:langchange',()=>{window.VB_renderFAQ();});
 
   window.VB_isExpired=()=>subscriptionExpired(state);
@@ -11625,7 +11656,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // Le script CDN a l'attribut "defer" : on tente immediatement, puis on
   // reessaie apres le chargement complet de la page par securite.
   initSupabase();
-  window.addEventListener('load',initSupabase);
+  window.VB_quandPret(initSupabase);
   window.VB_getSupabase=initSupabase;
 
   /* ======================================================================
@@ -11721,7 +11752,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(p)p.innerHTML='';
   })();
   chargerPreuvesAccueil();
-  window.addEventListener('load',chargerPreuvesAccueil);
+  window.VB_quandPret(chargerPreuvesAccueil);
   window.VB_rechargerPreuves=chargerPreuvesAccueil;
 
   /* 18/10 — FICHES GAGNEES AUTOMATIQUES dans « Tickets gagnants ».
@@ -11794,7 +11825,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }catch(e){ /* sans donnees : le carrousel garde ses photos */ }
   }
   chargerFichesGagnees();
-  window.addEventListener('load',chargerFichesGagnees);
+  window.VB_quandPret(chargerFichesGagnees);
   // Une fiche qui gagne pendant que la page est ouverte apparait au retour sur l'onglet.
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)chargerFichesGagnees();});
   window.VB_rechargerFichesGagnees=chargerFichesGagnees;
@@ -12546,7 +12577,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }catch(e){}
   }
   chargerLandingStats();
-  window.addEventListener('load',chargerLandingStats);
+  window.VB_quandPret(chargerLandingStats);
   window.VB_chargerLandingStats=chargerLandingStats;   // rejouable a la demande (admin, apres enregistrement)
 
   /* Synchronisation EN DIRECT : Realtime (immediat) + polling 20s de
@@ -12758,7 +12789,7 @@ async function tenterRestaurationSession(){
   }catch(e){ /* toute erreur degrade simplement vers la page d'accueil normale */ }
 }
 tenterRestaurationSession();
-window.addEventListener('load',tenterRestaurationSession);
+window.VB_quandPret(tenterRestaurationSession);
 window.VB_tenterRestaurationSession=tenterRestaurationSession;
 
 /* 18/10 — APPLICATION INSTALLEE : jamais la page d'accueil a l'ouverture.
@@ -12839,7 +12870,7 @@ window.VB_tenterRestaurationSession=tenterRestaurationSession;
     box.hidden=false;document.body.style.overflow='hidden';
   }
   if(document.readyState==='complete')demarrer();
-  else window.addEventListener('load',demarrer,{once:true});
+  else window.VB_quandPret(demarrer);
   // Deconnexion dans l'app : retour a la connexion, pas a l'accueil.
   const sortie=document.getElementById('dashMenuExit');
   if(sortie)sortie.addEventListener('click',()=>setTimeout(()=>{if(!ouvert())ouvrirConnexion();},50));

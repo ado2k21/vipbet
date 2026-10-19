@@ -3,12 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<!-- Application installee : la page d'accueil n'est jamais montree a l'ouverture
-     (ecran sombre jusqu'a la connexion ou au tableau de bord, voir app.js). -->
-<script>try{if(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)document.documentElement.classList.add('vb-app','vb-app-demarrage');}catch(e){}</script>
-<!-- Robots des moteurs de recherche (Google...) : pas d'animation de lancement ni
-     d'apparition au defilement, sinon leur capture montre un ecran vide. -->
-<script>try{if(/bot|crawl|spider|slurp|Google-InspectionTool|Lighthouse|Chrome-Lighthouse|facebookexternalhit|bingpreview/i.test(navigator.userAgent))document.documentElement.classList.add('vb-bot');}catch(e){}</script>
+<!-- Classes vb-app / vb-bot : posees au debut de app.js (la CSP bloque les scripts ecrits dans la page). -->
 
 
 <!-- ============== Sentry (rapport d'erreurs) ==============
@@ -6547,6 +6542,6 @@ html.vb-app .authpage:not(:has(#authModeWizard.renew.on)) .authpage-close{displa
     <button type="button" class="vbios-ok" id="vbIosOk" data-i18n="app_ios_ok">Mwen konprann</button>
   </div>
 </div>
-<script src="app.js?v=20261019a"></script>
+<script src="app.js?v=20261019b"></script>
 </body>
 </html>
