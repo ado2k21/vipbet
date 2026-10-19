@@ -68,7 +68,7 @@
 
 <link rel="icon" type="image/x-icon" href="assets/favicon.ico?v=20261018">
 <link rel="icon" type="image/png" sizes="512x512" href="assets/favicon-512.png?v=20261018">
-<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20261018d">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20261019i">
 <!-- 19/10 (nuit) : nom court du raccourci sur l'ecran d'accueil (iPhone / Android). Simple nom : aucun mode application. -->
 <meta name="apple-mobile-web-app-title" content="VipBetcote">
 <meta name="application-name" content="VipBetcote">
@@ -1559,6 +1559,15 @@ details p{
 .wiz-drop-s{font-size:12px;color:var(--gris);line-height:1.4;word-break:break-word}
 .wiz-drop input[type=file]{display:none}
 .wiz-drop-apercu{max-width:150px;max-height:110px;border-radius:9px;display:block;margin-top:4px}
+/* 19/10 (nuit) : progression de l'envoi du recu */
+.wiz-prog{display:flex;flex-direction:column;gap:6px;margin-top:-4px}
+.wiz-prog[hidden]{display:none}
+.wiz-prog-bar{height:8px;border-radius:99px;background:rgba(244,243,237,.10);overflow:hidden}
+.wiz-prog-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#17A860,#2ED47F);transition:width .2s ease}
+.wiz-prog-t{font-size:13px;font-weight:600;color:var(--vert-vif)}
+.wiz-prog.ko .wiz-prog-bar i{background:#E2634F}
+.wiz-prog.ko .wiz-prog-t{display:none}
+.wiz-prog.ok .wiz-prog-t{color:var(--vert-vif)}
 
 /* Avertissement anti-faux recu (repris de la maquette AyiPay, validé par
    James). La suspension reste une decision MANUELLE de l'admin : aucun
@@ -5004,6 +5013,11 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
                 <img class="wiz-drop-apercu" id="wizManualApercu" alt="" hidden>
                 <input type="file" id="wizManualProof" accept="image/jpeg,image/png,image/webp">
               </label>
+              <!-- 19/10 (nuit) : progression de l'envoi du recu (pourcentage, echec visible) -->
+              <div class="wiz-prog" id="wizManualProg" hidden aria-live="polite">
+                <div class="wiz-prog-bar"><i id="wizManualProgFill"></i></div>
+                <span class="wiz-prog-t" id="wizManualProgT"></span>
+              </div>
               <span class="field-err" id="wizManualProofErr" style="display:none"></span>
 
               <!-- Reference OPTIONNELLE (la capture est la preuve principale). -->
@@ -6397,6 +6411,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261019g"></script>
+<script src="app.js?v=20261019h"></script>
 </body>
 </html>

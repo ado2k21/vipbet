@@ -76,6 +76,10 @@
 15. **Écran de démarrage iPhone** : les nouvelles images n'apparaissent qu'après avoir supprimé puis rajouté l'app. Les liens `apple-touch-startup-image` portent `?v=`.
 16. **Connexion** : le message « Imèl oswa modpas pa kòrèk » ne vient QUE de Supabase (`invalid_credentials`). L'ancien registre local `vipbetcote.accounts.v1` (démo) ne doit jamais refuser ni ouvrir un compte quand Supabase a répondu. Le formulaire attend Supabase (8 s max) avant tout repli. Cause des refus « mot de passe incorrect » dans l'app (b9986969, admin) : Supabase pas encore chargé → repli sur une vieille copie locale. Aucune tentative n'atteignait Supabase.
 17. **Déconnexion** : efface le parcours `vipbetcote.signup.v1`, l'entrée du compte dans l'ancien registre local et la session Supabase de l'appareil (seulement la session qui sort, comparée par `refresh_token`).
+18. **Reçu de paiement manuel** : le dossier du fichier (`payment-proofs/{uid}/…`) vient TOUJOURS de la session réellement ouverte, jamais de `state.supabaseUserId` (sinon refus RLS quand un autre compte est connecté sur le même téléphone). Envoi par XMLHttpRequest avec progression %, délai 90 s, message « Echèk » ; le paiement n'est créé qu'après l'envoi réussi, et seulement au clic sur « Soumèt resi a ».
+19. **Montée en charge** : Supabase en offre GRATUITE (200 connexions temps réel max). Le landing n'ouvre plus de temps réel pour les visiteurs anonymes ; aucune lecture périodique quand l'onglet est caché. Recommandé : Supabase Pro + vérifier la limite Resend (100 emails/jour en gratuit).
+20. **Carte de partage** (`genererImageTicketGagnant`) : mise en page adaptative jusqu'à 14 matchs ; ne jamais revenir à des lignes fixes de 150 px.
+21. **Icône écran d'accueil** : `assets/apple-touch-icon.png` (C1 : fond bleu ardoise #4A5570→#262E40, logo #2ED47F). Sert UNIQUEMENT au raccourci écran d'accueil.
 
 ---
 

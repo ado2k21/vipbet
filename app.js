@@ -555,7 +555,7 @@ wiz_m_submit:"Soumettre le reçu", wiz_m_sending:"Envoi en cours...",
 wiz_m_err_proof:"Ajoutez la capture du reçu avant de continuer",
 wiz_m_err_type:"Format non accepté — utilisez JPG, PNG ou WebP",
 wiz_m_err_size:"Image trop lourde — 5 Mo maximum",
-wiz_m_err_upload:"L'envoi de l'image a échoué. Réessayez.",
+wiz_m_err_upload:"L'envoi de l'image a échoué. Réessayez.", wiz_m_prog:"Envoi du reçu… {p} %", wiz_m_prog_ok:"Reçu bien arrivé ✓", wiz_m_err_reseau:"Échec : l'image n'est pas arrivée, le réseau est trop faible. Vérifiez votre connexion et réessayez.", wiz_m_err_compte:"Un autre compte est connecté sur cet appareil. Rechargez la page et connectez-vous avec le compte qui paie.", wiz_m_err_session:"Votre session a expiré. Reconnectez-vous puis réessayez.",
 wiz_m_done_h:"Demande envoyée", wiz_m_done_p:"Votre reçu a bien été reçu. Votre abonnement sera activé dès la vérification du paiement.",
 adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUEL",
 adm_pay_manual_ref:"ID transaction (saisi)",
@@ -1133,7 +1133,7 @@ wiz_m_submit:"Submit receipt", wiz_m_sending:"Sending...",
 wiz_m_err_proof:"Add the receipt screenshot before continuing",
 wiz_m_err_type:"Format not accepted — use JPG, PNG or WebP",
 wiz_m_err_size:"Image too large — 5 MB maximum",
-wiz_m_err_upload:"Image upload failed. Please try again.",
+wiz_m_err_upload:"Image upload failed. Please try again.", wiz_m_prog:"Uploading receipt… {p} %", wiz_m_prog_ok:"Receipt received ✓", wiz_m_err_reseau:"Failed: the image did not arrive, the network is too weak. Check your connection and try again.", wiz_m_err_compte:"Another account is signed in on this device. Reload the page and sign in with the account that is paying.", wiz_m_err_session:"Your session has ended. Sign in again and retry.",
 wiz_m_done_h:"Request sent", wiz_m_done_p:"Your receipt was received. Your plan will be activated once the payment is verified.",
 adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUAL",
 adm_pay_manual_ref:"Transaction ID (entered)",
@@ -1711,7 +1711,7 @@ wiz_m_submit:"Soumèt resi a", wiz_m_sending:"N ap voye...",
 wiz_m_err_proof:"Mete kaptè resi a anvan ou kontinye",
 wiz_m_err_type:"Fòma sa a pa aksepte — sèvi ak JPG, PNG oswa WebP",
 wiz_m_err_size:"Imaj la twò lou — 5 Mo maksimòm",
-wiz_m_err_upload:"Nou pa t ka voye imaj la. Eseye ankò.",
+wiz_m_err_upload:"Nou pa t ka voye imaj la. Eseye ankò.", wiz_m_prog:"Ap voye resi a… {p} %", wiz_m_prog_ok:"Resi a rive ✓", wiz_m_err_reseau:"Echèk : imaj la pa rive, rezo a twò fèb. Verifye koneksyon ou epi eseye ankò.", wiz_m_err_compte:"Ou konekte ak yon lòt kont sou aparèy sa a. Rechaje paj la epi konekte ak kont ki ap peye a.", wiz_m_err_session:"Sesyon ou fini. Konekte ankò epi eseye ankò.",
 wiz_m_done_h:"Demann nan voye", wiz_m_done_p:"Nou resevwa resi ou a. Abònman ou ap aktive kou nou fin verifye peman an.",
 adm_pay_mode_auto:"OTOMATIK", adm_pay_mode_manual:"MANYÈL",
 adm_pay_manual_ref:"ID tranzaksyon (antre)",
@@ -3120,6 +3120,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   /* --- Selection de la capture (OBLIGATOIRE) --- */
   function resetApercuManuel(){
     manualFichier=null;
+    if(typeof cacherProgression==='function')cacherProgression();
     manualDrop.classList.remove('rempli','invalide');
     manualApercu.hidden=true;
     if(manualApercu.src&&manualApercu.src.indexOf('blob:')===0)URL.revokeObjectURL(manualApercu.src);
@@ -3893,6 +3894,50 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      Le bouton est desactive pendant tout l'envoi : sans ca, un double-appui
      sur mobile creerait deux uploads et deux tentatives d'insertion.
      ========================================================================== */
+  /* 19/10 (nuit) — envoi du recu avec progression. Meme adresse, memes
+     regles de securite que sb.storage.upload, mais par XMLHttpRequest pour
+     connaitre l'avancement (le client Supabase ne le donne pas). */
+  function majProgression(p,etat){
+    const progBox=document.getElementById('wizManualProg'),progFill=document.getElementById('wizManualProgFill'),progTxt=document.getElementById('wizManualProgT');
+    if(!progBox)return;
+    progBox.hidden=false;
+    progBox.classList.toggle('ok',etat==='ok');
+    progBox.classList.toggle('ko',etat==='ko');
+    if(progFill)progFill.style.width=Math.max(0,Math.min(100,p))+'%';
+    if(progTxt)progTxt.textContent=etat==='ok'?t('wiz_m_prog_ok'):t('wiz_m_prog').replace('{p}',String(Math.round(p)));
+  }
+  function cacherProgression(){
+    const progBox=document.getElementById('wizManualProg'),progFill=document.getElementById('wizManualProgFill');
+    if(progBox){progBox.hidden=true;progBox.classList.remove('ok','ko');}
+    if(progFill)progFill.style.width='0%';
+  }
+  function envoyerRecuAvecProgression(sb,jeton,chemin,fichier){
+    return new Promise(resolve=>{
+      const base=(window.VB_SUPABASE_URL||'https://llqifjfcpyddwjkferpn.supabase.co');
+      const url=base+'/storage/v1/object/payment-proofs/'+chemin.split('/').map(encodeURIComponent).join('/');
+      const xhr=new XMLHttpRequest();
+      xhr.open('POST',url,true);
+      xhr.setRequestHeader('Authorization','Bearer '+jeton);
+      if(sb&&sb.supabaseKey)xhr.setRequestHeader('apikey',sb.supabaseKey);
+      xhr.setRequestHeader('x-upsert','false');
+      xhr.setRequestHeader('cache-control','max-age=3600');
+      xhr.setRequestHeader('Content-Type',fichier.type||'application/octet-stream');
+      xhr.timeout=90000;
+      majProgression(0);
+      xhr.upload.onprogress=ev=>{if(ev.lengthComputable)majProgression(ev.loaded/ev.total*100);};
+      const echec=(reseau,message)=>{const pf=document.getElementById('wizManualProgFill');majProgression(pf?parseFloat(pf.style.width)||0:0,'ko');resolve({ok:false,reseau:reseau,message:message});};
+      xhr.onload=()=>{
+        if(xhr.status>=200&&xhr.status<300){majProgression(100,'ok');resolve({ok:true});return;}
+        let msg='HTTP '+xhr.status;try{const j=JSON.parse(xhr.responseText);msg=j.message||j.error||msg;}catch(e){}
+        echec(false,msg);
+      };
+      xhr.onerror=()=>echec(true,'reseau');
+      xhr.ontimeout=()=>echec(true,'delai depasse (90 s)');
+      xhr.onabort=()=>echec(true,'annule');
+      try{xhr.send(fichier);}catch(e){echec(true,e&&e.message);}
+    });
+  }
+
   if(manualSubmit)manualSubmit.addEventListener('click',async()=>{
     if(manualSubmit.disabled)return;
     if(!state.payMethod){payErr.textContent=t('wiz_p_err_method');payErr.style.display='block';return;}
@@ -3907,27 +3952,32 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     try{
       const sb=window.VB_getSupabase&&window.VB_getSupabase();
-      let uid=state.supabaseUserId;
-      if(sb&&!uid){
-        const {data:sessionData}=await sb.auth.getSession();
-        uid=(sessionData&&sessionData.session&&sessionData.session.user)?sessionData.session.user.id:null;
-      }
-      if(!sb||!uid){
-        /* Sans session, la policy storage refuserait de toute facon
-           l'upload : on echoue tout de suite avec un message clair plutot
-           que de laisser partir une requete vouee a un 403. */
-        erreurManuelle('wiz_m_err_upload');
+      /* 19/10 (nuit) — le dossier du recu est TOUJOURS celui du compte
+         reellement connecte (session), jamais un identifiant garde dans le
+         parcours : un autre compte connecte sur le meme telephone faisait
+         refuser l'envoi par la regle de securite du stockage (le recu partait
+         vers le dossier d'un compte, avec la session d'un autre). */
+      let session=null;
+      if(sb){try{session=(await sb.auth.getSession()).data.session;}catch(e){}}
+      const uid=session&&session.user?session.user.id:null;
+      if(!sb||!uid||!session.access_token){
+        erreurManuelle(navigator.onLine===false?'wiz_m_err_reseau':'wiz_m_err_session');
         if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel','session absente a la soumission');
+        return;
+      }
+      if(state.supabaseUserId&&state.supabaseUserId!==uid){
+        erreurManuelle('wiz_m_err_compte');
+        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel','compte different : parcours '+state.supabaseUserId+' / session '+uid);
         return;
       }
 
       const ext=(manualFichier.type==='image/png')?'png':(manualFichier.type==='image/webp')?'webp':'jpg';
       const chemin=uid+'/'+state.payMethod+'-'+Date.now()+'.'+ext;
-      const {error:upErr}=await sb.storage.from('payment-proofs')
-        .upload(chemin,manualFichier,{contentType:manualFichier.type,upsert:false});
-      if(upErr){
-        erreurManuelle('wiz_m_err_upload');
-        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel_upload',upErr.message||JSON.stringify(upErr));
+      // Envoi avec progression visible (pourcentage) ; echec annonce vite.
+      const envoi=await envoyerRecuAvecProgression(sb,session.access_token,chemin,manualFichier);
+      if(!envoi.ok){
+        erreurManuelle(envoi.reseau?'wiz_m_err_reseau':'wiz_m_err_upload');
+        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel_upload',envoi.message||'echec');
         return;
       }
 
@@ -5174,7 +5224,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           .subscribe();
       }catch(e){}
     }
-    wizPlansPollTimer=setInterval(()=>{window.VB_syncPlansFromSupabase();},20000);
+    wizPlansPollTimer=setInterval(()=>{if(!document.hidden)window.VB_syncPlansFromSupabase();},20000);
   }
   function arreterSyncPlansWizard(){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
@@ -5764,54 +5814,89 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.font=(enCours?'600 30px ':'700 32px ')+INTER;ctx.fillStyle=enCours?'#8F9BB0':'#E8CE8A';ctx.textAlign='center';
     ctx.fillText(typeTxt.split('').join(String.fromCharCode(8202)),W/2,enCours?430:530);
 
-    // Selections (jusqu'a 7 cartes, puis « +N autres »)
+    // Selections. 19/10 (nuit) : mise en page ADAPTATIVE. Avant, 7 lignes fixes
+    // de 150 px : des 6-7 matchs la liste et la cote totale passaient sous le
+    // bandeau du bas (texte sur texte) et les matchs au-dela de 7 etaient caches.
+    // Desormais tout tient entre le titre et le bandeau : jusqu'a 14 matchs
+    // affiches, hauteur et polices ajustees, textes coupes selon la place reelle.
     const legs=(tk.legs||[]);
-    const MAX=7,HL=150,X=60,LW=W-120;
-    // Bloc (selections + cote totale) centre verticalement entre le titre et le bandeau du bas.
-    const nAff=Math.min(legs.length,MAX)+(legs.length>MAX?0.4:0);
-    const yDebut=enCours?480:575,espace=enCours?1130:1035;
-    let y=yDebut+Math.max(0,(espace-(nAff*HL+300))/2);
+    const MAX=14,X=60,LW=W-120;
+    const nAff=Math.min(legs.length,MAX),plus=legs.length>MAX;
+    const compact=nAff>5;
+    const yDebut=enCours?480:575,yFin=1612;           // bandeau du bas a 1640
+    const TB=compact?215:300;                          // bloc « cote totale »
+    const dispo=yFin-yDebut-TB-(plus?46:0);
+    const HL=Math.max(56,Math.min(150,Math.floor(dispo/Math.max(1,nAff))));
+    const ecart=Math.max(8,Math.round(HL*0.12)),bh=HL-ecart;
+    const troisLignes=bh>=110;                         // ligue affichee seulement si la place le permet
+    // Coupe un texte a la largeur disponible (jamais sous la cote du match).
+    const ajuste=(txt,maxW)=>{txt=String(txt||'');if(ctx.measureText(txt).width<=maxW)return txt;
+      while(txt.length>1&&ctx.measureText(txt+'…').width>maxW)txt=txt.slice(0,-1);return txt+'…';};
+    let y=yDebut+Math.max(0,Math.floor((dispo-nAff*HL)/2));
     legs.slice(0,MAX).forEach(lg=>{
-      ctx.fillStyle=sombre?'rgba(255,255,255,.04)':'rgba(4,23,13,.55)';rr(X,y,LW,HL-18,28);ctx.fill();
+      const rc=Math.min(28,Math.round(bh*0.32));
+      ctx.fillStyle=sombre?'rgba(255,255,255,.04)':'rgba(4,23,13,.55)';rr(X,y,LW,bh,rc);ctx.fill();
       ctx.strokeStyle=sombre?'rgba(255,255,255,.08)':'rgba(46,212,127,.35)';ctx.lineWidth=2;ctx.stroke();
-      if(!enCours){ctx.fillStyle=lg.result==='lost'?'#F0735E':lg.result==='void'?'#8F9BB0':'#2ED47F';rr(X,y,12,HL-18,6);ctx.fill();}
-      const cx=X+58,cy=y+(HL-18)/2,res=lg.result;
+      if(!enCours){ctx.fillStyle=lg.result==='lost'?'#F0735E':lg.result==='void'?'#8F9BB0':'#2ED47F';rr(X,y,Math.max(8,Math.round(12*bh/132)),bh,6);ctx.fill();}
+      const r=Math.min(27,Math.round(bh*0.34)),cx=X+30+r,cy=y+bh/2,res=lg.result;
+      let tx=cx+r+22;
       if(enCours){
         // Heure du match (heure d'Haiti) a la place du resultat.
         let hr=lg.heure||'';
         if(!hr&&lg.kickoff){const d=instantDeLeg(lg.kickoff);if(d)hr=partsHaiti(d).heure;}
-        ctx.fillStyle='rgba(232,206,138,.10)';rr(cx-44,cy-30,88,60,16);ctx.fill();
+        const ph=Math.min(60,Math.round(bh*0.62)),pw=Math.round(ph*1.47);
+        ctx.fillStyle='rgba(232,206,138,.10)';rr(X+22,cy-ph/2,pw,ph,Math.round(ph*0.27));ctx.fill();
         ctx.strokeStyle='rgba(232,206,138,.30)';ctx.lineWidth=2;ctx.stroke();
-        ctx.textAlign='center';ctx.fillStyle='#E8CE8A';ctx.font='700 26px '+INTER;ctx.fillText(hr||'—',cx,cy+9);
+        ctx.textAlign='center';ctx.fillStyle='#E8CE8A';ctx.font='700 '+Math.round(ph*0.44)+'px '+INTER;ctx.fillText(hr||'—',X+22+pw/2,cy+Math.round(ph*0.15));
+        tx=X+22+pw+20;
       }else{
       // Marque du resultat REEL
       const coul=res==='lost'?['rgba(240,115,94,.16)','#F0735E']:res==='void'?['rgba(143,155,176,.16)','#8F9BB0']:['rgba(46,212,127,.16)','#2ED47F'];
-      ctx.fillStyle=coul[0];ctx.beginPath();ctx.arc(cx,cy,27,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle=coul[1];ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
-      if(res==='lost'){ctx.moveTo(cx-10,cy-10);ctx.lineTo(cx+10,cy+10);ctx.moveTo(cx+10,cy-10);ctx.lineTo(cx-10,cy+10);}
-      else if(res==='void'){ctx.moveTo(cx-10,cy);ctx.lineTo(cx+10,cy);}
-      else{ctx.moveTo(cx-11,cy+1);ctx.lineTo(cx-3,cy+9);ctx.lineTo(cx+12,cy-8);}
+      const q=r/27;
+      ctx.fillStyle=coul[0];ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=coul[1];ctx.lineWidth=Math.max(3,5*q);ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
+      if(res==='lost'){ctx.moveTo(cx-10*q,cy-10*q);ctx.lineTo(cx+10*q,cy+10*q);ctx.moveTo(cx+10*q,cy-10*q);ctx.lineTo(cx-10*q,cy+10*q);}
+      else if(res==='void'){ctx.moveTo(cx-10*q,cy);ctx.lineTo(cx+10*q,cy);}
+      else{ctx.moveTo(cx-11*q,cy+1*q);ctx.lineTo(cx-3*q,cy+9*q);ctx.lineTo(cx+12*q,cy-8*q);}
       ctx.stroke();
       }
+      // Cote du match a droite, puis les textes dans la place qui reste.
+      const fO=Math.min(44,Math.round(bh*0.42));
+      ctx.textAlign='right';ctx.fillStyle='#E8CE8A';ctx.font='800 '+fO+'px '+SORA;
+      const coteTxt=Number(lg.odd).toFixed(2);ctx.fillText(coteTxt,X+LW-30,cy+Math.round(fO*0.36));
+      const maxW=(X+LW-30-ctx.measureText(coteTxt).width-24)-tx;
       ctx.textAlign='left';
-      ctx.fillStyle='#F4F3ED';ctx.font='700 36px '+INTER;ctx.fillText(tronqueTexte(lg.match||'',30),X+112,y+50);
-      const ligue=(String(lg.league||'')+(lg.leagueCountry?' ('+lg.leagueCountry+')':'')).toUpperCase();
-      ctx.fillStyle=sombre?'#6F7C92':'#8FD9AE';ctx.font='600 21px '+INTER;ctx.fillText(tronqueTexte(ligue,42),X+112,y+84);
       const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
-      ctx.fillStyle=sombre?'#C9CED8':'#D9F5E5';ctx.font='500 27px '+INTER;ctx.fillText(tronqueTexte(pickTxt,36),X+112,y+118);
-      ctx.textAlign='right';ctx.fillStyle='#E8CE8A';ctx.font='800 44px '+SORA;ctx.fillText(Number(lg.odd).toFixed(2),X+LW-34,y+82);
+      if(troisLignes){
+        const f=Math.min(1,bh/132);
+        ctx.fillStyle='#F4F3ED';ctx.font='700 '+Math.round(36*f)+'px '+INTER;ctx.fillText(ajuste(lg.match,maxW),tx,y+Math.round(bh*0.38));
+        const ligue=(String(lg.league||'')+(lg.leagueCountry?' ('+lg.leagueCountry+')':'')).toUpperCase();
+        ctx.fillStyle=sombre?'#6F7C92':'#8FD9AE';ctx.font='600 '+Math.round(21*f)+'px '+INTER;ctx.fillText(ajuste(ligue,maxW),tx,y+Math.round(bh*0.64));
+        ctx.fillStyle=sombre?'#C9CED8':'#D9F5E5';ctx.font='500 '+Math.round(27*f)+'px '+INTER;ctx.fillText(ajuste(pickTxt,maxW),tx,y+Math.round(bh*0.89));
+      }else{
+        const fM=Math.min(32,Math.round(bh*0.4)),fP=Math.round(fM*0.8);
+        ctx.fillStyle='#F4F3ED';ctx.font='700 '+fM+'px '+INTER;ctx.fillText(ajuste(lg.match,maxW),tx,y+Math.round(bh*0.46));
+        ctx.fillStyle=sombre?'#C9CED8':'#D9F5E5';ctx.font='500 '+fP+'px '+INTER;ctx.fillText(ajuste(pickTxt,maxW),tx,y+Math.round(bh*0.84));
+      }
       y+=HL;
     });
-    if(legs.length>MAX){
-      ctx.textAlign='center';ctx.fillStyle='#8F9BB0';ctx.font='500 28px '+INTER;
-      ctx.fillText(t('dtk_share_plus').replace('{n}',legs.length-MAX),W/2,y+20);y+=60;
+    if(plus){
+      ctx.textAlign='center';ctx.fillStyle='#8F9BB0';ctx.font='500 26px '+INTER;
+      ctx.fillText(t('dtk_share_plus').replace('{n}',legs.length-MAX),W/2,y+22);y+=46;
     }
 
-    // Cote totale
+    // Cote totale (plus compacte quand il y a beaucoup de matchs)
     ctx.textAlign='center';
-    ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
-    g=ctx.createLinearGradient(0,y+110,0,y+240);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
-    ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText((perdu&&tk.totalOdd?Number(tk.totalOdd):totalOdd(tk)).toFixed(2),W/2,y+235);
+    const valeurTotale=(perdu&&tk.totalOdd?Number(tk.totalOdd):totalOdd(tk)).toFixed(2);
+    if(compact){
+      ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 26px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+52);
+      g=ctx.createLinearGradient(0,y+80,0,y+180);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
+      ctx.fillStyle=g;ctx.font='800 112px '+SORA;ctx.fillText(valeurTotale,W/2,y+178);
+    }else{
+      ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
+      g=ctx.createLinearGradient(0,y+110,0,y+240);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
+      ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText(valeurTotale,W/2,y+235);
+    }
 
     // Bandeau lien (lien de parrainage s'il existe, sinon le site)
     const lien=lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com';
@@ -7664,6 +7749,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     arreterResyncPeriodique();
     resyncTimer=setInterval(()=>{
       if(!dash.classList.contains('open')){arreterResyncPeriodique();return;}
+      if(document.hidden)return;   // 19/10 (nuit) : onglet en arriere-plan -> aucune requete
       if(window.VB_syncPayStatus){
         window.VB_syncPayStatus().then(changed=>{
           if(changed){rafraichirFiches(true);renderSub();}
@@ -12607,17 +12693,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      secours (meme principe que demarrerSyncPlansWizard) — si l'admin
      modifie un chiffre pendant qu'un visiteur a deja la page d'accueil
      ouverte, ca se met a jour sans qu'il ait besoin de recharger. */
-  const sbRt=window.VB_getSupabase&&window.VB_getSupabase();
-  if(sbRt&&sbRt.channel){
-    try{
-      sbRt.channel('landing-stats-'+Date.now())
-        .on('postgres_changes',{event:'UPDATE',schema:'public',table:'landing_stats'},()=>{
-          chargerLandingStats();
-        })
-        .subscribe();
-    }catch(e){}
-  }
-  setInterval(chargerLandingStats,20000);
+  /* 19/10 (nuit) — MONTEE EN CHARGE : plus de connexion « temps reel » pour
+     chaque visiteur anonyme (l'offre Supabase gratuite en accepte 200 en meme
+     temps, tous visiteurs confondus) et lecture toutes les 2 min seulement si
+     l'onglet est visible (avant : 20 s, meme en arriere-plan). L'admin voit
+     toujours ses changements tout de suite (VB_chargerLandingStats). */
+  setInterval(()=>{if(!document.hidden)chargerLandingStats();},120000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)chargerLandingStats();});
 })();
 
 /* ---------- Compteur d'utilisateurs actifs (bonus visuel local) ----------
@@ -12726,6 +12808,7 @@ function vbDemarrerSurveillanceSuspension(userId){
       .subscribe();
   }catch(e){}
   vbSuspensionPoll=setInterval(async()=>{
+    if(document.hidden)return;   // 19/10 (nuit) : le temps reel reste actif ; pas de lecture en arriere-plan
     try{
       const {data:prof}=await sb.from('profiles').select('suspended_at,suspended_reason').eq('id',userId).single();
       if(prof&&prof.suspended_at)vbDeconnexionPourSuspension(prof.suspended_reason);
