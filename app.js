@@ -292,7 +292,7 @@ adm_fiche_gen_basket_submit:"GÉNÉRER FICHE BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
 dtk_cd_min:"Premier match dans {n} min", dtk_cd_h:"Premier match dans {h}h{m}", dtk_cd_j:"Premier match dans {j} j", dtk_cd_bientot:"Premier match imminent", dtk_cd_encours:"Premier match en cours",
-dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez avec contrôle", share_type_foot:"FICHE FOOTBALL", share_type_basket:"FICHE BASKETBALL", share_type_exact:"FICHE SCORE EXACT", share_cta_sub:"Fiches VIP chaque jour", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉", dtk_share_titre_encours:"FICHE DU JOUR", dtk_share_texte_encours:"La fiche du jour VIP BETCOTE 🔥",
+dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez avec contrôle", share_type_foot:"FICHE FOOTBALL", share_type_basket:"FICHE BASKETBALL", share_type_exact:"FICHE SCORE EXACT", share_cta_sub:"Fiches VIP chaque jour", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉", dtk_share_titre_encours:"FICHE DU JOUR", dtk_share_titre_perdu:"MATCHS GAGNÉS", dtk_share_texte_perdu:"Résultat de la fiche VIP BETCOTE 📊", dtk_share_texte_encours:"La fiche du jour VIP BETCOTE 🔥",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
 dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
@@ -584,7 +584,7 @@ adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le
 adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
-auth_err_nouser:"Email ou mot de passe incorrect", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", notif_ref_added:"Félicitations ! +{n} jours ajoutés à votre plan : un ami a payé son premier plan grâce à votre lien.", notif_ref_pending:"Vous gagnez {n} jours bonus grâce à un ami ! Ils seront ajoutés automatiquement à votre prochain plan.", notif_ref_lifetime:"Merci ! Un ami a payé son premier plan grâce à votre lien. Votre plan Lifetime vous donne déjà un accès illimité.", notif_ref_applied:"Vos {n} jours bonus de parrainage ont été ajoutés à votre nouveau plan.", auth_or_continue:"ou continuer avec", google_err:"La connexion avec Google n'a pas abouti. Réessayez.", google_admin:"Les comptes administrateur se connectent uniquement avec email, mot de passe et code 2FA.", gp_title:"Terminez la création de votre compte", gp_sub:"Une dernière étape avant de voir les fiches.", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", onb_skip:"Passer", onb_next:"Continuer", onb_create:"Créer mon compte", onb_login:"J'ai un compte · Se connecter", onb_tag_today:"FICHE DU JOUR", onb_tag_results:"RÉSULTATS", onb_plan_sub:"Accès aux fiches", onb_s1_h:"Des fiches analysées chaque jour", onb_s1_p:"Nos experts préparent vos fiches pour ParyajPam, ParyajLakay et 1xBet.", onb_s2_h:"Des résultats transparents", onb_s2_p:"Suivez l'historique de chaque fiche, gagnée ou perdue. Rien n'est caché.", onb_s3_h:"Payez facilement, commencez tout de suite", onb_s3_p:"MonCash, NatCash ou carte. Vos fiches se débloquent automatiquement. Jouez avec contrôle.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
+auth_err_nouser:"Email ou mot de passe incorrect", auth_err_trop:"Trop de tentatives. Patientez quelques minutes puis réessayez.", auth_err_nonconfirme:"Votre email n'est pas encore confirmé. Vérifiez votre boîte de réception.", auth_err_serveur:"La connexion n'a pas abouti. Réessayez dans un instant.", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", notif_ref_added:"Félicitations ! +{n} jours ajoutés à votre plan : un ami a payé son premier plan grâce à votre lien.", notif_ref_pending:"Vous gagnez {n} jours bonus grâce à un ami ! Ils seront ajoutés automatiquement à votre prochain plan.", notif_ref_lifetime:"Merci ! Un ami a payé son premier plan grâce à votre lien. Votre plan Lifetime vous donne déjà un accès illimité.", notif_ref_applied:"Vos {n} jours bonus de parrainage ont été ajoutés à votre nouveau plan.", auth_or_continue:"ou continuer avec", google_err:"La connexion avec Google n'a pas abouti. Réessayez.", google_admin:"Les comptes administrateur se connectent uniquement avec email, mot de passe et code 2FA.", gp_title:"Terminez la création de votre compte", gp_sub:"Une dernière étape avant de voir les fiches.", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", onb_skip:"Passer", onb_next:"Continuer", onb_create:"Créer mon compte", onb_login:"J'ai un compte · Se connecter", onb_tag_today:"FICHE DU JOUR", onb_tag_results:"RÉSULTATS", onb_plan_sub:"Accès aux fiches", onb_s1_h:"Des fiches analysées chaque jour", onb_s1_p:"Nos experts préparent vos fiches pour ParyajPam, ParyajLakay et 1xBet.", onb_s2_h:"Des résultats transparents", onb_s2_p:"Suivez l'historique de chaque fiche, gagnée ou perdue. Rien n'est caché.", onb_s3_h:"Payez facilement, commencez tout de suite", onb_s3_p:"MonCash, NatCash ou carte. Vos fiches se débloquent automatiquement. Jouez avec contrôle.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_sheet_title:"L'application est presque prête", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
 auth_taken_h:"Cette adresse e-mail est déjà enregistrée",
 auth_taken_sub:"Un compte existe déjà avec cet e-mail. Rendez-vous sur la page de connexion pour y accéder.",
 auth_suspended_h:"Compte suspendu",
@@ -870,7 +870,7 @@ adm_fiche_gen_basket_submit:"GENERATE BASKETBALL SLIP",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
 dtk_cd_min:"First match in {n} min", dtk_cd_h:"First match in {h}h{m}", dtk_cd_j:"First match in {j} d", dtk_cd_bientot:"First match starting soon", dtk_cd_encours:"First match underway",
-dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play with control", share_type_foot:"FOOTBALL SLIP", share_type_basket:"BASKETBALL SLIP", share_type_exact:"EXACT SCORE SLIP", share_cta_sub:"VIP slips every day", dtk_share_texte:"I won with VIP BETCOTE! 🎉", dtk_share_titre_encours:"TODAY'S SLIP", dtk_share_texte_encours:"Today's VIP BETCOTE slip 🔥",
+dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play with control", share_type_foot:"FOOTBALL SLIP", share_type_basket:"BASKETBALL SLIP", share_type_exact:"EXACT SCORE SLIP", share_cta_sub:"VIP slips every day", dtk_share_texte:"I won with VIP BETCOTE! 🎉", dtk_share_titre_encours:"TODAY'S SLIP", dtk_share_titre_perdu:"MATCHES WON", dtk_share_texte_perdu:"VIP BETCOTE slip result 📊", dtk_share_texte_encours:"Today's VIP BETCOTE slip 🔥",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
 dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
@@ -1162,7 +1162,7 @@ adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
-auth_err_nouser:"Incorrect email or password", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", notif_ref_added:"Congratulations! +{n} days added to your plan: a friend paid their first plan through your link.", notif_ref_pending:"You earned {n} bonus days thanks to a friend! They will be added automatically to your next plan.", notif_ref_lifetime:"Thank you! A friend paid their first plan through your link. Your Lifetime plan already gives you unlimited access.", notif_ref_applied:"Your {n} referral bonus days have been added to your new plan.", auth_or_continue:"or continue with", google_err:"Google sign-in did not complete. Please try again.", google_admin:"Administrator accounts sign in only with email, password and 2FA code.", gp_title:"Finish creating your account", gp_sub:"One last step before you see the picks.", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", onb_skip:"Skip", onb_next:"Continue", onb_create:"Create my account", onb_login:"I have an account · Log in", onb_tag_today:"TODAY'S PICKS", onb_tag_results:"RESULTS", onb_plan_sub:"Access to the picks", onb_s1_h:"Picks analyzed every day", onb_s1_p:"Our experts prepare your picks for ParyajPam, ParyajLakay and 1xBet.", onb_s2_h:"Transparent results", onb_s2_p:"Follow the history of every pick, won or lost. Nothing is hidden.", onb_s3_h:"Pay easily, start right away", onb_s3_p:"MonCash, NatCash or card. Your picks unlock automatically. Play with control.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
+auth_err_nouser:"Incorrect email or password", auth_err_trop:"Too many attempts. Wait a few minutes and try again.", auth_err_nonconfirme:"Your email is not confirmed yet. Check your inbox.", auth_err_serveur:"Sign-in did not go through. Try again in a moment.", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", notif_ref_added:"Congratulations! +{n} days added to your plan: a friend paid their first plan through your link.", notif_ref_pending:"You earned {n} bonus days thanks to a friend! They will be added automatically to your next plan.", notif_ref_lifetime:"Thank you! A friend paid their first plan through your link. Your Lifetime plan already gives you unlimited access.", notif_ref_applied:"Your {n} referral bonus days have been added to your new plan.", auth_or_continue:"or continue with", google_err:"Google sign-in did not complete. Please try again.", google_admin:"Administrator accounts sign in only with email, password and 2FA code.", gp_title:"Finish creating your account", gp_sub:"One last step before you see the picks.", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", onb_skip:"Skip", onb_next:"Continue", onb_create:"Create my account", onb_login:"I have an account · Log in", onb_tag_today:"TODAY'S PICKS", onb_tag_results:"RESULTS", onb_plan_sub:"Access to the picks", onb_s1_h:"Picks analyzed every day", onb_s1_p:"Our experts prepare your picks for ParyajPam, ParyajLakay and 1xBet.", onb_s2_h:"Transparent results", onb_s2_p:"Follow the history of every pick, won or lost. Nothing is hidden.", onb_s3_h:"Pay easily, start right away", onb_s3_p:"MonCash, NatCash or card. Your picks unlock automatically. Play with control.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_sheet_title:"The app is almost ready", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
 auth_taken_h:"This email address is already registered",
 auth_taken_sub:"An account already exists with this email. Head to the login page to sign in.",
 auth_suspended_h:"Account suspended",
@@ -1448,7 +1448,7 @@ adm_fiche_gen_basket_submit:"JENERE FICH BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
 dtk_cd_min:"Premye match nan {n} min", dtk_cd_h:"Premye match nan {h}è{m}", dtk_cd_j:"Premye match nan {j} jou", dtk_cd_bientot:"Premye match pral kòmanse", dtk_cd_encours:"Premye match ap jwe",
-dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe ak kontwòl", share_type_foot:"FICH FOUTBÒL", share_type_basket:"FICH BASKÈT", share_type_exact:"FICH SKÒ EGZAK", share_cta_sub:"Fich VIP chak jou", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉", dtk_share_titre_encours:"FICH JOU A", dtk_share_texte_encours:"Fich jou a VIP BETCOTE 🔥",
+dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe ak kontwòl", share_type_foot:"FICH FOUTBÒL", share_type_basket:"FICH BASKÈT", share_type_exact:"FICH SKÒ EGZAK", share_cta_sub:"Fich VIP chak jou", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉", dtk_share_titre_encours:"FICH JOU A", dtk_share_titre_perdu:"MATCH GENYEN", dtk_share_texte_perdu:"Rezilta fich VIP BETCOTE a 📊", dtk_share_texte_encours:"Fich jou a VIP BETCOTE 🔥",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
 dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
@@ -1740,7 +1740,7 @@ adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
-auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", notif_ref_added:"Felisitasyon ! +{n} jou ajoute sou plan ou : yon zanmi peye premye plan li gras a lyen ou.", notif_ref_pending:"Ou genyen {n} jou bonis gras a yon zanmi ! Y ap ajoute otomatikman sou pwochen plan ou.", notif_ref_lifetime:"Mèsi ! Yon zanmi peye premye plan li gras a lyen ou. Plan Lifetime ou a ba ou aksè san limit deja.", notif_ref_applied:"{n} jou bonis parenaj ou yo ajoute sou nouvo plan ou.", auth_or_continue:"oswa kontinye ak", google_err:"Koneksyon ak Google la pa mache. Eseye ankò.", google_admin:"Kont administratè yo konekte sèlman ak imèl, modpas ak kòd 2FA.", gp_title:"Fini kreye kont ou", gp_sub:"Yon dènye etap anvan ou wè fich yo.", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", onb_skip:"Pase", onb_next:"Kontinye", onb_create:"Kreye kont mwen", onb_login:"Mwen gen yon kont · Konekte", onb_tag_today:"FICH JODI A", onb_tag_results:"REZILTA", onb_plan_sub:"Aksè a fich yo", onb_s1_h:"Fich analize chak jou", onb_s1_p:"Ekip ekspè nou an prepare fich ou yo pou ParyajPam, ParyajLakay ak 1xBet.", onb_s2_h:"Rezilta transparan", onb_s2_p:"Swiv istorik chak fich, ki genyen ak ki pèdi. Pa gen anyen kache.", onb_s3_h:"Peye fasil, kòmanse touswit", onb_s3_p:"MonCash, NatCash oswa kat. Fich ou yo debloke otomatikman. Jwe ak kontwòl.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
+auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_trop:"Twòp tantativ. Tann kèk minit epi eseye ankò.", auth_err_nonconfirme:"Imèl ou poko konfime. Gade bwat imèl ou.", auth_err_serveur:"Koneksyon an pa mache. Eseye ankò nan yon ti moman.", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", notif_ref_added:"Felisitasyon ! +{n} jou ajoute sou plan ou : yon zanmi peye premye plan li gras a lyen ou.", notif_ref_pending:"Ou genyen {n} jou bonis gras a yon zanmi ! Y ap ajoute otomatikman sou pwochen plan ou.", notif_ref_lifetime:"Mèsi ! Yon zanmi peye premye plan li gras a lyen ou. Plan Lifetime ou a ba ou aksè san limit deja.", notif_ref_applied:"{n} jou bonis parenaj ou yo ajoute sou nouvo plan ou.", auth_or_continue:"oswa kontinye ak", google_err:"Koneksyon ak Google la pa mache. Eseye ankò.", google_admin:"Kont administratè yo konekte sèlman ak imèl, modpas ak kòd 2FA.", gp_title:"Fini kreye kont ou", gp_sub:"Yon dènye etap anvan ou wè fich yo.", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", onb_skip:"Pase", onb_next:"Kontinye", onb_create:"Kreye kont mwen", onb_login:"Mwen gen yon kont · Konekte", onb_tag_today:"FICH JODI A", onb_tag_results:"REZILTA", onb_plan_sub:"Aksè a fich yo", onb_s1_h:"Fich analize chak jou", onb_s1_p:"Ekip ekspè nou an prepare fich ou yo pou ParyajPam, ParyajLakay ak 1xBet.", onb_s2_h:"Rezilta transparan", onb_s2_p:"Swiv istorik chak fich, ki genyen ak ki pèdi. Pa gen anyen kache.", onb_s3_h:"Peye fasil, kòmanse touswit", onb_s3_p:"MonCash, NatCash oswa kat. Fich ou yo debloke otomatikman. Jwe ak kontwòl.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_sheet_title:"App la prèske fini", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
 auth_taken_h:"Imèl sa a deja anrejistre",
 auth_taken_sub:"Gen yon kont ki deja gen imèl sa a. Ale nan paj koneksyon an pou w antre.",
 auth_suspended_h:"Kont sispann",
@@ -2824,7 +2824,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(ev.key==='Backspace'&&!inp.value&&i>0)otpInputs[i-1].focus();
     });
     inp.addEventListener('paste',ev=>{
-      const d=(ev.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+      const cb=ev.clipboardData||window.clipboardData;const d=(cb&&typeof cb.getData==='function'?String(cb.getData('text')||''):'').replace(/\D/g,'');
       if(!d)return;
       ev.preventDefault();
       d.split('').slice(0,6).forEach((c,k)=>{if(otpInputs[k])otpInputs[k].value=c});
@@ -4274,7 +4274,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(ev.key==='Backspace'&&!inp.value&&i>0)pwrOtpInputs[i-1].focus();
     });
     inp.addEventListener('paste',ev=>{
-      const dd=(ev.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+      const cb=ev.clipboardData||window.clipboardData;const dd=(cb&&typeof cb.getData==='function'?String(cb.getData('text')||''):'').replace(/\D/g,'');
       if(!dd)return;
       ev.preventDefault();
       dd.split('').slice(0,6).forEach((c,k)=>{if(pwrOtpInputs[k])pwrOtpInputs[k].value=c});
@@ -4822,6 +4822,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!id.value.trim()){setErr(id.closest('.field'),'auth_err_required');ok=false}else setErr(id.closest('.field'),null);
     if(!pw.value){setErr(pw.closest('.field'),'auth_err_required');ok=false}else setErr(pw.closest('.field'),null);
     if(!ok)return;
+    // 19/10 : la connexion se fait uniquement par email (Supabase) : sinon, le dire clairement.
+    if(!isEmail(id.value.trim())){setErr(id.closest('.field'),'auth_err_email');return;}
     // 17/10 : hors ligne -> « verifiez votre connexion », jamais « email ou mot de passe incorrect ».
     if(navigator.onLine===false){setErr(id.closest('.field'),'auth_err_offline');return;}
     let reseauKO=false;
@@ -4829,9 +4831,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     /* Connexion reelle via Supabase, en priorite. Si Supabase est
        injoignable (reseau, CDN), on se replie sur l'ancien registre local
        ci-dessous, sans jamais laisser l'utilisateur bloque. */
-    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    // 19/10 : l'app installee peut charger Supabase quelques secondes apres
+    // l'affichage. On l'attend (8 s au plus) au lieu de basculer sur
+    // l'ancien registre local, qui affichait « mot de passe incorrect ».
+    const loginBtn=fL.querySelector('button[type=submit]');
+    let sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb&&isEmail(id.value.trim())){
+      loginBtn.disabled=true;
+      for(let i=0;!sb&&i<40;i++){await new Promise(r=>setTimeout(r,200));sb=window.VB_getSupabase&&window.VB_getSupabase();}
+      loginBtn.disabled=false;
+      if(!sb)reseauKO=true;
+    }
+    let supabaseARepondu=false;
     if(sb&&isEmail(id.value.trim())){
-      const loginBtn=fL.querySelector('button[type=submit]');
       loginBtn.disabled=true;
       try{
         const {data,error}=await sb.auth.signInWithPassword({
@@ -4840,6 +4852,20 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         });
         loginBtn.disabled=false;
         if(error&&(error.status===0||/fetch|network|retryable|load failed/i.test(String(error.name||'')+' '+String(error.message||''))))reseauKO=true;
+        else if(error){
+          /* 19/10 : « email ou mot de passe incorrect » SEULEMENT quand Supabase
+             dit que l'un des deux est faux. Toute autre cause a son propre message. */
+          const code=String(error.code||'');
+          const txt=String(error.message||'');
+          if(code==='invalid_credentials'||/invalid login credentials/i.test(txt))supabaseARepondu=true;
+          else{
+            const cle=(error.status===429||/rate.?limit|too many/i.test(code+' '+txt))?'auth_err_trop'
+              :(code==='email_not_confirmed'||/email not confirmed/i.test(txt))?'auth_err_nonconfirme'
+              :'auth_err_serveur';
+            setErr(id.closest('.field'),cle);
+            return;
+          }
+        }
         if(!error&&data&&data.user){
           /* Verification du role, toujours cote serveur : c'est la table
              "profiles" (protegee par les regles de securite ecrites dans
@@ -4897,10 +4923,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
     }
 
+    /* 19/10 : Supabase a repondu (email ou mot de passe refuse) : c'est SA
+       reponse qui compte. L'ancien registre local ne doit jamais ouvrir un
+       compte, ni refuser un mot de passe, a la place de la base. */
+    if(supabaseARepondu){
+      // Seule exception (inchangee) : une inscription pas encore terminee sur cet appareil reprend a son etape.
+      if(state.email&&!state.paid&&state.email.trim().toLowerCase()===id.value.trim().toLowerCase()){
+        showMode('wizard');showStep(pageDe(requiredStep(state)));return;
+      }
+      setErr(id.closest('.field'),'auth_err_nouser');return;
+    }
     const acc=accounts.find(id.value);
     if(acc&&isComplete(acc)){
       if(acc.pass&&acc.pass!==fingerprint(pw.value)){
-        setErr(pw.closest('.field'),'auth_err_badpass');
+        // Ancienne copie locale, peut-etre perimee : jamais « mot de passe incorrect ».
+        setErr(id.closest('.field'),(reseauKO||navigator.onLine===false)?'auth_err_offline':'auth_err_nouser');
         return;
       }
       // Inscription terminee : on restaure la session et on ouvre le dashboard.
@@ -5120,6 +5157,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   });
 
   window.VB_getState=()=>state;
+  /* 19/10 — Deconnexion : rien du compte qui sort ne reste sur l'appareil
+     (parcours en memoire + son entree dans l'ancien registre local). Le
+     compte suivant repart toujours de zero, avec SES donnees Supabase. */
+  window.VB_oublierCompteLocal=function(){
+    const em=String((state&&state.email)||'').trim().toLowerCase();
+    state=blank();
+    store.clear();
+    if(em){try{const m=accounts.all();if(m[em]){delete m[em];accounts.save(m);}}catch(e){}}
+  };
   window.VB_planById=planById;
   // CORRIGÉ (31/08 v8, cause racine du "reste toujours 7 jours") : le nom
   // affiché d'un plan ("VIP 7 JOU") était un texte de traduction STATIQUE
@@ -5769,9 +5815,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
     // Fiche EN COURS (16/10, partage admin) : aucun ✓ / ✗, titre « FICHE DU JOUR », heure de chaque match.
     const enCours=!!tk.enCours;
+    // 19/10 : fiche PERDUE (partage admin, Historique) : vrais resultats (✓ / ✗), « 4/5 MATCH GENYEN »,
+    // cote totale de la fiche inchangee. Fond sombre, jamais les couleurs de victoire.
+    const perdu=!enCours&&!!tk.perdu;
+    const sombre=enCours||perdu;
 
     let g;
-    if(enCours){
+    if(perdu){
+      g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0B1426');g.addColorStop(1,'#050913');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      g=ctx.createRadialGradient(W/2,0,0,W/2,0,950);g.addColorStop(0,'rgba(232,206,138,.22)');g.addColorStop(1,'rgba(232,206,138,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle='rgba(232,206,138,.55)';ctx.lineWidth=5;rr(22,22,W-44,H-44,52);ctx.stroke();
+    }else if(enCours){
       // Fond : degrade sombre + halos or (haut droite) et vert (bas gauche)
       g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#071022');g.addColorStop(1,'#040811');
       ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -5812,7 +5868,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     const titre=t(enCours?'dtk_share_titre_encours':'dtk_share_titre');
     ctx.font='800 84px '+SORA;
-    if(enCours){
+    if(perdu){
+      const jouees=(tk.legs||[]).filter(l=>l.result!=='void');
+      const nbOk=jouees.filter(l=>l.result==='won').length;
+      ctx.textAlign='center';
+      g=ctx.createLinearGradient(0,240,0,400);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
+      ctx.fillStyle=g;ctx.font='800 170px '+SORA;ctx.fillText(nbOk+'/'+jouees.length,W/2,395);
+      ctx.fillStyle='#FFFFFF';ctx.font='800 64px '+SORA;ctx.fillText(t('dtk_share_titre_perdu'),W/2,478);
+      ctx.textAlign='left';
+    }else if(enCours){
       ctx.textAlign='center';ctx.fillStyle='#E8CE8A';ctx.fillText(titre,W/2,360);ctx.textAlign='left';
     }else{
       // Trophee dore (meme dessin que la carte Telegram) + grand titre blanc.
@@ -5844,8 +5908,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const yDebut=enCours?480:575,espace=enCours?1130:1035;
     let y=yDebut+Math.max(0,(espace-(nAff*HL+300))/2);
     legs.slice(0,MAX).forEach(lg=>{
-      ctx.fillStyle=enCours?'rgba(255,255,255,.04)':'rgba(4,23,13,.55)';rr(X,y,LW,HL-18,28);ctx.fill();
-      ctx.strokeStyle=enCours?'rgba(255,255,255,.08)':'rgba(46,212,127,.35)';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=sombre?'rgba(255,255,255,.04)':'rgba(4,23,13,.55)';rr(X,y,LW,HL-18,28);ctx.fill();
+      ctx.strokeStyle=sombre?'rgba(255,255,255,.08)':'rgba(46,212,127,.35)';ctx.lineWidth=2;ctx.stroke();
       if(!enCours){ctx.fillStyle=lg.result==='lost'?'#F0735E':lg.result==='void'?'#8F9BB0':'#2ED47F';rr(X,y,12,HL-18,6);ctx.fill();}
       const cx=X+58,cy=y+(HL-18)/2,res=lg.result;
       if(enCours){
@@ -5868,9 +5932,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ctx.textAlign='left';
       ctx.fillStyle='#F4F3ED';ctx.font='700 36px '+INTER;ctx.fillText(tronqueTexte(lg.match||'',30),X+112,y+50);
       const ligue=(String(lg.league||'')+(lg.leagueCountry?' ('+lg.leagueCountry+')':'')).toUpperCase();
-      ctx.fillStyle=enCours?'#6F7C92':'#8FD9AE';ctx.font='600 21px '+INTER;ctx.fillText(tronqueTexte(ligue,42),X+112,y+84);
+      ctx.fillStyle=sombre?'#6F7C92':'#8FD9AE';ctx.font='600 21px '+INTER;ctx.fillText(tronqueTexte(ligue,42),X+112,y+84);
       const pickTxt=String(lg.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
-      ctx.fillStyle=enCours?'#C9CED8':'#D9F5E5';ctx.font='500 27px '+INTER;ctx.fillText(tronqueTexte(pickTxt,36),X+112,y+118);
+      ctx.fillStyle=sombre?'#C9CED8':'#D9F5E5';ctx.font='500 27px '+INTER;ctx.fillText(tronqueTexte(pickTxt,36),X+112,y+118);
       ctx.textAlign='right';ctx.fillStyle='#E8CE8A';ctx.font='800 44px '+SORA;ctx.fillText(Number(lg.odd).toFixed(2),X+LW-34,y+82);
       y+=HL;
     });
@@ -5881,9 +5945,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     // Cote totale
     ctx.textAlign='center';
-    ctx.fillStyle=enCours?'#8F9BB0':'#BDEFD3';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
+    ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
     g=ctx.createLinearGradient(0,y+110,0,y+240);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
-    ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText(totalOdd(tk).toFixed(2),W/2,y+235);
+    ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText((perdu&&tk.totalOdd?Number(tk.totalOdd):totalOdd(tk)).toFixed(2),W/2,y+235);
 
     // Bandeau lien (lien de parrainage s'il existe, sinon le site)
     const lien=lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com';
@@ -5892,7 +5956,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.font='700 30px '+INTER;ctx.globalAlpha=.85;ctx.fillText(t('share_cta_sub'),W/2,1758);ctx.globalAlpha=1;
 
     // Mention responsable, jamais omise
-    ctx.fillStyle=enCours?'#6F7C92':'#8FD9AE';ctx.font='500 26px '+INTER;ctx.fillText(t('dtk_share_mention'),W/2,H-50);
+    ctx.fillStyle=sombre?'#6F7C92':'#8FD9AE';ctx.font='500 26px '+INTER;ctx.fillText(t('dtk_share_mention'),W/2,H-50);
 
     return new Promise(resolve=>cv.toBlob(resolve,'image/png',0.95));
   }
@@ -5909,7 +5973,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(!blob)throw new Error('image');
       const fichier=new File([blob],'vip-betcote-ticket.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[fichier]})){
-        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t((tk&&tk.enCours)?'dtk_share_texte_encours':'dtk_share_texte')+' '+('https://'+(lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
+        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t((tk&&tk.enCours)?'dtk_share_texte_encours':(tk&&tk.perdu)?'dtk_share_texte_perdu':'dtk_share_texte')+' '+('https://'+(lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
       }else{
         // Repli (29/08) : navigateur sans partage de fichier (surtout
         // desktop) -- telechargement direct plutot que rien.
@@ -7571,16 +7635,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Dashboard malgre la demande explicite de sortie.
     // 18/10 : les donnees gardees pour le mode hors ligne sont effacees.
     if(window.VB_horsLigneOff)window.VB_horsLigneOff();
+    // 19/10 : le parcours et l'ancien registre local du compte qui sort sont effaces.
+    try{if(window.VB_oublierCompteLocal)window.VB_oublierCompteLocal();}catch(e){}
     try{
       if(window.VB_getSupabase){
         const sb=window.VB_getSupabase();
         // Sans reseau, Supabase ne peut pas fermer la session : on l'efface
         // nous-memes du telephone, sinon l'app la rouvrirait au prochain lancement.
-        if(navigator.onLine===false&&sb&&sb.auth&&sb.auth.storageKey){
-          try{localStorage.removeItem(sb.auth.storageKey);}catch(e){}
-          try{sessionStorage.removeItem(sb.auth.storageKey);}catch(e){}
-        }
-        if(sb&&sb.auth&&typeof sb.auth.signOut==='function')sb.auth.signOut().catch(()=>{});
+        // 19/10 : idem si la deconnexion Supabase echoue en ligne (reseau instable).
+        // Seule la session qui sort est effacee, jamais celle d'un compte connecte entre-temps.
+        const cleS=sb&&sb.auth&&sb.auth.storageKey;
+        const jetonDe=st=>{try{const s=JSON.parse(st.getItem(cleS)||'null');return s&&s.refresh_token||null;}catch(e){return null;}};
+        const jetonSortant=cleS?(jetonDe(localStorage)||jetonDe(sessionStorage)):null;
+        const effacerSession=()=>{
+          if(!cleS)return;
+          [localStorage,sessionStorage].forEach(st=>{try{const j=jetonDe(st);if(j&&jetonSortant&&j===jetonSortant)st.removeItem(cleS);}catch(e){}});
+        };
+        if(navigator.onLine===false)effacerSession();
+        if(sb&&sb.auth&&typeof sb.auth.signOut==='function')sb.auth.signOut().catch(()=>{}).then(effacerSession);
       }
     }catch(e){ /* la sortie visuelle ne doit jamais dependre de ca */ }
   });
@@ -7888,7 +7960,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{
       if(window.VB_getSupabase){
         const sb=window.VB_getSupabase();
-        if(sb&&sb.auth&&typeof sb.auth.signOut==='function')sb.auth.signOut().catch(()=>{});
+        // 19/10 : la session est toujours effacee de l'appareil, meme si Supabase ne repond pas.
+        // Seule la session qui sort est effacee, jamais celle d'un compte connecte entre-temps.
+        const cleS=sb&&sb.auth&&sb.auth.storageKey;
+        const jetonDe=st=>{try{const s=JSON.parse(st.getItem(cleS)||'null');return s&&s.refresh_token||null;}catch(e){return null;}};
+        const jetonSortant=cleS?(jetonDe(localStorage)||jetonDe(sessionStorage)):null;
+        const effacerSession=()=>{
+          if(!cleS)return;
+          [localStorage,sessionStorage].forEach(st=>{try{const j=jetonDe(st);if(j&&jetonSortant&&j===jetonSortant)st.removeItem(cleS);}catch(e){}});
+        };
+        if(sb&&sb.auth&&typeof sb.auth.signOut==='function')sb.auth.signOut().catch(()=>{}).then(effacerSession);
       }
     }catch(e){ /* la sortie du dashboard ne doit jamais dependre de ca */ }
     // Redirection securisee vers la page de connexion du site.
@@ -10603,7 +10684,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<span class="admf-card-total">'+Number(tk.total_odd||0).toFixed(2)+'</span>'+
       '</div>'+
       (ficheTerminee
-        ?(tk.status==='won'?'<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'">'+t('adm_fiche_partager')+'</button>':'')
+        ?(tk.status==='won'?'<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'">'+t('adm_fiche_partager')+'</button>'
+          // 19/10 : fiche perdue, partage reserve a l'admin (vrais resultats, cote inchangee)
+          :tk.status==='lost'?'<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-perdu="1">'+t('adm_fiche_partager')+'</button>':'')
         :(ficheBloquee?'':'<button type="button" class="admf-edit" data-editfid="'+tk.id+'">'+t('adm_fiche_leg_edit')+'</button>')+
          '<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-encours="1">'+t('adm_fiche_partager')+'</button>')+
     '</div>';
@@ -10958,7 +11041,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           try{
             const enCours=b.dataset.encours==='1';
             await window.VB_partagerTicket({sport:tk.sport,scoreCount:Number(tk.score_legs_count)||0,legsCount:Number(tk.legs_count)||ls.length,
-              totalOdd:Number(tk.total_odd)||0,enCours:enCours,
+              totalOdd:Number(tk.total_odd)||0,enCours:enCours,perdu:b.dataset.perdu==='1',
               legs:ls.map(l=>({match:l.match_label||'',league:l.league||'',leagueCountry:l.league_country||'',pick:l.pick||'',odd:Number(l.odd)||0,
                 result:enCours?null:(l.result||null),kickoff:l.kickoff_at||null,heure:l.kickoff_at?'':(l.match_time||'')}))},
               {lien:'vipbetcote.com'});
@@ -11830,7 +11913,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           return '<li'+(l.result==='lost'?' class="wf-perdu"':'')+'><span class="'+(l.result==='lost'?'wf-ko':'wf-ok')+'" aria-hidden="true"></span><span class="wf-m"><b>'+echapper(l.match_label)+'</b><small>'+echapper(pick)+'</small></span><em>'+(isFinite(cote)?cote.toFixed(2):'')+'</em></li>';
         }).join('');
         const reste=sel.length-3;
-        const total=Number(f.total_odd);
+        // 19/10 (3) : fiche score exact, la cote est le produit des seuls matchs gagnes.
+        const coteGagnee=tous.filter(l=>l.result==='won').reduce((p,l)=>p*(Number(l.odd)||1),1);
+        const total=(exact&&nbOk)?Math.round(coteGagnee*100)/100:Number(f.total_odd);
         let date='';
         try{date=new Date(f.play_date+'T12:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){date=f.play_date;}
         return '<article class="win win-auto" data-fiche="'+echapper(f.id)+'"><div class="wf">'+
@@ -12049,7 +12134,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         if(ev.key==='Backspace'&&!inp.value&&i>0)inputs[i-1].focus();
       });
       inp.addEventListener('paste',ev=>{
-        const dd=(ev.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+        const cb=ev.clipboardData||window.clipboardData;const dd=(cb&&typeof cb.getData==='function'?String(cb.getData('text')||''):'').replace(/\D/g,'');
         if(!dd)return;
         ev.preventDefault();
         dd.split('').slice(0,6).forEach((c,k)=>{if(inputs[k])inputs[k].value=c});
@@ -13334,6 +13419,11 @@ window.addEventListener('pageshow',(ev)=>{
   if(itemMenu)itemMenu.addEventListener('click',()=>installer());
   document.querySelectorAll('[data-install]').forEach(b=>b.addEventListener('click',()=>installer(b.dataset.install)));
   document.getElementById('vbIosOk').addEventListener('click',fermerFiche);
+  // 19/10 : bouton × du nouveau cadre ; un toucher sur le cadre le garde ouvert le temps de lire.
+  const btnX=document.getElementById('vbIosX');
+  if(btnX)btnX.addEventListener('click',fermerFiche);
+  const carte=ficheIos.querySelector('.vbios-card');
+  if(carte)carte.addEventListener('pointerdown',()=>clearTimeout(minuterie));
   ficheIos.addEventListener('click',e=>{if(e.target===ficheIos)fermerFiche();});
 
   rafraichir();

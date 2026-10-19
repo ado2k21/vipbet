@@ -516,16 +516,28 @@ details p{
 .lp-store-btn small{font-size:7.5px;font-weight:800;letter-spacing:.14em;color:rgba(244,243,237,.6)}
 .lp-store-btn b{font-family:'Sora',sans-serif;font-size:12.5px;font-weight:800;margin-top:1px;white-space:nowrap}
 @media (min-width:900px){.lp-store{justify-content:flex-start}}
-.vbios{position:fixed;inset:0;z-index:360;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6)}
-.vbios-card{width:100%;max-width:330px;margin:10px;margin-bottom:calc(10px + env(safe-area-inset-bottom));padding:12px 12px 10px;border-radius:14px;background:#0a1124;border:1px solid rgba(244,243,237,.12);color:var(--blanc);text-align:center}
-.vbios-card img{display:none}
-.vbios-card h3{font-size:13.5px;line-height:1.3;margin-bottom:4px}
-.vbios-intro{font-size:11.5px;line-height:1.4;color:rgba(244,243,237,.65);margin:0 0 8px}
+/* 19/10 (3) : cadre en bas, arriere-plan ni assombri ni floute */
+.vbios{position:fixed;inset:0;z-index:360;display:flex;align-items:flex-end;justify-content:center;padding:10px 10px calc(10px + env(safe-area-inset-bottom));background:transparent}
+/* 19/10 : cadre large, icone carree, titre court, texte, etapes, lien d'action (format demande) */
+.vbios-card{position:relative;display:grid;grid-template-columns:auto 1fr;column-gap:13px;align-items:start;width:100%;max-width:640px;padding:12px 14px 10px;border-radius:22px;background:linear-gradient(160deg,#171b2b 0%,#0d1020 100%);border:1.5px solid rgba(232,206,138,.38);box-shadow:0 20px 50px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);color:var(--blanc);text-align:left;animation:vbiosIn .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes vbiosIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.vbios-card{animation:none}}
+/* 19/10 (2) : plus court, icone et textes plus petits, textes sur toute la largeur */
+.vbios-ico{grid-row:1;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,#FFE27A 0%,#F2B93B 100%);color:#17140a;box-shadow:0 4px 12px rgba(242,185,59,.25)}
+.vbios-ico svg{width:19px;height:19px}
+.vbios-x{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:rgba(244,243,237,.55);cursor:pointer}
+.vbios-x svg{width:18px;height:18px}
+.vbios-x:hover,.vbios-x:focus-visible{background:rgba(244,243,237,.08);color:var(--blanc)}
+.vbios-corps{display:contents}
+.vbios-card h3{grid-column:2;grid-row:1;align-self:center;padding-right:30px;min-width:0;font-family:Sora,Inter,sans-serif;font-weight:800;font-size:15.5px;line-height:1.25;margin:0;color:#fff}
+.vbios-intro{grid-column:1/-1;font-size:12.5px;line-height:1.4;color:rgba(244,243,237,.68);margin:8px 0 7px}
 .vbios-intro[hidden]{display:none!important}
-.vbios-card ol{list-style:none;text-align:left;margin:0 0 8px;padding:0;display:grid;gap:4px}
-.vbios-card li{display:flex;align-items:center;gap:7px;font-size:12px;line-height:1.25;padding:6px 8px;border-radius:8px;background:rgba(244,243,237,.05)}
-.vbios-card li svg{flex:0 0 auto;width:15px;height:15px;color:#4aa3ff}
-.vbios-ok{width:100%;border:0;border-radius:8px;padding:7px;background:var(--vert);color:#04130b;font-weight:700;font-size:12.5px;cursor:pointer}
+.vbios-card ol{grid-column:1/-1;list-style:none;margin:0 0 4px;padding:0;display:grid;gap:4px}
+.vbios-card li{display:flex;align-items:center;gap:9px;font-size:12px;line-height:1.3;color:rgba(244,243,237,.9);padding:5px 9px;border-radius:9px;background:rgba(244,243,237,.045);border:1px solid rgba(244,243,237,.06)}
+.vbios-card li b{color:#fff}
+.vbios-card li svg{flex:0 0 auto;width:14px;height:14px;color:#E8CE8A}
+.vbios-ok{grid-column:1/-1;justify-self:start;display:inline-flex;align-items:center;gap:7px;border:0;padding:4px 0;background:none;color:#E8CE8A;font-family:Sora,Inter,sans-serif;font-weight:800;font-size:13.5px;cursor:pointer}
+.vbios-ok:hover,.vbios-ok:focus-visible{color:#FFE08A}
 .mnav-install{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:13px;border-radius:12px;border:1px solid rgba(23,168,96,.45);background:rgba(23,168,96,.12);color:var(--blanc);font-weight:700;font-size:14px;cursor:pointer}
 
 /* ---------- ANIMATION DE LANCEMENT ---------- */
@@ -6532,8 +6544,11 @@ html.vb-app .authpage:not(:has(#authModeWizard.renew.on)) .authpage-close{displa
 <!-- Application installable (17/10) : explication d'installation (ouverte seulement au clic) -->
 <div class="vbios" id="vbIosSheet" role="dialog" aria-labelledby="vbIosT" hidden>
   <div class="vbios-card">
-    <img src="assets/app/icon-192.png?v=20261018" alt="" width="56" height="56">
-    <h3 id="vbIosT" data-i18n="app_ios_title">Ajoute VIPBETCOTE sou ekran akèy ou</h3>
+    <!-- 19/10 : nouveau cadre (icone carree, titre court, texte, etapes, lien d'action) -->
+    <span class="vbios-ico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18h3"/></svg></span>
+    <button type="button" class="vbios-x" id="vbIosX" aria-label="Fermer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="vbios-corps">
+    <h3 id="vbIosT" data-i18n="app_sheet_title">App la prèske fini</h3>
     <p class="vbios-intro" id="vbIntroIos" data-i18n="app_intro_ios">Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.</p>
     <p class="vbios-intro" id="vbIntroAndroid" data-i18n="app_intro_android" hidden>Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.</p>
     <ol id="vbStepsIos">
@@ -6546,9 +6561,10 @@ html.vb-app .authpage:not(:has(#authModeWizard.renew.on)) .authpage-close{displa
       <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span data-i18n="app_and_s2">Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b></span></li>
       <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span data-i18n="app_and_s3">Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou</span></li>
     </ol>
-    <button type="button" class="vbios-ok" id="vbIosOk" data-i18n="app_ios_ok">Mwen konprann</button>
+    <button type="button" class="vbios-ok" id="vbIosOk"><span data-i18n="app_ios_ok">Mwen konprann</span> <span aria-hidden="true">→</span></button>
+    </div>
   </div>
 </div>
-<script src="app.js?v=20261019e"></script>
+<script src="app.js?v=20261019f"></script>
 </body>
 </html>

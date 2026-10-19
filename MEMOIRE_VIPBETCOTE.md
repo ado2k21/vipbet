@@ -1,6 +1,6 @@
 # VIPBETCOTE — Mémoire et roadmap (à coller au début d'une nouvelle conversation)
 
-*Mis à jour le 19/10/2026 (soir).*
+*Mis à jour le 19/10/2026 (nuit).*
 
 ---
 
@@ -76,6 +76,8 @@
     - **www → apex** : règle Cloudflare (Redirect Rule), jamais dans le code.
     - **betcote.netlify.app → vipbetcote.com** : uniquement dans le navigateur, avec `domaine.js`.
 15. **Écran de démarrage iPhone** : les nouvelles images n'apparaissent qu'après avoir supprimé puis rajouté l'app. Les liens `apple-touch-startup-image` portent `?v=`.
+16. **Connexion** : le message « Imèl oswa modpas pa kòrèk » ne vient QUE de Supabase (`invalid_credentials`). L'ancien registre local `vipbetcote.accounts.v1` (démo) ne doit jamais refuser ni ouvrir un compte quand Supabase a répondu. Le formulaire attend Supabase (8 s max) avant tout repli. Cause des refus « mot de passe incorrect » dans l'app (b9986969, admin) : Supabase pas encore chargé → repli sur une vieille copie locale. Aucune tentative n'atteignait Supabase.
+17. **Déconnexion** : efface le parcours `vipbetcote.signup.v1`, l'entrée du compte dans l'ancien registre local et la session Supabase de l'appareil (seulement la session qui sort, comparée par `refresh_token`).
 
 ---
 
@@ -91,9 +93,17 @@
   - **app installée** : un seul écran de lancement, l'animation de chargement (`.vbsplash`) gardée tant que `vb-app-demarrage` est actif ; 13 nouveaux écrans de démarrage iPhone (première image de l'animation), liens en `?v=20261019` ;
   - `app.js?v=20261019e`.
 
-**Prêt en local, PAS sur git** (attend « Met sur git ») :
-- `domaine.js` (nouveau) + `<script src="/domaine.js">` juste après le charset dans `index.html`. Si l'adresse est exactement `betcote.netlify.app`, redirection **dans le navigateur** vers `https://vipbetcote.com` + chemin, paramètres et `#`. Aucune redirection si l'app est installée.
-- Testé : pas de boucle sur vipbetcote.com, `main--betcote.netlify.app` inchangé. **Ne jamais remplacer par une redirection netlify.toml.**
+**Sur git et déployé** : `1ca3147` (`domaine.js`), vérifié sur Netlify (`commit_ref`).
+
+**Sur git le 19/10 (nuit), à déployer par l'utilisateur puis vérifier `commit_ref`** (`app.js?v=20261019f`) :
+- collage du code OTP : presse-papiers vérifié avant `getData` (3 champs) ;
+- landing, fiche score exact gagnée : cote = **produit des seuls matchs gagnés** (18 oct. : 6.50 au lieu de 268.12). `total_odd` en base inchangé ;
+- connexion : messages précis (mauvais identifiants / trop de tentatives / email non confirmé / erreur serveur / hors ligne / email invalide) ; attente de Supabase ; plus de « mot de passe incorrect » venant du registre local ;
+- déconnexion utilisateur et admin : plus aucune donnée du compte sortant sur l'appareil ;
+- historique admin : bouton « Pataje kat la » sur les fiches **perdues** (admin seulement) : « 3/5 MATCH GENYEN », ✓/✗ réels, cote totale de la fiche inchangée, fond sombre ;
+- cadre « installer l'app » refait (format AyiPay) : en bas, arrière-plan net, icône dorée 36 px, titre « App la prèske fini », 3 étapes, « Mwen konprann → », bouton ×, fermeture auto 4 s (un toucher la suspend).
+
+**Attend l'accord de l'utilisateur (backend)** : même règle de cote (produit des matchs gagnés) pour le score exact dans Telegram (`telegram-public.js:54/86`, `telegram-relais.js:122`).
 
 **Cloudflare** (fait par l'utilisateur le 19/10) :
 - Redirect Rule `https://www.vipbetcote.com/*` → `https://vipbetcote.com/${1}`, code 301, paramètres gardés. Vérifiée.
@@ -118,7 +128,7 @@
 ## 5. Roadmap
 
 ### Priorité 1 — tout de suite
-1. « Met sur git » de `domaine.js`, puis déploiement et vérification de `commit_ref` (MCP Netlify, site betcote).
+1. Déploiement des changements du 19/10 (nuit) par l'utilisateur, puis vérification de `commit_ref` (MCP Netlify, site betcote). Sur iPhone : supprimer puis rajouter l'app (efface l'ancien registre local), tester la connexion admin et b9986969 dans l'app.
 2. Tests sur iPhone :
    - **Google** : effacer les données Safari, puis **Konekte → Google** ; le tableau de bord doit s'ouvrir.
    - **App** : la supprimer puis la rajouter ; un seul écran de lancement.
@@ -131,11 +141,11 @@
 6. Site Netlify `vipbet1` (autre compte) : vérifier qu'il est bien supprimé.
 
 ### Priorité 2 — corrections rapides
-7. **Collage du code OTP** (erreur Sentry `getData`) : vérifier que le presse-papiers existe avant de l'utiliser.
+7. ~~Collage du code OTP~~ : fait le 19/10.
 8. **Bot basket** : traiter « Too many requests » comme une limite par minute (pause puis nouvel essai).
 9. **Alerte de surveillance** : ne plus conseiller de « supprimer un site » quand c'est une limite par minute.
 10. **Mode hors ligne de l'app** : le tableau de bord doit s'afficher à partir des données gardées en mémoire. À revérifier.
-11. **Score exact** : la « cote totale » affichée pour une fiche gagnée 1/3 est le produit des 3 cotes. À discuter avec l'utilisateur, sans rien changer sans accord.
+11. **Score exact** : décision de l'utilisateur : cote = produit des matchs gagnés. Fait sur le landing ; Telegram en attente d'accord (backend).
 
 ### Priorité 3 — application
 12. Écrans « vérification email » et « plan et paiement » : les mettre au nouveau style, avec un aperçu d'abord.
