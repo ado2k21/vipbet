@@ -4834,6 +4834,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }catch(e){
         loginBtn.disabled=false;
         reseauKO=true;
+        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('connexion_exception',(e&&e.message)||String(e));
       }
     }
 
@@ -4873,7 +4874,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       showStep(pageDe(requiredStep(state)));
       return;
     }
-    setErr(id.closest('.field'),(reseauKO||navigator.onLine===false)?'auth_err_offline':'auth_err_nouser');
+    // Jamais « mot de passe incorrect » quand Supabase n'a pas repondu clairement (erreur technique/reseau).
+    setErr(id.closest('.field'),navigator.onLine===false?'auth_err_offline':(reseauKO?'auth_err_serveur':'auth_err_nouser'));
   });
 
   /* ================= OUVERTURE / FERMETURE ================= */
@@ -11668,7 +11670,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const lireS=(st,k)=>{try{return st.getItem(k);}catch(e){return null;}};
       const gardeValide=()=>{const t=Number(lireS(localStorage,CLE_SONJE)||0);return t>Date.now();};
       // Choix de l'onglet : '1' = session gardee, '0' = par onglet (explicite), rien = pas encore choisi.
-      const ongletGarde=()=>lireS(sessionStorage,CLE_ONGLET)==='1';
+      /* 19/10 : application ajoutee a l'ecran d'accueil (iPhone/Android) : pas d'onglets multiples,
+         et iOS vide sessionStorage quand il ferme l'app ou recharge la page (selecteur photo) —
+         la session se perdait (« Sesyon ou fini »). On la garde donc sur l'appareil, sauf admin. */
+      const modeApp=()=>{try{return window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);}catch(e){return false;}};
+      const ongletGarde=()=>{const c=lireS(sessionStorage,CLE_ONGLET);return c==='1'||(c===null&&modeApp()&&gardeValide());};
       const ongletParOnglet=()=>lireS(sessionStorage,CLE_ONGLET)==='0';
       const stockage={
         getItem(k){
@@ -11695,6 +11701,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       /* Avant une connexion par mot de passe : choisit ou la session sera gardee. */
       window.VB_sessionSonje=function(garder){
         try{
+          if(!garder&&modeApp())garder=true;
           if(garder){sessionStorage.setItem(CLE_ONGLET,'1');localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_SONJE));}
           else sessionStorage.setItem(CLE_ONGLET,'0');
         }catch(e){}
