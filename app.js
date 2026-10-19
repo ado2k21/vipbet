@@ -3952,29 +3952,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     try{
       const sb=window.VB_getSupabase&&window.VB_getSupabase();
-      /* 19/10 (nuit) — le dossier du recu est TOUJOURS celui du compte
-         reellement connecte (session), jamais un identifiant garde dans le
-         parcours : un autre compte connecte sur le meme telephone faisait
-         refuser l'envoi par la regle de securite du stockage (le recu partait
-         vers le dossier d'un compte, avec la session d'un autre). */
+      let uid=state.supabaseUserId;
       let session=null;
       if(sb){try{session=(await sb.auth.getSession()).data.session;}catch(e){}}
-      const uid=session&&session.user?session.user.id:null;
-      if(!sb||!uid||!session.access_token){
-        erreurManuelle(navigator.onLine===false?'wiz_m_err_reseau':'wiz_m_err_session');
+      if(sb&&!uid)uid=(session&&session.user)?session.user.id:null;
+      if(!sb||!uid){
+        /* Sans session, la policy storage refuserait de toute facon
+           l'upload : on echoue tout de suite avec un message clair plutot
+           que de laisser partir une requete vouee a un 403. */
+        erreurManuelle('wiz_m_err_upload');
         if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel','session absente a la soumission');
-        return;
-      }
-      if(state.supabaseUserId&&state.supabaseUserId!==uid){
-        erreurManuelle('wiz_m_err_compte');
-        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel','compte different : parcours '+state.supabaseUserId+' / session '+uid);
         return;
       }
 
       const ext=(manualFichier.type==='image/png')?'png':(manualFichier.type==='image/webp')?'webp':'jpg';
       const chemin=uid+'/'+state.payMethod+'-'+Date.now()+'.'+ext;
       // Envoi avec progression visible (pourcentage) ; echec annonce vite.
-      const envoi=await envoyerRecuAvecProgression(sb,session.access_token,chemin,manualFichier);
+      // Meme jeton que le client Supabase : celui de la session, sinon la cle publique.
+      const envoi=await envoyerRecuAvecProgression(sb,(session&&session.access_token)||sb.supabaseKey,chemin,manualFichier);
       if(!envoi.ok){
         erreurManuelle(envoi.reseau?'wiz_m_err_reseau':'wiz_m_err_upload');
         if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel_upload',envoi.message||'echec');
