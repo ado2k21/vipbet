@@ -1,6 +1,6 @@
 # VIPBETCOTE — Mémoire et roadmap (à coller au début d'une nouvelle conversation)
 
-*Mis à jour le 19/10/2026.*
+*Mis à jour le 19/10/2026 (soir).*
 
 ---
 
@@ -72,75 +72,80 @@
 11. **Score exact** : il s'arrête quand l'abonnement API-Sports est suspendu, car le relais BSD n'a pas ces cotes. Garder l'abonnement actif et `API_SPORTS_KEY` dans Netlify.
 12. **SQL via MCP** : les requêtes destructives expirent au bout de 60 s. Donner le SQL à l'utilisateur pour qu'il le lance dans le SQL Editor.
 13. **Tests locaux** : Playwright avec Chromium (`/opt/pw-browsers`), `serviceWorkers:'block'` dès qu'on intercepte les requêtes, et le vrai fichier UMD de supabase-js.
+14. **Redirections de domaine** :
+    - **www → apex** : règle Cloudflare (Redirect Rule), jamais dans le code.
+    - **betcote.netlify.app → vipbetcote.com** : uniquement dans le navigateur, avec `domaine.js`.
+15. **Écran de démarrage iPhone** : les nouvelles images n'apparaissent qu'après avoir supprimé puis rajouté l'app. Les liens `apple-touch-startup-image` portent `?v=`.
 
 ---
 
-## 4. État au 19/10
+## 4. État au 19/10 (soir)
 
-**Dernier commit sur git et déployé : `f9f38ca`** (retour Google reconnu par l'adresse, landing visible par les robots).
+**Sur git et déployé** :
+- `13a294b` : démarrage via `VB_quandPret` ; classes `vb-app` et `vb-bot` dans `app.js`.
+- `5cb6bdf` : sur git, **à déployer par l'utilisateur, puis à vérifier sur Netlify**. Il contient :
+  - **retour Google** : rechargement unique si l'adresse porte encore `#access_token` 8 s après l'arrivée (clé `vb_google_recharge`) ;
+  - **`?lang=fr` / `?lang=en`** : ouvrent directement la langue ; sans paramètre, créole ;
+  - **score exact, landing** : ✗ rouge sur les matchs perdus, badge « GENYEN 1/3 » ; si plus de 3 matchs, les gagnés d'abord ;
+  - **score exact, Telegram** (canal public et groupes VIP) : image « GAGNÉE 1/3 », sous-titre « 1 bon score sur 3 », légende et texte de secours avec « 1/3 » (`telegram-public.js`, `telegram-relais.js`, `lib/image-fiche.js`) ;
+  - **app installée** : un seul écran de lancement, l'animation de chargement (`.vbsplash`) gardée tant que `vb-app-demarrage` est actif ; 13 nouveaux écrans de démarrage iPhone (première image de l'animation), liens en `?v=20261019` ;
+  - `app.js?v=20261019e`.
 
-À noter : la partie robots de `f9f38ca` était dans un script inline, **bloqué par la CSP**. Elle ne marche qu'avec la correction ci-dessous.
+**Prêt en local, PAS sur git** (attend « Met sur git ») :
+- `domaine.js` (nouveau) + `<script src="/domaine.js">` juste après le charset dans `index.html`. Si l'adresse est exactement `betcote.netlify.app`, redirection **dans le navigateur** vers `https://vipbetcote.com` + chemin, paramètres et `#`. Aucune redirection si l'app est installée.
+- Testé : pas de boucle sur vipbetcote.com, `main--betcote.netlify.app` inchangé. **Ne jamais remplacer par une redirection netlify.toml.**
 
-**Prêt en local, PAS encore sur git** (attend « Met sur git ») : `app.js` et `index.html`, version **`20261019b`**.
-- Démarrage via `VB_quandPret`, sans attendre `load` : corrige « Google me renvoie sur le landing ».
-- Classes `vb-app` et `vb-bot` déplacées des scripts inline (bloqués) vers le haut de `app.js` : corrige l'écran sombre que voit Google.
+**Cloudflare** (fait par l'utilisateur le 19/10) :
+- Redirect Rule `https://www.vipbetcote.com/*` → `https://vipbetcote.com/${1}`, code 301, paramètres gardés. Vérifiée.
+- **Always Use HTTPS** : recommandé, à confirmer.
 
-Testé en local, Sentry bloqué :
-- un compte existant ouvre le tableau de bord ;
-- un nouveau compte Google ouvre la fenêtre de profil ;
-- la version déployée `f9f38ca`, elle, reste sur le landing.
+**Recherche Google** :
+- `site:vipbetcote.com` affichait encore une vieille copie de la page d'attente Namecheap (`http://www.vipbetcote.com`).
+- Search Console : la page `https://vipbetcote.com/` est indexée, canonique correcte, et le test en ligne montre le vrai landing.
+- Indexation à redemander, puis attendre quelques jours.
 
-Les tests de non-régression passent : rechargement, ouverture de l'app, aperçu au premier lancement, robots.
+**Retour Google** (journaux Supabase) :
+- Le login Google réussit, mais après le retour l'iPhone n'envoyait plus aucune requête.
+- Un rechargement manuel ouvrait la session, d'où le filet ajouté dans `5cb6bdf`.
+- À confirmer sur iPhone après déploiement. Si ça échoue : demander si l'adresse contient `#access_token`.
 
-Commandes prévues après « Met sur git » :
-```
-git add app.js index.html
-git commit -m "Demarrage sans attendre load (retour Google), classes vb-app/vb-bot dans app.js (CSP)"
-git push origin HEAD:main
-git push origin HEAD:claude/refonte-landing
-```
-Ajouter à la fin du message de commit les lignes d'attribution fournies dans la session.
+**Base** : politique RLS « selections des fiches gagnees visibles par tous » sur `ticket_legs`, active.
 
-**Fait récemment**
-- Les fiches gagnées s'ajoutent automatiquement au carrousel « Tickets gagnants » du landing (`chargerFichesGagnees` : 30 derniers jours, 6 au maximum), grâce à la politique RLS ci-dessus.
-- Aperçu en 3 écrans au premier lancement de l'app ; l'app ouvre la connexion ou le tableau de bord, jamais d'écran forcé.
-- Nouveau design de la connexion et de la création de compte, QR MonCash, écrans de démarrage iPhone, logo « terrain » vert.
-
-**Compte « b9986969… »** : plan p1 actif jusqu'au 22/10, confirmé par Stripe. Il s'affiche bien dans l'app ; sur le site, il devrait s'afficher après le déploiement de la correction et l'effacement des données Safari.
+**Compte « b9986969 »** : plan p1 actif jusqu'au 22/10.
 
 ---
 
 ## 5. Roadmap
 
 ### Priorité 1 — tout de suite
-1. « Met sur git » de la version `20261019b`, puis déploiement Netlify par l'utilisateur, puis vérification de `commit_ref`.
-2. Sur l'iPhone : effacer les données Safari de vipbetcote, puis tester **Konekte → Google** sur vipbetcote.com. On doit arriver au tableau de bord.
-3. Vérifier que le compte « b… » affiche son plan sur le site.
-4. Search Console :
-   - « Tester l'URL en ligne » : la capture doit montrer le landing, et non un écran sombre ;
-   - « Demander l'indexation » ;
-   - soumettre `sitemap.xml` sur la propriété **vipbetcote.com**.
-5. Optionnel : ajouter `https://vipbetcote.com/` et `https://www.vipbetcote.com/` (exacts) aux Redirect URLs de Supabase.
-6. Second site Netlify **`vipbet1`** (autre compte) : l'utilisateur le supprime. Avant, vérifier qu'il ne porte pas vipbetcote.com et qu'il ne reçoit aucun webhook.
+1. « Met sur git » de `domaine.js`, puis déploiement et vérification de `commit_ref` (MCP Netlify, site betcote).
+2. Tests sur iPhone :
+   - **Google** : effacer les données Safari, puis **Konekte → Google** ; le tableau de bord doit s'ouvrir.
+   - **App** : la supprimer puis la rajouter ; un seul écran de lancement.
+   - **Langue** : `vipbetcote.com/?lang=fr` s'affiche en français.
+   - **Netlify** : `betcote.netlify.app` mène à vipbetcote.com.
+   - **Landing** : la carte du 18 oct. affiche ✗ et 1/3.
+3. Search Console : demander l'indexation de `https://vipbetcote.com/`, soumettre le sitemap, suivre `site:vipbetcote.com`.
+4. Optionnel, seulement sur demande explicite : remplacer l'image déjà publiée sur le **canal public** Telegram pour la fiche score exact du 18 oct. (`message_id` dans `telegram_envois` du canal public). Impossible dans les groupes VIP : l'identifiant du message de résultat n'est pas gardé.
+5. Optionnel : ajouter `https://vipbetcote.com/` et `https://www.vipbetcote.com/` aux Redirect URLs de Supabase.
+6. Site Netlify `vipbet1` (autre compte) : vérifier qu'il est bien supprimé.
 
 ### Priorité 2 — corrections rapides
-7. **Collage du code OTP** (erreur Sentry `getData`) : vérifier que le presse-papiers existe avant de l'utiliser, aux endroits où le code est collé dans `app.js`.
-8. **Bot basket** : traiter « Too many requests » comme une limite par minute (pause d'une minute puis nouvel essai) au lieu d'ignorer le match.
+7. **Collage du code OTP** (erreur Sentry `getData`) : vérifier que le presse-papiers existe avant de l'utiliser.
+8. **Bot basket** : traiter « Too many requests » comme une limite par minute (pause puis nouvel essai).
 9. **Alerte de surveillance** : ne plus conseiller de « supprimer un site » quand c'est une limite par minute.
-10. Mode hors ligne de l'app : le tableau de bord doit s'afficher à partir des données gardées en mémoire. À revérifier après le déploiement.
+10. **Mode hors ligne de l'app** : le tableau de bord doit s'afficher à partir des données gardées en mémoire. À revérifier.
+11. **Score exact** : la « cote totale » affichée pour une fiche gagnée 1/3 est le produit des 3 cotes. À discuter avec l'utilisateur, sans rien changer sans accord.
 
 ### Priorité 3 — application
-11. Écrans « vérification email » et « plan et paiement » : les ajuster au nouveau style, avec un aperçu d'abord.
-12. Plus tard : vraies apps App Store et Google Play (TWA pour Android, Capacitor pour iOS).
+12. Écrans « vérification email » et « plan et paiement » : les mettre au nouveau style, avec un aperçu d'abord.
+13. Plus tard : vraies apps App Store et Google Play (TWA pour Android, Capacitor pour iOS).
 
 ### Priorité 4 — sécurité et exploitation
-13. Netlify :
-    - validation en 2 étapes ;
-    - variables secrètes marquées « sensibles » ;
-    - Deploy Previews désactivés si inutiles.
-14. GitHub : retirer les apps inutilisées (Vercel, Railway, Hostinger, Google AI Studio, Cloudflare Pages) et faire le ménage dans les vieilles branches.
-15. Quota API-Sports : revoir les horaires des bots et de `settle-results`, seulement quand l'utilisateur le demandera.
-16. Validation en 2 étapes sur `contact@vipbetcote.com` dès que Google le permettra.
+14. Netlify : validation en 2 étapes, variables secrètes « sensibles », Deploy Previews désactivés si inutiles.
+15. GitHub : retirer les apps inutilisées, faire le ménage dans les vieilles branches.
+16. Quota API-Sports : revoir les horaires des bots, seulement sur demande.
+17. Validation en 2 étapes sur `contact@vipbetcote.com`.
 
 ---
 
