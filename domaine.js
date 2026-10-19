@@ -6,6 +6,14 @@
    une redirection cote serveur tournait en boucle (18/10). Ici le navigateur voit
    « vipbetcote.com » dans ce cas, donc aucune boucle possible.
    L'application deja installee depuis betcote.netlify.app n'est pas touchee. */
+/* 20/10 — /login/ (barre finale) : les chemins relatifs (assets/, app.js)
+   viseraient /login/assets/... ; on retire la barre avant tout chargement. */
+(function(){
+  try{
+    var p=location.pathname;
+    if(p.length>1&&p.charAt(p.length-1)==='/')location.replace(p.replace(/\/+$/,'')+location.search+location.hash);
+  }catch(e){}
+})();
 (function(){
   try{
     if(location.hostname!=='betcote.netlify.app')return;

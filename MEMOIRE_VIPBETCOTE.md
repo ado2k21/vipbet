@@ -79,7 +79,9 @@
 18. **Reçu de paiement manuel** : le dossier du fichier (`payment-proofs/{uid}/…`) vient TOUJOURS de la session réellement ouverte, jamais de `state.supabaseUserId` (sinon refus RLS quand un autre compte est connecté sur le même téléphone). Envoi par XMLHttpRequest avec progression %, délai 90 s, message « Echèk » ; le paiement n'est créé qu'après l'envoi réussi, et seulement au clic sur « Soumèt resi a ».
 19. **Montée en charge** : Supabase en offre GRATUITE (200 connexions temps réel max). Le landing n'ouvre plus de temps réel pour les visiteurs anonymes ; aucune lecture périodique quand l'onglet est caché. Recommandé : Supabase Pro + vérifier la limite Resend (100 emails/jour en gratuit).
 20. **Carte de partage** (`genererImageTicketGagnant`) : mise en page adaptative jusqu'à 14 matchs ; ne jamais revenir à des lignes fixes de 150 px.
-21. **Icône écran d'accueil** : `assets/apple-touch-icon.png` (C1 : fond bleu ardoise #4A5570→#262E40, logo #2ED47F). Sert UNIQUEMENT au raccourci écran d'accueil.
+21. **Icône écran d'accueil** : `assets/apple-touch-icon.png` (C1 : fond bleu ardoise #4A5570→#262E40, logo #2ED47F). Sert au raccourci écran d'accueil ET, depuis le 20/10, d'icône d'onglet/Google (`assets/favicon.ico`, `assets/favicon-512.png`, `/favicon.ico` à la racine) : l'icône doit TOUJOURS être l'icône app C1.
+22. **Adresses directes (sitelinks Google)** : `/signup`, `/login`, `/winning-tickets`, `/pricing`, `/how-it-works`, `/faq` (+ `/plan`, `/plans`, `/abonnements`). Réécritures 200 vers index.html dans `netlify.toml` ; `app.js` (bloc « Routage simple ») ouvre la section, change titre/description/canonique. Menu et pied de page pointent vers ces adresses (le gestionnaire d'ancres les fait défiler sans rechargement). `domaine.js` retire la barre finale (`/login/` casserait les chemins relatifs). Listées dans `sitemap.xml`. Mots en ANGLAIS (choix de l'utilisateur).
+23. **Bande du landing sous la barre Safari iOS** : quand une page plein écran est ouverte (`.authpage/.dash/.legalpage/.faqpage.open`), le landing est masqué en CSS (`body:has(...)`).
 
 ---
 

@@ -235,3 +235,54 @@
 # Parrainage : attribution / application des jours offerts (additif) — voir parrainage-recompenses.js
 [functions."parrainage-recompenses"]
   schedule = "*/15 * * * *"
+
+# ============================================================================
+# 20/10 — Adresses directes (liens Google / sitelinks). Le site reste une page
+# unique : chaque adresse sert index.html (statut 200 = reecriture, PAS de
+# redirection, l'adresse reste visible) et app.js ouvre la section
+# correspondante avec son propre titre et sa propre adresse canonique.
+# ============================================================================
+[[redirects]]
+  from = "/login"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/winning-tickets"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/pricing"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/how-it-works"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/faq"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/plan"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/plans"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/abonnements"
+  to = "/index.html"
+  status = 200

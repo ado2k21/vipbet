@@ -1792,8 +1792,12 @@ burger.addEventListener('click',()=>{
 mnav.querySelectorAll('a,button').forEach(el=>el.addEventListener('click',closeMenu));
 
 // ---------- Ancres du menu : fermeture puis defilement vers la section ----------
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  const id=a.getAttribute('href');
+// 20/10 : certains liens portent une vraie adresse (/pricing...) pour Google ;
+// sur le site, ils defilent vers la section comme une ancre.
+const VB_CHEMIN_SECTION={'/winning-tickets':'#tickets','/pricing':'#abonnements','/how-it-works':'#kijan'};
+document.querySelectorAll('a[href^="#"],a[href^="/"]').forEach(a=>{
+  const href=a.getAttribute('href');
+  const id=href&&href.charAt(0)==='/'?VB_CHEMIN_SECTION[href]:href;
   if(!id||id.length<2)return;                 // le logo (href="#") est ignore
   const target=document.querySelector(id);
   if(!target)return;
@@ -1802,7 +1806,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
     if(mnav.classList.contains('on'))closeMenu();
     requestAnimationFrame(()=>{
       target.scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
-      if(history.replaceState)history.replaceState(null,'',id);
+      if(history.replaceState)history.replaceState(null,'',href);
     });
   });
 });
@@ -12744,26 +12748,54 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 })();
 
 /* ---------- Routage simple : hero par defaut, sauf lien direct connu ----------
-   Le site reste une page unique (pas de vrai routage serveur) : par
-   defaut, ouvrir le site atterrit toujours en haut (comportement naturel
-   du navigateur). Les chemins ci-dessous sont l'EXCEPTION explicite —
-   necessitent une redirection Netlify vers index.html pour ne pas
-   renvoyer une 404 (voir netlify.toml). */
+   Le site reste une page unique. Les chemins ci-dessous sont l'EXCEPTION
+   explicite : Netlify les sert avec index.html (statut 200, voir
+   netlify.toml) et on ouvre ici la section ou la page correspondante.
+   20/10 : adresses en anglais pour les liens Google (sitelinks), chacune avec
+   son titre, sa description et son adresse canonique propres. */
 (function(){
   const ROUTES={
-    '/plan':'abonnements', '/plans':'abonnements', '/abonnements':'abonnements',
-    '/faq':'faqpage'
+    '/login':{ouvrir:'[data-auth-open=login]',titre:'Log in – VIPBETCOTE',desc:'Konekte sou kont VIPBETCOTE ou pou wè fich ou yo chak jou. Jwe ak kontwòl.'},
+    '/signup':{ouvrir:'[data-auth-open=signup]',titre:'Sign up – VIPBETCOTE',desc:'Kreye kont VIPBETCOTE ou an kèk minit epi resevwa fich foutbòl analize chak jou. Jwe ak kontwòl.'},
+    '/winning-tickets':{sec:'tickets',titre:'Winning tickets – VIPBETCOTE',desc:'Fich ki genyen yo : prèv rezilta VIPBETCOTE pou ParyajPam, ParyajLakay ak 1xBet. Jwe ak kontwòl.'},
+    '/pricing':{sec:'abonnements',titre:'Pricing – VIPBETCOTE',desc:'Plan ak pri abònman VIPBETCOTE : chwazi plan ki bon pou ou. Jwe ak kontwòl.'},
+    '/how-it-works':{sec:'kijan',titre:'How it works – VIPBETCOTE',desc:'Kijan VIPBETCOTE mache : enskri, chwazi plan ou, resevwa fich yo chak jou. Jwe ak kontwòl.'},
+    '/faq':{ouvrir:'[data-faq-open]',titre:'FAQ – VIPBETCOTE',desc:'Kesyon yo poze plis sou VIPBETCOTE : abònman, peman, fich. Jwe ak kontwòl.'},
+    '/plan':{sec:'abonnements'}, '/plans':{sec:'abonnements'}, '/abonnements':{sec:'abonnements'}
   };
   const chemin=(window.location.pathname||'/').replace(/\/$/,'')||'/';
-  const cible=ROUTES[chemin];
-  if(cible){
-    const el=document.getElementById(cible);
-    if(el){
-      requestAnimationFrame(()=>el.scrollIntoView({behavior:'auto',block:'start'}));
+  const r=ROUTES[chemin];
+  if(!r)return; // aucune entree : sommet de la page (hero), rien a faire
+  try{
+    if(r.titre){
+      document.title=r.titre;
+      const url='https://vipbetcote.com'+chemin;
+      const maj=(sel,attr,val)=>{const el=document.querySelector(sel);if(el)el.setAttribute(attr,val);};
+      maj('link[rel=canonical]','href',url);
+      maj('meta[property="og:url"]','content',url);
+      maj('meta[property="og:title"]','content',r.titre);
+      maj('meta[name="twitter:title"]','content',r.titre);
+      maj('meta[name=description]','content',r.desc);
+      maj('meta[property="og:description"]','content',r.desc);
+      maj('meta[name="twitter:description"]','content',r.desc);
     }
+  }catch(e){}
+  if(r.sec){
+    const el=document.getElementById(r.sec);
+    if(el)requestAnimationFrame(()=>el.scrollIntoView({behavior:'auto',block:'start'}));
+  }else if(r.ouvrir){
+    // Connexion / inscription : jamais par-dessus un compte deja connecte
+    // (la restauration de session ouvre alors le tableau de bord).
+    if(r.ouvrir.indexOf('data-auth-open')>-1){
+      try{
+        for(const st of [localStorage,sessionStorage]){
+          for(let i=0;i<st.length;i++){const k=st.key(i);if(k&&/^sb-.*-auth-token$/.test(k)&&st.getItem(k))return;}
+        }
+      }catch(e){}
+    }
+    const b=document.querySelector(r.ouvrir);
+    if(b)b.click();
   }
-  // Aucune entree correspondante : comportement par defaut du navigateur
-  // (sommet de la page, c'est-a-dire le hero) — rien a faire de plus.
 })();
 
 /* ---------- Restauration de session au chargement ----------
