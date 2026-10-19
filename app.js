@@ -11662,6 +11662,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          (vb_sonje_onglet) ; un autre onglet sans session reprend la session
          gardee. Une connexion « par onglet » ne touche jamais la session gardee. */
       const CLE_SONJE='vb_sonje_jusqua', CLE_ONGLET='vb_sonje_onglet', DUREE_SONJE=30*86400000;
+      /* 19/10 (apres-midi) — regle de l'utilisateur : la session ne RESTE (30 jours) que si
+         « Sonje m » est cochee. Sans la case, elle est gardee sur l'appareil seulement
+         2 h apres la derniere activite (prolongee a chaque renouvellement du jeton) :
+         elle survit au selecteur de photo d'iOS pendant le paiement, mais fermer le site
+         et revenir plus tard redemande la connexion. Admin : toujours par onglet. */
+      const CLE_MODE='vb_sonje_mode', DUREE_COURTE=2*3600000;
+      const modeLong=()=>lireS(localStorage,CLE_MODE)==='long';
       const lireS=(st,k)=>{try{return st.getItem(k);}catch(e){return null;}};
       const gardeValide=()=>{const t=Number(lireS(localStorage,CLE_SONJE)||0);return t>Date.now();};
       // Choix de l'onglet : '1' = session gardee, '0' = par onglet (explicite), rien = pas encore choisi.
@@ -11681,16 +11688,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           if(v&&!ongletGarde())return v;
           if(ongletParOnglet())return v;   // jamais la session gardee dans un onglet « par onglet »
           if(gardeValide()){const g=lireS(localStorage,k);if(g){try{sessionStorage.setItem(CLE_ONGLET,'1');}catch(e){}return g;}}
-          else{try{localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);}catch(e){}}
+          else{try{localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);localStorage.removeItem(CLE_MODE);}catch(e){}}
           return v;
         },
         setItem(k,v){
-          if(ongletGarde()){try{if(!gardeValide())localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_SONJE));localStorage.setItem(k,v);}catch(e){}}
+          if(ongletGarde()){try{
+            // Sans « Sonje m » : delai de 2 h glissant (chaque renouvellement du jeton le prolonge).
+            if(!modeLong())localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_COURTE));
+            else if(!gardeValide())localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_SONJE));
+            localStorage.setItem(k,v);
+          }catch(e){}}
           else{try{sessionStorage.setItem(k,v);}catch(e){}}
         },
         removeItem(k){
           try{sessionStorage.removeItem(k);}catch(e){}
-          if(ongletGarde()){try{localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);sessionStorage.removeItem(CLE_ONGLET);}catch(e){}}
+          if(ongletGarde()){try{localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);localStorage.removeItem(CLE_MODE);sessionStorage.removeItem(CLE_ONGLET);}catch(e){}}
         }
       };
       window.VB_supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
@@ -11700,9 +11712,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       /* Avant une connexion par mot de passe : choisit ou la session sera gardee. */
       window.VB_sessionSonje=function(garder){
         try{
-          garder=true;   // 19/10 : session gardee par defaut (admin : voir VB_sessionParOnglet)
-          if(garder){sessionStorage.setItem(CLE_ONGLET,'1');localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_SONJE));}
-          else sessionStorage.setItem(CLE_ONGLET,'0');
+          // Toujours gardee sur l'appareil (iOS), mais 30 jours SEULEMENT avec « Sonje m ».
+          sessionStorage.setItem(CLE_ONGLET,'1');
+          localStorage.setItem(CLE_MODE,garder?'long':'court');
+          localStorage.setItem(CLE_SONJE,String(Date.now()+(garder?DUREE_SONJE:DUREE_COURTE)));
         }catch(e){}
       };
       /* Compte admin connecte avec la case cochee : la session repasse par onglet. */
@@ -11712,7 +11725,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           const k=auth.storageKey,v=localStorage.getItem(k);
           sessionStorage.setItem(CLE_ONGLET,'0');
           if(v)sessionStorage.setItem(k,v);
-          localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);
+          localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);localStorage.removeItem(CLE_MODE);
         }catch(e){}
       };
       /* HORS LIGNE : Supabase essaie de renouveler un jeton expire et, sans
