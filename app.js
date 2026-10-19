@@ -4642,6 +4642,17 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const CLE_RETOUR_GOOGLE='vb_google_retour';
   let retourGoogle=false;
   try{retourGoogle=sessionStorage.getItem(CLE_RETOUR_GOOGLE)==='1';}catch(e){}
+  /* 18/10 (4) : le retour de Google est aussi reconnu par l'adresse elle-meme
+     (#access_token=... ou erreur), meme si le marqueur de session a ete perdu
+     (connexion faite dans la fenetre Safari ouverte par l'app, autre onglet...).
+     Lu ici, avant que la bibliotheque Supabase ne nettoie l'adresse. */
+  if(!retourGoogle){
+    try{
+      const h=location.hash+'&'+location.search;
+      if(/[#&?]access_token=/.test(h)&&/provider_token=|token_type=bearer/i.test(h))retourGoogle=true;
+      else if(/[#&?]error_description=/.test(h)&&/[#&?]error=/.test(h))retourGoogle=true;
+    }catch(e){}
+  }
   // Empeche la restauration de session generique de router en double.
   if(retourGoogle)window.VB_googleRetourEnCours=true;
 
