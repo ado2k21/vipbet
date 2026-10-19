@@ -69,6 +69,9 @@
 <link rel="icon" type="image/x-icon" href="assets/favicon.ico?v=20261018">
 <link rel="icon" type="image/png" sizes="512x512" href="assets/favicon-512.png?v=20261018">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20261018d">
+<!-- 19/10 (nuit) : nom court du raccourci sur l'ecran d'accueil (iPhone / Android). Simple nom : aucun mode application. -->
+<meta name="apple-mobile-web-app-title" content="VipBetcote">
+<meta name="application-name" content="VipBetcote">
 
 <script type="application/ld+json">
 {
@@ -3875,6 +3878,9 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 .foot-social a[aria-label="TikTok"]:hover{background:rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(255,255,255,.12)}
 
 
+/* 19/10 (nuit) : la page de CONNEXION reprend l'ancien design (en-tete ESPAS MANM /
+   VIP BETCOTE avec l'illustration, onglets Konekte / Kreye kont, bouton dore) :
+   les regles du nouveau design ci-dessous ne s'appliquent plus quand elle est ouverte. */
 /* =====================================================================
    18/10 — NOUVEAU DESIGN CONNEXION / CREATION DE COMPTE (style app)
    Purement visuel : aucun identifiant, champ ni comportement ne change.
@@ -3882,97 +3888,95 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
    Ordinateur : meme fenetre en deux colonnes, memes champs et boutons.
    ===================================================================== */
 .authpage-marque{display:none;align-items:center;gap:10px;margin:0 0 18px;font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:.04em;color:#F4F3ED}
-.authpage-marque img{width:34px;height:23px;display:block;flex-shrink:0}
-.authpage-marque em{font-style:normal;color:var(--or-clair)}
+.authpage:not(:has(#authModeLogin.on)) .authpage-marque img{width:34px;height:23px;display:block;flex-shrink:0}
+.authpage:not(:has(#authModeLogin.on)) .authpage-marque em{font-style:normal;color:var(--or-clair)}
 /* En-tete style app (version validee) : nom en vert, sans logo, grand titre aere */
-.authpage-marque{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:0;color:#2ED47F;margin:28px 0 22px}
+.authpage:not(:has(#authModeLogin.on)) .authpage-marque{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:0;color:#2ED47F;margin:28px 0 22px}
 @media (max-width:760px){
-  .authpage #authFormLogin h3{font-size:34px;line-height:1.1}
-  .authpage #authFormLogin .authpage-form-sub{font-size:16px;margin-top:-4px;margin-bottom:10px}
+  .authpage:not(:has(#authModeLogin.on)) #authFormLogin h3{font-size:34px;line-height:1.1}
+  .authpage:not(:has(#authModeLogin.on)) #authFormLogin .authpage-form-sub{font-size:16px;margin-top:-4px;margin-bottom:10px}
 }
-.authpage .authpage-form h3{font-size:clamp(24px,3vw,28px);font-weight:800;letter-spacing:-.01em;line-height:1.15}
-.authpage .authpage-form-sub{font-size:15px;color:rgba(244,243,237,.6);margin-top:-8px}
-.authpage .field-lbl{font-size:12.5px;letter-spacing:.03em;text-transform:none;font-weight:600;color:rgba(244,243,237,.62)}
-.authpage .field input{height:54px;border-radius:14px;background:#0B1126;border:1.5px solid rgba(244,243,237,.12);font-size:16px;padding-top:0;padding-bottom:0}
-.authpage .field-ic-wrap input,.authpage .field-pass-wrap.has-ic input{padding-left:46px}
-.authpage .field-ic{left:16px}
-.authpage .field input:focus{border-color:var(--vert-vif);box-shadow:0 0 0 4px rgba(46,212,127,.12);background:#0C1430}
-.authpage .authpage-submit{height:56px;border-radius:16px;font-size:17px;font-weight:700;border:0;
+.authpage:not(:has(#authModeLogin.on)) .authpage-form h3{font-size:clamp(24px,3vw,28px);font-weight:800;letter-spacing:-.01em;line-height:1.15}
+.authpage:not(:has(#authModeLogin.on)) .authpage-form-sub{font-size:15px;color:rgba(244,243,237,.6);margin-top:-8px}
+.authpage:not(:has(#authModeLogin.on)) .field-lbl{font-size:12.5px;letter-spacing:.03em;text-transform:none;font-weight:600;color:rgba(244,243,237,.62)}
+.authpage:not(:has(#authModeLogin.on)) .field input{height:54px;border-radius:14px;background:#0B1126;border:1.5px solid rgba(244,243,237,.12);font-size:16px;padding-top:0;padding-bottom:0}
+.authpage:not(:has(#authModeLogin.on)) .field-ic-wrap input,.authpage:not(:has(#authModeLogin.on)) .field-pass-wrap.has-ic input{padding-left:46px}
+.authpage:not(:has(#authModeLogin.on)) .field-ic{left:16px}
+.authpage:not(:has(#authModeLogin.on)) .field input:focus{border-color:var(--vert-vif);box-shadow:0 0 0 4px rgba(46,212,127,.12);background:#0C1430}
+.authpage:not(:has(#authModeLogin.on)) .authpage-submit{height:56px;border-radius:16px;font-size:17px;font-weight:700;border:0;
   background:linear-gradient(180deg,#34DC88,#1FBF6E);color:#04130B;box-shadow:0 10px 28px rgba(46,212,127,.24)}
-.authpage .authpage-submit:hover{filter:brightness(1.05)}
-.authpage .authpage-tab.on{background:linear-gradient(180deg,#34DC88,#1FBF6E);color:#04130B;box-shadow:0 4px 14px rgba(46,212,127,.25)}
+.authpage:not(:has(#authModeLogin.on)) .authpage-submit:hover{filter:brightness(1.05)}
+.authpage:not(:has(#authModeLogin.on)) .authpage-tab.on{background:linear-gradient(180deg,#34DC88,#1FBF6E);color:#04130B;box-shadow:0 4px 14px rgba(46,212,127,.25)}
 /* Sites : petit logo devant chaque nom */
-.authpage .sitepick-opt{min-height:48px;border-radius:13px}
-.authpage .sitepick-opt img,.authpage .sitepick-other{width:16px;height:16px;border-radius:4px;object-fit:contain}
+.authpage:not(:has(#authModeLogin.on)) .sitepick-opt{min-height:48px;border-radius:13px}
+.authpage:not(:has(#authModeLogin.on)) .sitepick-opt img,.authpage:not(:has(#authModeLogin.on)) .sitepick-other{width:16px;height:16px;border-radius:4px;object-fit:contain}
 /* Etapes : 3 segments avec leur nom, SANS numero (version validee).
    Memes etapes et meme logique qu'avant (Kont / Peman / Akse) : seul l'affichage change.
    Le segment de l'etape en cours se remplit avec un reflet qui glisse. */
-.authpage .wiz-head{margin-bottom:22px;position:relative}
-.authpage .wiz-bar{gap:6px;margin:0;padding-top:0}
-.authpage .wiz-bar::before,.authpage .wiz-bar-fill{display:none}
-.authpage .wiz-node{flex:1;align-items:stretch;gap:7px}
-.authpage .wiz-node-dot{display:none}
-.authpage .wiz-node-lbl{display:block!important;order:-1;text-align:left;font-size:12.5px;font-weight:600;color:rgba(244,243,237,.5)}
-.authpage .wiz-node:nth-child(3) .wiz-node-lbl{text-align:center}
-.authpage .wiz-node:last-child .wiz-node-lbl{text-align:right}
-.authpage .wiz-node.on .wiz-node-lbl,.authpage .wiz-node.done .wiz-node-lbl{color:#2ED47F}
-.authpage .wiz-node::before{content:'';height:5px;border-radius:3px;background:rgba(244,243,237,.12)}
-.authpage .wiz-node::after{content:'';position:absolute;left:0;bottom:0;height:5px;width:0;border-radius:3px;
+.authpage:not(:has(#authModeLogin.on)) .wiz-head{margin-bottom:22px;position:relative}
+.authpage:not(:has(#authModeLogin.on)) .wiz-bar{gap:6px;margin:0;padding-top:0}
+.authpage:not(:has(#authModeLogin.on)) .wiz-bar::before,.authpage:not(:has(#authModeLogin.on)) .wiz-bar-fill{display:none}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node{flex:1;align-items:stretch;gap:7px}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node-dot{display:none}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node-lbl{display:block!important;order:-1;text-align:left;font-size:12.5px;font-weight:600;color:rgba(244,243,237,.5)}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node:nth-child(3) .wiz-node-lbl{text-align:center}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node:last-child .wiz-node-lbl{text-align:right}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node.on .wiz-node-lbl,.authpage:not(:has(#authModeLogin.on)) .wiz-node.done .wiz-node-lbl{color:#2ED47F}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node::before{content:'';height:5px;border-radius:3px;background:rgba(244,243,237,.12)}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node::after{content:'';position:absolute;left:0;bottom:0;height:5px;width:0;border-radius:3px;
   background:linear-gradient(90deg,#17A860,#2ED47F);transition:width .9s cubic-bezier(.65,0,.35,1)}
-.authpage .wiz-node.done::after{width:100%}
-.authpage .wiz-node.on::after{width:100%;animation:vbSegRemplit .9s cubic-bezier(.65,0,.35,1) both;
+.authpage:not(:has(#authModeLogin.on)) .wiz-node.done::after{width:100%}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node.on::after{width:100%;animation:vbSegRemplit .9s cubic-bezier(.65,0,.35,1) both;
   background:linear-gradient(90deg,#17A860,#2ED47F 40%,#E9FFF3 50%,#2ED47F 60%,#2ED47F) 0 0/250% 100%,linear-gradient(90deg,#17A860,#2ED47F)}
-.authpage .wiz-node.on::after{animation:vbSegRemplit .9s cubic-bezier(.65,0,.35,1) both,vbSegReflet 1.8s ease-in-out .9s infinite}
+.authpage:not(:has(#authModeLogin.on)) .wiz-node.on::after{animation:vbSegRemplit .9s cubic-bezier(.65,0,.35,1) both,vbSegReflet 1.8s ease-in-out .9s infinite}
 @keyframes vbSegRemplit{from{width:0}to{width:100%}}
 @keyframes vbSegReflet{from{background-position:120% 0,0 0}to{background-position:-120% 0,0 0}}
 /* « Etap 1 / 3 » en haut a droite, selon l'etape en cours */
-.authpage .wiz-head::before{display:block;height:20px;line-height:20px;margin:2px 0 12px;font:600 13px var(--body);color:rgba(244,243,237,.55)}
-.authpage .wiz-head:has(.wiz-node:nth-child(2).on)::before{content:'Etap 1 / 3'}
-.authpage .wiz-head:has(.wiz-node:nth-child(3).on)::before{content:'Etap 2 / 3'}
-.authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content:'Etap 3 / 3'}
-html[lang=fr] .authpage .wiz-head:has(.wiz-node:nth-child(2).on)::before{content:'Étape 1 / 3'}
-html[lang=fr] .authpage .wiz-head:has(.wiz-node:nth-child(3).on)::before{content:'Étape 2 / 3'}
-html[lang=fr] .authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content:'Étape 3 / 3'}
-html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(2).on)::before{content:'Step 1 / 3'}
-html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(3).on)::before{content:'Step 2 / 3'}
-html[lang=en] .authpage .wiz-head:has(.wiz-node:nth-child(4).on)::before{content:'Step 3 / 3'}
-/* Connexion : sans onglets ni « Sonje m » (version validee) — le lien
-   « Kreye kont gratis » plus bas mene toujours a la creation de compte. */
-.authpage .authpage-tabs{display:none}
-/* 19/10 (nuit) : case « Sonje m » visible (rester connecte) */
-.authpage .wiz-panel.on{animation:vbEtapeEntre .45s ease both}
+.authpage:not(:has(#authModeLogin.on)) .wiz-head::before{display:block;height:20px;line-height:20px;margin:2px 0 12px;font:600 13px var(--body);color:rgba(244,243,237,.55)}
+.authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(2).on)::before{content:'Etap 1 / 3'}
+.authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(3).on)::before{content:'Etap 2 / 3'}
+.authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(4).on)::before{content:'Etap 3 / 3'}
+html[lang=fr] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(2).on)::before{content:'Étape 1 / 3'}
+html[lang=fr] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(3).on)::before{content:'Étape 2 / 3'}
+html[lang=fr] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(4).on)::before{content:'Étape 3 / 3'}
+html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(2).on)::before{content:'Step 1 / 3'}
+html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(3).on)::before{content:'Step 2 / 3'}
+html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth-child(4).on)::before{content:'Step 3 / 3'}
+/* Autres pages que la connexion : sans onglets. */
+.authpage:not(:has(#authModeLogin.on)) .authpage-tabs{display:none}
+.authpage:not(:has(#authModeLogin.on)) .wiz-panel.on{animation:vbEtapeEntre .45s ease both}
 @keyframes vbEtapeEntre{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){
-  .authpage .wiz-node.on::after,.authpage .wiz-panel.on{animation:none}
+  .authpage:not(:has(#authModeLogin.on)) .wiz-node.on::after,.authpage:not(:has(#authModeLogin.on)) .wiz-panel.on{animation:none}
 }
 /* « Modpas bliye » (18/10) : titre centre en haut, retour a gauche, icone cadenas,
    titre et explication centres. Meme structure et memes etapes qu'avant. */
-.authpage .pwr-top{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:-4px 0 26px}
-.authpage .pwr-retour{width:44px;height:44px;border-radius:12px;border:0;background:none;color:#F4F3ED;display:grid;place-items:center;cursor:pointer}
-.authpage .pwr-retour:hover{background:rgba(244,243,237,.06)}
-.authpage .pwr-top-t{text-align:center;font:700 17px var(--display);color:#F4F3ED}
-.authpage .pwr-ic{width:84px;height:84px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;color:#2ED47F;background:rgba(46,212,127,.12);box-shadow:0 0 0 1px rgba(46,212,127,.25) inset}
-.authpage #wizPwReset > h3,.authpage #wizPwReset > .authpage-form-sub{text-align:center}
-.authpage #wizPwReset > .authpage-form-sub{margin:-2px auto 8px;max-width:340px;line-height:1.55}
-.authpage #wizPwReset .authpage-switch{text-align:center}
+.authpage:not(:has(#authModeLogin.on)) .pwr-top{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;margin:-4px 0 26px}
+.authpage:not(:has(#authModeLogin.on)) .pwr-retour{width:44px;height:44px;border-radius:12px;border:0;background:none;color:#F4F3ED;display:grid;place-items:center;cursor:pointer}
+.authpage:not(:has(#authModeLogin.on)) .pwr-retour:hover{background:rgba(244,243,237,.06)}
+.authpage:not(:has(#authModeLogin.on)) .pwr-top-t{text-align:center;font:700 17px var(--display);color:#F4F3ED}
+.authpage:not(:has(#authModeLogin.on)) .pwr-ic{width:84px;height:84px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;color:#2ED47F;background:rgba(46,212,127,.12);box-shadow:0 0 0 1px rgba(46,212,127,.25) inset}
+.authpage:not(:has(#authModeLogin.on)) #wizPwReset > h3,.authpage:not(:has(#authModeLogin.on)) #wizPwReset > .authpage-form-sub{text-align:center}
+.authpage:not(:has(#authModeLogin.on)) #wizPwReset > .authpage-form-sub{margin:-2px auto 8px;max-width:340px;line-height:1.55}
+.authpage:not(:has(#authModeLogin.on)) #wizPwReset .authpage-switch{text-align:center}
 .authpage:has(#authModeWizard.pwreset) .authpage-close,.authpage:has(#authModeWizard.pwreset) .authpage-backbtn{display:none}
 /* Ordinateur : la colonne d'en-tete (ESPAS MANM, VIP BETCOTE) seulement sur la
    page de creation de compte ; sur les autres pages, formulaire seul, centre. */
 @media (min-width:761px){
-  .authpage:not(:has(#authModeWizard.on:not(.pwreset):not(.renew))) .authpage-brand{display:none}
-  .authpage:not(:has(#authModeWizard.on:not(.pwreset):not(.renew))) .authpage-grid{grid-template-columns:1fr}
-  .authpage:not(:has(#authModeWizard.on:not(.pwreset):not(.renew))) .authpage-in{max-width:600px}
+  .authpage:not(:has(#authModeWizard.on:not(.pwreset):not(.renew))):not(:has(#authModeLogin.on)) .authpage-brand{display:none}
+  .authpage:not(:has(#authModeWizard.on:not(.pwreset):not(.renew))):not(:has(#authModeLogin.on)) .authpage-grid{grid-template-columns:1fr}
+  .authpage:not(:has(#authModeWizard.on:not(.pwreset):not(.renew))):not(:has(#authModeLogin.on)) .authpage-in{max-width:600px}
 }
 /* Telephone : page de connexion plein ecran */
 @media (max-width:760px){
-  .authpage{padding:0;align-items:stretch;
+  .authpage:not(:has(#authModeLogin.on)){padding:0;align-items:stretch;
     background:radial-gradient(70% 40% at 20% 6%,rgba(23,168,96,.20),transparent 60%),radial-gradient(60% 40% at 100% 100%,rgba(232,206,138,.08),transparent 60%),#030617}
-  .authpage-in{max-width:none;min-height:100%;border-radius:0;border:0;box-shadow:none;background:transparent}
-  .authpage-in::before{display:none}
-  .authpage-grid{display:block;min-height:0}
-  .authpage-brand{display:none}
-  .authpage-panel{background:transparent;padding:calc(env(safe-area-inset-top,0px) + 22px) 22px calc(env(safe-area-inset-bottom,0px) + 28px)}
-  .authpage-marque{display:flex}
+  .authpage:not(:has(#authModeLogin.on)) .authpage-in{max-width:none;min-height:100%;border-radius:0;border:0;box-shadow:none;background:transparent}
+  .authpage:not(:has(#authModeLogin.on)) .authpage-in::before{display:none}
+  .authpage:not(:has(#authModeLogin.on)) .authpage-grid{display:block;min-height:0}
+  .authpage:not(:has(#authModeLogin.on)) .authpage-brand{display:none}
+  .authpage:not(:has(#authModeLogin.on)) .authpage-panel{background:transparent;padding:calc(env(safe-area-inset-top,0px) + 22px) 22px calc(env(safe-area-inset-bottom,0px) + 28px)}
+  .authpage:not(:has(#authModeLogin.on)) .authpage-marque{display:flex}
   .authpage:has(#authModeWizard.on) .authpage-marque{display:none}
   /* En-tete du site (ESPAS MANM, VIP BETCOTE, illustration) : UNIQUEMENT sur la
      creation de compte (ses 3 etapes), dans le navigateur — jamais dans l'app,
