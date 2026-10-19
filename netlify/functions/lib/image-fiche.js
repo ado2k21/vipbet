@@ -129,9 +129,13 @@ function svgGagnante(info, legs) {
   <rect x="16" y="16" width="${W - 32}" height="${H - 32}" rx="40" fill="none" stroke="${OR}" stroke-width="6"/>
   ${logo(48, 50, '#FFFFFF')}
   <text x="130" y="94" font-size="34" font-weight="800" fill="#fff">VIP<tspan fill="${OR}">BETCOTE</tspan></text>
-  <rect x="${W - 280}" y="52" width="232" height="60" rx="30" fill="${VERT}"/>
-  <path d="M${W - 248} 82 L${W - 238} 92 L${W - 220} 72" fill="none" stroke="#06140C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="${W - 150}" y="93" text-anchor="middle" font-size="27" font-weight="800" fill="#06140C">GAGNÉE</text>
+  ${(() => { /* 19/10 : score exact -> « GAGNÉE 1/3 » (bons scores / matchs), badge elargi */
+    const fr = info.fraction ? ' ' + esc(info.fraction) : '';
+    const lb = fr ? 312 : 232, x0 = W - 48 - lb;
+    return `<rect x="${x0}" y="52" width="${lb}" height="60" rx="30" fill="${VERT}"/>
+  <path d="M${x0 + 32} 82 L${x0 + 42} 92 L${x0 + 60} 72" fill="none" stroke="#06140C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="${x0 + 70 + (lb - 82) / 2}" y="93" text-anchor="middle" font-size="27" font-weight="800" fill="#06140C">GAGNÉE${fr}</text>`;
+  })()}
   ${trophee(W / 2, 242)}
   <text x="${W / 2}" y="392" text-anchor="middle" font-size="78" font-weight="800" fill="#FFFFFF" letter-spacing="1">FICHE GAGNÉE</text>
   <text x="${W / 2}" y="446" text-anchor="middle" font-size="30" font-weight="700" fill="${OR}" letter-spacing="3">${type}${cote ? ' · COTE ' + cote : ''}${info.date ? ' · ' + esc(info.date) : ''}</text>

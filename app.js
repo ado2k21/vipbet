@@ -34,6 +34,25 @@ try{
   window.addEventListener('load',()=>{clearInterval(t);lancer();},{once:true});
 })();
 
+/* 19/10 (2) — Filet du retour Google. Journaux Supabase : apres le retour de
+   Google, l'iPhone n'envoyait AUCUNE requete (ni /user, ni les fiches du
+   landing) ; un rechargement de l'onglet, lui, ouvrait bien la session.
+   Si l'adresse porte encore #access_token=... 8 s apres l'arrivee (Supabase
+   l'efface des qu'il a lu la session), la page est rechargee UNE seule fois
+   en gardant l'adresse : la session est alors lue normalement. */
+(function(){
+  try{
+    if(!/[#&]access_token=/.test(location.hash))return;
+    const CLE='vb_google_recharge';
+    if(sessionStorage.getItem(CLE)==='1'){sessionStorage.removeItem(CLE);return;}
+    setTimeout(()=>{
+      if(!/[#&]access_token=/.test(location.hash))return;
+      try{sessionStorage.setItem(CLE,'1');sessionStorage.setItem('vb_google_retour','1');}catch(e){}
+      location.reload();
+    },8000);
+  }catch(e){}
+})();
+
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
 fr: {
@@ -1927,8 +1946,13 @@ document.querySelectorAll('.mnav-lang-opt').forEach(b=>{
   b.addEventListener('click',()=>applyLang(b.dataset.lang));
 });
 
-// Langue par defaut du site : creole haitien
-applyLang('ht');
+// Langue par defaut du site : creole haitien.
+// ?lang=fr ou ?lang=en dans l'adresse (liens partages, sitemap) ouvre directement cette langue.
+(function(){
+  let l='ht';
+  try{const q=new URLSearchParams(location.search).get('lang');if(q==='fr'||q==='en')l=q;}catch(e){}
+  applyLang(l);
+})();
 
 // ---------- Carrousels (Tickets gagnants + Témoignages) ----------
 function makeCarousel(trackId,prevSel,nextSel,dotsId,labelFn){
@@ -11793,19 +11817,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const lang=(typeof currentLang!=='undefined'&&currentLang)||'fr';
       const loc=lang==='en'?'en-US':'fr-FR';
       const cartes=fiches.filter(f=>(parFiche[f.id]||[]).length).map(f=>{
-        const sel=parFiche[f.id];
+        // 19/10 : chaque match garde son VRAI resultat (✓ gagne, ✗ perdu). Fiche score exact :
+        // badge « GENYEN 1/3 » (bons scores / matchs). Plus de 3 matchs : les gagnes d'abord.
+        const tous=parFiche[f.id];
+        const exact=tous.every(l=>['mk_score_l','mk_score_exact'].indexOf(String(l.market||''))>-1);
+        const nbOk=tous.filter(l=>l.result==='won').length;
+        const sel=tous.length>3?tous.filter(l=>l.result==='won').concat(tous.filter(l=>l.result!=='won')):tous;
         const lignes=sel.slice(0,3).map(l=>{
           const brut=String(l.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
           const pick=(brut.indexOf(' — ')>-1||!(translations.fr||{})[brut])?brut:trad(brut);
           const cote=Number(l.odd);
-          return '<li><span class="wf-ok" aria-hidden="true"></span><span class="wf-m"><b>'+echapper(l.match_label)+'</b><small>'+echapper(pick)+'</small></span><em>'+(isFinite(cote)?cote.toFixed(2):'')+'</em></li>';
+          return '<li'+(l.result==='lost'?' class="wf-perdu"':'')+'><span class="'+(l.result==='lost'?'wf-ko':'wf-ok')+'" aria-hidden="true"></span><span class="wf-m"><b>'+echapper(l.match_label)+'</b><small>'+echapper(pick)+'</small></span><em>'+(isFinite(cote)?cote.toFixed(2):'')+'</em></li>';
         }).join('');
         const reste=sel.length-3;
         const total=Number(f.total_odd);
         let date='';
         try{date=new Date(f.play_date+'T12:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){date=f.play_date;}
         return '<article class="win win-auto" data-fiche="'+echapper(f.id)+'"><div class="wf">'+
-          '<div class="wf-top"><span class="wf-brand">VIP<span>BETCOTE</span></span><span class="wf-badge">'+echapper(trad('tick_won'))+'</span></div>'+
+          '<div class="wf-top"><span class="wf-brand">VIP<span>BETCOTE</span></span><span class="wf-badge">'+echapper(trad('tick_won'))+(exact?' '+nbOk+'/'+tous.length:'')+'</span></div>'+
           '<p class="wf-h">'+echapper(trad('wf_title'))+'</p>'+
           '<p class="wf-sub">'+echapper(trad(f.sport==='basket'?'wf_bask':'wf_foot'))+' · '+echapper(date)+'</p>'+
           '<ul class="wf-legs">'+lignes+'</ul>'+

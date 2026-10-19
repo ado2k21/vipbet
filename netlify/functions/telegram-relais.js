@@ -159,11 +159,16 @@ async function imageGagnanteGroupe(tk, legs) {
   const cote = coteTexte(tk);
   const type = typeFiche(tk, legs);
   const perdus = legs.filter(l => l.result === 'lost').length;
-  const sousTitre = perdus ? 'Un seul bon score suffit — résultats réels de chaque match' : 'Tous les matchs gagnés';
-  const png = await rendrePng({ type, cote, sousTitre, date: dateCourte(tk.play_date) },
+  // 19/10 : fiche score exact -> « GAGNÉE 1/3 » (bons scores / matchs joues), ✗ sur les matchs perdus.
+  const joues = legs.filter(l => l.result !== 'void');
+  const exact = joues.length > 0 && joues.every(l => ['mk_score_l', 'mk_score_exact'].includes(String(l.market || '')));
+  const fraction = exact ? `${joues.filter(l => l.result === 'won').length}/${joues.length}` : '';
+  const sousTitre = fraction ? `${fraction.split('/')[0]} bon score sur ${joues.length} — résultats réels de chaque match`
+    : (perdus ? 'Un seul bon score suffit — résultats réels de chaque match' : 'Tous les matchs gagnés');
+  const png = await rendrePng({ type, cote, sousTitre, fraction, date: dateCourte(tk.play_date) },
     legs.map(l => ({ match_label: l.match_label, league: l.league, league_country: l.league_country, pick: choixLeg(l), odd: l.odd, result: l.result })),
     'gagnante');
-  const legende = [`🏆✅ <b>FICHE ${type} GAGNÉE${cote ? ' — COTE ' + cote : ''}</b>`,
+  const legende = [`🏆✅ <b>FICHE ${type} GAGNÉE${fraction ? ' ' + fraction : ''}${cote ? ' — COTE ' + cote : ''}</b>`,
     'Bravo à tous ceux qui l\'ont jouée 🎉', '', '<i>Jeu responsable, 18+. Jouez avec contrôle.</i>'].join('\n');
   return { png, legende };
 }
@@ -199,8 +204,11 @@ function formaterMessage(tk, legs) {
 function formaterResultat(tk, legs, gagne) {
   const cote = coteTexte(tk);
   const titre = `FICHE ${typeFiche(tk, legs)}${cote ? ' — COTE ' + cote : ''}`;
+  const joues = (legs || []).filter(l => l.result !== 'void');
+  const exact = joues.length > 0 && joues.every(l => MARCHES_SCORE.includes(String(l.market || '')));
+  const fraction = exact ? ` ${joues.filter(l => l.result === 'won').length}/${joues.length}` : '';
   return gagne
-    ? `✅ <b>${titre}</b>\n🏆 <b>GAGNÉE</b>`
+    ? `✅ <b>${titre}</b>\n🏆 <b>GAGNÉE${fraction}</b>`
     : `❌ <b>${titre}</b>\n<b>PERDUE</b>`;
 }
 

@@ -53,7 +53,10 @@ async function fetchDelai(url, opts, ms) {
 function formaterGagnante(tk, legs) {
   const total = Number(tk.total_odd);
   const cote = Number.isFinite(total) && total > 0 ? total.toFixed(2) : '';
-  const lignes = [`✅ <b>FICHE ${R.typeFiche(tk, legs)} GAGNANTE${cote ? ' — COTE ' + cote : ''}</b>`, ''];
+  const joues = legs.filter(l => l.result !== 'void');
+  const exact = joues.length > 0 && joues.every(l => ['mk_score_l', 'mk_score_exact'].includes(String(l.market || '')));
+  const fraction = exact ? ` ${joues.filter(l => l.result === 'won').length}/${joues.length}` : '';
+  const lignes = [`✅ <b>FICHE ${R.typeFiche(tk, legs)} GAGNANTE${fraction}${cote ? ' — COTE ' + cote : ''}</b>`, ''];
   legs.forEach(l => {
     const pick = R.libellePick(l.pick);
     const marche = R.libelleMarche(l.market);
@@ -84,12 +87,17 @@ async function imageGagnante(tk, legs) {
   const cote = Number.isFinite(total) && total > 0 ? total.toFixed(2) : '';
   const type = R.typeFiche(tk, legs);
   const perdus = legs.filter(l => l.result === 'lost').length;
-  const sousTitre = perdus ? 'Un seul bon score suffit — résultats réels de chaque match' : 'Tous les matchs gagnés';
+  // 19/10 : fiche score exact -> « GAGNÉE 1/3 » (bons scores / matchs joues), ✗ sur les matchs perdus.
+  const joues = legs.filter(l => l.result !== 'void');
+  const exact = joues.length > 0 && joues.every(l => ['mk_score_l', 'mk_score_exact'].includes(String(l.market || '')));
+  const fraction = exact ? `${joues.filter(l => l.result === 'won').length}/${joues.length}` : '';
+  const sousTitre = fraction ? `${fraction.split('/')[0]} bon score sur ${joues.length} — résultats réels de chaque match`
+    : (perdus ? 'Un seul bon score suffit — résultats réels de chaque match' : 'Tous les matchs gagnés');
   const date = R.dateCourte(tk.play_date);
-  const png = await rendrePng({ type, cote, sousTitre, date },
+  const png = await rendrePng({ type, cote, sousTitre, fraction, date },
     legs.map(l => ({ match_label: l.match_label, league: l.league, league_country: l.league_country, pick: R.choixLeg(l), odd: l.odd, result: l.result })),
     'gagnante');
-  const legende = [`✅ <b>FICHE ${type} GAGNÉE${cote ? ' — COTE ' + cote : ''}</b>`, date ? `📅 Fiche du ${date}` : '', '',
+  const legende = [`✅ <b>FICHE ${type} GAGNÉE${fraction ? ' ' + fraction : ''}${cote ? ' — COTE ' + cote : ''}</b>`, date ? `📅 Fiche du ${date}` : '', '',
     `🔓 Fiches VIP chaque jour : ${LIEN}`, '<i>Jeu responsable, 18+. Jouez avec contrôle.</i>'].join('\n');
   return { png, legende };
 }
