@@ -1,15 +1,12 @@
-// 18/10 : vrai si le site est ouvert comme application installee (ecran d'accueil).
-window.VB_estAppInstallee=function(){
-  try{return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}catch(e){return false;}
-};
+// 19/10 (nuit) : plus de version application. Un raccourci sur l'ecran d'accueil
+// est un simple onglet du site : meme comportement que le navigateur, partout.
+window.VB_estAppInstallee=function(){return false;};
 
 /* 19/10 — Classes posees au plus tot (les <script> ecrits dans la page sont
    bloques par la politique de securite du site, CSP) :
-   - vb-app / vb-app-demarrage : application installee (ecran de lancement) ;
    - vb-bot : robots des moteurs de recherche (pas d'animation de lancement
      ni d'apparition au defilement, sinon leur capture est un ecran vide). */
 try{
-  if(window.VB_estAppInstallee())document.documentElement.classList.add('vb-app','vb-app-demarrage');
   if(/bot|crawl|spider|slurp|Google-InspectionTool|Lighthouse|facebookexternalhit|bingpreview/i.test(navigator.userAgent))document.documentElement.classList.add('vb-bot');
 }catch(e){}
 
@@ -34,24 +31,6 @@ try{
   window.addEventListener('load',()=>{clearInterval(t);lancer();},{once:true});
 })();
 
-/* 19/10 (2) — Filet du retour Google. Journaux Supabase : apres le retour de
-   Google, l'iPhone n'envoyait AUCUNE requete (ni /user, ni les fiches du
-   landing) ; un rechargement de l'onglet, lui, ouvrait bien la session.
-   Si l'adresse porte encore #access_token=... 8 s apres l'arrivee (Supabase
-   l'efface des qu'il a lu la session), la page est rechargee UNE seule fois
-   en gardant l'adresse : la session est alors lue normalement. */
-(function(){
-  try{
-    if(!/[#&]access_token=/.test(location.hash))return;
-    const CLE='vb_google_recharge';
-    if(sessionStorage.getItem(CLE)==='1'){sessionStorage.removeItem(CLE);return;}
-    setTimeout(()=>{
-      if(!/[#&]access_token=/.test(location.hash))return;
-      try{sessionStorage.setItem(CLE,'1');sessionStorage.setItem('vb_google_retour','1');}catch(e){}
-      location.reload();
-    },8000);
-  }catch(e){}
-})();
 
 // ---------- Traduction (HT / FR / EN) ----------
 const translations = {
@@ -191,7 +170,7 @@ auth_brand_f2:"Historique complet — gains et pertes",
 auth_brand_f3:"Paiement local : MonCash et NatCash",
 auth_tab_login:"Se connecter", auth_tab_signup:"Créer un compte",
 auth_login_h:"Content de vous revoir", auth_login_sub:"Connectez-vous pour retrouver vos fiches VIP.",
-auth_lbl_login_id:"E-mail ou téléphone", auth_ph_login_id:"exemple@email.com",
+auth_lbl_login_id:"E-mail", auth_ph_login_id:"exemple@email.com",
 auth_lbl_password:"Mot de passe", auth_ph_password_login:"Entrez votre mot de passe",
 auth_remember:"Se souvenir de moi", auth_forgot:"Mot de passe oublié ?",
 auth_btn_login:"Se connecter",
@@ -584,7 +563,7 @@ adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le
 adm_pay_proof_err:"Impossible de charger le reçu",
 auth_err_email_taken:"Cette adresse e-mail est déjà enregistrée",
 auth_err_badpass:"Mot de passe incorrect",
-auth_err_nouser:"Email ou mot de passe incorrect", auth_err_trop:"Trop de tentatives. Patientez quelques minutes puis réessayez.", auth_err_nonconfirme:"Votre email n'est pas encore confirmé. Vérifiez votre boîte de réception.", auth_err_serveur:"La connexion n'a pas abouti. Réessayez dans un instant.", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", notif_ref_added:"Félicitations ! +{n} jours ajoutés à votre plan : un ami a payé son premier plan grâce à votre lien.", notif_ref_pending:"Vous gagnez {n} jours bonus grâce à un ami ! Ils seront ajoutés automatiquement à votre prochain plan.", notif_ref_lifetime:"Merci ! Un ami a payé son premier plan grâce à votre lien. Votre plan Lifetime vous donne déjà un accès illimité.", notif_ref_applied:"Vos {n} jours bonus de parrainage ont été ajoutés à votre nouveau plan.", auth_or_continue:"ou continuer avec", google_err:"La connexion avec Google n'a pas abouti. Réessayez.", google_admin:"Les comptes administrateur se connectent uniquement avec email, mot de passe et code 2FA.", gp_title:"Terminez la création de votre compte", gp_sub:"Une dernière étape avant de voir les fiches.", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", onb_skip:"Passer", onb_next:"Continuer", onb_create:"Créer mon compte", onb_login:"J'ai un compte · Se connecter", onb_tag_today:"FICHE DU JOUR", onb_tag_results:"RÉSULTATS", onb_plan_sub:"Accès aux fiches", onb_s1_h:"Des fiches analysées chaque jour", onb_s1_p:"Nos experts préparent vos fiches pour ParyajPam, ParyajLakay et 1xBet.", onb_s2_h:"Des résultats transparents", onb_s2_p:"Suivez l'historique de chaque fiche, gagnée ou perdue. Rien n'est caché.", onb_s3_h:"Payez facilement, commencez tout de suite", onb_s3_p:"MonCash, NatCash ou carte. Vos fiches se débloquent automatiquement. Jouez avec contrôle.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_sheet_title:"L'application est presque prête", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
+auth_err_nouser:"Email ou mot de passe incorrect", auth_err_trop:"Trop de tentatives. Patientez quelques minutes puis réessayez.", auth_err_nonconfirme:"Votre email n'est pas encore confirmé. Vérifiez votre boîte de réception.", auth_err_serveur:"La connexion n'a pas abouti. Réessayez dans un instant.", auth_err_offline:"Pas de connexion internet. Vérifiez votre connexion et réessayez.", auth_offline_h:"Pas de connexion", notif_ref_added:"Félicitations ! +{n} jours ajoutés à votre plan : un ami a payé son premier plan grâce à votre lien.", notif_ref_pending:"Vous gagnez {n} jours bonus grâce à un ami ! Ils seront ajoutés automatiquement à votre prochain plan.", notif_ref_lifetime:"Merci ! Un ami a payé son premier plan grâce à votre lien. Votre plan Lifetime vous donne déjà un accès illimité.", notif_ref_applied:"Vos {n} jours bonus de parrainage ont été ajoutés à votre nouveau plan.", auth_or_continue:"ou continuer avec", google_err:"La connexion avec Google n'a pas abouti. Réessayez.", google_admin:"Les comptes administrateur se connectent uniquement avec email, mot de passe et code 2FA.", gp_title:"Terminez la création de votre compte", gp_sub:"Une dernière étape avant de voir les fiches.", app_intro_ios:"L'application iPhone VIPBETCOTE arrive bientôt sur l'App Store. En attendant, ajoutez le site à votre écran d'accueil : il s'ouvre en un seul geste.", app_intro_android:"L'application Android VIPBETCOTE arrive bientôt sur Google Play. En attendant, ajoutez le site à votre écran d'accueil : il s'ouvre en un seul geste.", onb_skip:"Passer", onb_next:"Continuer", onb_create:"Créer mon compte", onb_login:"J'ai un compte · Se connecter", onb_tag_today:"FICHE DU JOUR", onb_tag_results:"RÉSULTATS", onb_plan_sub:"Accès aux fiches", onb_s1_h:"Des fiches analysées chaque jour", onb_s1_p:"Nos experts préparent vos fiches pour ParyajPam, ParyajLakay et 1xBet.", onb_s2_h:"Des résultats transparents", onb_s2_p:"Suivez l'historique de chaque fiche, gagnée ou perdue. Rien n'est caché.", onb_s3_h:"Payez facilement, commencez tout de suite", onb_s3_p:"MonCash, NatCash ou carte. Vos fiches se débloquent automatiquement. Jouez avec contrôle.", app_soon:"BIENTÔT SUR", app_store_android_k:"ANDROID", app_store_android:"Installer l'app", app_store_ios_k:"IPHONE", app_store_ios:"Ajouter à l'écran", app_and_s1:"Appuyez sur le menu <b>⋮</b> en haut à droite du navigateur", app_and_s2:"Choisissez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>", app_and_s3:"Confirmez : l'icône VIPBETCOTE apparaît sur votre téléphone", app_install_menu:"Installer l'application", app_install_title:"Application VIPBETCOTE", app_install_sub:"Installez-la sur votre écran d'accueil en un seul geste : elle s'ouvre comme une vraie app, sans navigateur.", app_install_btn:"Installer sur mon téléphone", app_ios_title:"Ajoutez VIPBETCOTE à votre écran d'accueil", app_sheet_title:"L'application est presque prête", app_ios_s1:"Appuyez sur le bouton <b>Partager</b> en bas de l'écran", app_ios_s2:"Choisissez <b>Sur l'écran d'accueil</b>", app_ios_s3:"Appuyez sur <b>Ajouter</b> : l'icône VIPBETCOTE apparaît sur votre téléphone", app_ios_ok:"J'ai compris",
 auth_taken_h:"Cette adresse e-mail est déjà enregistrée",
 auth_taken_sub:"Un compte existe déjà avec cet e-mail. Rendez-vous sur la page de connexion pour y accéder.",
 auth_suspended_h:"Compte suspendu",
@@ -769,7 +748,7 @@ auth_brand_f2:"Full history — wins and losses",
 auth_brand_f3:"Local payment: MonCash and NatCash",
 auth_tab_login:"Log in", auth_tab_signup:"Create account",
 auth_login_h:"Welcome back", auth_login_sub:"Log in to access your VIP picks.",
-auth_lbl_login_id:"Email or phone number", auth_ph_login_id:"example@email.com",
+auth_lbl_login_id:"Email", auth_ph_login_id:"example@email.com",
 auth_lbl_password:"Password", auth_ph_password_login:"Enter your password",
 auth_remember:"Remember me", auth_forgot:"Forgot password?",
 auth_btn_login:"Log in",
@@ -1162,7 +1141,7 @@ adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
 auth_err_email_taken:"This email address is already registered",
 auth_err_badpass:"Incorrect password",
-auth_err_nouser:"Incorrect email or password", auth_err_trop:"Too many attempts. Wait a few minutes and try again.", auth_err_nonconfirme:"Your email is not confirmed yet. Check your inbox.", auth_err_serveur:"Sign-in did not go through. Try again in a moment.", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", notif_ref_added:"Congratulations! +{n} days added to your plan: a friend paid their first plan through your link.", notif_ref_pending:"You earned {n} bonus days thanks to a friend! They will be added automatically to your next plan.", notif_ref_lifetime:"Thank you! A friend paid their first plan through your link. Your Lifetime plan already gives you unlimited access.", notif_ref_applied:"Your {n} referral bonus days have been added to your new plan.", auth_or_continue:"or continue with", google_err:"Google sign-in did not complete. Please try again.", google_admin:"Administrator accounts sign in only with email, password and 2FA code.", gp_title:"Finish creating your account", gp_sub:"One last step before you see the picks.", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, install it on your home screen in one tap: it opens like a real app, without the browser.", onb_skip:"Skip", onb_next:"Continue", onb_create:"Create my account", onb_login:"I have an account · Log in", onb_tag_today:"TODAY'S PICKS", onb_tag_results:"RESULTS", onb_plan_sub:"Access to the picks", onb_s1_h:"Picks analyzed every day", onb_s1_p:"Our experts prepare your picks for ParyajPam, ParyajLakay and 1xBet.", onb_s2_h:"Transparent results", onb_s2_p:"Follow the history of every pick, won or lost. Nothing is hidden.", onb_s3_h:"Pay easily, start right away", onb_s3_p:"MonCash, NatCash or card. Your picks unlock automatically. Play with control.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_sheet_title:"The app is almost ready", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
+auth_err_nouser:"Incorrect email or password", auth_err_trop:"Too many attempts. Wait a few minutes and try again.", auth_err_nonconfirme:"Your email is not confirmed yet. Check your inbox.", auth_err_serveur:"Sign-in did not go through. Try again in a moment.", auth_err_offline:"No internet connection. Check your connection and try again.", auth_offline_h:"No connection", notif_ref_added:"Congratulations! +{n} days added to your plan: a friend paid their first plan through your link.", notif_ref_pending:"You earned {n} bonus days thanks to a friend! They will be added automatically to your next plan.", notif_ref_lifetime:"Thank you! A friend paid their first plan through your link. Your Lifetime plan already gives you unlimited access.", notif_ref_applied:"Your {n} referral bonus days have been added to your new plan.", auth_or_continue:"or continue with", google_err:"Google sign-in did not complete. Please try again.", google_admin:"Administrator accounts sign in only with email, password and 2FA code.", gp_title:"Finish creating your account", gp_sub:"One last step before you see the picks.", app_intro_ios:"The VIPBETCOTE iPhone app is coming soon to the App Store. Meanwhile, add the site to your home screen: it opens in one tap.", app_intro_android:"The VIPBETCOTE Android app is coming soon to Google Play. Meanwhile, add the site to your home screen: it opens in one tap.", onb_skip:"Skip", onb_next:"Continue", onb_create:"Create my account", onb_login:"I have an account · Log in", onb_tag_today:"TODAY'S PICKS", onb_tag_results:"RESULTS", onb_plan_sub:"Access to the picks", onb_s1_h:"Picks analyzed every day", onb_s1_p:"Our experts prepare your picks for ParyajPam, ParyajLakay and 1xBet.", onb_s2_h:"Transparent results", onb_s2_p:"Follow the history of every pick, won or lost. Nothing is hidden.", onb_s3_h:"Pay easily, start right away", onb_s3_p:"MonCash, NatCash or card. Your picks unlock automatically. Play with control.", app_soon:"COMING SOON ON", app_store_android_k:"ANDROID", app_store_android:"Install the app", app_store_ios_k:"IPHONE", app_store_ios:"Add to home screen", app_and_s1:"Tap the <b>⋮</b> menu at the top right of the browser", app_and_s2:"Choose <b>Install app</b> or <b>Add to Home screen</b>", app_and_s3:"Confirm: the VIPBETCOTE icon appears on your phone", app_install_menu:"Install the app", app_install_title:"VIPBETCOTE app", app_install_sub:"Install it on your home screen in one tap: it opens like a real app, without the browser.", app_install_btn:"Install on my phone", app_ios_title:"Add VIPBETCOTE to your home screen", app_sheet_title:"The app is almost ready", app_ios_s1:"Tap the <b>Share</b> button at the bottom of the screen", app_ios_s2:"Choose <b>Add to Home Screen</b>", app_ios_s3:"Tap <b>Add</b>: the VIPBETCOTE icon appears on your phone", app_ios_ok:"Got it",
 auth_taken_h:"This email address is already registered",
 auth_taken_sub:"An account already exists with this email. Head to the login page to sign in.",
 auth_suspended_h:"Account suspended",
@@ -1347,7 +1326,7 @@ auth_brand_f2:"Istorik konplè — genyen kou pèdi",
 auth_brand_f3:"Peman lokal : MonCash ak NatCash",
 auth_tab_login:"Konekte", auth_tab_signup:"Kreye kont",
 auth_login_h:"Byenveni ankò", auth_login_sub:"Konekte pou jwenn fich VIP ou yo.",
-auth_lbl_login_id:"Imèl oswa telefòn", auth_ph_login_id:"egzanp@imel.com",
+auth_lbl_login_id:"Imèl", auth_ph_login_id:"egzanp@imel.com",
 auth_lbl_password:"Modpas", auth_ph_password_login:"Antre modpas ou",
 auth_remember:"Sonje m", auth_forgot:"Modpas bliye?",
 auth_btn_login:"Konekte",
@@ -1740,7 +1719,7 @@ adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
 auth_err_email_taken:"Imèl sa a deja anrejistre",
 auth_err_badpass:"Modpas la pa kòrèk",
-auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_trop:"Twòp tantativ. Tann kèk minit epi eseye ankò.", auth_err_nonconfirme:"Imèl ou poko konfime. Gade bwat imèl ou.", auth_err_serveur:"Koneksyon an pa mache. Eseye ankò nan yon ti moman.", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", notif_ref_added:"Felisitasyon ! +{n} jou ajoute sou plan ou : yon zanmi peye premye plan li gras a lyen ou.", notif_ref_pending:"Ou genyen {n} jou bonis gras a yon zanmi ! Y ap ajoute otomatikman sou pwochen plan ou.", notif_ref_lifetime:"Mèsi ! Yon zanmi peye premye plan li gras a lyen ou. Plan Lifetime ou a ba ou aksè san limit deja.", notif_ref_applied:"{n} jou bonis parenaj ou yo ajoute sou nouvo plan ou.", auth_or_continue:"oswa kontinye ak", google_err:"Koneksyon ak Google la pa mache. Eseye ankò.", google_admin:"Kont administratè yo konekte sèlman ak imèl, modpas ak kòd 2FA.", gp_title:"Fini kreye kont ou", gp_sub:"Yon dènye etap anvan ou wè fich yo.", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", onb_skip:"Pase", onb_next:"Kontinye", onb_create:"Kreye kont mwen", onb_login:"Mwen gen yon kont · Konekte", onb_tag_today:"FICH JODI A", onb_tag_results:"REZILTA", onb_plan_sub:"Aksè a fich yo", onb_s1_h:"Fich analize chak jou", onb_s1_p:"Ekip ekspè nou an prepare fich ou yo pou ParyajPam, ParyajLakay ak 1xBet.", onb_s2_h:"Rezilta transparan", onb_s2_p:"Swiv istorik chak fich, ki genyen ak ki pèdi. Pa gen anyen kache.", onb_s3_h:"Peye fasil, kòmanse touswit", onb_s3_p:"MonCash, NatCash oswa kat. Fich ou yo debloke otomatikman. Jwe ak kontwòl.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_sheet_title:"App la prèske fini", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
+auth_err_nouser:"Imèl oswa modpas pa kòrèk", auth_err_trop:"Twòp tantativ. Tann kèk minit epi eseye ankò.", auth_err_nonconfirme:"Imèl ou poko konfime. Gade bwat imèl ou.", auth_err_serveur:"Koneksyon an pa mache. Eseye ankò nan yon ti moman.", auth_err_offline:"Pa gen koneksyon entènèt. Verifye koneksyon ou epi eseye ankò.", auth_offline_h:"Pa gen koneksyon", notif_ref_added:"Felisitasyon ! +{n} jou ajoute sou plan ou : yon zanmi peye premye plan li gras a lyen ou.", notif_ref_pending:"Ou genyen {n} jou bonis gras a yon zanmi ! Y ap ajoute otomatikman sou pwochen plan ou.", notif_ref_lifetime:"Mèsi ! Yon zanmi peye premye plan li gras a lyen ou. Plan Lifetime ou a ba ou aksè san limit deja.", notif_ref_applied:"{n} jou bonis parenaj ou yo ajoute sou nouvo plan ou.", auth_or_continue:"oswa kontinye ak", google_err:"Koneksyon ak Google la pa mache. Eseye ankò.", google_admin:"Kont administratè yo konekte sèlman ak imèl, modpas ak kòd 2FA.", gp_title:"Fini kreye kont ou", gp_sub:"Yon dènye etap anvan ou wè fich yo.", app_intro_ios:"Aplikasyon iPhone VIPBETCOTE a ap rive byento sou App Store. Antretan, mete sit la sou ekran akèy ou : w ap louvri l ak yon sèl peze.", app_intro_android:"Aplikasyon Android VIPBETCOTE a ap rive byento sou Google Play. Antretan, mete sit la sou ekran akèy ou : w ap louvri l ak yon sèl peze.", onb_skip:"Pase", onb_next:"Kontinye", onb_create:"Kreye kont mwen", onb_login:"Mwen gen yon kont · Konekte", onb_tag_today:"FICH JODI A", onb_tag_results:"REZILTA", onb_plan_sub:"Aksè a fich yo", onb_s1_h:"Fich analize chak jou", onb_s1_p:"Ekip ekspè nou an prepare fich ou yo pou ParyajPam, ParyajLakay ak 1xBet.", onb_s2_h:"Rezilta transparan", onb_s2_p:"Swiv istorik chak fich, ki genyen ak ki pèdi. Pa gen anyen kache.", onb_s3_h:"Peye fasil, kòmanse touswit", onb_s3_p:"MonCash, NatCash oswa kat. Fich ou yo debloke otomatikman. Jwe ak kontwòl.", app_soon:"BYENTO SOU", app_store_android_k:"ANDROID", app_store_android:"Enstale app la", app_store_ios_k:"IPHONE", app_store_ios:"Ajoute sou ekran", app_and_s1:"Peze meni <b>⋮</b> anlè adwat navigatè a", app_and_s2:"Chwazi <b>Enstale aplikasyon</b> oswa <b>Ajoute sou ekran akèy</b>", app_and_s3:"Konfime : ikòn VIPBETCOTE a parèt sou telefòn ou", app_install_menu:"Enstale aplikasyon an", app_install_title:"Aplikasyon VIPBETCOTE", app_install_sub:"Enstale l sou ekran akèy ou ak yon sèl peze : li louvri tankou yon vrè app, san navigatè.", app_install_btn:"Enstale sou telefòn mwen", app_ios_title:"Ajoute VIPBETCOTE sou ekran akèy ou", app_sheet_title:"App la prèske fini", app_ios_s1:"Peze bouton <b>Pataje</b> a anba ekran an", app_ios_s2:"Chwazi <b>Sou ekran akèy</b>", app_ios_s3:"Peze <b>Ajoute</b> : ikòn VIPBETCOTE a parèt sou telefòn ou", app_ios_ok:"Mwen konprann",
 auth_taken_h:"Imèl sa a deja anrejistre",
 auth_taken_sub:"Gen yon kont ki deja gen imèl sa a. Ale nan paj koneksyon an pou w antre.",
 auth_suspended_h:"Kont sispann",
@@ -4683,133 +4662,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   window.VB_routerApresConnexion=routerApresConnexion;
 
-  /* ================= CONNEXION GOOGLE (17/10) =================
-     1) clic -> Supabase envoie vers Google, puis revient sur le site ;
-     2) au retour : memes controles qu'une connexion par mot de passe
-        (compte suspendu, role) ; un compte admin doit TOUJOURS passer par
-        email + mot de passe + 2FA, jamais par Google ;
-     3) premiere connexion : petite fenetre pour le nom d'utilisateur, le
-        site prefere et la case 18 ans (le parrainage passe par le lien ?ref=) ;
-     4) ensuite, exactement le meme routage qu'une connexion normale.
-     email_verified n'est JAMAIS ecrit par le navigateur : c'est la base
-     (trigger sur auth.identities) qui le met a true pour une identite
-     Google dont l'email est verifie par Google. */
-  const CLE_RETOUR_GOOGLE='vb_google_retour';
-  let retourGoogle=false;
-  try{retourGoogle=sessionStorage.getItem(CLE_RETOUR_GOOGLE)==='1';}catch(e){}
-  /* 18/10 (4) : le retour de Google est aussi reconnu par l'adresse elle-meme
-     (#access_token=... ou erreur), meme si le marqueur de session a ete perdu
-     (connexion faite dans la fenetre Safari ouverte par l'app, autre onglet...).
-     Lu ici, avant que la bibliotheque Supabase ne nettoie l'adresse. */
-  if(!retourGoogle){
-    try{
-      const h=location.hash+'&'+location.search;
-      if(/[#&?]access_token=/.test(h)&&/provider_token=|token_type=bearer/i.test(h))retourGoogle=true;
-      else if(/[#&?]error_description=/.test(h)&&/[#&?]error=/.test(h))retourGoogle=true;
-    }catch(e){}
-  }
-  // Empeche la restauration de session generique de router en double.
-  if(retourGoogle)window.VB_googleRetourEnCours=true;
-
-  /* 18/10 (3) : le bouton ouvre DIRECTEMENT l'adresse de connexion Google de
-     Supabase (meme lien que le test qui a reussi sur iPhone), par une simple
-     navigation, sans attendre la bibliotheque Supabase. Le retour est traite
-     comme avant (traiterRetourGoogle) : la bibliotheque lit la session dans
-     l'adresse de retour. */
-  document.querySelectorAll('[data-google-auth]').forEach(btn=>btn.addEventListener('click',ev=>{
-    ev.preventDefault();
-    if(navigator.onLine===false){if(window.VB_toast)window.VB_toast('auth_offline_h',t('auth_err_offline'));return;}
-    const base=window.VB_SUPABASE_URL||'https://llqifjfcpyddwjkferpn.supabase.co';
-    try{sessionStorage.setItem(CLE_RETOUR_GOOGLE,'1');}catch(e){}
-    btn.disabled=true;
-    window.location.href=base+'/auth/v1/authorize?provider=google'
-      +'&redirect_to='+encodeURIComponent(location.origin+'/')
-      +'&prompt=select_account';
-  }));
-  // Retour sur la page (bouton precedent depuis Google) : bouton reactive.
-  window.addEventListener('pageshow',()=>document.querySelectorAll('[data-google-auth]').forEach(b=>{b.disabled=false;}));
-
-  function demanderProfilGoogle(user,profil){
-    return new Promise(resolve=>{
-      const fen=document.getElementById('vbGoogleProfil');
-      const form=document.getElementById('vbGoogleProfilForm');
-      const err=document.getElementById('vbGpErr');
-      if(!fen||!form){resolve(null);return;}
-      const meta=user.user_metadata||{};
-      form.gpUser.value=(profil&&profil.username)||meta.full_name||meta.name||'';
-      err.hidden=true;
-      fen.hidden=false;
-      form.onsubmit=ev=>{
-        ev.preventDefault();
-        const nom=form.gpUser.value.trim();
-        if(nom.length<2){err.textContent=t('auth_err_required');err.hidden=false;form.gpUser.focus();return;}
-        if(!form.gpTerms.checked){err.textContent=t('auth_err_terms');err.hidden=false;return;}
-        fen.hidden=true;
-        resolve({username:nom,site:form.gpSite.value||'paryajpam'});
-      };
-    });
-  }
-
-  async function traiterRetourGoogle(){
-    const sb=window.VB_getSupabase&&window.VB_getSupabase();
-    try{sessionStorage.removeItem(CLE_RETOUR_GOOGLE);}catch(e){}
-    if(!sb){window.VB_googleRetourEnCours=false;return;}
-    // Annulation sur la page Google (?error=access_denied...)
-    if(/[?#&]error=/.test(location.search+location.hash)){
-      // Raison exacte renvoyee par Google/Supabase (ex. access_denied),
-      // affichee entre parentheses pour pouvoir corriger la configuration.
-      let raison='';
-      try{
-        const q=new URLSearchParams(location.search.slice(1)+'&'+location.hash.slice(1));
-        raison=(q.get('error_description')||q.get('error')||'').replace(/\+/g,' ').slice(0,160);
-      }catch(e){}
-      history.replaceState(null,'',location.pathname);
-      window.VB_googleRetourEnCours=false;
-      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_err')+(raison?' ('+raison+')':''));
-      return;
-    }
-    let session=null;
-    try{const {data}=await sb.auth.getSession();session=data&&data.session;}catch(e){}
-    if(!session||!session.user){window.VB_googleRetourEnCours=false;return;}
-    const user=session.user;
-    let profil=null;
-    try{
-      const {data:prof}=await sb.from('profiles')
-        .select('role,username,preferred_site,suspended_at,suspended_reason').eq('id',user.id).single();
-      profil=prof;
-    }catch(e){}
-    if(profil&&profil.suspended_at){
-      try{await sb.auth.signOut();}catch(e){}
-      window.VB_googleRetourEnCours=false;
-      if(window.VB_toast)window.VB_toast('auth_suspended_h', profil.suspended_reason?t('auth_suspended_reason_p').replace('{reason}',profil.suspended_reason):t('auth_suspended_p'));
-      return;
-    }
-    if(profil&&profil.role==='admin'){
-      try{await sb.auth.signOut();}catch(e){}
-      window.VB_googleRetourEnCours=false;
-      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('google_admin'));
-      return;
-    }
-    if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(user.id);
-    // Premiere connexion Google (aucun nom enregistre) : completer le profil.
-    if(!profil||!profil.username){
-      const choix=await demanderProfilGoogle(user,profil);
-      if(choix){
-        try{await sb.from('profiles').update({username:choix.username,preferred_site:choix.site}).eq('id',user.id);}catch(e){}
-        try{await sb.auth.updateUser({data:{username:choix.username,preferred_site:choix.site}});}catch(e){}
-        user.user_metadata=Object.assign({},user.user_metadata,{username:choix.username,preferred_site:choix.site});
-      }
-    }
-    window.VB_googleRetourEnCours=false;
-    openAuth('signup');
-    await routerApresConnexion(user);
-  }
-  // Differe a 'load' : la bibliotheque Supabase (chargee en defer) et
-  // VB_getSupabase (defini plus loin dans ce fichier) sont alors prets.
-  if(retourGoogle){
-    if(document.readyState==='complete')setTimeout(traiterRetourGoogle,0);
-    else window.VB_quandPret(traiterRetourGoogle);
-  }
 
   /* ================= CONNEXION ================= */
   const fL=document.getElementById('authFormLogin');
@@ -4831,20 +4683,30 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     /* Connexion reelle via Supabase, en priorite. Si Supabase est
        injoignable (reseau, CDN), on se replie sur l'ancien registre local
        ci-dessous, sans jamais laisser l'utilisateur bloque. */
-    // 19/10 : l'app installee peut charger Supabase quelques secondes apres
+    // 19/10 : sur telephone, Supabase peut se charger quelques secondes apres
     // l'affichage. On l'attend (8 s au plus) au lieu de basculer sur
     // l'ancien registre local, qui affichait « mot de passe incorrect ».
     const loginBtn=fL.querySelector('button[type=submit]');
     let sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb&&isEmail(id.value.trim())){
       loginBtn.disabled=true;
-      for(let i=0;!sb&&i<40;i++){await new Promise(r=>setTimeout(r,200));sb=window.VB_getSupabase&&window.VB_getSupabase();}
+      for(let i=0;!sb&&i<40;i++){
+        // 19/10 (nuit) : au bout de 3 s, la bibliotheque Supabase est rechargee une fois
+        // (iPhone : elle restait parfois non chargee, et aucune connexion n'etait possible).
+        if(i===15&&window.VB_rechargerSupabase)window.VB_rechargerSupabase();
+        await new Promise(r=>setTimeout(r,200));sb=window.VB_getSupabase&&window.VB_getSupabase();
+      }
       loginBtn.disabled=false;
-      if(!sb)reseauKO=true;
+      if(!sb){
+        // En ligne mais bibliotheque absente : ce n'est pas « pas d'internet ».
+        setErr(id.closest('.field'),navigator.onLine===false?'auth_err_offline':'auth_err_serveur');
+        return;
+      }
     }
     let supabaseARepondu=false;
     if(sb&&isEmail(id.value.trim())){
       loginBtn.disabled=true;
+      if(window.VB_sessionSonje)window.VB_sessionSonje(veutSeSouvenir);
       try{
         const {data,error}=await sb.auth.signInWithPassword({
           email:id.value.trim().toLowerCase(),
@@ -4891,6 +4753,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           }
           if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(data.user.id);
           if(role==='admin'){
+            // 19/10 (nuit) : un admin n'est jamais « garde » sur l'appareil.
+            if(window.VB_sessionParOnglet)window.VB_sessionParOnglet();
             // Le 2FA est OBLIGATOIRE pour un compte admin : jamais
             // contourne, jamais facultatif. L'ouverture du tableau de
             // bord n'a lieu qu'apres verification reussie.
@@ -4898,7 +4762,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
               window.VB_handleAdminMFA(()=>{
                 closeAuth();
                 requestAnimationFrame(()=>{if(window.VB_openAdminDash)window.VB_openAdminDash(data.user);});
-              },data.user.email,data.user.id,veutSeSouvenir);
+              },data.user.email,data.user.id,false);
             }else{
               closeAuth();
               requestAnimationFrame(()=>{if(window.VB_openAdminDash)window.VB_openAdminDash(data.user);});
@@ -7707,7 +7571,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const logo=document.querySelector('.logo-mark-img img');
     const dl=document.getElementById('dashLogo');
     if(logo&&logo.src&&!dl.getAttribute('src'))dl.src=logo.src;
-    // 18/10 : app installee — les fiches lues sont gardees pour le mode hors ligne.
     if(window.VB_horsLigneOn)window.VB_horsLigneOn();
     // CORRECTIF : recharger les notifications locales AVANT tout rendu,
     // au cas ou le compte connecte a change depuis le dernier chargement
@@ -11707,28 +11570,59 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          Dashboard de l'autre). sessionStorage isole chaque onglet
          completement : sa session survit a un F5 dans CE meme onglet,
          mais n'est jamais partagee avec un autre onglet. */
-      /* 18/10 — APPLICATION INSTALLEE (ecran d'accueil) : la session est
-         gardee dans localStorage pour que l'abonne reste connecte quand il
-         ferme puis rouvre l'app, meme sans reseau. Le probleme des onglets
-         decrit ci-dessus n'existe pas dans l'app installee (une seule
-         fenetre, et un onglet du navigateur garde sessionStorage). */
-      /* 18/10 (3) — retour a l'isolation par onglet dans le navigateur :
-         localStorage partout melangeait les comptes ouverts dans deux
-         onglets (admin + client). sessionStorage survit au rechargement
-         de l'onglet ; l'app installee garde localStorage. */
-      const appInstallee=!!(window.VB_estAppInstallee&&window.VB_estAppInstallee());
-      const stockage=appInstallee?window.localStorage:window.sessionStorage;
+      /* 19/10 (nuit) — « Sonje m » (se souvenir de moi) :
+         - case NON cochee : session propre a l'onglet (sessionStorage), comme avant ;
+         - case cochee (abonne seulement) : session gardee sur l'appareil
+           (localStorage) 30 jours au plus, retrouvee a la reouverture ;
+         - un compte admin reste TOUJOURS par onglet (voir le formulaire).
+         Le choix est pris a la connexion et vaut pour cet onglet
+         (vb_sonje_onglet) ; un autre onglet sans session reprend la session
+         gardee. Une connexion « par onglet » ne touche jamais la session gardee. */
+      const CLE_SONJE='vb_sonje_jusqua', CLE_ONGLET='vb_sonje_onglet', DUREE_SONJE=30*86400000;
+      const lireS=(st,k)=>{try{return st.getItem(k);}catch(e){return null;}};
+      const gardeValide=()=>{const t=Number(lireS(localStorage,CLE_SONJE)||0);return t>Date.now();};
+      // Choix de l'onglet : '1' = session gardee, '0' = par onglet (explicite), rien = pas encore choisi.
+      const ongletGarde=()=>lireS(sessionStorage,CLE_ONGLET)==='1';
+      const ongletParOnglet=()=>lireS(sessionStorage,CLE_ONGLET)==='0';
+      const stockage={
+        getItem(k){
+          const v=lireS(sessionStorage,k);
+          if(v&&!ongletGarde())return v;
+          if(ongletParOnglet())return v;   // jamais la session gardee dans un onglet « par onglet »
+          if(gardeValide()){const g=lireS(localStorage,k);if(g){try{sessionStorage.setItem(CLE_ONGLET,'1');}catch(e){}return g;}}
+          else{try{localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);}catch(e){}}
+          return v;
+        },
+        setItem(k,v){
+          if(ongletGarde()){try{localStorage.setItem(k,v);}catch(e){}}
+          else{try{sessionStorage.setItem(k,v);}catch(e){}}
+        },
+        removeItem(k){
+          try{sessionStorage.removeItem(k);}catch(e){}
+          if(ongletGarde()){try{localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);sessionStorage.removeItem(CLE_ONGLET);}catch(e){}}
+        }
+      };
       window.VB_supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
         auth:{storage:stockage,persistSession:true,autoRefreshToken:true}
       });
       const auth=window.VB_supabase.auth;
-      if(appInstallee){
-        // Une session ouverte avant cette mise a jour (sessionStorage) est reprise.
+      /* Avant une connexion par mot de passe : choisit ou la session sera gardee. */
+      window.VB_sessionSonje=function(garder){
         try{
-          const k=auth.storageKey;
-          if(k&&!localStorage.getItem(k)&&sessionStorage.getItem(k))localStorage.setItem(k,sessionStorage.getItem(k));
+          if(garder){sessionStorage.setItem(CLE_ONGLET,'1');localStorage.setItem(CLE_SONJE,String(Date.now()+DUREE_SONJE));}
+          else sessionStorage.setItem(CLE_ONGLET,'0');
         }catch(e){}
-      }
+      };
+      /* Compte admin connecte avec la case cochee : la session repasse par onglet. */
+      window.VB_sessionParOnglet=function(){
+        try{
+          if(!ongletGarde()){sessionStorage.setItem(CLE_ONGLET,'0');return;}
+          const k=auth.storageKey,v=localStorage.getItem(k);
+          sessionStorage.setItem(CLE_ONGLET,'0');
+          if(v)sessionStorage.setItem(k,v);
+          localStorage.removeItem(k);localStorage.removeItem(CLE_SONJE);
+        }catch(e){}
+      };
       /* HORS LIGNE : Supabase essaie de renouveler un jeton expire et, sans
          reseau, repond « pas de session » — l'abonne serait renvoye a
          l'accueil. Sans reseau seulement, on rend la session enregistree
@@ -11765,6 +11659,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   initSupabase();
   window.VB_quandPret(initSupabase);
   window.VB_getSupabase=initSupabase;
+  /* 19/10 (nuit) : nouveau chargement de la bibliotheque (meme fichier, meme
+     empreinte SRI) si elle n'est toujours pas la ; une seule fois par page. */
+  let rechargee=false;
+  window.VB_rechargerSupabase=function(){
+    if(rechargee||(window.supabase&&window.supabase.createClient))return;
+    rechargee=true;
+    const ancien=document.querySelector('script[src*="supabase-js@"]');
+    if(!ancien)return;
+    const sc=document.createElement('script');
+    sc.src=ancien.src+(ancien.src.indexOf('?')>-1?'&':'?')+'r='+Date.now();
+    if(ancien.integrity)sc.integrity=ancien.integrity;
+    sc.crossOrigin='anonymous';
+    sc.onload=()=>initSupabase();
+    document.head.appendChild(sc);
+  };
 
   /* ======================================================================
      PREUVES DE LA PAGE D'ACCUEIL — alimentees par la BASE, jamais en dur.
@@ -12888,6 +12797,11 @@ async function tenterRestaurationSession(){
         }else if(window.VB_openDash){
           window.VB_openDash();
         }
+      }else if(window.VB_routerApresConnexion){
+        /* 19/10 (nuit) : session gardee (« Sonje m ») d'un autre compte que le
+           parcours en memoire (partage entre onglets) : on reconstruit tout
+           depuis Supabase pour CE compte, jamais avec les donnees de l'autre. */
+        await window.VB_routerApresConnexion(session.user);
       }
     }else if(window.VB_reprendreApresAdmin){
       /* CORRECTIF : quelqu'un dont l'inscription est terminee mais qui n'a
@@ -12906,89 +12820,6 @@ tenterRestaurationSession();
 window.VB_quandPret(tenterRestaurationSession);
 window.VB_tenterRestaurationSession=tenterRestaurationSession;
 
-/* 18/10 — APPLICATION INSTALLEE : jamais la page d'accueil a l'ouverture.
-   Pas de session -> page de connexion ; session -> la restauration
-   ci-dessus ouvre le tableau de bord (ou la 2FA admin, ou l'etape 4).
-   L'ecran sombre (html.vb-app-demarrage, voir index.html) cache l'accueil
-   pendant ce choix. Dans le navigateur, rien ne change. */
-(function(){
-  if(!(window.VB_estAppInstallee&&window.VB_estAppInstallee()))return;
-  const html=document.documentElement;
-  html.classList.add('vb-app');
-  const ouvert=()=>!!document.querySelector('#authpage.open,#dash.open,#admDash.open,#vbGoogleProfil:not([hidden]),#vbOnboard:not([hidden])');
-  const ouvrirConnexion=()=>{const b=document.querySelector('[data-auth-open="login"]');if(b)b.click();};
-  let fini=false;
-  const finDemarrage=()=>{if(fini)return;fini=true;html.classList.remove('vb-app-demarrage');};
-  setTimeout(finDemarrage,12000); // securite : l'ecran sombre ne reste jamais bloque
-  async function demarrer(){
-    if(window.VB_googleRetourEnCours){finDemarrage();return;}
-    let sb=window.VB_getSupabase&&window.VB_getSupabase();
-    for(let i=0;!sb&&i<10;i++){await new Promise(r=>setTimeout(r,300));sb=window.VB_getSupabase&&window.VB_getSupabase();}
-    let session=null;
-    try{if(sb)session=(await sb.auth.getSession()).data.session;}catch(e){}
-    if(!session||!session.user){if(!ouvert())accueilSansSession(sb);finDemarrage();return;}
-    // Session : on attend que le tableau de bord (ou autre ecran) s'ouvre.
-    // Session : on laisse la restauration habituelle ouvrir le bon ecran
-    // (tableau de bord, 2FA admin, paiement en attente) sans rien forcer.
-    for(let i=0;i<100&&!ouvert();i++)await new Promise(r=>setTimeout(r,100));
-    finDemarrage();
-  }
-  /* Premier lancement sans compte : apercu en 3 ecrans (une seule fois),
-     puis creation de compte ou connexion. Ensuite : connexion directe.
-     Le prix vient du premier plan en base (suit les changements de l'admin). */
-  const CLE_VU='vb_onboarding_vu';
-  function accueilSansSession(sb){
-    const box=document.getElementById('vbOnboard');
-    let vu=true;
-    try{vu=localStorage.getItem(CLE_VU)==='1';}catch(e){}
-    if(!box||vu){ouvrirConnexion();return;}
-    const piste=document.getElementById('vbOnbPiste');
-    const points=[...document.querySelectorAll('#vbOnbPoints i')];
-    const suivant=document.getElementById('vbOnbSuivant');
-    const fin=document.getElementById('vbOnbFin');
-    const nb=piste.children.length;
-    let idx=0;
-    const aller=i=>{
-      idx=Math.max(0,Math.min(nb-1,i));
-      piste.style.transform='translateX('+(-100*idx)+'%)';
-      points.forEach((p,k)=>p.classList.toggle('on',k===idx));
-      suivant.hidden=idx===nb-1;fin.hidden=idx!==nb-1;
-    };
-    const fermer=mode=>{
-      try{localStorage.setItem(CLE_VU,'1');}catch(e){}
-      box.hidden=true;document.body.style.overflow='';
-      const b=document.querySelector('[data-auth-open="'+mode+'"]');if(b)b.click();
-    };
-    suivant.addEventListener('click',()=>aller(idx+1));
-    document.getElementById('vbOnbPase').addEventListener('click',()=>fermer('login'));
-    document.getElementById('vbOnbCreer').addEventListener('click',()=>fermer('signup'));
-    document.getElementById('vbOnbConnecter').addEventListener('click',()=>fermer('login'));
-    let x0=null;
-    piste.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;},{passive:true});
-    piste.addEventListener('touchend',e=>{
-      if(x0===null)return;
-      const dx=e.changedTouches[0].clientX-x0;x0=null;
-      if(Math.abs(dx)>45)aller(idx+(dx<0?1:-1));
-    },{passive:true});
-    const prix=document.getElementById('vbOnbPlanPrix');
-    const repli=document.getElementById('hxPrice');
-    if(repli&&repli.textContent)prix.textContent=repli.textContent;
-    if(sb){
-      sb.from('plans').select('name,price_htg,rank').order('rank',{ascending:true}).limit(1).then(({data})=>{
-        const p=data&&data[0];if(!p)return;
-        if(p.name)document.getElementById('vbOnbPlanNom').textContent=p.name;
-        if(p.price_htg!=null)prix.textContent=String(p.price_htg).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
-      },()=>{});
-    }
-    aller(0);
-    box.hidden=false;document.body.style.overflow='hidden';
-  }
-  if(document.readyState==='complete')demarrer();
-  else window.VB_quandPret(demarrer);
-  // Deconnexion dans l'app : retour a la connexion, pas a l'accueil.
-  const sortie=document.getElementById('dashMenuExit');
-  if(sortie)sortie.addEventListener('click',()=>setTimeout(()=>{if(!ouvert())ouvrirConnexion();},50));
-})();
 
 /* AJOUTE (bug signale par James : retour de MonCash/NatCash affiche encore
    l'etape 3 au lieu de l'etape 4). Cause reelle : Safari mobile (et la
@@ -13359,15 +13190,11 @@ window.addEventListener('pageshow',(ev)=>{
 })();
 
 /* ---------- Application installable (17/10) ----------
-   - enregistre sw.js (il ne garde AUCUNE version du site en cache : seule
-     la page « pas de connexion » est conservee, voir sw.js) ;
    - boutons « Bientot sur App Store / Google Play » sous le titre : au clic,
      fenetre d'installation native (Chrome Android) ou explication en 3 etapes ;
-   - jamais affiche si l'application est deja ouverte en mode installe. */
+   - 19/10 (nuit) : plus de version application ; l'explication montre comment
+     mettre le site sur l'ecran d'accueil (simple raccourci). */
 (function(){
-  if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
-  }
   const itemMenu=document.getElementById('vbInstallMenu');
   const ficheIos=document.getElementById('vbIosSheet');
   const rangee=document.getElementById('vbStoreRow');
@@ -13375,7 +13202,7 @@ window.addEventListener('pageshow',(ev)=>{
   const etapesAndroid=document.getElementById('vbStepsAndroid');
   if(!ficheIos)return;
 
-  const estInstallee=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const estInstallee=()=>false;
   const ua=navigator.userAgent||'';
   const estIos=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   let invite=null;
@@ -13429,62 +13256,21 @@ window.addEventListener('pageshow',(ev)=>{
   rafraichir();
 })();
 
-/* ---------- Mode hors ligne de l'application installee (18/10) ----------
-   Lecture seule : l'abonne garde son Dashboard et ses dernieres fiches
-   quand le reseau coupe (les donnees viennent du cache du telephone, voir
-   sw.js). En ligne, rien ne change.
-   - VB_horsLigneOn  : a l'ouverture du Dashboard, autorise sw.js a garder
-     les donnees de CET utilisateur (app installee uniquement, jamais admin) ;
-   - VB_horsLigneOff : a la deconnexion, efface tout du telephone ;
-   - icone rouge « hors ligne » dans l'en-tete ;
-   - paiement, renouvellement et changement de mot de passe refuses sans
-     reseau, avec le message « Pa gen koneksyon ». */
+/* 19/10 (nuit) — Version application supprimee : les donnees qu'elle gardait
+   sur le telephone (caches du service worker, session de l'app) sont effacees.
+   VB_horsLigneOn / VB_horsLigneOff restent appeles par le Dashboard. */
 (function(){
-  const CACHES_DONNEES=['vbc-donnees-v1','vbc-config-v1'];
-  function versSw(msg){
-    if(!('serviceWorker' in navigator))return;
-    try{if(navigator.serviceWorker.controller)navigator.serviceWorker.controller.postMessage(msg);}catch(e){}
-    navigator.serviceWorker.ready.then(r=>{try{if(r.active)r.active.postMessage(msg);}catch(e){}}).catch(()=>{});
+  const CACHES_APP=['vbc-hors-ligne-v3','vbc-app-v1','vbc-donnees-v1','vbc-config-v1'];
+  function nettoyer(){
+    try{if(window.caches)CACHES_APP.forEach(n=>caches.delete(n).catch(()=>{}));}catch(e){}
   }
-  window.VB_horsLigneOn=async function(){
-    if(!(window.VB_estAppInstallee&&window.VB_estAppInstallee()))return;
-    const sb=window.VB_getSupabase&&window.VB_getSupabase();
-    if(!sb)return;
-    try{
-      const {data}=await sb.auth.getSession();
-      const uid=data&&data.session&&data.session.user&&data.session.user.id;
-      if(uid)versSw({type:'vb-donnees-on',uid});
-    }catch(e){}
-  };
-  window.VB_horsLigneOff=function(){
-    versSw({type:'vb-donnees-off'});
-    try{if(window.caches)CACHES_DONNEES.forEach(n=>caches.delete(n).catch(()=>{}));}catch(e){}
-  };
-
-  // Icone rouge : visible seulement sans reseau.
-  const maj=()=>document.documentElement.classList.toggle('vb-offline',navigator.onLine===false);
-  window.addEventListener('online',maj);
-  window.addEventListener('offline',maj);
-  maj();
-
-  // Actions qui exigent internet : refusees proprement hors ligne.
-  const RESEAU_OBLIGATOIRE='#dashExpiredCta,#dashSoonCta,#dashSubUpgrade,#dashChangePass,#wizPaySubmit,#wizChangePlan,#wizLockCta';
-  function refuser(ev){
-    ev.preventDefault();
-    ev.stopImmediatePropagation();
-    if(window.VB_toast){
-      const d=(typeof translations!=='undefined'&&(translations[currentLang]||translations.fr))||{};
-      window.VB_toast('auth_offline_h',d.auth_err_offline||'');
-    }
-  }
-  document.addEventListener('click',ev=>{
-    if(navigator.onLine!==false)return;
-    const cible=ev.target&&ev.target.closest&&ev.target.closest(RESEAU_OBLIGATOIRE);
-    if(cible)refuser(ev);
-  },true);
-  document.addEventListener('submit',ev=>{
-    if(navigator.onLine!==false)return;
-    if(ev.target&&ev.target.querySelector&&ev.target.querySelector('#wizPaySubmit'))refuser(ev);
-  },true);
+  window.VB_horsLigneOn=function(){};
+  window.VB_horsLigneOff=nettoyer;
+  nettoyer();
+  try{
+    if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations()
+      .then(rs=>rs.forEach(r=>r.unregister().catch(()=>{}))).catch(()=>{});
+  }catch(e){}
+  try{localStorage.removeItem('vb_onboarding_vu');}catch(e){}
 })();
 

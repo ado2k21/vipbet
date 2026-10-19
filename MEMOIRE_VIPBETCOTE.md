@@ -40,10 +40,8 @@
 
 ## 3. Leçons techniques (à ne JAMAIS oublier)
 
-1. **Session**
-   - Dans le navigateur : **sessionStorage**, une session par onglet.
-   - Dans l'app installée (PWA) : **localStorage**.
-   - Ne jamais repasser le site en localStorage : deux onglets (admin et client) mélangeraient alors les comptes.
+1. **Session** : par défaut **sessionStorage**, une session par onglet. Ne jamais repasser tout le site en localStorage : deux onglets (admin et client) mélangeraient les comptes. Exception voulue : case **« Sonje m »** cochée (abonné seulement) → session gardée dans localStorage 30 jours (`vb_sonje_jusqua`), choix de l'onglet dans `vb_sonje_onglet` ('1' gardée / '0' par onglet). Un admin n'est jamais gardé. Connexion : **email seulement** (champ « Imèl »).
+0. **19/10 (nuit) — Version application (PWA) et connexion Google SUPPRIMÉES** à la demande de l'utilisateur (trop de bugs). Plus de manifeste, d'écrans de démarrage, d'aperçu 3 écrans, de mode hors ligne ni de bouton Google. `sw.js` ne fait plus que nettoyer les anciens téléphones (caches + désinstallation) : **ne pas le supprimer**. Les boutons App Store / Google Play restent ; au clic, le cadre explique comment mettre le site sur l'écran d'accueil (simple raccourci). Les comptes Google sans mot de passe (3) passent par « Modpas bliye ». À faire par l'utilisateur : désactiver le fournisseur Google dans Supabase (Authentication → Providers).
 2. **Jamais de redirection betcote.netlify.app → vipbetcote.com dans `netlify.toml`.** Elle crée une boucle, car Cloudflare passe par betcote.netlify.app. Le commit `079fe6a` a coupé le site, puis a été annulé par `8961efe`.
 3. **CSP (`_headers`)**
    - `script-src` n'a pas `'unsafe-inline'` : **tout `<script>` inline dans `index.html` est bloqué**. Tout le JavaScript doit être dans `app.js`.
