@@ -271,7 +271,7 @@ adm_fiche_gen_basket_submit:"GÉNÉRER FICHE BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Ça peut prendre 1 à 2 minutes. Reviens dans quelques instants.",
 dtk_niveau_haut:"Fiable", dtk_niveau_moyen:"Modéré", dtk_niveau_bas:"Prudence",
 dtk_cd_min:"Premier match dans {n} min", dtk_cd_h:"Premier match dans {h}h{m}", dtk_cd_j:"Premier match dans {j} j", dtk_cd_bientot:"Premier match imminent", dtk_cd_encours:"Premier match en cours",
-dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez avec contrôle", share_type_foot:"FICHE FOOTBALL", share_type_basket:"FICHE BASKETBALL", share_type_exact:"FICHE SCORE EXACT", share_cta_sub:"Fiches VIP chaque jour", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉", dtk_share_titre_encours:"FICHE DU JOUR", dtk_share_titre_perdu:"MATCHS GAGNÉS", dtk_share_texte_perdu:"Résultat de la fiche VIP BETCOTE 📊", dtk_share_texte_encours:"La fiche du jour VIP BETCOTE 🔥",
+dtk_share_btn:"Partager sur WhatsApp", dtk_share_titre:"TICKET GAGNANT", tt_titre:"PRONOSTIC RÉUSSI", tt_titre_perdu:"PRONOSTICS RÉUSSIS", tt_total:"TOTAL", tt_cta_sub:"Analyses foot chaque jour", tt_mention:"18+ · Information seulement · Jouez avec contrôle", dtk_share_plus:"+{n} autre(s) sélection(s)", dtk_share_mention:"18+ · Jouez avec contrôle", share_type_foot:"FICHE FOOTBALL", share_type_basket:"FICHE BASKETBALL", share_type_exact:"FICHE SCORE EXACT", share_cta_sub:"Fiches VIP chaque jour", dtk_share_texte:"J'ai gagné avec VIP BETCOTE ! 🎉", dtk_share_titre_encours:"FICHE DU JOUR", dtk_share_titre_perdu:"MATCHS GAGNÉS", dtk_share_texte_perdu:"Résultat de la fiche VIP BETCOTE 📊", dtk_share_texte_encours:"La fiche du jour VIP BETCOTE 🔥",
 dash_locked_p:"Cette fiche fait partie d'un plan supérieur.", dash_locked_cta:"Voir le plan {plan}", dash_need_plan:"Plan requis",
 dash_empty_h:"Rien à afficher", dash_empty_today:"Aucune fiche ne correspond à ce filtre pour aujourd'hui.",
 dash_empty_err:"Impossible de lire les fiches pour le moment. Vérifiez votre connexion — elles réapparaîtront automatiquement.",
@@ -336,7 +336,7 @@ toast_mail_h:"E-mail de vérification envoyé",
 toast_mail_p:"Nous avons envoyé un code à {email}. Vérifiez votre boîte de réception, et le dossier spam si besoin.",
 dash_brand_sub:"Dashboard",
 dash_soon_cta:"Renouveler",
-dash_back:"Retour", renew_err_inferieur:"Vous ne pouvez pas passer à un plan inférieur tant que votre plan actuel n'est pas dans sa période de fin.",
+dash_back:"Retour", dash_reload:"Actualiser", renew_err_inferieur:"Vous ne pouvez pas passer à un plan inférieur tant que votre plan actuel n'est pas dans sa période de fin.",
 plan_changed_h:"Abonnement modifié", plan_changed_p:"Vous avez changé d'abonnement.",
 notif_plan_change:"Vous avez changé d'abonnement : {plan}",
 notif_renewed:"Votre abonnement {plan} a été renouvelé",
@@ -415,7 +415,7 @@ adm_fiches_load_more:"Charger plus",
 adm_fiches_sync_last:"Dernière synchronisation : {d}", adm_fiches_sync_never:"Aucune synchronisation enregistrée",
 adm_fiches_sync_next:"Prochaine génération automatique : {d}",
 adm_fiche_leg_locked:"Match terminé — résultat réglé, modification protégée",
-adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_commencee:"Un match de cette fiche a commencé — modification bloquée", adm_fiche_partager:"Partager la carte", adm_fiche_leg_edit:"Modifier ce match",
+adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_commencee:"Un match de cette fiche a commencé — modification bloquée", adm_fiche_partager:"Partager la carte", adm_fiche_partager_tt:"Carte TikTok", adm_fiche_leg_edit:"Modifier ce match",
 adm_fiche_odds_total:"Cote totale : {n}", adm_fiche_odds_range:"plage autorisée {min} – {max}",
 adm_fiche_odds_unlimited:"illimitée", adm_fiche_odds_risky:"{n} sélection(s) au-dessus de {max}",
 adm_fiche_err_odds_range:"Cote totale {n} hors de la plage autorisée ({min} – {max}).",
@@ -849,7 +849,7 @@ adm_fiche_gen_basket_submit:"GENERATE BASKETBALL SLIP",
 adm_fiche_gen_basket_bg_attente:"This can take 1 to 2 minutes. Check back shortly.",
 dtk_niveau_haut:"Reliable", dtk_niveau_moyen:"Moderate", dtk_niveau_bas:"Caution",
 dtk_cd_min:"First match in {n} min", dtk_cd_h:"First match in {h}h{m}", dtk_cd_j:"First match in {j} d", dtk_cd_bientot:"First match starting soon", dtk_cd_encours:"First match underway",
-dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play with control", share_type_foot:"FOOTBALL SLIP", share_type_basket:"BASKETBALL SLIP", share_type_exact:"EXACT SCORE SLIP", share_cta_sub:"VIP slips every day", dtk_share_texte:"I won with VIP BETCOTE! 🎉", dtk_share_titre_encours:"TODAY'S SLIP", dtk_share_titre_perdu:"MATCHES WON", dtk_share_texte_perdu:"VIP BETCOTE slip result 📊", dtk_share_texte_encours:"Today's VIP BETCOTE slip 🔥",
+dtk_share_btn:"Share on WhatsApp", dtk_share_titre:"WINNING TICKET", tt_titre:"PREDICTION HIT", tt_titre_perdu:"PREDICTIONS HIT", tt_total:"TOTAL", tt_cta_sub:"Football analysis every day", tt_mention:"18+ · Information only · Play with control", dtk_share_plus:"+{n} more selection(s)", dtk_share_mention:"18+ · Play with control", share_type_foot:"FOOTBALL SLIP", share_type_basket:"BASKETBALL SLIP", share_type_exact:"EXACT SCORE SLIP", share_cta_sub:"VIP slips every day", dtk_share_texte:"I won with VIP BETCOTE! 🎉", dtk_share_titre_encours:"TODAY'S SLIP", dtk_share_titre_perdu:"MATCHES WON", dtk_share_texte_perdu:"VIP BETCOTE slip result 📊", dtk_share_texte_encours:"Today's VIP BETCOTE slip 🔥",
 dash_locked_p:"This slip belongs to a higher plan.", dash_locked_cta:"See the {plan} plan", dash_need_plan:"Required plan",
 dash_empty_h:"Nothing to show", dash_empty_today:"No slip matches this filter for today.",
 dash_empty_err:"Slips can't be loaded right now. Check your connection — they will come back automatically.",
@@ -914,7 +914,7 @@ toast_mail_h:"Verification email sent",
 toast_mail_p:"We sent a code to {email}. Check your inbox, and your spam folder if needed.",
 dash_brand_sub:"Dashboard",
 dash_soon_cta:"Renew",
-dash_back:"Back", renew_err_inferieur:"You can't move to a lower plan until your current plan reaches its end period.",
+dash_back:"Back", dash_reload:"Refresh", renew_err_inferieur:"You can't move to a lower plan until your current plan reaches its end period.",
 plan_changed_h:"Plan changed", plan_changed_p:"You have changed your plan.",
 notif_plan_change:"You changed your plan: {plan}",
 notif_renewed:"Your {plan} plan has been renewed",
@@ -993,7 +993,7 @@ adm_fiches_load_more:"Load more",
 adm_fiches_sync_last:"Last sync: {d}", adm_fiches_sync_never:"No sync recorded yet",
 adm_fiches_sync_next:"Next automatic generation: {d}",
 adm_fiche_leg_locked:"Match finished — result settled, editing protected",
-adm_fiche_leg_unlock:"Edit anyway", adm_fiche_commencee:"A match in this slip has started — editing locked", adm_fiche_partager:"Share the card", adm_fiche_leg_edit:"Edit this match",
+adm_fiche_leg_unlock:"Edit anyway", adm_fiche_commencee:"A match in this slip has started — editing locked", adm_fiche_partager:"Share the card", adm_fiche_partager_tt:"TikTok card", adm_fiche_leg_edit:"Edit this match",
 adm_fiche_odds_total:"Total odds: {n}", adm_fiche_odds_range:"allowed range {min} – {max}",
 adm_fiche_odds_unlimited:"unlimited", adm_fiche_odds_risky:"{n} selection(s) above {max}",
 adm_fiche_err_odds_range:"Total odds {n} outside the allowed range ({min} – {max}).",
@@ -1427,7 +1427,7 @@ adm_fiche_gen_basket_submit:"JENERE FICH BASKETBALL",
 adm_fiche_gen_basket_bg_attente:"Sa ka pran 1 a 2 minit. Retounen gade nan yon ti moman.",
 dtk_niveau_haut:"Fyab", dtk_niveau_moyen:"Modere", dtk_niveau_bas:"Prekosyon",
 dtk_cd_min:"Premye match nan {n} min", dtk_cd_h:"Premye match nan {h}è{m}", dtk_cd_j:"Premye match nan {j} jou", dtk_cd_bientot:"Premye match pral kòmanse", dtk_cd_encours:"Premye match ap jwe",
-dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe ak kontwòl", share_type_foot:"FICH FOUTBÒL", share_type_basket:"FICH BASKÈT", share_type_exact:"FICH SKÒ EGZAK", share_cta_sub:"Fich VIP chak jou", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉", dtk_share_titre_encours:"FICH JOU A", dtk_share_titre_perdu:"MATCH GENYEN", dtk_share_texte_perdu:"Rezilta fich VIP BETCOTE a 📊", dtk_share_texte_encours:"Fich jou a VIP BETCOTE 🔥",
+dtk_share_btn:"Pataje sou WhatsApp", dtk_share_titre:"TIKÈT GENYEN", tt_titre:"PWONOSTIK REYISI", tt_titre_perdu:"PWONOSTIK REYISI", tt_total:"TOTAL", tt_cta_sub:"Analiz foutbòl chak jou", tt_mention:"18+ · Enfòmasyon sèlman · Jwe ak kontwòl", dtk_share_plus:"+{n} lòt seleksyon", dtk_share_mention:"18+ · Jwe ak kontwòl", share_type_foot:"FICH FOUTBÒL", share_type_basket:"FICH BASKÈT", share_type_exact:"FICH SKÒ EGZAK", share_cta_sub:"Fich VIP chak jou", dtk_share_texte:"Mwen genyen ak VIP BETCOTE! 🎉", dtk_share_titre_encours:"FICH JOU A", dtk_share_titre_perdu:"MATCH GENYEN", dtk_share_texte_perdu:"Rezilta fich VIP BETCOTE a 📊", dtk_share_texte_encours:"Fich jou a VIP BETCOTE 🔥",
 dash_locked_p:"Fich sa a nan yon plan ki pi wo.", dash_locked_cta:"Wè plan {plan} an", dash_need_plan:"Plan ki mande",
 dash_empty_h:"Pa gen anyen pou montre", dash_empty_today:"Pa gen fich ki matche ak filtè sa a pou jodi a.",
 dash_empty_err:"Nou pa ka li fich yo kounye a. Tcheke koneksyon w — y ap retounen otomatikman.",
@@ -1492,7 +1492,7 @@ toast_mail_h:"Imèl verifikasyon an voye",
 toast_mail_p:"Nou voye yon kòd nan {email}. Tcheke bwat resepsyon ou, ak dosye spam nan si sa nesesè.",
 dash_brand_sub:"Dashboard",
 dash_soon_cta:"Renouvle",
-dash_back:"Retounen", renew_err_inferieur:"Ou pa ka desann nan yon plan pi ba toutotan plan ou an poko nan peryòd fen li.",
+dash_back:"Retounen", dash_reload:"Rafrechi", renew_err_inferieur:"Ou pa ka desann nan yon plan pi ba toutotan plan ou an poko nan peryòd fen li.",
 plan_changed_h:"Abònman chanje", plan_changed_p:"Ou chanje abònman ou.",
 notif_plan_change:"Ou chanje abònman ou : {plan}",
 notif_renewed:"Abònman {plan} ou an renouvle",
@@ -1571,7 +1571,7 @@ adm_fiches_load_more:"Chaje plis",
 adm_fiches_sync_last:"Dènye senkronizasyon : {d}", adm_fiches_sync_never:"Pa gen senkronizasyon anrejistre",
 adm_fiches_sync_next:"Pwochen jenerasyon otomatik : {d}",
 adm_fiche_leg_locked:"Match fini — rezilta regle, modifikasyon pwoteje",
-adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_commencee:"Yon match nan fich sa a kòmanse — pa ka modifye ankò", adm_fiche_partager:"Pataje kat la", adm_fiche_leg_edit:"Modifye match sa a",
+adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_commencee:"Yon match nan fich sa a kòmanse — pa ka modifye ankò", adm_fiche_partager:"Pataje kat la", adm_fiche_partager_tt:"Kat TikTok", adm_fiche_leg_edit:"Modifye match sa a",
 adm_fiche_odds_total:"Kòt total : {n}", adm_fiche_odds_range:"plaj otorize {min} – {max}",
 adm_fiche_odds_unlimited:"san limit", adm_fiche_odds_risky:"{n} seleksyon pi wo pase {max}",
 adm_fiche_err_odds_range:"Kòt total {n} deyò plaj otorize a ({min} – {max}).",
@@ -3312,15 +3312,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         if(estNonVerifie)return {ok:false,emailNonVerifie:true,erreur:'Votre email doit d\'abord etre verifie (code recu par email) avant de pouvoir vous abonner.'};
         return {ok:true,hors_ligne:true,erreur:'payments: '+(payErr.message||JSON.stringify(payErr))};
       }
-      // Notification "paiement en attente" : l'evenement existe des
-      // maintenant cote base, et sera suivi plus tard d'une notification
-      // DISTINCTE de validation ou de refus emise par l'admin — jamais
-      // d'un simple remplacement de celle-ci.
-      try{
-        await sb.from('notifications').insert({
-          user_id:uid, type:'payment_pending', plan_id:planAEcrire, reason:null
-        });
-      }catch(e){}
+      // Notification "paiement en attente" : creee PAR LA BASE au moment du
+      // depot (declencheur trg_notif_paiement_en_attente_user, 20/10) — le
+      // site n'a pas le droit d'ecrire dans notifications (reserve a l'admin).
       return {ok:true,hors_ligne:false};
     }catch(e){
       return {ok:true,hors_ligne:true,erreur:(e&&e.message)?e.message:String(e)};
@@ -5733,10 +5727,24 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // 19/10 : fiche PERDUE (partage admin, Historique) : vrais resultats (✓ / ✗), « 4/5 MATCH GENYEN »,
     // cote totale de la fiche inchangee. Fond sombre, jamais les couleurs de victoire.
     const perdu=!enCours&&!!tk.perdu;
-    const sombre=enCours||perdu;
+    // 20/10 : version TikTok (admin uniquement) : autres couleurs (nuit, cyan, rose),
+    // memes vrais resultats ; fiche score exact gagnee sans cote totale.
+    const tiktok=!enCours&&!!tk.tiktok;
+    const sombre=enCours||perdu||tiktok;
+    // Couleurs du SITE : nuit #030617, vert #2ED47F, or #C9A44C. Gagnee = vert, perdue = ardoise + corail.
+    const CYAN=perdu?'#F0B4A6':'#2ED47F',ROSE=perdu?'#F0735E':'#C9A44C';
+    const degradeTT=(x0,y0,x1,y1)=>{const d=ctx.createLinearGradient(x0,y0,x1,y1);d.addColorStop(0,CYAN);d.addColorStop(1,ROSE);return d;};
 
     let g;
-    if(perdu){
+    if(tiktok){
+      g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,perdu?'#0E1424':'#06142A');g.addColorStop(1,'#030617');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      g=ctx.createRadialGradient(W/2,0,0,W/2,0,950);g.addColorStop(0,perdu?'rgba(240,115,94,.16)':'rgba(46,212,127,.26)');g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      g=ctx.createRadialGradient(W,H,0,W,H,900);g.addColorStop(0,perdu?'rgba(143,155,176,.14)':'rgba(201,164,76,.22)');g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle=degradeTT(0,0,W,H);ctx.lineWidth=7;rr(22,22,W-44,H-44,52);ctx.stroke();
+    }else if(perdu){
       g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0B1426');g.addColorStop(1,'#050913');
       ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
       g=ctx.createRadialGradient(W/2,0,0,W/2,0,950);g.addColorStop(0,'rgba(232,206,138,.22)');g.addColorStop(1,'rgba(232,206,138,0)');
@@ -5781,15 +5789,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ctx.font='800 64px '+SORA;ctx.fillStyle='#fff';ctx.fillText('VIP',lx+112,ly+70);
     const wVip=ctx.measureText('VIP').width;ctx.fillStyle='#E8CE8A';ctx.fillText('BETCOTE',lx+112+wVip,ly+70);
 
-    const titre=t(enCours?'dtk_share_titre_encours':'dtk_share_titre');
+    const titre=t(enCours?'dtk_share_titre_encours':tiktok?'tt_titre':'dtk_share_titre');
     ctx.font='800 84px '+SORA;
     if(perdu){
       const jouees=(tk.legs||[]).filter(l=>l.result!=='void');
       const nbOk=jouees.filter(l=>l.result==='won').length;
       ctx.textAlign='center';
-      g=ctx.createLinearGradient(0,240,0,400);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
+      if(tiktok)g=degradeTT(W/2-260,0,W/2+260,0);
+      else{g=ctx.createLinearGradient(0,240,0,400);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');}
       ctx.fillStyle=g;ctx.font='800 170px '+SORA;ctx.fillText(nbOk+'/'+jouees.length,W/2,395);
-      ctx.fillStyle='#FFFFFF';ctx.font='800 64px '+SORA;ctx.fillText(t('dtk_share_titre_perdu'),W/2,478);
+      ctx.fillStyle='#FFFFFF';ctx.font='800 64px '+SORA;ctx.fillText(t(tiktok?'tt_titre_perdu':'dtk_share_titre_perdu'),W/2,478);
       ctx.textAlign='left';
     }else if(enCours){
       ctx.textAlign='center';ctx.fillStyle='#E8CE8A';ctx.fillText(titre,W/2,360);ctx.textAlign='left';
@@ -5811,8 +5820,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ctx.textAlign='center';ctx.fillStyle='#FFFFFF';ctx.fillText(titre,W/2,470);ctx.textAlign='left';
     }
     const estExact=tk.scoreCount>0&&tk.scoreCount>=tk.legsCount;
+    const sansTotal=tiktok&&estExact&&!perdu;          // TikTok : score exact gagne, cote de chaque match seulement
     const typeTxt=estExact?t('share_type_exact'):((tk.sport==='basket'||tk.sport==='nba')?t('share_type_basket'):t('share_type_foot'));
-    ctx.font=(enCours?'600 30px ':'700 32px ')+INTER;ctx.fillStyle=enCours?'#8F9BB0':'#E8CE8A';ctx.textAlign='center';
+    ctx.font=(enCours?'600 30px ':'700 32px ')+INTER;ctx.fillStyle=enCours?'#8F9BB0':tiktok?CYAN:'#E8CE8A';ctx.textAlign='center';
     ctx.fillText(typeTxt.split('').join(String.fromCharCode(8202)),W/2,enCours?430:530);
 
     // Selections. 19/10 (nuit) : mise en page ADAPTATIVE. Avant, 7 lignes fixes
@@ -5825,7 +5835,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const nAff=Math.min(legs.length,MAX),plus=legs.length>MAX;
     const compact=nAff>5;
     const yDebut=enCours?480:575,yFin=1612;           // bandeau du bas a 1640
-    const TB=compact?215:300;                          // bloc « cote totale »
+    const TB=sansTotal?0:(compact?215:300);            // bloc « cote totale »
     const dispo=yFin-yDebut-TB-(plus?46:0);
     const HL=Math.max(56,Math.min(150,Math.floor(dispo/Math.max(1,nAff))));
     const ecart=Math.max(8,Math.round(HL*0.12)),bh=HL-ecart;
@@ -5863,7 +5873,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
       // Cote du match a droite, puis les textes dans la place qui reste.
       const fO=Math.min(44,Math.round(bh*0.42));
-      ctx.textAlign='right';ctx.fillStyle='#E8CE8A';ctx.font='800 '+fO+'px '+SORA;
+      ctx.textAlign='right';ctx.fillStyle=(tiktok&&!perdu)?CYAN:'#E8CE8A';ctx.font='800 '+fO+'px '+SORA;
       const coteTxt=Number(lg.odd).toFixed(2);ctx.fillText(coteTxt,X+LW-30,cy+Math.round(fO*0.36));
       const maxW=(X+LW-30-ctx.measureText(coteTxt).width-24)-tx;
       ctx.textAlign='left';
@@ -5889,24 +5899,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // Cote totale (plus compacte quand il y a beaucoup de matchs)
     ctx.textAlign='center';
     const valeurTotale=(perdu&&tk.totalOdd?Number(tk.totalOdd):totalOdd(tk)).toFixed(2);
-    if(compact){
-      ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 26px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+52);
-      g=ctx.createLinearGradient(0,y+80,0,y+180);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
+    if(sansTotal){
+      // rien : la carte TikTok score exact n'affiche que la cote de chaque match
+    }else if(compact){
+      ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 26px '+INTER;ctx.fillText(t(tiktok?'tt_total':'dash_totalodd').toUpperCase(),W/2,y+52);
+      if(tiktok)g=degradeTT(W/2-220,0,W/2+220,0);
+      else{g=ctx.createLinearGradient(0,y+80,0,y+180);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');}
       ctx.fillStyle=g;ctx.font='800 112px '+SORA;ctx.fillText(valeurTotale,W/2,y+178);
     }else{
-      ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 30px '+INTER;ctx.fillText(t('dash_totalodd').toUpperCase(),W/2,y+80);
-      g=ctx.createLinearGradient(0,y+110,0,y+240);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');
+      ctx.fillStyle=sombre?'#8F9BB0':'#BDEFD3';ctx.font='700 30px '+INTER;ctx.fillText(t(tiktok?'tt_total':'dash_totalodd').toUpperCase(),W/2,y+80);
+      if(tiktok)g=degradeTT(W/2-280,0,W/2+280,0);
+      else{g=ctx.createLinearGradient(0,y+110,0,y+240);g.addColorStop(0,'#FFF1C9');g.addColorStop(1,'#D9B766');}
       ctx.fillStyle=g;ctx.font='800 150px '+SORA;ctx.fillText(valeurTotale,W/2,y+235);
     }
 
     // Bandeau lien (lien de parrainage s'il existe, sinon le site)
     const lien=lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com';
-    ctx.fillStyle='#C9A44C';rr(60,1640,W-120,150,36);ctx.fill();
-    ctx.fillStyle='#1A1405';ctx.font='800 44px '+SORA;ctx.fillText(tronqueTexte(lien,34),W/2,1712);
-    ctx.font='700 30px '+INTER;ctx.globalAlpha=.85;ctx.fillText(t('share_cta_sub'),W/2,1758);ctx.globalAlpha=1;
+    ctx.fillStyle=tiktok?degradeTT(60,0,W-60,0):'#C9A44C';rr(60,1640,W-120,150,36);ctx.fill();
+    ctx.fillStyle=tiktok?'#050510':'#1A1405';ctx.font='800 44px '+SORA;ctx.fillText(tronqueTexte(lien,34),W/2,1712);
+    ctx.font='700 30px '+INTER;ctx.globalAlpha=.85;ctx.fillText(t(tiktok?'tt_cta_sub':'share_cta_sub'),W/2,1758);ctx.globalAlpha=1;
 
     // Mention responsable, jamais omise
-    ctx.fillStyle=sombre?'#6F7C92':'#8FD9AE';ctx.font='500 26px '+INTER;ctx.fillText(t('dtk_share_mention'),W/2,H-50);
+    ctx.fillStyle=tiktok?'#9AA3B8':sombre?'#6F7C92':'#8FD9AE';ctx.font='500 26px '+INTER;ctx.fillText(t(tiktok?'tt_mention':'dtk_share_mention'),W/2,H-50);
 
     return new Promise(resolve=>cv.toBlob(resolve,'image/png',0.95));
   }
@@ -5921,9 +5935,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{
       const blob=await genererImageTicketGagnant(tk);
       if(!blob)throw new Error('image');
-      const fichier=new File([blob],'vip-betcote-ticket.png',{type:'image/png'});
+      const fichier=new File([blob],(tk&&tk.tiktok)?'vip-betcote-tiktok.png':'vip-betcote-ticket.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[fichier]})){
-        await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t((tk&&tk.enCours)?'dtk_share_texte_encours':(tk&&tk.perdu)?'dtk_share_texte_perdu':'dtk_share_texte')+' '+('https://'+(lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
+        if(tk&&tk.tiktok)await navigator.share({files:[fichier],title:'VIP BETCOTE'});
+        else await navigator.share({files:[fichier],title:'VIP BETCOTE',text:t((tk&&tk.enCours)?'dtk_share_texte_encours':(tk&&tk.perdu)?'dtk_share_texte_perdu':'dtk_share_texte')+' '+('https://'+(lienImpose||(window.VB_lienPartage&&window.VB_lienPartage())||'vipbetcote.com/?src=partage'))});
       }else{
         // Repli (29/08) : navigateur sans partage de fichier (surtout
         // desktop) -- telechargement direct plutot que rien.
@@ -6084,7 +6099,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{
       const limiteISO=new Date(minuitHaitiMs(aujourdHuiHaiti())-90*86400000).toISOString().slice(0,10);
       const {data:fiches,error}=await sb.from('tickets')
-        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,legs_count,total_odd,score_legs_count')
+        .select('id,code,sport,min_plan_rank,status,confidence,play_date,published,legs_count,total_odd,score_legs_count,created_at,scheduled_publish_at,settled_at')
         .eq('published',true).gte('play_date',limiteISO)
         .order('play_date',{ascending:false}).order('min_plan_rank',{ascending:true});
       if(error)throw error;
@@ -6121,6 +6136,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           id:tk.code||String(tk.id).slice(0,8).toUpperCase(),
           playDate:tk.play_date,
           day:ecartJoursHaiti(tk.play_date),
+          // 20/10 : vrais instants (notifications dans l'ordre reel) — publication
+          // = heure programmee si elle existe, sinon creation ; reglement = settled_at.
+          publieTs:(function(){const c=tk.created_at?Date.parse(tk.created_at):0,pr=tk.scheduled_publish_at?Date.parse(tk.scheduled_publish_at):0;return Math.max(c||0,pr||0)||null;})(),
+          regleTs:tk.settled_at?Date.parse(tk.settled_at):null,
           sport:tk.sport,
           minPlan:tk.min_plan_rank,
           status:tk.status,
@@ -6275,7 +6294,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const {data:rows,error}=await sb.from('notifications')
         .select('id,type,plan_id,reason,read,created_at')
         .eq('user_id',st.supabaseUserId)
-        .order('created_at',{ascending:false}).limit(20);
+        .order('created_at',{ascending:false}).limit(50);
       if(error||!rows)return false;
       const avant=JSON.stringify(notifsReels);
       notifsReels=rows;
@@ -6391,17 +6410,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
       // 3. Rappel de fin de plan
       else if(d!==null&&RAPPEL[st.planId]!=null&&d<=RAPPEL[st.planId]){
-        out.push({id:'soon'+d,type:'sub',kind:'warn',cat:'plan',texte:t('notif_soon').replace('{n}',d),ts:Date.now()});
+        // 20/10 : instant reel ou il restait d jours (jamais « a l'instant » a chaque ouverture).
+        out.push({id:'soon'+d,type:'sub',kind:'warn',cat:'plan',texte:t('notif_soon').replace('{n}',d),ts:Math.min(Date.now(),new Date(st.endDate).getTime()-d*86400000)});
       }
     }
 
     // 4. Fiches du jour reellement accessibles avec le plan actif
-    const dispo=DATA.tickets.filter(k=>estDuJour(k)&&accessibleTk(k)).length;
-    if(dispo>0)out.push({id:'today'+dispo,type:'new',kind:'new',cat:'fiche',texte:t('notif_today').replace('{n}',dispo),ts:Date.now()});
+    // 20/10 : horodatee a la publication REELLE de la derniere fiche du jour.
+    const duJour=DATA.tickets.filter(k=>estDuJour(k)&&accessibleTk(k));
+    const dispo=duJour.length;
+    const tsPub=duJour.reduce((m,k)=>Math.max(m,k.publieTs||0),0);
+    if(dispo>0)out.push({id:'today'+dispo,type:'new',kind:'new',cat:'fiche',texte:t('notif_today').replace('{n}',dispo),ts:Math.min(Date.now(),tsPub||Date.now())});
 
     // 5. Dernier resultat gagnant de l'historique
+    // 20/10 : la plus RECENTE reglee (settled_at), horodatee a son vrai reglement.
     const won=DATA.tickets.filter(k=>k.status==='won'&&accessibleTk(k))
-                          .sort((a,b)=>a.day-b.day)[0];
+                          .sort((a,b)=>(b.regleTs||0)-(a.regleTs||0)||a.day-b.day)[0];
     // CORRIGÉ (retour explicite de James, 04/09) : affichait auparavant le
     // code technique brut de la fiche (ex. "BOT-2026-09-02-FOOT-R3-EXACT")
     // directement dans la notification — en plus d'être un mauvais format,
@@ -6412,7 +6436,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const estExact=won.scoreCount>0&&won.scoreCount>=won.legsCount;
       const cle=estExact?'notif_won_exact':((won.sport==='basket'||won.sport==='nba')?'notif_won_basket':'notif_won_foot');
       out.push({id:'won'+won.uid,type:'won',kind:'won',cat:'fiche',texte:t(cle),
-                     ts:Date.now()-won.day*86400000});
+                     ts:won.regleTs?Math.min(Date.now(),won.regleTs):Date.now()-won.day*86400000});
     }
 
     out.sort((a,b)=>b.ts-a.ts);
@@ -6428,7 +6452,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // propre statut 'read' en base, jamais sur le seul marqueur local —
     // sinon deux appareils du meme compte se desynchroniseraient l'un
     // l'autre sur ce qui est deja lu ou non.
-    return out.slice(0,12).map(n=>({...n,unread:n.sbId!=null?!n.sbRead:!lus[n.id]}));
+    return out.slice(0,50).map(n=>({...n,unread:n.sbId!=null?!n.sbRead:!lus[n.id]}));
   }
   let notifs=[];
 
@@ -7554,6 +7578,37 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(view!=='today'){setView('today',true);return;}
       // deja sur la vue d'accueil : le bouton ne fait rien
     });
+  });
+
+  /* 20/10 : bouton « Rafrechi » a cote de chaque « Retounen » — relit fiches,
+     abonnement et notifications depuis la base, sans recharger la page. */
+  const ICO_RECHARGE='<svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>';
+  let rechargeEnCours=false;
+  async function rechargerDash(){
+    if(rechargeEnCours)return;
+    rechargeEnCours=true;
+    const btns=document.querySelectorAll('.dash-reload');
+    btns.forEach(b=>{b.classList.add('tourne');b.disabled=true;});
+    const debut=Date.now();
+    try{
+      const taches=[rafraichirFiches(true),chargerNotifsReelles().then(()=>renderNotifs())];
+      if(window.VB_syncPayStatus)taches.push(window.VB_syncPayStatus().then(()=>renderSub()));
+      await Promise.all(taches.map(p=>Promise.resolve(p).catch(()=>{})));
+    }finally{
+      // au moins 0,6 s d'animation : le geste doit se voir meme si tout est deja a jour
+      setTimeout(()=>{btns.forEach(b=>{b.classList.remove('tourne');b.disabled=false;});rechargeEnCours=false;},Math.max(0,600-(Date.now()-debut)));
+    }
+  }
+  document.querySelectorAll('[data-dback]').forEach(b=>{
+    const r=document.createElement('button');
+    r.type='button';r.className='dash-reload';
+    r.setAttribute('aria-label',t('dash_reload'));r.title=t('dash_reload');
+    r.innerHTML=ICO_RECHARGE;
+    r.addEventListener('click',rechargerDash);
+    b.insertAdjacentElement('afterend',r);
+  });
+  document.addEventListener('vb:langchange',()=>{
+    document.querySelectorAll('.dash-reload').forEach(r=>{r.setAttribute('aria-label',t('dash_reload'));r.title=t('dash_reload');});
   });
 
   /* Menu du dashboard */
@@ -10638,9 +10693,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         '<span class="admf-card-total">'+Number(tk.total_odd||0).toFixed(2)+'</span>'+
       '</div>'+
       (ficheTerminee
-        ?(tk.status==='won'?'<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'">'+t('adm_fiche_partager')+'</button>'
+        ?(tk.status==='won'?'<div class="admf-share-row"><button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'">'+t('adm_fiche_partager')+'</button>'+
+            '<button type="button" class="admf-edit admf-share admf-share-tt" data-sharefid="'+tk.id+'" data-tiktok="1">'+t('adm_fiche_partager_tt')+'</button></div>'
           // 19/10 : fiche perdue, partage reserve a l'admin (vrais resultats, cote inchangee)
-          :tk.status==='lost'?'<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-perdu="1">'+t('adm_fiche_partager')+'</button>':'')
+          :tk.status==='lost'?'<div class="admf-share-row"><button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-perdu="1">'+t('adm_fiche_partager')+'</button>'+
+            '<button type="button" class="admf-edit admf-share admf-share-tt" data-sharefid="'+tk.id+'" data-perdu="1" data-tiktok="1">'+t('adm_fiche_partager_tt')+'</button></div>':'')
         :(ficheBloquee?'':'<button type="button" class="admf-edit" data-editfid="'+tk.id+'">'+t('adm_fiche_leg_edit')+'</button>')+
          '<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-encours="1">'+t('adm_fiche_partager')+'</button>')+
     '</div>';
@@ -10995,7 +11052,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           try{
             const enCours=b.dataset.encours==='1';
             await window.VB_partagerTicket({sport:tk.sport,scoreCount:Number(tk.score_legs_count)||0,legsCount:Number(tk.legs_count)||ls.length,
-              totalOdd:Number(tk.total_odd)||0,enCours:enCours,perdu:b.dataset.perdu==='1',
+              totalOdd:Number(tk.total_odd)||0,enCours:enCours,perdu:b.dataset.perdu==='1',tiktok:b.dataset.tiktok==='1',
               legs:ls.map(l=>({match:l.match_label||'',league:l.league||'',leagueCountry:l.league_country||'',pick:l.pick||'',odd:Number(l.odd)||0,
                 result:enCours?null:(l.result||null),kickoff:l.kickoff_at||null,heure:l.kickoff_at?'':(l.match_time||'')}))},
               {lien:'vipbetcote.com'});

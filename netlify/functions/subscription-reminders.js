@@ -80,6 +80,16 @@ exports.handler = async () => {
     }
 
     const abonnements = await lectureResp.json();
+
+    // 20/10 : vrais noms des plans (VIP 7 JOU...) au lieu de p1/p2. Lecture
+    // non bloquante : en cas d'echec, repli sur l'identifiant.
+    const nomsPlans = {};
+    try {
+      const rp = await fetch(`${SUPABASE_URL}/rest/v1/plans?select=id,name`, {
+        headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
+      });
+      if (rp.ok) (await rp.json()).forEach(pl => { if (pl && pl.id && pl.name) nomsPlans[pl.id] = pl.name; });
+    } catch (e) { /* repli sur l'identifiant */ }
     let envoyes = 0;
     let echecs = 0;
     const erreurs = [];
@@ -95,7 +105,7 @@ exports.handler = async () => {
         year: 'numeric'
       });
 
-      const html = construireEmailRappel(nom, sub.plan_id, dateExpiration);
+      const html = construireEmailRappel(nom, nomsPlans[sub.plan_id] || String(sub.plan_id || '').toUpperCase(), dateExpiration);
 
       try {
         const envoiResp = await fetch('https://api.resend.com/emails', {
@@ -149,8 +159,13 @@ exports.handler = async () => {
  * dore), adaptee au contenu d'un rappel plutot qu'un code.
  * =========================================================
  */
-function construireEmailRappel(nom, planId, dateExpiration) {
-  const salutation = nom ? `Bonjour ${nom},` : 'Bonjour,';
+// Lien direct : ouvre la connexion (ou le tableau de bord si deja connecte).
+const LIEN_RENOUVELER = 'https://vipbetcote.com/login';
+// Le nom d'utilisateur est saisi par l'abonne : jamais insere tel quel dans le HTML.
+const echapper = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function construireEmailRappel(nom, nomPlan, dateExpiration) {
+  const salutation = nom ? `Bonjour ${echapper(nom)},` : 'Bonjour,';
   return `
 <!DOCTYPE html>
 <html lang="fr">
@@ -175,13 +190,14 @@ function construireEmailRappel(nom, planId, dateExpiration) {
 <tr><td style="padding:28px 28px 26px;background:#081020;">
 <h1 style="margin:0 0 12px;text-align:center;font-size:22px;line-height:29px;font-weight:800;color:#F4F3ED;">Votre abonnement expire bientôt</h1>
 <p style="margin:0 auto 20px;max-width:430px;text-align:center;font-size:14px;line-height:21px;color:#93A89B;">${salutation}<br><br>
-Votre abonnement <strong style="color:#F4F3ED">${(planId || '').toUpperCase()}</strong> expire le <strong style="color:#F4F3ED">${dateExpiration}</strong>. Renouvelez dès maintenant pour ne pas perdre l'accès à vos fiches.</p>
+Votre abonnement <strong style="color:#F4F3ED">${echapper(nomPlan)}</strong> expire le <strong style="color:#F4F3ED">${dateExpiration}</strong>. Renouvelez dès maintenant pour ne pas perdre l'accès à vos fiches.</p>
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width:100%;background:#0E1728;border:1px solid rgba(201,164,76,.38);border-radius:12px;">
-<tr><td align="center" style="padding:16px 12px;">
-<div style="font-size:13px;line-height:19px;color:#E8CE8A;">Connectez-vous à votre tableau de bord pour renouveler votre plan.</div>
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" align="center" style="margin:0 auto;">
+<tr><td align="center" style="border-radius:12px;background:#C9A44C;">
+<a href="${LIEN_RENOUVELER}" target="_blank" style="display:inline-block;padding:14px 30px;font-size:15px;line-height:20px;font-weight:800;color:#1E1503;text-decoration:none;border-radius:12px;">Renouveler mon plan</a>
 </td></tr>
 </table>
+<p style="margin:16px 0 0;text-align:center;font-size:12px;line-height:18px;color:#93A89B;">Ou ouvrez ce lien : <a href="${LIEN_RENOUVELER}" target="_blank" style="color:#E8CE8A;text-decoration:underline;">vipbetcote.com/login</a></p>
 
 </td></tr>
 

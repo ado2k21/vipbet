@@ -83,6 +83,9 @@
 22. **Adresses directes (sitelinks Google)** : `/signup`, `/login`, `/winning-tickets`, `/pricing`, `/how-it-works`, `/faq` (+ `/plan`, `/plans`, `/abonnements`). Réécritures 200 vers index.html dans `netlify.toml` ; `app.js` (bloc « Routage simple ») ouvre la section, change titre/description/canonique. Menu et pied de page pointent vers ces adresses (le gestionnaire d'ancres les fait défiler sans rechargement). `domaine.js` retire la barre finale (`/login/` casserait les chemins relatifs). Listées dans `sitemap.xml`. Mots en ANGLAIS (choix de l'utilisateur).
 23. **Bande du landing sous la barre Safari iOS** : quand une page plein écran est ouverte (`.authpage/.dash/.legalpage/.faqpage.open`), le landing est masqué en CSS (`body:has(...)`).
 24. **Branches fusionnées le 20/10** : `fix/xss-admin-usernames` (escH sur nom/email/motif dans le panneau admin) et `fix/suspension-t-indefini` (vbTr pour le message de suspension). Ne plus les recréer.
+25. **Notifications abonné** : horodatage RÉEL (publication = max(created_at, scheduled_publish_at), gain = settled_at, rappel = endDate − n jours), 50 max, défilement. « payment_pending » est créée PAR LA BASE (déclencheur `trg_notif_paiement_en_attente_user`, dépôts manuels moncash/natcash) : le site n'a pas le droit d'insérer dans notifications. Bouton « Rafrechi » à côté de chaque « Retounen » du Dashboard.
+26. **Email de rappel** (`subscription-reminders.js`) : vrai nom du plan lu dans `plans` à chaque envoi, bouton « Renouveler mon plan » → https://vipbetcote.com/login, nom échappé.
+27. **Carte TikTok** (admin seulement, Historique, bouton « Kat TikTok » à droite de « Pataje kat la ») : couleurs du site (gagnée vert/or, perdue ardoise/corail), vocabulaire « PWONOSTIK REYISI » / « TOTAL », mention « Enfòmasyon sèlman », partage sans légende. Score exact gagné = pas de total.
 
 ---
 
