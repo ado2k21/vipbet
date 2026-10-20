@@ -7821,6 +7821,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   let view='home';
   let viewStack=[];
   let currentUser=null;   // { id, email, username }
+  /* Echappement HTML des valeurs saisies par les utilisateurs (nom d'utilisateur, email, motif) avant
+     insertion par innerHTML dans le panneau admin : sinon un compte pourrait injecter du HTML/script
+     (la CSP autorise cdn.jsdelivr.net, donc un script distant serait charge dans la session admin). */
+  const escH=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let selectedUserId=null;
 
   function setView(next,fromBack){
@@ -8324,7 +8328,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const page=pays.slice(admRevTxOffset,admRevTxOffset+REV_TX_PAGE);
       const html=page.map(p=>{
         const u=usersById[p.user_id];
-        const nom=u?(u.username||u.email):p.user_id;
+        const nom=escH(u?(u.username||u.email):p.user_id);
         const mb=montantEtBadgePaiement(p);
         return '<button type="button" class="admdash-row" data-pid="'+p.id+'">'+
           '<span class="admdash-row-av">'+(p.plan_id||'?').toUpperCase().slice(0,2)+'</span>'+
@@ -8424,7 +8428,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
       box.innerHTML=pays.map(p=>{
         const u=usersById[p.user_id];
-        const nom=u?(u.username||u.email):p.user_id;
+        const nom=escH(u?(u.username||u.email):p.user_id);
         return '<button type="button" class="admdash-row" data-pid="'+p.id+'">'+
           '<span class="admdash-row-av">'+(p.plan_id||'?').toUpperCase().slice(0,2)+'</span>'+
           '<span class="admdash-row-tx"><b>'+t('adm_activity_pending_pay').replace('{name}',nom)+'</b>'+
@@ -8563,7 +8567,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(u.role==='admin')badge='<span class="admdash-row-badge actif">'+t('adm_role_admin')+'</span>';
       return '<button type="button" class="admdash-row" data-uid="'+u.id+'">'+
         '<span class="admdash-row-av">'+initiales(u.username||u.email)+'</span>'+
-        '<span class="admdash-row-tx"><b>'+(u.username||t('adm_no_name'))+'</b><span>'+u.email+'</span></span>'+
+        '<span class="admdash-row-tx"><b>'+escH(u.username||t('adm_no_name'))+'</b><span>'+escH(u.email)+'</span></span>'+
         badge+
         '</button>';
     }).join('');
@@ -8589,8 +8593,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       box.innerHTML=
         '<div class="admdash-detail-h">'+
           '<span class="admdash-detail-av">'+initiales(u.username||u.email)+'</span>'+
-          '<span><span class="admdash-detail-name">'+(u.username||t('adm_no_name'))+'</span>'+
-          '<br><span class="admdash-detail-email">'+u.email+'</span></span>'+
+          '<span><span class="admdash-detail-name">'+escH(u.username||t('adm_no_name'))+'</span>'+
+          '<br><span class="admdash-detail-email">'+escH(u.email)+'</span></span>'+
         '</div>'+
         '<span class="admdash-row-badge actif" style="margin-top:14px;display:inline-block">'+t('adm_role_admin')+'</span>';
       return;
@@ -8645,8 +8649,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     box.innerHTML=
       '<div class="admdash-detail-h">'+
         '<span class="admdash-detail-av">'+initiales(u.username||u.email)+'</span>'+
-        '<span><span class="admdash-detail-name">'+(u.username||t('adm_no_name'))+'</span>'+
-        '<br><span class="admdash-detail-email">'+u.email+'</span></span>'+
+        '<span><span class="admdash-detail-name">'+escH(u.username||t('adm_no_name'))+'</span>'+
+        '<br><span class="admdash-detail-email">'+escH(u.email)+'</span></span>'+
       '</div>'+
       (estSuspendu?
         '<div class="dash-pending" style="border-color:rgba(226,99,79,.4);background:linear-gradient(140deg,rgba(226,99,79,.13),rgba(11,20,37,0) 62%),#100E18">'+
@@ -8654,7 +8658,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
             '<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>'+
           '</span>'+
           '<span class="dash-pending-tx"><b>'+t('adm_badge_suspended')+'</b>'+
-          '<span>'+t('adm_user_suspended_since')+' '+fmtH(u.suspended_at)+(u.suspended_reason?' — '+u.suspended_reason:'')+'</span></span>'+
+          '<span>'+t('adm_user_suspended_since')+' '+fmtH(u.suspended_at)+(u.suspended_reason?' — '+escH(u.suspended_reason):'')+'</span></span>'+
         '</div>'
         :'')+
       (paiementEnAttente?
@@ -8950,7 +8954,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const badgeLbl={pending:'adm_pay_f_pending',confirmed:'adm_pay_f_confirmed',failed:'adm_pay_f_rejected',refunded:'adm_pay_f_refunded'};
     list.innerHTML=filtres.map(p=>{
       const u=usersById[p.user_id];
-      const nom=u?(u.username||u.email):p.user_id;
+      const nom=escH(u?(u.username||u.email):p.user_id);
       /* Badge AUTO/MANUEL (14/09, demande explicite de James : "Admin doit
          identifier un paiement manuel lorsque affiche dans le Dashboard
          admin"). Visible directement dans la LISTE, pas seulement une fois
@@ -9021,8 +9025,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     box.innerHTML=
       '<div class="admdash-detail-h">'+
         '<span class="admdash-detail-av">'+(p.plan_id||'?').toUpperCase().slice(0,2)+'</span>'+
-        '<span><span class="admdash-detail-name">'+(u?(u.username||t('adm_no_name')):t('adm_no_name'))+'</span>'+
-        '<br><span class="admdash-detail-email">'+(u?u.email:'—')+'</span></span>'+
+        '<span><span class="admdash-detail-name">'+escH(u?(u.username||t('adm_no_name')):t('adm_no_name'))+'</span>'+
+        '<br><span class="admdash-detail-email">'+escH(u?u.email:'—')+'</span></span>'+
       '</div>'+
       '<dl class="wiz-done-sum" style="margin-top:16px">'+
         '<div><dt>'+t('adm_pay_plan')+'</dt><dd>'+(p.plan_id||'—').toUpperCase()+'</dd></div>'+
