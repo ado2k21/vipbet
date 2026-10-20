@@ -12847,9 +12847,11 @@ async function vbDeconnexionPourSuspension(reason){
   vbArreterSurveillanceSuspension();
   const sb=window.VB_getSupabase&&window.VB_getSupabase();
   try{if(sb)await sb.auth.signOut();}catch(e){}
-  if(window.VB_toast)window.VB_toast('auth_suspended_h', reason?t('auth_suspended_reason_p').replace('{reason}',reason):t('auth_suspended_p'));
+  if(window.VB_toast)window.VB_toast('auth_suspended_h', reason?vbTr('auth_suspended_reason_p').replace('{reason}',reason):vbTr('auth_suspended_p'));
   try{window.location.href='/';}catch(e){}
 }
+/* 19/10 : `t` n'existe pas dans cette portee (ReferenceError -> message de suspension jamais affiche). */
+function vbTr(k){try{const d=translations[currentLang]||translations.fr;return (d&&d[k])||k;}catch(e){return k;}}
 function vbDemarrerSurveillanceSuspension(userId){
   vbArreterSurveillanceSuspension();
   const sb=window.VB_getSupabase&&window.VB_getSupabase();
@@ -12895,7 +12897,7 @@ async function tenterRestaurationSession(){
       // Compte suspendu : aucune session active n'est jamais gardee,
       // meme retrouvee au chargement.
       try{await sb.auth.signOut();}catch(e){}
-      if(window.VB_toast)window.VB_toast('auth_suspended_h', profil.suspended_reason?t('auth_suspended_reason_p').replace('{reason}',profil.suspended_reason):t('auth_suspended_p'));
+      if(window.VB_toast)window.VB_toast('auth_suspended_h', profil.suspended_reason?vbTr('auth_suspended_reason_p').replace('{reason}',profil.suspended_reason):vbTr('auth_suspended_p'));
       return;
     }
     if(window.VB_demarrerSurveillanceSuspension)window.VB_demarrerSurveillanceSuspension(session.user.id);
