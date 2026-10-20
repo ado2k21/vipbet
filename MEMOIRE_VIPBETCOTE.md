@@ -82,6 +82,7 @@
 21. **Icône écran d'accueil** : `assets/apple-touch-icon.png` (C1 : fond bleu ardoise #4A5570→#262E40, logo #2ED47F). Sert au raccourci écran d'accueil ET, depuis le 20/10, d'icône d'onglet/Google (`assets/favicon.ico`, `assets/favicon-512.png`, `/favicon.ico` à la racine) : l'icône doit TOUJOURS être l'icône app C1.
 22. **Adresses directes (sitelinks Google)** : `/signup`, `/login`, `/winning-tickets`, `/pricing`, `/how-it-works`, `/faq` (+ `/plan`, `/plans`, `/abonnements`). Réécritures 200 vers index.html dans `netlify.toml` ; `app.js` (bloc « Routage simple ») ouvre la section, change titre/description/canonique. Menu et pied de page pointent vers ces adresses (le gestionnaire d'ancres les fait défiler sans rechargement). `domaine.js` retire la barre finale (`/login/` casserait les chemins relatifs). Listées dans `sitemap.xml`. Mots en ANGLAIS (choix de l'utilisateur).
 23. **Bande du landing sous la barre Safari iOS** : quand une page plein écran est ouverte (`.authpage/.dash/.legalpage/.faqpage.open`), le landing est masqué en CSS (`body:has(...)`).
+24. **Branches fusionnées le 20/10** : `fix/xss-admin-usernames` (escH sur nom/email/motif dans le panneau admin) et `fix/suspension-t-indefini` (vbTr pour le message de suspension). Ne plus les recréer.
 
 ---
 
