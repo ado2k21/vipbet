@@ -165,6 +165,15 @@ function aujourdhuiHaiti() {
 // jours calendaires Haïti — utilisé pour la règle des 23h59 (un match dont
 // la play_date remonte à hier ou plus et qui n'a toujours pas de statut
 // final est voidé plutôt que de bloquer la fiche indéfiniment).
+// 21/10 : un leg (basket ou foot) ne peut etre voide par la regle des 23h59 que 12 h apres
+// son coup d'envoi reel (kickoff_at). Sans heure connue : comportement precedent.
+const DELAI_VOID_MS = 12 * 3600000;
+function delaiVoidEcoule(leg) {
+  const k = leg && leg.kickoff_at ? Date.parse(leg.kickoff_at) : NaN;
+  if (!Number.isFinite(k)) return true;
+  return Date.now() - k >= DELAI_VOID_MS;
+}
+
 function joursEcoules(dateIso) {
   const a = new Date(dateIso + 'T00:00:00Z');
   const b = new Date(aujourdhuiHaiti() + 'T00:00:00Z');
@@ -774,7 +783,7 @@ async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
     let legs;
     try {
       legs = await sbSelect('ticket_legs',
-        `select=id,fixture_id,market,pick,result&ticket_id=eq.${ticket.id}&order=position.asc`);
+        `select=id,fixture_id,market,pick,result,kickoff_at&ticket_id=eq.${ticket.id}&order=position.asc`);
     } catch (e) {
       stats.erreurs.push(`lecture legs basket(ticket=${ticket.id}): ${e.message}`);
       continue;
@@ -792,8 +801,11 @@ async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
         nouveauResultat = evaluerLegBasket(leg, info.ptsHome, info.ptsAway);
       } else if (info && STATUTS_ANNULES_BASKET.includes(info.statut)) {
         nouveauResultat = 'void';
-      } else if (ecouler >= 1 && !sourceIndisponiblePour(leg.fixture_id)) {
+      } else if (ecouler >= 1 && !sourceIndisponiblePour(leg.fixture_id) && delaiVoidEcoule(leg)) {
         // Règle des 23h59 Haïti, même principe que le foot : jamais bloquer indéfiniment.
+        // 21/10 : jamais avant 12 h apres le VRAI coup d'envoi. Un match NBA a 21h30
+        // (Haiti) finit vers minuit : le passage de 00h00 le voyait encore « NS » et le
+        // voidait a tort (Spurs — Thunder du 20/10, gagne 116-104).
         // 30/09 : uniquement quand la source a RÉPONDU sans ce match. Si l'appel
         // a échoué (suspension, quota, réseau), on ne sait rien du match : la
         // sélection reste en attente et sera retentée au prochain passage.
@@ -961,7 +973,7 @@ async function reglerDate(dateIso) {
     let legs;
     try {
       legs = await sbSelect('ticket_legs',
-        `select=id,fixture_id,market,pick,result&ticket_id=eq.${ticket.id}&order=position.asc`);
+        `select=id,fixture_id,market,pick,result,kickoff_at&ticket_id=eq.${ticket.id}&order=position.asc`);
     } catch (e) {
       stats.erreurs.push(`lecture legs(ticket=${ticket.id}): ${e.message}`);
       continue;
@@ -1022,7 +1034,7 @@ async function reglerDate(dateIso) {
             }
             buteursPourLog = buteursRetente || null;
             nouveauResultat = evaluerLeg(leg, retente.golHome, retente.golAway, buteursRetente);
-          } else if (ecouler >= 2) {
+          } else if (ecouler >= 2 && delaiVoidEcoule(leg)) {
             nouveauResultat = 'void';
           } else {
             stats.erreurs.push(`fixture ${leg.fixture_id} : AET/PEN sans fulltime fiable même après relance ciblée, leg ${leg.id} laissé en attente (1 jour de grâce supplémentaire)`);
@@ -1056,7 +1068,8 @@ async function reglerDate(dateIso) {
           nouveauResultat = evaluerLeg(leg, retente.golHome, retente.golAway, buteursRetente);
         } else if (retente && STATUTS_ANNULES.includes(retente.statut)) {
           nouveauResultat = 'void';
-        } else if (ecouler >= 2) {
+        } else if (ecouler >= 2 && delaiVoidEcoule(leg)) {
+          // 21/10 : meme regle que le basket, jamais avant 12 h apres le vrai coup d'envoi.
           nouveauResultat = 'void';
         } else {
           stats.erreurs.push(`fixture ${leg.fixture_id} : introuvable/statut bloqué même après relance ciblée, leg ${leg.id} laissé en attente (1 jour de grâce supplémentaire)`);

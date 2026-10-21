@@ -415,7 +415,7 @@ adm_fiches_load_more:"Charger plus",
 adm_fiches_sync_last:"Dernière synchronisation : {d}", adm_fiches_sync_never:"Aucune synchronisation enregistrée",
 adm_fiches_sync_next:"Prochaine génération automatique : {d}",
 adm_fiche_leg_locked:"Match terminé — résultat réglé, modification protégée",
-adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_commencee:"Un match de cette fiche a commencé — modification bloquée", adm_fiche_partager:"Partager la carte", adm_fiche_partager_tt:"Carte TikTok", adm_fiche_leg_edit:"Modifier ce match",
+adm_fiche_leg_unlock:"Modifier quand même", adm_fiche_commencee:"Un match de cette fiche a commencé — modification bloquée", adm_fiche_partager:"Partager la carte", adm_fiche_partager_tt:"Partager TikTok", adm_fiche_leg_edit:"Modifier ce match",
 adm_fiche_odds_total:"Cote totale : {n}", adm_fiche_odds_range:"plage autorisée {min} – {max}",
 adm_fiche_odds_unlimited:"illimitée", adm_fiche_odds_risky:"{n} sélection(s) au-dessus de {max}",
 adm_fiche_err_odds_range:"Cote totale {n} hors de la plage autorisée ({min} – {max}).",
@@ -993,7 +993,7 @@ adm_fiches_load_more:"Load more",
 adm_fiches_sync_last:"Last sync: {d}", adm_fiches_sync_never:"No sync recorded yet",
 adm_fiches_sync_next:"Next automatic generation: {d}",
 adm_fiche_leg_locked:"Match finished — result settled, editing protected",
-adm_fiche_leg_unlock:"Edit anyway", adm_fiche_commencee:"A match in this slip has started — editing locked", adm_fiche_partager:"Share the card", adm_fiche_partager_tt:"TikTok card", adm_fiche_leg_edit:"Edit this match",
+adm_fiche_leg_unlock:"Edit anyway", adm_fiche_commencee:"A match in this slip has started — editing locked", adm_fiche_partager:"Share the card", adm_fiche_partager_tt:"Share TikTok", adm_fiche_leg_edit:"Edit this match",
 adm_fiche_odds_total:"Total odds: {n}", adm_fiche_odds_range:"allowed range {min} – {max}",
 adm_fiche_odds_unlimited:"unlimited", adm_fiche_odds_risky:"{n} selection(s) above {max}",
 adm_fiche_err_odds_range:"Total odds {n} outside the allowed range ({min} – {max}).",
@@ -1571,7 +1571,7 @@ adm_fiches_load_more:"Chaje plis",
 adm_fiches_sync_last:"Dènye senkronizasyon : {d}", adm_fiches_sync_never:"Pa gen senkronizasyon anrejistre",
 adm_fiches_sync_next:"Pwochen jenerasyon otomatik : {d}",
 adm_fiche_leg_locked:"Match fini — rezilta regle, modifikasyon pwoteje",
-adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_commencee:"Yon match nan fich sa a kòmanse — pa ka modifye ankò", adm_fiche_partager:"Pataje kat la", adm_fiche_partager_tt:"Kat TikTok", adm_fiche_leg_edit:"Modifye match sa a",
+adm_fiche_leg_unlock:"Modifye kanmenm", adm_fiche_commencee:"Yon match nan fich sa a kòmanse — pa ka modifye ankò", adm_fiche_partager:"Pataje kat la", adm_fiche_partager_tt:"Pataje TikTok", adm_fiche_leg_edit:"Modifye match sa a",
 adm_fiche_odds_total:"Kòt total : {n}", adm_fiche_odds_range:"plaj otorize {min} – {max}",
 adm_fiche_odds_unlimited:"san limit", adm_fiche_odds_risky:"{n} seleksyon pi wo pase {max}",
 adm_fiche_err_odds_range:"Kòt total {n} deyò plaj otorize a ({min} – {max}).",
@@ -3646,11 +3646,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        concernes : ils ne se declenchent que si ancienPlan est deja defini,
        jamais sur une premiere souscription comme celle capturee dans le
        bug. */
-    if(ancienPlan&&ancienPlan!==pl.id){
-      if(window.VB_toast)window.VB_toast('plan_changed_h',t(pl.id==='p4'?'plan_changed_lifetime':'plan_changed_p')+' '+t('wiz_auto_pending_note'));
-    }else if(ancienPlan){
-      if(window.VB_toast)window.VB_toast('renew_success_h',t('renew_success_p')+' '+t('wiz_auto_pending_note'));
-    }
+    /* 21/10 : plus aucun toast « Abònman chanje / renouvle » ici. Ce code tourne
+       au LANCEMENT du paiement automatique, juste avant la page MonCash : le
+       message s'affichait par-dessus le prestataire avant meme que la personne
+       ait paye. La confirmation arrive au retour (etape 4) puis par la
+       notification « paiement confirme » creee cote serveur. */
   }
 
   /* `optsManuel` = {reference, proofPath} pour un depot manuel, absent
@@ -5711,7 +5711,104 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // partager de fichier (rare sur mobile recent, plus frequent sur
   // desktop) : telechargement direct de l'image a la place.
   // ============================================================
+  /* 21/10 : carte TikTok « FULL TIME » (modele choisi par James) pour les fiches EN COURS,
+     admin seulement : logo seul, « FULL TIME », chaque match + ce qu'il faut jouer.
+     Ni heure, ni cote, ni lien, ni nom du site, ni mention en bas. */
+  function choixCourt(pick,home,away){
+    const p=String(pick||'').trim();let m;
+    if((m=p.match(/^Score exact\s*:\s*(\d+)\s*[:\-]\s*(\d+)/i)))return m[1]+' - '+m[2];
+    if(/^Victoire\s*:\s*(Home|1)$/i.test(p))return home;
+    if(/^Victoire\s*:\s*(Away|2)$/i.test(p))return away;
+    if((m=p.match(/^Double chance\s*:\s*(\S+)/i)))return m[1].toUpperCase();
+    if(/deux .quipes marquent\s*:\s*Oui/i.test(p))return '2 ekip make';
+    if(/deux .quipes marquent\s*:\s*Non/i.test(p))return '2 ekip pa make';
+    const sens=x=>/^plus/i.test(x)?'+':'-';
+    if((m=p.match(/^Domicile\s*:\s*(Plus|Moins) de ([\d.,]+)/i)))return home+' '+sens(m[1])+m[2];
+    if((m=p.match(/^Ext.rieur\s*:\s*(Plus|Moins) de ([\d.,]+)/i)))return away+' '+sens(m[1])+m[2];
+    if((m=p.match(/^(Plus|Moins) de ([\d.,]+)/i)))return sens(m[1])+m[2];
+    return p;
+  }
+  async function genererCarteFullTime(tk){
+    const W=1080,H=1920;
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+    const ctx=cv.getContext('2d');
+    try{if(document.fonts&&document.fonts.load){await Promise.all(['900 150px Sora','800 44px Sora','800 24px Inter'].map(f=>document.fonts.load(f)));}}catch(e){}
+    const SORA='Sora, Inter, sans-serif',INTER='Inter, sans-serif';
+    const rr=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
+    // 21/10 : 3 ambiances distinctes. En cours = nuit + cadre vert ; gagnee = fond vert
+    // + cadre or + ✓ ; perdue = ardoise + cadre corail + ✓ / ✗.
+    const mode=tk.enCours?'encours':(tk.perdu?'perdu':'gagne');
+    const TH={
+      encours:{fond:['#071428','#030617'],halo:'46,212,127',halo2:'201,164,76',cadre:'#2ED47F',ligne:'rgba(255,255,255,.05)',bord:'rgba(255,255,255,.09)',pFond:'rgba(46,212,127,.12)',pBord:'rgba(46,212,127,.45)',pTxt:'#2ED47F',titre:['#FFFFFF','#BDEFD3']},
+      gagne:{fond:['#0F6B3A','#05200F'],halo:'255,224,138',halo2:'46,212,127',cadre:'#E8CE8A',ligne:'rgba(4,23,13,.55)',bord:'rgba(46,212,127,.35)',pFond:'rgba(232,206,138,.16)',pBord:'rgba(232,206,138,.55)',pTxt:'#FFE08A',titre:['#FFF1C9','#E8CE8A']},
+      perdu:{fond:['#111A2E','#030617'],halo:'240,115,94',halo2:'143,155,176',cadre:'#F0735E',ligne:'rgba(255,255,255,.04)',bord:'rgba(255,255,255,.08)',pFond:'rgba(255,255,255,.07)',pBord:'rgba(255,255,255,.18)',pTxt:'#E6E9F0',titre:['#FFFFFF','#C9CED8']}
+    }[mode];
+    let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,TH.fond[0]);g.addColorStop(1,TH.fond[1]);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    g=ctx.createRadialGradient(W/2,0,0,W/2,0,900);g.addColorStop(0,'rgba('+TH.halo+',.30)');g.addColorStop(1,'rgba('+TH.halo+',0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    g=ctx.createRadialGradient(W,H,0,W,H,800);g.addColorStop(0,'rgba('+TH.halo2+',.22)');g.addColorStop(1,'rgba('+TH.halo2+',0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle=TH.cadre;ctx.lineWidth=7;rr(37,37,W-74,H-74,58);ctx.stroke();
+    // Logo seul (meme fichier que le site)
+    try{
+      const img=new Image();img.src='assets/logo-vipbetcote.svg';await img.decode();
+      const lw=230,lh=lw*(img.naturalHeight||753)/(img.naturalWidth||1104);ctx.drawImage(img,(W-lw)/2,120,lw,lh);
+    }catch(e){}
+    ctx.textAlign='center';ctx.textBaseline='alphabetic';
+    g=ctx.createLinearGradient(0,300,0,440);g.addColorStop(0,TH.titre[0]);g.addColorStop(1,TH.titre[1]);
+    ctx.fillStyle=g;ctx.font='900 150px '+SORA;ctx.fillText('FULL TIME',W/2,430);
+    const legs=(tk.legs||[]).slice(0,12),n=Math.max(1,legs.length);
+    const X=80,LW=W-160,yHaut=500,yBas=H-130;
+    const gap=n<=4?30:18,HL=Math.min(170,Math.floor((yBas-yHaut-gap*(n-1))/n));
+    let y=yHaut+Math.max(0,Math.floor((yBas-yHaut-(n*HL+gap*(n-1)))/2));
+    const fT=Math.min(44,Math.round(HL*0.27)),fV=Math.max(16,Math.round(fT*0.5)),fP=Math.min(40,Math.round(HL*0.24));
+    const coupe=(txt,max)=>{txt=String(txt||'');if(ctx.measureText(txt).width<=max)return txt;while(txt.length>1&&ctx.measureText(txt+'…').width>max)txt=txt.slice(0,-1);return txt+'…';};
+    legs.forEach(lg=>{
+      const parts=String(lg.match||'').split(/\s+[—–-]\s+/);
+      const home=parts[0]||'',away=parts[1]||'';
+      ctx.fillStyle=TH.ligne;rr(X,y,LW,HL,34);ctx.fill();
+      ctx.strokeStyle=TH.bord;ctx.lineWidth=2;ctx.stroke();
+      // Fiche terminee : vrai resultat de chaque match (✓ gagne, ✗ perdu, – annule)
+      let xT=X+32;
+      if(mode!=='encours'){
+        const r=Math.min(30,Math.round(HL*0.2)),cx=X+30+r,cyM=y+HL/2,res=lg.result,q=r/27;
+        const coul=res==='lost'?['rgba(240,115,94,.18)','#F0735E']:res==='void'?['rgba(143,155,176,.18)','#8F9BB0']:['rgba(46,212,127,.20)','#2ED47F'];
+        ctx.fillStyle=coul[0];ctx.beginPath();ctx.arc(cx,cyM,r,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle=coul[1];ctx.lineWidth=Math.max(3,5*q);ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
+        if(res==='lost'){ctx.moveTo(cx-10*q,cyM-10*q);ctx.lineTo(cx+10*q,cyM+10*q);ctx.moveTo(cx+10*q,cyM-10*q);ctx.lineTo(cx-10*q,cyM+10*q);}
+        else if(res==='void'){ctx.moveTo(cx-10*q,cyM);ctx.lineTo(cx+10*q,cyM);}
+        else{ctx.moveTo(cx-11*q,cyM+1*q);ctx.lineTo(cx-3*q,cyM+9*q);ctx.lineTo(cx+12*q,cyM-8*q);}
+        ctx.stroke();
+        xT=cx+r+22;
+      }
+      // Pastille du choix a droite
+      let choix=choixCourt(lg.pick,home,away);
+      // Nom trop long dans la pastille : on garde le premier mot (« Shakhtar -1.5 »).
+      ctx.font='800 '+fP+'px '+SORA;
+      if(ctx.measureText(choix).width>420){
+        const court=choixCourt(lg.pick,home.split(' ')[0],away.split(' ')[0]);
+        if(court!==choix)choix=court;
+      }
+      const estScore=/^\d+ - \d+$/.test(choix),fC=estScore?Math.round(fP*1.5):fP;
+      ctx.font=(estScore?'900 ':'800 ')+fC+'px '+SORA;
+      const pw=Math.min(470,ctx.measureText(choix).width+48),ph=Math.round(fC*1.75);
+      const px=X+LW-30-pw,py=y+(HL-ph)/2;
+      ctx.fillStyle=TH.pFond;rr(px,py,pw,ph,22);ctx.fill();
+      ctx.strokeStyle=TH.pBord;ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=estScore?'#FFFFFF':TH.pTxt;ctx.textAlign='center';ctx.fillText(coupe(choix,pw-28),px+pw/2,py+ph/2+fC*0.36);
+      // Equipes a gauche
+      const maxT=px-24-xT;
+      ctx.textAlign='left';ctx.fillStyle='#F4F3ED';ctx.font='800 '+fT+'px '+SORA;
+      const cy=y+HL/2;
+      ctx.fillText(coupe(home,maxT),xT,cy-fV*0.9);
+      ctx.fillStyle=mode==='gagne'?'#8FD9AE':'#8F9BB0';ctx.font='800 '+fV+'px '+INTER;ctx.fillText('V S',xT,cy+fV*0.35);
+      ctx.fillStyle='#F4F3ED';ctx.font='800 '+fT+'px '+SORA;ctx.fillText(coupe(away,maxT),xT,cy+fV*0.6+fT);
+      y+=HL+gap;
+    });
+    return new Promise(resolve=>cv.toBlob(resolve,'image/png',0.95));
+  }
+
   async function genererImageTicketGagnant(tk){
+    // 21/10 : TOUTES les cartes TikTok (fiche en cours, gagnee ou perdue) = modele FULL TIME.
+    if(tk&&tk.tiktok)return genererCarteFullTime(tk);
     // Format VERTICAL 9:16 (16/10) : plein ecran du Statut WhatsApp, de TikTok et des Stories.
     // Chaque match garde son VRAI resultat (✓ gagne, ✗ perdu, – annule) : une fiche score exact
     // gagnee avec un seul bon score n'affiche jamais de faux resultats. La regle ne change pas.
@@ -5777,17 +5874,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       ctx.strokeStyle='#E8CE8A';ctx.lineWidth=7;rr(22,22,W-44,H-44,52);ctx.stroke();
     }
 
-    // Logo dessine (terrain) + nom
-    const lx=W/2-250,ly=110;
-    g=ctx.createLinearGradient(0,ly,0,ly+88);g.addColorStop(0,'#B3E07A');g.addColorStop(1,'#6FB848');
-    ctx.fillStyle=g;rr(lx,ly,88,88,22);ctx.fill();
-    ctx.strokeStyle='#fff';ctx.lineWidth=3.5;
-    ctx.strokeRect(lx+13,ly+24,62,40);ctx.beginPath();ctx.moveTo(lx+44,ly+24);ctx.lineTo(lx+44,ly+64);ctx.stroke();
-    ctx.beginPath();ctx.arc(lx+44,ly+44,9,0,Math.PI*2);ctx.stroke();
-    ctx.strokeRect(lx+13,ly+34,9,20);ctx.strokeRect(lx+66,ly+34,9,20);
+    // Logo + nom. 21/10 : le NOUVEAU logo (fichier du site, vert WhatsApp), plus
+    // l'ancien dessin blanc sur carre vert.
+    const lx=W/2-262,ly=110;
+    try{
+      const img=new Image();img.src='assets/logo-vipbetcote.svg';await img.decode();
+      const lw=124,lh=lw*(img.naturalHeight||753)/(img.naturalWidth||1104);ctx.drawImage(img,lx,ly+44-lh/2,lw,lh);
+    }catch(e){}
     ctx.textAlign='left';ctx.textBaseline='alphabetic';
-    ctx.font='800 64px '+SORA;ctx.fillStyle='#fff';ctx.fillText('VIP',lx+112,ly+70);
-    const wVip=ctx.measureText('VIP').width;ctx.fillStyle='#E8CE8A';ctx.fillText('BETCOTE',lx+112+wVip,ly+70);
+    ctx.font='800 64px '+SORA;ctx.fillStyle='#fff';ctx.fillText('VIP',lx+144,ly+70);
+    const wVip=ctx.measureText('VIP').width;ctx.fillStyle='#E8CE8A';ctx.fillText('BETCOTE',lx+144+wVip,ly+70);
 
     const titre=t(enCours?'dtk_share_titre_encours':tiktok?'tt_titre':'dtk_share_titre');
     ctx.font='800 84px '+SORA;
@@ -10699,7 +10795,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           :tk.status==='lost'?'<div class="admf-share-row"><button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-perdu="1">'+t('adm_fiche_partager')+'</button>'+
             '<button type="button" class="admf-edit admf-share admf-share-tt" data-sharefid="'+tk.id+'" data-perdu="1" data-tiktok="1">'+t('adm_fiche_partager_tt')+'</button></div>':'')
         :(ficheBloquee?'':'<button type="button" class="admf-edit" data-editfid="'+tk.id+'">'+t('adm_fiche_leg_edit')+'</button>')+
-         '<button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-encours="1">'+t('adm_fiche_partager')+'</button>')+
+         '<div class="admf-share-row"><button type="button" class="admf-edit admf-share" data-sharefid="'+tk.id+'" data-encours="1">'+t('adm_fiche_partager')+'</button>'+
+         '<button type="button" class="admf-edit admf-share admf-share-tt" data-sharefid="'+tk.id+'" data-encours="1" data-tiktok="1">'+t('adm_fiche_partager_tt')+'</button></div>')+
     '</div>';
   }
 

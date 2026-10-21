@@ -66,9 +66,9 @@
 <meta name="twitter:image" content="https://vipbetcote.com/og-vipbetcote.jpg">
 <meta name="twitter:image:alt" content="VIPBETCOTE — fich ak betcote gratis">
 
-<link rel="icon" type="image/x-icon" href="assets/favicon.ico?v=20261020">
-<link rel="icon" type="image/png" sizes="512x512" href="assets/favicon-512.png?v=20261020">
-<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20261019i">
+<link rel="icon" type="image/x-icon" href="assets/favicon.ico?v=20261021">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/favicon-512.png?v=20261021">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20261021">
 <!-- 19/10 (nuit) : nom court du raccourci sur l'ecran d'accueil (iPhone / Android). Simple nom : aucun mode application. -->
 <meta name="apple-mobile-web-app-title" content="VipBetcote">
 <meta name="application-name" content="VipBetcote">
@@ -4013,6 +4013,10 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
   .authpage:has(#authModeWizard.on:not(.pwreset):not(.renew)) .authpage-brand{display:flex;padding:calc(env(safe-area-inset-top,0px) + 26px) 22px 24px}
   .authpage:has(#authModeWizard.on:not(.pwreset):not(.renew)) .authpage-panel{padding-top:22px}
   .authpage-close,.authpage-backbtn{top:calc(env(safe-area-inset-top,0px) + 16px)}
+  /* 21/10 : page « Renouvle oswa chanje plan » : sur telephone, « Retounen »
+     passe AU-DESSUS du titre (dans le flux) au lieu de le chevaucher. */
+  .authpage-backbtn:not([hidden]){position:static;margin:calc(env(safe-area-inset-top,0px) + 16px) 0 0 22px}
+  #authpage:has(.authpage-backbtn:not([hidden])):not(:has(#authModeWizard.pwreset)) .authpage-panel{padding-top:16px}
 }
 
 </style>
@@ -4066,7 +4070,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
   <div class="wrap nav-in">
     <a class="logo" href="#" aria-label="VIP BETCOTE — accueil">
       <span class="logo-mark logo-mark-img">
-        <img src="data:image/webp;base64,UklGRuQDAABXRUJQVlA4TNgDAAAv/8A/EK/BqG0kSc5AWETLfCntfy4aDNpGcuQ5JOX/eTx/Sm0UtG0jeQ+MgTv+IK5sI9tW8j/ubhn9l0BEDUSkhO6uN775pB9pInlEB4nyariUeNA1KuiBVONQEGV1GvVJmftPpV9DgRxVQEmQQAMXCxkgPoqR0CB+543zQlHiDMSG5kCrEyEoYtAxpCOSsutzXfneflAQADZu2wzjmkNjloOMNMlwTnNMrThni///raIMkDax2xH9nwA6+P/g/8OBG1R3c/DfPw4cSyA1Bhb3Dx9k/Z8vDUu+i/21wJKb/+iA307XP4r8pBnYoGhivQGtwLrHPLBfg0rOOpSegdid6cN0KD8LsTPKsJjjFohWFRssATd6gFcsA19BCf4GS8EbrwLTYznYGwUYzJcF0VSf70vrofLgBkvDG9gTjiUQp2MJEq9YHj5JBBZHnIHF7YcX3AU4VpzF3YC22gzuit7U2o3Yw0OMX7/G+PAghatKsyjaxiOgmXAUWxG0ddZJtEfEeCTSVVmD/K0lUR60FQY9XwQqoIf6GpG9IWkmHKvr+/PI/PxBhfTfaitbOD+HrZ6Z0CvEbDqc7DZm1gfXlTqOOpzdHc2ghskpw6xw65VJUVTQUY+MvUvBoB6LzDZBY4Wdb395uvXx+S8ph+wuQS3H6fn2dYFZ2oTp+XqTsByc1TVQcoWCqwSp5C3hUNQl3jRiEyuZVcJqxE95FPZTXiG/03Qj1UxRr48uEaRCotNLL9XpZZVA8cSjWkAOplZqITlSy2Nuj/roEq3UMtHp5U3qTS99wkrZxLU+0E+BFEwZVEgzRW8ykaYbjYSEl/GJoBGEKYoSkaYBVTImYMm3hMRYX4yOo4cp8gPX4Cn32sKXBJmBZzCkHfQJ8kuOpSf93ECCYNxuBFIQPqWIfJwXPRVZNYYJ3QwiOoqhRWxDPKJSq+aTaz1vB1bNt7aUsxX3H9VFtgx4QnZbX9SW4G+QvaUKO8rPP6GgqzEKImu/nV+jZKAqcyKIN5vzOeebDmVdndGbzI/XXXdz03XXKP5GlQaDWLYD1BqZYTcMhqqN7G6wtBe+sNyfc76z3ArQuAtGErxleT/nvGf5sk3Dku9CgmJ5kSQXLPk2+wKWpS2h9giGsgag6iNYlrQEUgBBLCcCqYBoLKUh8XoiO5QwHJEiyAz5tYZUQRBzi0DKIDIhp+Apz8oiciGX4CjX6iKyv+bQWsq3wmbyOOfcxcfPlLM2qMB/lTphWQTO2wXn3f66W3DeBs4Fy8k2jiXQDt8V+QYW9z8fAquu9u0/IhoW5TYH//3j4OD/g/8P+gU=" alt="VIPBETCOTE — logo ofisyèl" width="40" height="40">
+        <img src="data:image/webp;base64,UklGRooDAABXRUJQVlA4TH0DAAAv/8A/EI9hkG2k+usd0t0/w5SMmcK2jdTQlZ5BbdoGzGqn/IHKBGEMDHg4DAHoMACjYwAwNoCBDuA/B+gICHQJA0DHAAUBYOO2DdqiY7jN3KqFjWK5jRaLSWVpVPD/51WUAdImdjui/xMAN//f/H87cEvqbm/++8eBYwmgxsDi/uFDrP/zpWXJN16vSCW3/9GBvzzsvxf5oBk8kGhif0Ct4D5SHhT3qJL7iaQ3EE33+rATyW8imqwyPOV4BpFXxYFKoIMe8JnKoGdUghmpFBqNCmykcihaBVjKl4XIVp+JpUWsPBypNBrxSjiWAJyOJUg8U3n0JBFYHHAGFncdvtAloK7iPF0G8tVm6VJEW2uj2Dj2/devfT+OUjRUmifRuW8QNmLTzyLk62ySmBtgbESmKmuJf/YgykO+wjDy9QgFRKyvjthbkGairrrePXbMj3dQSHxfW9nibodnPTKRUYg9TLQ6HeymO64f1dFMtHlqNkDL5JRhBzp7sCnoFdREYowuhYt6PDH7BHQVtjv/14ezf9v9lHLE7hIwczzszq8LytInbOSLNuE5OKtrgeRAgkMCVHJMOBJ1iaNGfGKQGRJeI2bNkLBZMwr5A9ZbqXYNoj6mRJAKiUkvUWrSy5Ag8cSLWlAO1wa1gByo5SW3F31MiVnqlJj0cpQ66iUmvJRPvOmDzBpK4ZolhbRrcJTpYb3VSEgYGZMIGiFcg16ih3UklXQJPPGdMNHVF6PjiLgGZuFaDOReW/QlAXbhWSxoh0wCzInjZEA/IyYAu/M6BAXRUwrA9Nt6A0VWjWUitwEAmj7MRHPoGyi1an7g2m+7gFXzfi7lfuD+vbrAl4FPxO7rC+YSzEjsM1RYk595IkFXYxBE9uY8syfJAFXmRIjGw27L7jCRrKszOMp8/zZN4zhNbyR+hErDRSzbBWsN7HIZFgvVBv4yeLgKn1jGHecDy6sAdJegA8FXlocd58jy6ZyWJd8oAX15PUhGlnzba4Gn0k5Ye4BLWQtC9QGeSjohKACwL6dHUAFAV0oL4vUEfilhaUARYJf8ZguqAOxz6xGUAWBDTsFAnpUF4EIuwUGu1QXg2xxmD/lW2EYe55z7+e4j5KwNKPBfpT6zxMD5Gjm/Xa9vkfM1cEaWz+c4lgAX/FLkG1jc/3wIrLq6tv+IaFmU297894+Dm/9v/r/pFwA=" alt="VIPBETCOTE — logo ofisyèl" width="40" height="40">
       </span>
       <span class="logo-txt">
         <strong>VIP<em>BETCOTE</em></strong>
@@ -6431,6 +6435,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261020d"></script>
+<script src="app.js?v=20261021e"></script>
 </body>
 </html>

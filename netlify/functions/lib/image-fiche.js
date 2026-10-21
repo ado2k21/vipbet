@@ -50,9 +50,9 @@ const VERT = '#2ED47F', OR = '#E8CE8A', ROUGE = '#F0735E', BLANC = '#F4F3ED', GR
 
 // Logo VIPBETCOTE sans fond (18/10) : meme dessin que assets/logo-vipbetcote.svg,
 // ramene a 64 px de large et centre dans l'ancien emplacement 64x64.
-// Blanc sur la carte « fiche gagnee » (fond vert), vert sur les fiches (fond sombre).
+// 21/10 : toujours le vert WhatsApp (#25D366), y compris sur la carte « fiche gagnee ».
 const LOGO_SVG = '<mask id="mLogo"><rect x="0" y="0" width="1254" height="1254" fill="#fff"/><g fill="#000"><rect x="673" y="450" width="34" height="200"/><rect x="627" y="706" width="210" height="34"/><rect x="547" y="670" width="34" height="200"/><rect x="417" y="580" width="200" height="34"/></g></mask><circle cx="627" cy="660" r="154" fill="none" stroke="#17A860" stroke-width="92" mask="url(#mLogo)"/><g fill="#17A860"><rect x="75" y="284" width="1104" height="92"/><rect x="75" y="945" width="1104" height="92"/><rect x="75" y="284" width="92" height="753"/><rect x="1087" y="284" width="92" height="753"/><rect x="75" y="440" width="276" height="92"/><rect x="75" y="788" width="276" height="92"/><rect x="259" y="440" width="92" height="440"/><rect x="903" y="440" width="276" height="92"/><rect x="903" y="788" width="276" height="92"/><rect x="903" y="440" width="92" height="440"/><rect x="581" y="284" width="92" height="76"/><rect x="581" y="960" width="92" height="77"/><rect x="581" y="394" width="92" height="158"/><rect x="581" y="768" width="92" height="158"/><rect x="361" y="614" width="158" height="92"/><rect x="735" y="614" width="158" height="92"/><circle cx="627" cy="660" r="74"/></g>';
-function logo(x, y, couleur = '#17A860') {
+function logo(x, y, couleur = '#25D366') {
   const k = 64 / 1104, dy = (64 - 753 * k) / 2;
   return `<g transform="translate(${x},${y + dy}) scale(${k}) translate(-75,-284)">${LOGO_SVG.split('#17A860').join(couleur)}</g>`;
 }
@@ -120,14 +120,14 @@ function svgGagnante(info, legs) {
     <linearGradient id="gFondG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0F6B3A"/><stop offset=".45" stop-color="#0A4527"/><stop offset="1" stop-color="#05200F"/></linearGradient>
     <radialGradient id="gHalo" cx=".5" cy="0" r=".75"><stop offset="0" stop-color="#FFE08A" stop-opacity=".45"/><stop offset="1" stop-color="#FFE08A" stop-opacity="0"/></radialGradient>
     <linearGradient id="gTrophee" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C9"/><stop offset="1" stop-color="#D9A93C"/></linearGradient>
-    <linearGradient id="gLogo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B3E07A"/><stop offset="1" stop-color="#6FB848"/></linearGradient>
+    <linearGradient id="gLogo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#25D366"/><stop offset="1" stop-color="#25D366"/></linearGradient>
     <linearGradient id="gCote" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C9"/><stop offset="1" stop-color="#E2B54E"/></linearGradient>
   </defs>
   <rect width="${W}" height="${H}" fill="url(#gFondG)"/>
   <rect width="${W}" height="${H}" fill="url(#gHalo)"/>
   ${confettis(W, 470)}
   <rect x="16" y="16" width="${W - 32}" height="${H - 32}" rx="40" fill="none" stroke="${OR}" stroke-width="6"/>
-  ${logo(48, 50, '#FFFFFF')}
+  ${logo(48, 50)}
   <text x="130" y="94" font-size="34" font-weight="800" fill="#fff">VIP<tspan fill="${OR}">BETCOTE</tspan></text>
   ${(() => { /* 19/10 : score exact -> « GAGNÉE 1/3 » (bons scores / matchs), badge elargi */
     const fr = info.fraction ? ' ' + esc(info.fraction) : '';
@@ -190,7 +190,7 @@ function svgFiche(info, legs, mode) {
     <linearGradient id="gFond" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#071022"/><stop offset="1" stop-color="#040811"/></linearGradient>
     <radialGradient id="gOr" cx="1" cy="0" r="0.9"><stop offset="0" stop-color="#C9A44C" stop-opacity=".30"/><stop offset="1" stop-color="#C9A44C" stop-opacity="0"/></radialGradient>
     <radialGradient id="gVert" cx="0" cy="1" r="0.8"><stop offset="0" stop-color="#2ED47F" stop-opacity=".16"/><stop offset="1" stop-color="#2ED47F" stop-opacity="0"/></radialGradient>
-    <linearGradient id="gLogo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B3E07A"/><stop offset="1" stop-color="#6FB848"/></linearGradient>
+    <linearGradient id="gLogo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#25D366"/><stop offset="1" stop-color="#25D366"/></linearGradient>
     <linearGradient id="gCote" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C9"/><stop offset="1" stop-color="#D9B766"/></linearGradient>
   </defs>
   <rect width="${W}" height="${H}" fill="url(#gFond)"/>
