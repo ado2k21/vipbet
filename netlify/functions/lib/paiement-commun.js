@@ -15,6 +15,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const { alerterNouvelAbonne } = require('./alerte-nouvel-abonne');
 
 /* --------------------------------------------------------------------
    Configuration
@@ -392,6 +393,10 @@ async function verifierEtConfirmer(cfg, paiement) {
   await journaliser(cfg, paiement.id, 'confirm', { payload: res });
 
   if (res && res.ok) {
+    // 04/11 : alerte Telegram admin « nouvel abonne » (une seule fois : pas sur ALREADY_CONFIRMED).
+    if (res.code === 'CONFIRMED') {
+      await alerterNouvelAbonne({ userId: paiement.user_id, planId: paiement.plan_id, methode: paiement.method });
+    }
     return { etat: 'confirme', code: res.code || 'CONFIRMED', detail: res };
   }
   return { etat: 'refuse', code: (res && res.code) || 'REFUS_INCONNU', detail: res };

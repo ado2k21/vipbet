@@ -135,7 +135,7 @@ exports.handler = async function (event) {
     const lignes = await C.sbSelect(
       cfg, 'payments',
       'provider_reference=eq.' + encodeURIComponent(referencePrestataire) +
-      '&select=id,status,method,plan_id,reference,provider,provider_reference,expires_at&limit=1'
+      '&select=id,user_id,status,method,plan_id,reference,provider,provider_reference,expires_at&limit=1'
     );
     const paiement = lignes && lignes[0];
     if (!paiement) {

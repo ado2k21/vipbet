@@ -60,7 +60,7 @@ exports.handler = async function (event) {
     const lignes = await C.sbSelect(
       cfg, 'payments',
       filtre + '&user_id=eq.' + utilisateur.id +
-      '&select=id,status,method,plan_id,reference,provider,provider_reference,' +
+      '&select=id,user_id,status,method,plan_id,reference,provider,provider_reference,' +
       'provider_url,expires_at&limit=1'
     );
     const paiement = lignes && lignes[0];

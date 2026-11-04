@@ -27,6 +27,7 @@
    ============================================================ */
 
 const crypto = require('crypto');
+const { alerterNouvelAbonne } = require('./lib/alerte-nouvel-abonne');
 
 /* ---- Variables d'environnement (a definir dans Netlify) ---- */
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -396,6 +397,8 @@ exports.handler = async function (event) {
         }]
       });
     } catch (e) { /* sans consequence sur le paiement */ }
+    // 04/11 : alerte Telegram admin « nouvel abonne » (sans prix, ne bloque jamais).
+    await alerterNouvelAbonne({ userId: uid, planId: planId, methode: 'stripe' });
 
     return { statusCode: 200, body: 'ok' };
 

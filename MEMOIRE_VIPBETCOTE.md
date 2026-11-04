@@ -88,6 +88,9 @@
 27. **Carte TikTok** (admin seulement, toutes les fiches : bouton « Pataje TikTok » à droite de « Pataje kat la ») : modèle **FULL TIME** (`genererCarteFullTime`) — logo seul, « FULL TIME », Équipe A VS Équipe B + pastille du choix court (`choixCourt` : « Fluminense -1.5 », « 12 », « 2 ekip make », nom de l'équipe, « 1 - 0 »). Ni heure, ni cote, ni lien, ni nom du site, ni mention. 3 ambiances : en cours = nuit/cadre vert ; gagnée = fond vert/cadre or + ✓ ; perdue = ardoise/cadre corail + ✓/✗. « Pataje kat la » garde la carte habituelle. Légendes TikTok : jamais « lien an nan bio », jamais #paryajlakay/#paryajpam (sanction « Fraudes et escroqueries » le 21/10, 3 de plus = bannissement).
 28. **Vert du logo = vert WhatsApp #25D366** partout (icônes C1, favicon, logo du site, `logo-vipbetcote.svg`, cartes de partage, images Telegram). Le fond des icônes ne change pas.
 29. **Règlement** : un match (basket ou foot) n'est jamais voidé par la règle des 23h59 avant 12 h après son vrai coup d'envoi (`delaiVoidEcoule`). Les statuts officiels PST/CANC restent voidés tout de suite.
+30. **Alerte Telegram « Nouvel abonné »** (`lib/alerte-nouvel-abonne.js`) : envoyée au chat d'alertes admin (TELEGRAM_CHAT_ID, garde anti-groupe VIP) à chaque paiement AUTOMATIQUE confirmé (MonCash/NatCash via `verifierEtConfirmer`, code CONFIRMED uniquement ; Stripe dans `stripe-webhook.js`). Texte : plan P1..P4, moyen, compte — jamais de prix. Ne bloque jamais le paiement.
+31. **Landing « Fiches réussies »** (`chargerFichesGagnees`) : 20 fiches gagnées les plus récentes ; les 7 plus récentes d'abord (par date), puis scores exacts, puis les autres, par cote affichée décroissante. 5 matchs par carte (classe `wf-dense` si 4-5). Sous-titre : SKÒ EGZAK / BASKETBÒL / FOUTBÒL.
+32. **Paiements de test supprimés le 04/11** : 3 paiements de michellthe@yahoo.com (3 998 HTG), sauvegardés dans `bak_20261104_paiements_test`. Balance admin après : 1 059 HTG.
 
 ---
 

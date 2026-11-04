@@ -107,7 +107,7 @@ lp_foot_desc:"Fiches et pronostics football et NBA, analysés chaque jour par no
 lp_copy:"&copy; VIPBETCOTE. Tous droits réservés. Jouez de façon responsable.",
 nav_tickets:"FICHES RÉUSSIES", nav_simulateur:"ESSAYER LA DÉMO", nav_abonnements:"Abonnements", nav_faq:"FAQ",
 btn_connect:"Se connecter", btn_signup:"S'inscrire", btn_signup_free:"S'inscrire gratuitement",
-tick_won:"GAGNÉ", wf_title:"Fiche gagnée", wf_odd:"Cote totale", wf_more:"+{n} autres sélections", wf_foot:"FOOTBALL", wf_bask:"BASKETBALL",
+tick_won:"GAGNÉ", wf_title:"Fiche gagnée", wf_odd:"Cote totale", wf_more:"+{n} autres sélections", wf_foot:"FOOTBALL", wf_exact:"SCORE EXACT", wf_bask:"BASKETBALL",
 hero_badge:"EXPERTS EN LIGNE &nbsp;•&nbsp; +42 PRONOSTICS DU JOUR",
 hero_t1:"L'EXCELLENCE", hero_t2:"DU", hero_t3:"PRONOSTIC", hero_t4:"PREMIUM",
 hero_sub:"6 ans d'expérience dans le pronostic sportif. Chaque jour, notre équipe d'experts vous envoie des fiches déjà analysées pour ParyajPam, ParyajLakay et 1xBet. Choisissez un plan et arrêtez de perdre votre argent.",
@@ -685,7 +685,7 @@ lp_foot_desc:"Football and NBA tickets and predictions, analyzed every day by ou
 lp_copy:"&copy; VIPBETCOTE. All rights reserved. Play responsibly.",
 nav_tickets:"WINNING SLIPS", nav_simulateur:"TRY THE DEMO", nav_abonnements:"Plans", nav_faq:"FAQ",
 btn_connect:"Log in", btn_signup:"Sign up", btn_signup_free:"Sign up for free",
-tick_won:"WON", wf_title:"Winning pick", wf_odd:"Total odds", wf_more:"+{n} more selections", wf_foot:"FOOTBALL", wf_bask:"BASKETBALL",
+tick_won:"WON", wf_title:"Winning pick", wf_odd:"Total odds", wf_more:"+{n} more selections", wf_foot:"FOOTBALL", wf_exact:"EXACT SCORE", wf_bask:"BASKETBALL",
 hero_badge:"EXPERTS ONLINE &nbsp;•&nbsp; +42 PICKS TODAY",
 hero_t1:"PREMIUM", hero_t2:"BETTING", hero_t3:"PICKS", hero_t4:"EXCELLENCE",
 hero_sub:"6 years of sports-tipping experience. Every day, our team of experts sends you fully analyzed picks for ParyajPam, ParyajLakay and 1xBet. Choose a plan and stop losing your money.",
@@ -1263,7 +1263,7 @@ lp_foot_desc:"Fich ak pronostik foutbòl ak NBA, analize chak jou pa ekip ekspè
 lp_copy:"&copy; VIPBETCOTE. Tout dwa rezève. Jwe ak responsablite.",
 nav_tickets:"FICH REYISI", nav_simulateur:"ESEYE DEMO", nav_abonnements:"Abònman", nav_faq:"FAQ",
 btn_connect:"Konekte", btn_signup:"Enskri", btn_signup_free:"Enskri gratis",
-tick_won:"GENYEN", wf_title:"Fich ki genyen", wf_odd:"Kòt total", wf_more:"+{n} lòt seleksyon", wf_foot:"FOUTBÒL", wf_bask:"BASKETBÒL",
+tick_won:"GENYEN", wf_title:"Fich ki genyen", wf_odd:"Kòt total", wf_more:"+{n} lòt seleksyon", wf_foot:"FOUTBÒL", wf_exact:"SKÒ EGZAK", wf_bask:"BASKETBÒL",
 hero_badge:"EKSPÈ AN LIY &nbsp;•&nbsp; +42 PRONOSTIK JODI A",
 hero_t1:"EKSELANS", hero_t2:"NAN", hero_t3:"PRONOSTIK", hero_t4:"PREMIUM",
 hero_sub:"6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.",
@@ -12058,12 +12058,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const echapper=v=>String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     try{
       const aujourdhui=(window.VB_dateHaiti?window.VB_dateHaiti():new Date().toISOString().slice(0,10));
-      const depuis=new Date(Date.parse(aujourdhui+'T00:00:00Z')-30*86400000).toISOString().slice(0,10);
+      // 04/11 : les 20 fiches gagnees les plus recentes (avant : 6 sur 30 jours).
       const {data:fiches,error}=await sb.from('tickets')
-        .select('id,play_date,sport,total_odd')
+        .select('id,play_date,sport,total_odd,created_at')
         .eq('published',true).eq('status','won')
-        .lte('play_date',aujourdhui).gte('play_date',depuis)
-        .order('play_date',{ascending:false}).limit(6);
+        .lte('play_date',aujourdhui)
+        .order('play_date',{ascending:false}).order('created_at',{ascending:false}).limit(20);
       if(error||!fiches||!fiches.length)return;
       const cles=fiches.map(f=>f.id).join(',')+'|'+(typeof currentLang!=='undefined'?currentLang:'');
       if(cles===fichesGagneesCles)return;
@@ -12075,29 +12075,38 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       (legs||[]).forEach(l=>{if(l.result!=='void')(parFiche[l.ticket_id]=parFiche[l.ticket_id]||[]).push(l);});
       const lang=(typeof currentLang!=='undefined'&&currentLang)||'fr';
       const loc=lang==='en'?'en-US':'fr-FR';
-      const cartes=fiches.filter(f=>(parFiche[f.id]||[]).length).map(f=>{
+      /* 04/11 : ordre du carrousel. Les 7 plus recentes d'abord (par date) ; ensuite les
+         scores exacts, puis les autres, chacun de la plus grosse cote a la plus petite (cote
+         AFFICHEE : pour un score exact, produit des seuls matchs gagnes). */
+      const estExactF=f=>{const t=parFiche[f.id]||[];return t.length&&t.every(l=>['mk_score_l','mk_score_exact'].indexOf(String(l.market||''))>-1);};
+      const coteAffichee=f=>{const t=parFiche[f.id]||[];if(estExactF(f)){const g=t.filter(l=>l.result==='won');if(g.length)return g.reduce((p,l)=>p*(Number(l.odd)||1),1);}return Number(f.total_odd)||0;};
+      const valides=fiches.filter(f=>(parFiche[f.id]||[]).length);
+      const recentes=valides.slice(0,7);
+      const suite=valides.slice(7).sort((a,b)=>((estExactF(b)?1:0)-(estExactF(a)?1:0))||(coteAffichee(b)-coteAffichee(a)));
+      const cartes=recentes.concat(suite).map(f=>{
         // 19/10 : chaque match garde son VRAI resultat (✓ gagne, ✗ perdu). Fiche score exact :
         // badge « GENYEN 1/3 » (bons scores / matchs). Plus de 3 matchs : les gagnes d'abord.
         const tous=parFiche[f.id];
         const exact=tous.every(l=>['mk_score_l','mk_score_exact'].indexOf(String(l.market||''))>-1);
         const nbOk=tous.filter(l=>l.result==='won').length;
-        const sel=tous.length>3?tous.filter(l=>l.result==='won').concat(tous.filter(l=>l.result!=='won')):tous;
-        const lignes=sel.slice(0,3).map(l=>{
+        // 04/11 : 5 matchs affiches par carte (au lieu de 3), les gagnes d'abord au-dela.
+        const sel=tous.length>5?tous.filter(l=>l.result==='won').concat(tous.filter(l=>l.result!=='won')):tous;
+        const lignes=sel.slice(0,5).map(l=>{
           const brut=String(l.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
           const pick=(brut.indexOf(' — ')>-1||!(translations.fr||{})[brut])?brut:trad(brut);
           const cote=Number(l.odd);
           return '<li'+(l.result==='lost'?' class="wf-perdu"':'')+'><span class="'+(l.result==='lost'?'wf-ko':'wf-ok')+'" aria-hidden="true"></span><span class="wf-m"><b>'+echapper(l.match_label)+'</b><small>'+echapper(pick)+'</small></span><em>'+(isFinite(cote)?cote.toFixed(2):'')+'</em></li>';
         }).join('');
-        const reste=sel.length-3;
+        const reste=sel.length-5;
         // 19/10 (3) : fiche score exact, la cote est le produit des seuls matchs gagnes.
         const coteGagnee=tous.filter(l=>l.result==='won').reduce((p,l)=>p*(Number(l.odd)||1),1);
         const total=(exact&&nbOk)?Math.round(coteGagnee*100)/100:Number(f.total_odd);
         let date='';
         try{date=new Date(f.play_date+'T12:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){date=f.play_date;}
-        return '<article class="win win-auto" data-fiche="'+echapper(f.id)+'"><div class="wf">'+
+        return '<article class="win win-auto" data-fiche="'+echapper(f.id)+'"><div class="wf'+(Math.min(sel.length,5)>3?' wf-dense':'')+'">'+
           '<div class="wf-top"><span class="wf-brand">VIP<span>BETCOTE</span></span><span class="wf-badge">'+echapper(trad('tick_won'))+(exact?' '+nbOk+'/'+tous.length:'')+'</span></div>'+
           '<p class="wf-h">'+echapper(trad('wf_title'))+'</p>'+
-          '<p class="wf-sub">'+echapper(trad(f.sport==='basket'?'wf_bask':'wf_foot'))+' · '+echapper(date)+'</p>'+
+          '<p class="wf-sub">'+echapper(trad(exact?'wf_exact':(f.sport==='basket'||f.sport==='nba')?'wf_bask':'wf_foot'))+' · '+echapper(date)+'</p>'+
           '<ul class="wf-legs">'+lignes+'</ul>'+
           (reste>0?'<p class="wf-more">'+echapper(trad('wf_more').replace('{n}',reste))+'</p>':'')+
           '<div class="wf-bot"><span>'+echapper(trad('wf_odd'))+'</span><b>'+(isFinite(total)?total.toFixed(2):'')+'</b></div>'+

@@ -58,7 +58,7 @@ exports.handler = async function () {
     const paiements = await C.sbSelect(
       cfg, 'payments',
       'status=eq.pending&provider=not.is.null' +
-      '&select=id,status,method,plan_id,reference,provider,provider_reference,expires_at' +
+      '&select=id,user_id,status,method,plan_id,reference,provider,provider_reference,expires_at' +
       '&order=created_at.asc&limit=' + MAX_PAR_PASSAGE
     );
 

@@ -63,7 +63,7 @@ exports.handler = async function () {
          filtre faisait echouer chaque passage). Un paiement expire par TTL
          porte toujours expires_at : c'est la bonne fenetre de recherche. */
       '&expires_at=gte.' + encodeURIComponent(depuis) +
-      '&select=id,status,method,plan_id,reference,provider,provider_reference,expires_at' +
+      '&select=id,user_id,status,method,plan_id,reference,provider,provider_reference,expires_at' +
       '&order=expires_at.asc&limit=' + MAX_PAR_PASSAGE
     );
 
