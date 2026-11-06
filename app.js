@@ -3315,6 +3315,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         if(estNonVerifie)return {ok:false,emailNonVerifie:true,erreur:'Votre email doit d\'abord etre verifie (code recu par email) avant de pouvoir vous abonner.'};
         return {ok:true,hors_ligne:true,erreur:'payments: '+(payErr.message||JSON.stringify(payErr))};
       }
+      // 06/11 : lieu approximatif du depot manuel pour le globe admin (paiement-geo). Lance sans
+      // attendre la reponse : n'influence jamais le depot ; visible seulement apres validation admin.
+      if(state.payMethod==='moncash'||state.payMethod==='natcash'){
+        try{
+          sb.auth.getSession().then(r=>{
+            const jeton=r&&r.data&&r.data.session&&r.data.session.access_token;
+            if(jeton)fetch('/.netlify/functions/paiement-geo',{method:'POST',keepalive:true,headers:{Authorization:'Bearer '+jeton}}).catch(()=>{});
+          }).catch(()=>{});
+        }catch(e){}
+      }
       // Notification "paiement en attente" : creee PAR LA BASE au moment du
       // depot (declencheur trg_notif_paiement_en_attente_user, 20/10) — le
       // site n'a pas le droit d'ecrire dans notifications (reserve a l'admin).
