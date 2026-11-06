@@ -27,6 +27,7 @@
    ============================================================ */
 
 const crypto = require('crypto');
+const { geoDepuisPays } = require('./lib/geo-requete');   // 06/11 : globe admin (jamais bloquant)
 const { alerterNouvelAbonne } = require('./lib/alerte-nouvel-abonne');
 
 /* ---- Variables d'environnement (a definir dans Netlify) ---- */
@@ -397,6 +398,25 @@ exports.handler = async function (event) {
         }]
       });
     } catch (e) { /* sans consequence sur le paiement */ }
+    /* 06/11 : lieu approximatif pour le globe admin. Best effort : n'agit qu'APRES la
+       confirmation et ne fait jamais echouer ni rejouer le paiement.
+       1) le lieu note au clic sur « Payer par carte » (stripe-geo, moins de 24 h) ;
+       2) sinon le pays de la carte / de l'adresse de facturation donne par Stripe. */
+    try {
+      let geo = {};
+      const clics = await sb('stripe_geo_clic?user_id=eq.' + encodeURIComponent(uid) + '&select=geo_country,geo_region,geo_city,geo_lat,geo_lon,created_at&limit=1');
+      const clic = Array.isArray(clics) && clics[0];
+      if (clic && Date.now() - new Date(clic.created_at).getTime() < 24 * 3600 * 1000) {
+        geo = { geo_country: clic.geo_country, geo_region: clic.geo_region, geo_city: clic.geo_city,
+                geo_lat: clic.geo_lat, geo_lon: clic.geo_lon, geo_source: 'reseau' };
+      } else {
+        geo = geoDepuisPays(session.customer_details && session.customer_details.address && session.customer_details.address.country);
+      }
+      if (geo.geo_country || geo.geo_lat != null) {
+        await sb('payments?id=eq.' + encodeURIComponent(paiementId), { method: 'PATCH', prefer: 'return=minimal', body: geo });
+      }
+    } catch (e) { /* sans consequence sur le paiement */ }
+
     // 04/11 : alerte Telegram admin « nouvel abonne » (sans prix, ne bloque jamais).
     await alerterNouvelAbonne({ userId: uid, planId: planId, methode: 'stripe' });
 

@@ -3714,7 +3714,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
    ADMIN REDESIGN (15/10) : Vue d'ensemble, Statistiques, filtres Istorik.
    Affichage uniquement : aucune donnee, requete ou configuration modifiee.
    ===================================================================== */
-[data-adview="home"],[data-adview="revenus"],[data-adview="sources"],[data-adview="parrainage"],[data-adview="championnats"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
+[data-adview="home"],[data-adview="revenus"],[data-adview="renouvellement"],[data-adview="kat"],[data-adview="sources"],[data-adview="parrainage"],[data-adview="championnats"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
 .ov-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 22px}
 .ov-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ov-green)}
 .ov-live{width:7px;height:7px;border-radius:50%;background:var(--ov-green);box-shadow:0 0 0 0 rgba(46,212,127,.6);animation:ovPulse 2s infinite}
@@ -3757,6 +3757,49 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
 @media (min-width:980px){.ov-split{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}}
 .ov-card{background:linear-gradient(180deg,var(--ov-card2),var(--ov-card));border:1px solid var(--ov-line);border-radius:18px;padding:16px}
 .ov-card .admdash-list{gap:7px}
+/* ---- Revni (06/11) : carte Renouvelman + globe des paiements ---- */
+.rev-ren{cursor:pointer;transition:transform .18s,border-color .18s}
+.rev-ren:hover{transform:translateY(-2px);border-color:rgba(46,212,127,.4)}
+.ren-mini,.ren-bar{display:flex;gap:2px;border-radius:5px;overflow:hidden;background:rgba(244,243,237,.06)}
+.ren-mini{height:6px;margin-top:10px}.ren-bar{height:12px;border-radius:7px}
+.ren-txt{font-size:12px;color:var(--gris);margin-top:8px;line-height:1.5}.ren-txt b{color:#F4F3ED;font-weight:600}
+.ren-leg{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:10px;font-size:12px;color:var(--gris)}
+.ren-leg i,.geo-leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.ren-per,.geo-tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 16px}
+.geo-tabs{margin:0}.geo-sp{flex:1}
+.ren-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--ov-line);font-size:13.5px;color:#C5D0DC}
+.ren-row:first-child{border-top:0}.ren-row b{color:#F4F3ED;font-weight:600}.ren-row small{color:var(--gris);font-size:12px}
+.ren-row .n{font-family:var(--mono);font-size:13px;color:#F4F3ED;white-space:nowrap}
+.ren-up{color:#E8CE8A!important}.ren-dn{color:#7CB8FF!important}.ren-soon{color:#F0735E;font-family:var(--mono);font-size:12px;white-space:nowrap}
+.geo-card{display:grid;gap:14px}
+.geo-globe{position:relative;width:100%;max-width:420px;aspect-ratio:1;margin:0 auto}
+.geo-globe.big{max-width:640px}
+.geo-leg{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;font-size:12px;color:var(--gris)}
+.geo-leg i{border-radius:50%}
+.geo-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--ov-line);cursor:pointer}
+.geo-row:first-child{border-top:0}
+.geo-row b{font-weight:600;color:#F4F3ED;font-size:14px}.geo-row small{color:var(--gris);font-size:12px;margin-left:6px}
+.geo-row .n{font-family:var(--mono);font-size:13px;color:#F4F3ED;white-space:nowrap}
+.geo-bar{grid-column:1/-1;height:7px;border-radius:5px;overflow:hidden;display:flex;background:rgba(244,243,237,.06)}
+.geo-bar span{height:100%}
+.geo-chips{display:flex;flex-wrap:wrap;gap:6px}
+.geo-empty{text-align:center;color:var(--gris);font-size:13px;line-height:1.5;padding:4px 8px}
+.geo-big-btn{width:100%}
+.geo-m{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px}
+.geo-m.natcash{background:rgba(247,162,27,.18);color:#FFC766}.geo-m.moncash{background:rgba(232,53,43,.18);color:#FF8F86}.geo-m.stripe{background:rgba(167,139,250,.16);color:#C9B8FF}
+/* moteur du globe (assets/globe-admin.js) */
+.vbg{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.vbg.vbg-mini{touch-action:pan-y}
+.vbg.vbg-drag{cursor:grabbing}
+.vbg canvas{display:block;width:100%;height:100%}
+.vbg.vbg-z canvas{-webkit-mask-image:radial-gradient(closest-side,#000 72%,transparent 100%);mask-image:radial-gradient(closest-side,#000 72%,transparent 100%)}
+.vbg-zoom{position:absolute;right:6px;bottom:6px;display:flex;flex-direction:column;gap:6px}
+.vbg-zoom button{width:38px;height:38px;border-radius:11px;border:1px solid var(--ov-line);background:rgba(12,22,40,.85);color:#F4F3ED;font:600 18px/1 inherit;cursor:pointer}
+.vbg-pop{position:absolute;z-index:3;width:min(270px,84%);background:#0A1324;border:1px solid rgba(46,212,127,.35);border-radius:14px;padding:12px 14px;box-shadow:0 20px 40px -12px rgba(0,0,0,.8);text-align:left}
+.vbg-pop h4{margin:0;font-size:15px;color:#F4F3ED}.vbg-pop .s{color:var(--gris);font-size:12px;margin:2px 0 8px}
+.vbg-pop ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.vbg-pop li{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#C5D0DC}.vbg-pop li b{color:#F4F3ED;font-weight:600;white-space:nowrap}
+.vbg-pop .x{position:absolute;top:4px;right:8px;border:0;background:none;color:var(--gris);font-size:18px;cursor:pointer}
 .adm-src-aide{color:var(--gris);font-size:13px;margin:0 0 12px;line-height:1.5}
 .adm-src-chips{display:flex;flex-wrap:wrap;gap:8px}
 .adm-src-chip{padding:7px 12px;border-radius:999px;border:1px solid var(--ov-line);background:rgba(244,243,237,.04);color:#F4F3ED;font-size:12.5px;font-weight:600;cursor:pointer}
@@ -5797,6 +5840,26 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         </div>
       </section>
 
+      <!-- Kote kliyan yo peye (06/11) : globe des paiements reussis, sous Revni -->
+      <section class="ov-sec" id="admGeoSec">
+        <div class="ov-sec-h" data-i18n="adm_geo_h">Kote kliyan yo peye</div>
+        <div class="ov-card geo-card">
+          <div class="geo-tabs">
+            <button type="button" class="adm-src-chip on" data-geovue="haiti" data-i18n="adm_geo_haiti">Ayiti</button>
+            <button type="button" class="adm-src-chip" data-geovue="monde" data-i18n="adm_geo_monde">Mond</button>
+            <span class="geo-sp"></span>
+            <button type="button" class="adm-src-chip" data-geoper="7" data-i18n="adm_per_7">7 jou</button>
+            <button type="button" class="adm-src-chip on" data-geoper="30" data-i18n="adm_per_30">30 jou</button>
+            <button type="button" class="adm-src-chip" data-geoper="0" data-i18n="adm_per_all">Tout</button>
+          </div>
+          <div class="geo-globe" id="admGeoGlobe"></div>
+          <div class="geo-leg"><span><i style="background:#F7A21B"></i>NatCash</span><span><i style="background:#E8352B"></i>MonCash</span><span><i style="background:#A78BFA"></i>Stripe</span><span><i style="background:#F4F3ED"></i><span data-i18n="adm_geo_last">Dènye peman</span></span></div>
+          <div id="admGeoTop"></div>
+          <div class="geo-chips" id="admGeoPays"></div>
+          <button type="button" class="btn btn-outline geo-big-btn" data-ovgo="kat" data-i18n="adm_geo_big">Wè kat la an gran</button>
+        </div>
+      </section>
+
       <section class="ov-sec" id="admStripeSec">
         <div class="ov-sec-h" data-i18n="ov_stripe_h">Stripe — paiements par carte (en dollars)</div>
         <div class="ov-rev" id="admStripeCards">
@@ -5899,6 +5962,72 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
           <div id="admRevTxList" class="admdash-list"></div>
           <button type="button" class="btn btn-outline" id="admRevTxMore" style="width:100%;margin-top:12px;display:none" data-i18n="adm_rev_tx_more">Chaje pi ansyen yo</button>
         </div>
+      </section>
+    </div>
+
+    <!-- VUE : RENOUVELLEMENT (06/11) : ouverte par la carte Renouvelman de Revni -->
+    <div class="dash-view" data-adview="renouvellement">
+      <button class="dash-back" type="button" data-adback>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="ov-head">
+        <div>
+          <span class="ov-eyebrow"><span class="ov-live"></span><span data-i18n="ov_live">En direct</span></span>
+          <h2 data-i18n="adm_ren_h">Renouvèlman</h2>
+          <p data-i18n="adm_ren_p">Kliyan ki repeye lè plan yo fini, ki monte plan, ak sa ki pa tounen.</p>
+        </div>
+        <div class="ov-head-act">
+          <span class="admdash-updated" id="admRenUpdated"></span>
+          <button type="button" class="ov-refresh" id="admRenRefresh"><span data-i18n="adm_refresh">Rafrechi</span></button>
+        </div>
+      </div>
+      <div class="ren-per">
+        <button type="button" class="adm-src-chip" data-renper="7" data-i18n="adm_per_7">7 jou</button>
+        <button type="button" class="adm-src-chip on" data-renper="30" data-i18n="adm_per_30">30 jou</button>
+        <button type="button" class="adm-src-chip" data-renper="90" data-i18n="adm_per_90">90 jou</button>
+        <button type="button" class="adm-src-chip" data-renper="0" data-i18n="adm_per_all">Tout</button>
+      </div>
+      <div id="admRenBody"><div class="admdash-empty" data-i18n="adm_k_loading">Chajman...</div></div>
+    </div>
+
+    <!-- VUE : KAT PEMAN EN GRAND (06/11) : ouverte par « Wè kat la an gran » -->
+    <div class="dash-view" data-adview="kat">
+      <button class="dash-back" type="button" data-adback>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="ov-head">
+        <div>
+          <span class="ov-eyebrow"><span class="ov-live"></span><span data-i18n="ov_live">En direct</span></span>
+          <h2 data-i18n="adm_geo_h">Kote kliyan yo peye</h2>
+          <p data-i18n="adm_geo_p">Chak peman reyisi, sou kote kliyan an te ye lè l te peye (apeprè).</p>
+        </div>
+        <div class="ov-head-act">
+          <button type="button" class="ov-refresh" id="admGeoRefresh"><span data-i18n="adm_refresh">Rafrechi</span></button>
+        </div>
+      </div>
+      <section class="ov-sec">
+        <div class="ov-card geo-card">
+          <div class="geo-tabs">
+            <button type="button" class="adm-src-chip on" data-geovue="haiti" data-i18n="adm_geo_haiti">Ayiti</button>
+            <button type="button" class="adm-src-chip" data-geovue="monde" data-i18n="adm_geo_monde">Mond</button>
+            <span class="geo-sp"></span>
+            <button type="button" class="adm-src-chip" data-geoper="7" data-i18n="adm_per_7">7 jou</button>
+            <button type="button" class="adm-src-chip on" data-geoper="30" data-i18n="adm_per_30">30 jou</button>
+            <button type="button" class="adm-src-chip" data-geoper="0" data-i18n="adm_per_all">Tout</button>
+          </div>
+          <div class="geo-globe big" id="admGeoGlobeBig"></div>
+          <div class="geo-leg"><span><i style="background:#F7A21B"></i>NatCash</span><span><i style="background:#E8352B"></i>MonCash</span><span><i style="background:#A78BFA"></i>Stripe</span><span><i style="background:#F4F3ED"></i><span data-i18n="adm_geo_last">Dènye peman</span></span></div>
+        </div>
+      </section>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_geo_top">Kote ki peye plis</div>
+        <div class="ov-card"><div id="admGeoTopBig"></div><div class="geo-chips" id="admGeoPaysBig" style="margin-top:12px"></div></div>
+      </section>
+      <section class="ov-sec">
+        <div class="ov-sec-h" data-i18n="adm_geo_recent">Dènye peman reyisi</div>
+        <div class="ov-card"><div id="admGeoRecent"></div></div>
       </section>
     </div>
 
@@ -6445,6 +6574,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261104b"></script>
+<script src="app.js?v=20261106a"></script>
 </body>
 </html>

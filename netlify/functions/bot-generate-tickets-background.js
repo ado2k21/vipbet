@@ -1085,12 +1085,22 @@ function extraireMarchesBSD(evenementBSD, dateCible, infosFixture, prioritaire) 
 const SEUIL_MIN_FIABILITE = 8;
 
 async function recupererFiabiliteMarches() {
-  const carte = new Map(); // clé "league|market" -> { taux, echantillon }
+  const carte = new Map(); // clé "league|market" -> { taux, echantillon, gagnes }
+  // 06/11 (lissage) : les couples AVEC MOINS de SEUIL_MIN_FIABILITE résultats sont gardés à part
+  // (carte.faibles) et servent UNIQUEMENT au score lissé (voir annoterPoolAvecFiabilite). La
+  // carte principale, sa taille et toutes les règles qui en dépendent (A-E, repli historique,
+  // real_sample_size, value_score) restent STRICTEMENT identiques.
+  const faibles = new Map();
+  carte.faibles = faibles;
   try {
-    const lignes = await sbSelect('market_reliability', 'select=league,market,echantillon,taux_reussite');
+    const lignes = await sbSelect('market_reliability', 'select=league,market,echantillon,gagnes,taux_reussite');
     lignes.forEach(l => {
-      if (l.echantillon >= SEUIL_MIN_FIABILITE && l.taux_reussite != null) {
-        carte.set(`${l.league}|${l.market}`, { taux: Number(l.taux_reussite), echantillon: l.echantillon });
+      const n = Number(l.echantillon) || 0;
+      const g = l.gagnes != null ? Number(l.gagnes) : null;
+      if (n >= SEUIL_MIN_FIABILITE && l.taux_reussite != null) {
+        carte.set(`${l.league}|${l.market}`, { taux: Number(l.taux_reussite), echantillon: n, gagnes: g });
+      } else if (n > 0 && g != null && g >= 0 && g <= n) {
+        faibles.set(`${l.league}|${l.market}`, { echantillon: n, gagnes: g });
       }
     });
   } catch (e) {
@@ -1117,12 +1127,25 @@ async function recupererFiabiliteMarches() {
 // donc désormais le signal DOMINANT (70%), le taux historique du
 // championnat restant un vrai correctif (30%), jamais ignoré, mais jamais
 // prioritaire sur ce que CE match précis annonce.
+// LISSAGE (06/11, accord de l'utilisateur) : au lieu d'un seuil tout-ou-rien (rien sous 8
+// résultats, 100 % du taux brut au-delà), le taux réel est « tiré » vers la probabilité de la
+// cote, d'autant moins que l'échantillon est grand : (gagnés + K × 1/cote) / (résultats + K).
+// Sans aucun historique : exactement 1/cote, comme avant. Mesuré en rejouant les 980 résultats
+// réglés (06/11) : tri gagnants/perdants 0,7334 -> 0,7369 (gain léger, jamais une régression).
+// Les pondérations 70 % cote / 30 % historique du 04/09 sont conservées.
+const K_LISSAGE = 8;
 function annoterPoolAvecFiabilite(poolFoot, carteFiabilite) {
+  const faibles = (carteFiabilite && carteFiabilite.faibles) || new Map();
   poolFoot.forEach(bet => {
     const probMarche = 1 / bet.odd;
-    const info = carteFiabilite.get(`${bet.league}|${bet.market}`);
+    const cle = `${bet.league}|${bet.market}`;
+    const info = carteFiabilite.get(cle);
     const tauxReel = info ? info.taux : null;
-    bet.scoreFiabilite = (tauxReel != null) ? (probMarche * 0.7 + tauxReel * 0.3) : probMarche;
+    const faible = info ? null : faibles.get(cle);
+    const n = info ? info.echantillon : (faible ? faible.echantillon : 0);
+    const g = info ? (info.gagnes != null ? info.gagnes : info.taux * info.echantillon) : (faible ? faible.gagnes : 0);
+    const tauxLisse = (n > 0 && Number.isFinite(probMarche)) ? (g + K_LISSAGE * probMarche) / (n + K_LISSAGE) : null;
+    bet.scoreFiabilite = (tauxLisse != null && Number.isFinite(tauxLisse)) ? (probMarche * 0.7 + tauxLisse * 0.3) : probMarche;
     bet.tauxReel = tauxReel;
     bet.echantillonReel = info ? info.echantillon : null;
     // VALUE BET (session suivante, roadmap "amélioration continue") :

@@ -18,6 +18,7 @@
 'use strict';
 
 const C = require('./lib/paiement-commun.js');
+const { lireGeo } = require('./lib/geo-requete');   // 06/11 : globe admin (jamais bloquant)
 
 exports.handler = async function (event) {
   if (event.httpMethod === 'OPTIONS') {
@@ -184,7 +185,7 @@ exports.handler = async function (event) {
 
     let paiement = null;
     try {
-      const lignes = await C.sbInsert(cfg, 'payments', {
+      const ligne = {
         user_id: uid,
         subscription_id: abo.id,
         plan_id: plan.id,
@@ -195,8 +196,24 @@ exports.handler = async function (event) {
         provider: 'plopplop',
         provider_reference: referencePrestataire,
         expected_amount_htg: montant,
-        expires_at: expiration.toISOString()
-      });
+        expires_at: expiration.toISOString(),
+        // 06/11 : lieu approximatif (pays/region/ville), jamais l'adresse IP. {} si inconnu.
+        ...lireGeo(entetes)
+      };
+      let lignes;
+      try {
+        lignes = await C.sbInsert(cfg, 'payments', ligne);
+      } catch (eGeo) {
+        /* Securite : si les colonnes geo_* manquent (migration pas encore passee), on
+           reessaie SANS le lieu. Le paiement ne doit jamais dependre du globe admin. */
+        if (ligne.geo_source && /geo_/.test(eGeo.message || '')) {
+          console.error('[paiement-create] lieu ignore :', eGeo.message);
+          ['geo_country', 'geo_region', 'geo_city', 'geo_lat', 'geo_lon', 'geo_source'].forEach(k => { delete ligne[k]; });
+          lignes = await C.sbInsert(cfg, 'payments', ligne);
+        } else {
+          throw eGeo;
+        }
+      }
       paiement = lignes && lignes[0];
     } catch (e) {
       await C.sbDelete(cfg, 'subscriptions', 'id=eq.' + abo.id);

@@ -376,6 +376,7 @@ adm_rev_h:"Revenus", adm_rev_p:"Mêmes chiffres que l'accueil, toujours synchron
 adm_rev_total:"Revenu total confirmé", adm_rev_total_note:"Tout historique, paiements validés uniquement.",
 adm_rev_mois:"Revenu ce mois-ci", adm_rev_paiements:"Paiements confirmés ce mois-ci",
 adm_rev_attente:"En attente de validation", adm_rev_attente_note:"{n} paiement(s) — jamais compté comme revenu tant que non validé.",
+adm_geo_h:"Où paient les clients", adm_geo_haiti:"Haïti", adm_geo_monde:"Monde", adm_per_7:"7 jours", adm_per_30:"30 jours", adm_per_90:"90 jours", adm_per_all:"Tout", adm_geo_last:"Dernier paiement", adm_geo_big:"Voir la carte en grand", adm_geo_p:"Chaque paiement réussi, à l'endroit où se trouvait le client au moment de payer (approximatif).", adm_geo_top:"Lieux qui paient le plus", adm_geo_recent:"Derniers paiements réussis", adm_geo_empty:"Pas encore de lieu enregistré. Le premier paiement réussi avec un lieu apparaîtra ici.", adm_geo_n:"{n} paiement(s)", adm_ren_h:"Renouvellement", adm_ren_p:"Clients qui repaient à la fin de leur plan, qui montent de plan, et ceux qui ne reviennent pas.", adm_ren_rate:"Taux de renouvellement", adm_ren_rate_note:"{r} sur {t} abonnements terminés ont été repayés (même plan ou plus).", adm_ren_line:"<b>{s}</b> même plan · <b>{u}</b> montent · <b>{l}</b> non renouvelés", adm_ren_none:"Aucun plan terminé sur la période.", adm_ren_same:"Renouvelé, même plan", adm_ren_up:"Plan supérieur", adm_ren_down:"Plan inférieur", adm_ren_lost:"Non renouvelé", adm_ren_lost_note:"Abonnement terminé, pas de nouveau paiement.", adm_ren_sum:"Résumé", adm_ren_byplan:"Par plan", adm_ren_paths:"Parcours des plans", adm_ren_soon:"Se termine dans 7 jours", adm_ren_lostlist:"Non renouvelés (derniers)", adm_ren_plan_line:"{f} terminés · {r} repayés · {u} montent", adm_ren_lifetime:"Ne se termine jamais", adm_ren_days:"{n} j", adm_ren_first:"Premier plan", adm_ren_already:"Déjà renouvelé {n} fois", adm_ren_ended:"Terminé le {d}", adm_ren_nosoon:"Aucun plan ne se termine dans les 7 jours.", adm_ren_empty:"Rien pour l'instant.",
 adm_rev_tx_h:"Historique des transactions", adm_rev_tx_more:"Charger les plus anciennes",
 adm_settings_h:"Paramètres", adm_settings_p:"Le mot de passe de votre compte admin.",
 adm_settings_pw_h:"Changer le mot de passe",
@@ -954,6 +955,7 @@ adm_rev_h:"Revenue", adm_rev_p:"Same figures as the overview page, always in syn
 adm_rev_total:"Total confirmed revenue", adm_rev_total_note:"All time, confirmed payments only.",
 adm_rev_mois:"Revenue this month", adm_rev_paiements:"Confirmed payments this month",
 adm_rev_attente:"Awaiting validation", adm_rev_attente_note:"{n} payment(s) — never counted as revenue until validated.",
+adm_geo_h:"Where customers pay", adm_geo_haiti:"Haiti", adm_geo_monde:"World", adm_per_7:"7 days", adm_per_30:"30 days", adm_per_90:"90 days", adm_per_all:"All", adm_geo_last:"Latest payment", adm_geo_big:"Open the full map", adm_geo_p:"Every successful payment, at the customer's approximate location when paying.", adm_geo_top:"Top paying places", adm_geo_recent:"Latest successful payments", adm_geo_empty:"No location recorded yet. The first successful payment with a location will appear here.", adm_geo_n:"{n} payment(s)", adm_ren_h:"Renewals", adm_ren_p:"Customers who pay again when their plan ends, who upgrade, and those who don't come back.", adm_ren_rate:"Renewal rate", adm_ren_rate_note:"{r} of {t} ended subscriptions were paid again (same plan or higher).", adm_ren_line:"<b>{s}</b> same plan · <b>{u}</b> upgraded · <b>{l}</b> not renewed", adm_ren_none:"No plan ended in this period.", adm_ren_same:"Renewed, same plan", adm_ren_up:"Upgraded", adm_ren_down:"Downgraded", adm_ren_lost:"Not renewed", adm_ren_lost_note:"Subscription ended, no new payment.", adm_ren_sum:"Summary", adm_ren_byplan:"By plan", adm_ren_paths:"Plan paths", adm_ren_soon:"Ending within 7 days", adm_ren_lostlist:"Not renewed (latest)", adm_ren_plan_line:"{f} ended · {r} paid again · {u} upgraded", adm_ren_lifetime:"Never ends", adm_ren_days:"{n} d", adm_ren_first:"First plan", adm_ren_already:"Renewed {n} time(s) before", adm_ren_ended:"Ended {d}", adm_ren_nosoon:"No plan ends within 7 days.", adm_ren_empty:"Nothing yet.",
 adm_rev_tx_h:"Transaction history", adm_rev_tx_more:"Load older ones",
 adm_settings_h:"Settings", adm_settings_p:"Your admin account password.",
 adm_settings_pw_h:"Change password",
@@ -1532,6 +1534,7 @@ adm_rev_h:"Revni", adm_rev_p:"Menm chif ak akèy la, toujou senkwonize — sèlm
 adm_rev_total:"Total revni konfime", adm_rev_total_note:"Tout istorik, sèlman peman ki valide.",
 adm_rev_mois:"Revni mwa sa a", adm_rev_paiements:"Peman konfime mwa sa a",
 adm_rev_attente:"Ap tann validasyon", adm_rev_attente_note:"{n} peman — pa janm konte kòm revni jiskaske li valide.",
+adm_geo_h:"Kote kliyan yo peye", adm_geo_haiti:"Ayiti", adm_geo_monde:"Mond", adm_per_7:"7 jou", adm_per_30:"30 jou", adm_per_90:"90 jou", adm_per_all:"Tout", adm_geo_last:"Dènye peman", adm_geo_big:"Wè kat la an gran", adm_geo_p:"Chak peman reyisi, sou kote kliyan an te ye lè l te peye (apeprè).", adm_geo_top:"Kote ki peye plis", adm_geo_recent:"Dènye peman reyisi", adm_geo_empty:"Pa gen kote ankò. Premye peman reyisi ki gen kote a ap parèt isit la.", adm_geo_n:"{n} peman", adm_ren_h:"Renouvèlman", adm_ren_p:"Kliyan ki repeye lè plan yo fini, ki monte plan, ak sa ki pa tounen.", adm_ren_rate:"To renouvèlman", adm_ren_rate_note:"{r} sou {t} abònman ki fini yo te repeye (menm plan oswa plis).", adm_ren_line:"<b>{s}</b> menm plan · <b>{u}</b> monte · <b>{l}</b> pa renouvle", adm_ren_none:"Pa gen plan ki fini nan peryòd sa a.", adm_ren_same:"Renouvle menm plan", adm_ren_up:"Monte plan", adm_ren_down:"Desann plan", adm_ren_lost:"Pa renouvle", adm_ren_lost_note:"Abònman fini, pa gen nouvo peman.", adm_ren_sum:"Rezime", adm_ren_byplan:"Pa plan", adm_ren_paths:"Chemen plan yo", adm_ren_soon:"Ap fini nan 7 jou", adm_ren_lostlist:"Pa renouvle (dènye yo)", adm_ren_plan_line:"{f} fini · {r} repeye · {u} monte", adm_ren_lifetime:"Pa janm fini", adm_ren_days:"{n} jou", adm_ren_first:"Premye plan", adm_ren_already:"Deja renouvle {n} fwa", adm_ren_ended:"Fini {d}", adm_ren_nosoon:"Okenn plan pa fini nan 7 jou.", adm_ren_empty:"Anyen pou kounye a.",
 adm_rev_tx_h:"Istorik tranzaksyon", adm_rev_tx_more:"Chaje pi ansyen yo",
 adm_settings_h:"Paramèt", adm_settings_p:"Modpas kont admin ou.",
 adm_settings_pw_h:"Chanje modpas",
@@ -4093,6 +4096,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     const url=lien+'?client_reference_id='+encodeURIComponent(uid+'__'+planCible)+
       (state.email?'&prefilled_email='+encodeURIComponent(state.email.trim()):'');
+    // 06/11 : note le lieu approximatif pour le globe admin (stripe-geo). keepalive : la
+    // requete part meme pendant la navigation ; jamais attendue plus de 0,8 s, jamais bloquante.
+    try{
+      const sbg=window.VB_getSupabase&&window.VB_getSupabase();
+      const ss=sbg&&(await Promise.race([sbg.auth.getSession(),new Promise(r=>setTimeout(()=>r(null),800))]));
+      const jeton=ss&&ss.data&&ss.data.session&&ss.data.session.access_token;
+      if(jeton)fetch('/.netlify/functions/stripe-geo',{method:'POST',keepalive:true,headers:{Authorization:'Bearer '+jeton}}).catch(()=>{});
+    }catch(e){}
     // Meme onglet : une navigation n'est jamais bloquee par les navigateurs
     // mobiles, et Stripe ramene la personne ici apres le paiement.
     window.location.href=url;
@@ -7989,6 +8000,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(view==='users')renderUsers();
     if(view==='payments')renderPayments();
     if(view==='revenus'){renderRevenue();renderStripeUsd();renderRevenueTransactions(true);}
+    if(view==='renouvellement')renderRenouvellementPage();
+    if(view==='kat')renderGeo();
     if(view==='plans')renderPlans();
     if(view==='fiches'){majFiltresJodiA();renderFiches();}
     if(view==='faq')renderFaqList();
@@ -8170,6 +8183,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       // par ce retrait -- uniquement l'affichage disparait.
       renderRevenue();
       renderStripeUsd();
+      renderGeo();
     }catch(e){
       box.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';
     }
@@ -8328,6 +8342,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const IC_CALENDAR='<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>';
   const IC_CHECK='<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
   const IC_CLOCK='<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>';
+  const IC_REPEAT='<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>';
+  const IC_UPC='<circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/>';
+  const IC_DOWNC='<circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/>';
+  const IC_XC='<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
   const IC_USERS='<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>';
   const IC_TICKET='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>';
   function badgeVariation(actuel,precedent){
@@ -8429,8 +8447,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         revCard(IC_TREND,null,'',t('adm_rev_total'),money(totalConfirme)+' <small>HTG</small>','gold',t('adm_rev_total_note'))+
         revCard(IC_CALENDAR,'green',badgeVariation(moisConfirme,moisPrecConfirme),t('adm_rev_mois'),money(moisConfirme)+' <small>HTG</small>')+
         revCard(IC_CHECK,'green',badgeVariation(moisCount,moisPrecCount),t('adm_rev_paiements'),String(moisCount))+
-        revCard(IC_CLOCK,'neutre','',t('adm_rev_attente'),money(enAttenteMontant)+' <small>HTG</small>',null,t('adm_rev_attente_note').replace('{n}',enAttenteCount));
+        revCard(IC_CLOCK,'neutre','',t('adm_rev_attente'),money(enAttenteMontant)+' <small>HTG</small>',null,t('adm_rev_attente_note').replace('{n}',enAttenteCount))+
+        '<div class="rev-card rev-ren" role="button" tabindex="0"><span class="admdash-empty" style="padding:6px 0">'+t('adm_k_loading')+'</span></div>';
       boxes.forEach(b=>{b.innerHTML=html;});
+      renderCarteRenouvellement();
       const heureMaj=t('adm_updated_at').replace('{t}',new Date().toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'}));
       const updEl=document.getElementById('admRevUpdated');
       if(updEl)updEl.textContent=heureMaj;
@@ -8438,6 +8458,242 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       boxes.forEach(b=>{b.innerHTML='<div class="rev-card"><span class="admdash-empty">'+t('adm_k_error')+'</span></div>';});
     }
   }
+
+  // ============================================================================
+  // RENOUVELLEMENT + GLOBE DES PAIEMENTS (06/11, demande de l'utilisateur)
+  // Affichage seul, calcule dans le navigateur a partir des paiements CONFIRMES
+  // deja lus par l'admin (chargerPaiements / chargerPlansAdmin / chargerUsers) :
+  // aucune requete d'ecriture, aucune fonction serveur, aucune table nouvelle.
+  // Paiements de test ignores : Stripe < 1 $ ; MonCash/NatCash < moitie du prix du plan.
+  // ============================================================================
+  const JOUR_MS=864e5;
+  const REN_GRACE_J=3;          // un plan fini depuis moins de 3 jours n'est pas encore compte « perdu »
+  let renPer=30, geoPer=30, geoVue='haiti';
+  function estPaiementTest(p,plan){
+    if(p.method==='stripe')return (Number(p.provider_amount)||0)<1;
+    const prix=plan&&Number(plan.price_htg);
+    return prix?((Number(p.amount_htg)||0)<prix*0.5):false;
+  }
+  function masquerCompte(u){
+    const brut=String((u&&(u.username||(u.email||'').split('@')[0]))||'').trim();
+    if(!brut)return '—';
+    return escH(brut.slice(0,2)+'****'+(brut.length>3?brut.slice(-1):''));
+  }
+  function nomPlan(plan,id){
+    const local=window.VB_planById?window.VB_planById(id):null;
+    return escH(local?stripTags(window.VB_planLabel(local)):((plan&&plan.name)||String(id||'').toUpperCase()));
+  }
+  function dateCourte(ms){return new Date(ms).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'numeric',month:'short'});}
+  async function paiementsReels(){
+    const [pays,plans]=await Promise.all([chargerPaiements(),chargerPlansAdmin()]);
+    const plansById={};plans.forEach(pl=>{plansById[pl.id]=pl;});
+    return {plansById,plans,liste:pays.filter(p=>p.status==='confirmed'&&!estPaiementTest(p,plansById[p.plan_id])).map(p=>{
+      const pl=plansById[p.plan_id]||{};
+      return {p,uid:p.user_id,plan:p.plan_id,rank:Number(pl.rank)||rank[p.plan_id]||0,dur:pl.duration_days?Number(pl.duration_days):null,t:Date.parse(p.confirmed_at||p.created_at)||0};
+    }).filter(x=>x.uid&&x.t)};
+  }
+  /* Une « fin de plan » = un paiement confirme + duree du plan (le LIFETIME ne finit jamais).
+     Repaye (n'importe quand apres ce paiement) = renouvele : meme rang, rang superieur ou inferieur.
+     Sinon, perdu une fois passee la marge de REN_GRACE_J jours. */
+  function calculRenouvellement(liste,jours,maintenant){
+    const parUser={};liste.forEach(x=>{(parUser[x.uid]=parUser[x.uid]||[]).push(x);});
+    const fins=[],bientot=[];
+    Object.keys(parUser).forEach(uid=>{
+      const l=parUser[uid].sort((a,b)=>a.t-b.t);
+      l.forEach((x,i)=>{
+        if(!x.dur)return;
+        const fin=x.t+x.dur*JOUR_MS,suiv=l[i+1]||null;
+        if(!suiv&&fin>maintenant){if(fin-maintenant<=7*JOUR_MS)bientot.push({x,fin,avant:i});return;}
+        if(fin>maintenant)return;
+        let issue;
+        if(suiv)issue=suiv.rank>x.rank?'up':(suiv.rank<x.rank?'down':'same');
+        else if(maintenant-fin<REN_GRACE_J*JOUR_MS)return;
+        else issue='lost';
+        fins.push({x,fin,suiv,issue});
+      });
+    });
+    const dans=(a,b)=>fins.filter(f=>f.fin>a&&f.fin<=b);
+    const cur=jours?dans(maintenant-jours*JOUR_MS,maintenant):fins.slice();
+    const prec=jours?dans(maintenant-2*jours*JOUR_MS,maintenant-jours*JOUR_MS):[];
+    const cpt=arr=>{const c={same:0,up:0,down:0,lost:0};arr.forEach(f=>{c[f.issue]++;});c.tot=arr.length;c.ok=c.same+c.up+c.down;c.taux=c.tot?Math.round(100*c.ok/c.tot):null;return c;};
+    return {cur,c:cpt(cur),p:cpt(prec),bientot:bientot.sort((a,b)=>a.fin-b.fin)};
+  }
+  function barreRen(c,cls){
+    if(!c.tot)return '<div class="'+cls+'"></div>';
+    const seg=(n,col)=>n?'<span style="flex:'+n+';background:'+col+'"></span>':'';
+    return '<div class="'+cls+'">'+seg(c.same,'#2ED47F')+seg(c.up,'#E8CE8A')+seg(c.down,'#7CB8FF')+seg(c.lost,'#F0735E')+'</div>';
+  }
+  async function renderCarteRenouvellement(){
+    const cartes=document.querySelectorAll('#admDash .rev-ren');
+    if(!cartes.length)return;
+    try{
+      const {liste}=await paiementsReels();
+      const r=calculRenouvellement(liste,30,Date.now());
+      const badge=(r.c.taux!=null&&r.p.taux!=null)?(r.c.taux>=r.p.taux?'<span class="rev-card-badge up">↑ +'+(r.c.taux-r.p.taux)+'%</span>':'<span class="rev-card-badge down">↓ '+(r.c.taux-r.p.taux)+'%</span>'):'';
+      const html='<div class="rev-card-top"><span class="rev-card-ic green">'+icRev(IC_REPEAT)+'</span>'+badge+'</div>'+
+        '<div class="rev-card-lbl">'+t('adm_ren_h')+'</div>'+
+        '<div class="rev-card-val">'+(r.c.taux!=null?r.c.taux+' <small>%</small>':'—')+'</div>'+
+        barreRen(r.c,'ren-mini')+
+        '<div class="ren-txt">'+(r.c.tot?t('adm_ren_line').replace('{s}',r.c.same).replace('{u}',r.c.up).replace('{l}',r.c.lost):t('adm_ren_none'))+'</div>';
+      cartes.forEach(c=>{c.innerHTML=html;});
+    }catch(e){cartes.forEach(c=>{c.innerHTML='<span class="admdash-empty">'+t('adm_k_error')+'</span>';});}
+  }
+  document.addEventListener('click',ev=>{const c=ev.target.closest&&ev.target.closest('#admDash .rev-ren');if(c)setView('renouvellement');});
+  document.addEventListener('keydown',ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.classList&&ev.target.classList.contains('rev-ren')){ev.preventDefault();setView('renouvellement');}});
+
+  async function renderRenouvellementPage(){
+    const body=document.getElementById('admRenBody');if(!body)return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb){body.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
+    body.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
+    try{
+      const [{liste,plans,plansById},users]=await Promise.all([paiementsReels(),chargerUsers()]);
+      const usersById={};users.forEach(u=>{usersById[u.id]=u;});
+      const now=Date.now(),r=calculRenouvellement(liste,renPer,now),c=r.c;
+      const badge=(c.taux!=null&&r.p.taux!=null)?(c.taux>=r.p.taux?'<span class="rev-card-badge up">↑ +'+(c.taux-r.p.taux)+'%</span>':'<span class="rev-card-badge down">↓ '+(c.taux-r.p.taux)+'%</span>'):'';
+      const vide='<div class="admdash-empty">'+t('adm_ren_empty')+'</div>';
+      // par plan
+      const parPlan=plans.map(pl=>{
+        if(!pl.duration_days)return '<div class="ren-row"><span><b>'+nomPlan(pl,pl.id)+'</b><br><small>'+t('adm_ren_lifetime')+'</small></span><span class="n">—</span></div>';
+        const f=r.cur.filter(x=>x.x.plan===pl.id),ok=f.filter(x=>x.issue!=='lost').length,upN=f.filter(x=>x.issue==='up').length;
+        return '<div class="ren-row"><span><b>'+nomPlan(pl,pl.id)+'</b><br><small>'+t('adm_ren_plan_line').replace('{f}',f.length).replace('{r}',ok).replace('{u}',upN)+'</small></span><span class="n">'+(f.length?Math.round(100*ok/f.length)+' %':'—')+'</span></div>';
+      }).join('');
+      // chemins
+      const ch={};r.cur.filter(f=>f.suiv).forEach(f=>{const k=f.x.plan+'>'+f.suiv.plan;ch[k]=ch[k]||{a:f.x.plan,b:f.suiv.plan,n:0,issue:f.issue};ch[k].n++;});
+      const chemins=Object.values(ch).sort((a,b)=>b.n-a.n).map(k=>'<div class="ren-row"><span><b>'+nomPlan(plansById[k.a],k.a)+'</b> → <b class="'+(k.issue==='up'?'ren-up':(k.issue==='down'?'ren-dn':''))+'">'+nomPlan(plansById[k.b],k.b)+(k.issue==='up'?' ↑':(k.issue==='down'?' ↓':''))+'</b></span><span class="n">'+k.n+'</span></div>').join('');
+      // bientot
+      const bientot=r.bientot.map(b=>'<div class="ren-row"><span><b>'+masquerCompte(usersById[b.x.uid])+'</b> · '+nomPlan(plansById[b.x.plan],b.x.plan)+'<br><small>'+(b.avant?t('adm_ren_already').replace('{n}',b.avant):t('adm_ren_first'))+'</small></span><span class="ren-soon">'+t('adm_ren_days').replace('{n}',Math.max(0,Math.ceil((b.fin-now)/JOUR_MS)))+'</span></div>').join('');
+      // perdus
+      const perdus=r.cur.filter(f=>f.issue==='lost').sort((a,b)=>b.fin-a.fin).slice(0,10).map(f=>'<div class="ren-row"><span><b>'+masquerCompte(usersById[f.x.uid])+'</b> · '+nomPlan(plansById[f.x.plan],f.x.plan)+'<br><small>'+t('adm_ren_ended').replace('{d}',dateCourte(f.fin))+'</small></span><span class="n">'+t('adm_ren_days').replace('{n}',Math.floor((now-f.fin)/JOUR_MS))+'</span></div>').join('');
+      body.innerHTML=
+        '<section class="ov-sec"><div class="ov-sec-h">'+t('adm_ren_sum')+'</div><div class="ov-rev">'+
+          revCard(IC_REPEAT,null,badge,t('adm_ren_rate'),(c.taux!=null?c.taux+' <small>%</small>':'—'),'gold',c.tot?t('adm_ren_rate_note').replace('{r}',c.ok).replace('{t}',c.tot):t('adm_ren_none'))+
+          revCard(IC_REPEAT,'green','',t('adm_ren_same'),String(c.same))+
+          revCard(IC_UPC,'green','',t('adm_ren_up'),String(c.up))+
+          revCard(IC_DOWNC,'neutre','',t('adm_ren_down'),String(c.down))+
+          revCard(IC_XC,'neutre','',t('adm_ren_lost'),String(c.lost),null,t('adm_ren_lost_note'))+
+        '</div><div class="ov-card" style="margin-top:12px">'+barreRen(c,'ren-bar')+
+          '<div class="ren-leg"><span><i style="background:#2ED47F"></i>'+t('adm_ren_same')+' '+c.same+'</span><span><i style="background:#E8CE8A"></i>'+t('adm_ren_up')+' '+c.up+'</span><span><i style="background:#7CB8FF"></i>'+t('adm_ren_down')+' '+c.down+'</span><span><i style="background:#F0735E"></i>'+t('adm_ren_lost')+' '+c.lost+'</span></div></div></section>'+
+        '<section class="ov-sec"><div class="ov-sec-h">'+t('adm_ren_byplan')+'</div><div class="ov-card">'+(parPlan||vide)+'</div></section>'+
+        '<section class="ov-sec"><div class="ov-sec-h">'+t('adm_ren_paths')+'</div><div class="ov-card">'+(chemins||vide)+'</div></section>'+
+        '<section class="ov-sec"><div class="ov-sec-h">'+t('adm_ren_soon')+'</div><div class="ov-card">'+(bientot||'<div class="admdash-empty">'+t('adm_ren_nosoon')+'</div>')+'</div></section>'+
+        '<section class="ov-sec"><div class="ov-sec-h">'+t('adm_ren_lostlist')+'</div><div class="ov-card">'+(perdus||vide)+'</div></section>';
+      const upd=document.getElementById('admRenUpdated');
+      if(upd)upd.textContent=t('adm_updated_at').replace('{t}',new Date().toLocaleTimeString(currentLang==='en'?'en-US':'fr-FR',{hour:'2-digit',minute:'2-digit'}));
+    }catch(e){body.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';}
+  }
+  document.querySelectorAll('#admDash [data-renper]').forEach(b=>b.addEventListener('click',()=>{
+    renPer=Number(b.dataset.renper)||0;
+    document.querySelectorAll('#admDash [data-renper]').forEach(x=>x.classList.toggle('on',x===b));
+    renderRenouvellementPage();
+  }));
+  const admRenRefreshBtn=document.getElementById('admRenRefresh');
+  if(admRenRefreshBtn)admRenRefreshBtn.addEventListener('click',()=>{paysCache=null;renderRenouvellementPage();renderCarteRenouvellement();});
+
+  /* ---- Globe : lieux des paiements reussis ----
+     Les colonnes geo_* n'existent qu'apres la migration (accord de l'utilisateur requis) : tant
+     qu'elles manquent, la requete echoue et la section affiche simplement l'etat vide. */
+  const PAYS_NOMS={
+    ht:{HT:'Ayiti',US:'Etazini',CA:'Kanada',FR:'Lafrans',DO:'Repiblik Dominikèn',CL:'Chili',BR:'Brezil',MX:'Meksik',BS:'Bahamas',TC:'Turks ak Caicos',GF:'Giyàn',GP:'Gwadloup',MQ:'Matinik',BE:'Bèljik',CH:'Swis'},
+  };
+  function nomPays(code){
+    code=String(code||'').toUpperCase();if(!code)return '—';
+    if(currentLang==='ht'&&PAYS_NOMS.ht[code])return PAYS_NOMS.ht[code];
+    try{return new Intl.DisplayNames([currentLang==='en'?'en':'fr'],{type:'region'}).of(code)||code;}catch(e){return code;}
+  }
+  let geoCache=null, geoMini=null, geoBig=null, geoScriptP=null;
+  function chargerScriptGlobe(){
+    if(window.VB_Globe)return Promise.resolve(true);
+    if(geoScriptP)return geoScriptP;
+    geoScriptP=new Promise(res=>{
+      const s=document.createElement('script');s.src='assets/globe-admin.js?v=20261106a';s.async=true;
+      s.onload=()=>res(!!window.VB_Globe);s.onerror=()=>{geoScriptP=null;res(false);};
+      document.head.appendChild(s);
+    });
+    return geoScriptP;
+  }
+  async function chargerGeo(){
+    if(geoCache)return geoCache;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return [];
+    try{
+      const {data,error}=await sb.from('payments')
+        .select('id,user_id,plan_id,method,amount_htg,provider_amount,status,confirmed_at,created_at,geo_country,geo_region,geo_city,geo_lat,geo_lon')
+        .eq('status','confirmed').not('geo_lat','is',null).order('confirmed_at',{ascending:false}).limit(500);
+      geoCache=(!error&&data)?data:[];
+    }catch(e){geoCache=[];}
+    return geoCache;
+  }
+  function groupesGeo(lignes,usersById,plansById){
+    const m=new Map();
+    lignes.forEach(p=>{
+      const ville=(p.geo_city||p.geo_region||'').trim()||nomPays(p.geo_country);
+      const k=(p.geo_country||'')+'|'+ville.toLowerCase();
+      let g=m.get(k);
+      if(!g){g={k,name:ville,cc:String(p.geo_country||'').toUpperCase(),country:nomPays(p.geo_country),la:0,lo:0,n:0,nc:0,mc:0,st:0,htg:0,usd:0,list:[]};m.set(k,g);}
+      g.n++;g.la+=Number(p.geo_lat);g.lo+=Number(p.geo_lon);
+      if(p.method==='stripe'){g.st++;g.usd+=Number(p.provider_amount)||0;}else{if(p.method==='natcash')g.nc++;else g.mc++;g.htg+=Number(p.amount_htg)||0;}
+      g.list.push({user:masquerCompte(usersById[p.user_id]),plan:nomPlan(plansById[p.plan_id],p.plan_id),method:p.method,t:Date.parse(p.confirmed_at||p.created_at)||0});
+    });
+    return [...m.values()].map(g=>{g.lat=g.la/g.n;g.lon=g.lo/g.n;return g;}).sort((a,b)=>b.n-a.n);
+  }
+  const MNOM={natcash:'NatCash',moncash:'MonCash',stripe:'Stripe'};
+  function popGeo(g){
+    const fu=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const tot=[g.htg?money(g.htg)+' HTG':'',g.usd?fu(g.usd)+' $':''].filter(Boolean).join(' + ');
+    return '<button type="button" class="x" data-vbg-close aria-label="×">×</button><h4>'+escH(g.name)+'</h4><div class="s">'+escH(g.country)+' · '+t('adm_geo_n').replace('{n}',g.n)+(tot?' · '+tot:'')+'</div><ul>'+
+      g.list.slice(0,4).map(x=>'<li><span>'+x.user+' · '+x.plan+' · '+MNOM[x.method]+'</span><b>'+dateCourte(x.t)+'</b></li>').join('')+'</ul>';
+  }
+  function topGeoHtml(groups,max){
+    if(!groups.length)return '';
+    const mx=groups[0].n;
+    return groups.slice(0,max).map(g=>'<div class="geo-row" data-geok="'+escH(g.k)+'"><div><b>'+escH(g.name)+'</b><small>'+escH(g.country)+'</small></div><span class="n">'+t('adm_geo_n').replace('{n}',g.n)+'</span>'+
+      '<div class="geo-bar" style="width:'+Math.max(8,100*g.n/mx)+'%">'+(g.nc?'<span style="flex:'+g.nc+';background:#F7A21B"></span>':'')+(g.mc?'<span style="flex:'+g.mc+';background:#E8352B"></span>':'')+(g.st?'<span style="flex:'+g.st+';background:#A78BFA"></span>':'')+'</div></div>').join('');
+  }
+  function paysGeoHtml(lignes){
+    const c=new Map();lignes.forEach(p=>{const k=nomPays(p.geo_country);c.set(k,(c.get(k)||0)+1);});
+    return [...c].sort((a,b)=>b[1]-a[1]).map(([k,n])=>'<span class="adm-src-chip">'+escH(k)+' · '+Math.round(100*n/lignes.length)+' %</span>').join('');
+  }
+  let geoGroupes=[];
+  async function renderGeo(){
+    const zoneMini=document.getElementById('admGeoGlobe'),top=document.getElementById('admGeoTop'),pays=document.getElementById('admGeoPays');
+    if(!zoneMini)return;
+    const [toutes,users,plans,ok]=await Promise.all([chargerGeo(),chargerUsers(),chargerPlansAdmin(),chargerScriptGlobe()]);
+    const usersById={};users.forEach(u=>{usersById[u.id]=u;});
+    const plansById={};plans.forEach(pl=>{plansById[pl.id]=pl;});
+    const now=Date.now();
+    const lignes=toutes.filter(p=>!estPaiementTest(p,plansById[p.plan_id])&&(!geoPer||now-(Date.parse(p.confirmed_at||p.created_at)||0)<=geoPer*JOUR_MS));
+    geoGroupes=groupesGeo(lignes,usersById,plansById);
+    const dernier=lignes[0]?geoGroupes.find(g=>g.k===((lignes[0].geo_country||'')+'|'+((lignes[0].geo_city||lignes[0].geo_region||'').trim()||nomPays(lignes[0].geo_country)).toLowerCase())):null;
+    if(ok&&!geoMini){geoMini=window.VB_Globe.create(zoneMini,{mini:true,popHtml:popGeo});}
+    if(ok&&!geoBig){const zb=document.getElementById('admGeoGlobeBig');if(zb)geoBig=window.VB_Globe.create(zb,{popHtml:popGeo});}
+    [geoMini,geoBig].forEach(gl=>{if(gl)gl.setData(geoGroupes,dernier);});
+    const vide='<div class="geo-empty">'+t('adm_geo_empty')+'</div>';
+    top.innerHTML=topGeoHtml(geoGroupes,4)||vide;
+    pays.innerHTML=paysGeoHtml(lignes);
+    const topB=document.getElementById('admGeoTopBig'),paysB=document.getElementById('admGeoPaysBig'),rec=document.getElementById('admGeoRecent');
+    if(topB)topB.innerHTML=topGeoHtml(geoGroupes,12)||vide;
+    if(paysB)paysB.innerHTML=paysGeoHtml(lignes);
+    if(rec)rec.innerHTML=lignes.slice(0,15).map(p=>{
+      const ville=(p.geo_city||p.geo_region||'').trim()||nomPays(p.geo_country);
+      const montant=p.method==='stripe'?(Number(p.provider_amount)||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' $':money(Number(p.amount_htg)||0)+' HTG';
+      return '<div class="ren-row" data-geok="'+escH((p.geo_country||'')+'|'+ville.toLowerCase())+'" style="cursor:pointer"><span><b>'+masquerCompte(usersById[p.user_id])+'</b> · '+nomPlan(plansById[p.plan_id],p.plan_id)+' <span class="geo-m '+escH(p.method)+'">'+MNOM[p.method]+'</span><br><small>'+escH(ville)+' · '+escH(nomPays(p.geo_country))+' · '+dateCourte(Date.parse(p.confirmed_at||p.created_at))+'</small></span><span class="n">'+montant+'</span></div>';
+    }).join('')||vide;
+  }
+  document.addEventListener('click',ev=>{
+    const tgt=ev.target.closest?ev.target:null;if(!tgt)return;
+    const vb=tgt.closest('#admDash [data-geovue]');
+    if(vb){geoVue=vb.dataset.geovue;document.querySelectorAll('#admDash [data-geovue]').forEach(x=>x.classList.toggle('on',x.dataset.geovue===geoVue));[geoMini,geoBig].forEach(gl=>{if(gl)gl.setView(geoVue);});return;}
+    const pb=tgt.closest('#admDash [data-geoper]');
+    if(pb){geoPer=Number(pb.dataset.geoper)||0;document.querySelectorAll('#admDash [data-geoper]').forEach(x=>x.classList.toggle('on',x.dataset.geoper===pb.dataset.geoper));renderGeo();return;}
+    const row=tgt.closest('#admDash [data-geok]');
+    if(row){const g=geoGroupes.find(x=>x.k===row.dataset.geok);if(!g)return;
+      const enHaiti=g.cc==='HT',gl=row.closest('[data-adview="kat"]')?geoBig:geoMini;
+      if(gl){gl.goTo(g.lat,g.lon,enHaiti);(gl===geoBig?document.getElementById('admGeoGlobeBig'):document.getElementById('admGeoGlobe')).scrollIntoView({behavior:'smooth',block:'center'});}
+    }
+  });
+  const admGeoRefreshBtn=document.getElementById('admGeoRefresh');
+  if(admGeoRefreshBtn)admGeoRefreshBtn.addEventListener('click',()=>{geoCache=null;renderGeo();});
 
   // ============================================================================
   // HISTORIQUE COMPLET DES TRANSACTIONS (01/09, demande explicite de James) —
