@@ -1,6 +1,6 @@
 # VIPBETCOTE — Mémoire et roadmap (à coller au début d'une nouvelle conversation)
 
-*Mis à jour le 19/10/2026 (nuit).*
+*Mis à jour le 13/11/2026 (sections 1, 2, 4, 5 et 6 ; leçons jusqu'à la n° 48).*
 
 ---
 
@@ -19,6 +19,9 @@
 - **Aucune perte de qualité d'image.**
 - Messages Telegram : **jamais le mot « bot »**. Aucune alerte dans les groupes VIP.
 - Jeu responsable : **« Jwe ak kontwòl »** (FR « Jouez avec contrôle », EN « Play with control »).
+- **Avant chaque « Met sur git » : rappeler les migrations SQL** du lot pas encore appliquées (vérifier en base) et dire si elles peuvent être appliquées tout de suite sans danger. L'utilisateur les applique lui-même (SQL Editor ou autre conversation) : `apply_migration` du MCP expire ; `execute_sql` en lecture fonctionne pour vérifier.
+- **Alertes** : seulement quand l'API a un vrai problème (ou ce que le bot ne peut pas régler seul). Aucune alerte pour ce que le bot gère lui-même, aucune alerte venue d'un autre site Netlify. Ne pas « déranger » le bot : petites modifications ciblées, testées.
+- **TikTok** : jamais de lien, de cote, de pourcentage ni de nom du site dans l'image ; jamais « lien an nan bio ». Compte : `https://www.tiktok.com/@thebetcote`.
 
 ---
 
@@ -34,7 +37,7 @@
 | Email | Resend, expéditeur `VipBetcote <contact@vipbetcote.com>` |
 | API sport | API-Sports : **10 requêtes/minute**, quota remis à zéro à 00:00 UTC. `settle-results` partage le compteur avec les bots |
 
-**Base** : vérifiée intacte. Dernière migration le 16/10. 15 comptes, 98 abonnements, 4 plans.
+**Base** : dernières migrations appliquées et vérifiées le 13/11 : `rapports_jour`, `avis_abonnes`, `annonces` (enregistrée en base sous le nom `20261113_annonces_dashboard`). Aucune migration en attente.
 
 ---
 
@@ -110,84 +113,51 @@
 48. **RÈGLE (13/11, James) : TOUJOURS rappeler les migrations SQL à appliquer AVANT chaque « Met sur git »** — lister chaque fichier `supabase/migrations/…` du lot pas encore appliqué en base (vérifier en base), et dire s'il peut être appliqué tout de suite sans danger.
 ---
 
-## 4. État au 19/10 (soir)
+## 4. État au 13/11/2026
 
-**Sur git et déployé** :
-- `13a294b` : démarrage via `VB_quandPret` ; classes `vb-app` et `vb-bot` dans `app.js`.
-- `5cb6bdf` : sur git, **à déployer par l'utilisateur, puis à vérifier sur Netlify**. Il contient :
-  - **retour Google** : rechargement unique si l'adresse porte encore `#access_token` 8 s après l'arrivée (clé `vb_google_recharge`) ;
-  - **`?lang=fr` / `?lang=en`** : ouvrent directement la langue ; sans paramètre, créole ;
-  - **score exact, landing** : ✗ rouge sur les matchs perdus, badge « GENYEN 1/3 » ; si plus de 3 matchs, les gagnés d'abord ;
-  - **score exact, Telegram** (canal public et groupes VIP) : image « GAGNÉE 1/3 », sous-titre « 1 bon score sur 3 », légende et texte de secours avec « 1/3 » (`telegram-public.js`, `telegram-relais.js`, `lib/image-fiche.js`) ;
-  - **app installée** : un seul écran de lancement, l'animation de chargement (`.vbsplash`) gardée tant que `vb-app-demarrage` est actif ; 13 nouveaux écrans de démarrage iPhone (première image de l'animation), liens en `?v=20261019` ;
-  - `app.js?v=20261019e`.
+**Sur git (`main`, commit `a2fde35`, 13/11) — PAS ENCORE DÉPLOYÉ** : plus de crédit Netlify, remise à zéro **dimanche**. Le site en ligne garde l'ancienne version (rien ne casse : les nouvelles tables ne sont pas lues par l'ancien code). `app.js?v=20261113a`. Contenu :
+- **Annonces du Dashboard** (leçon 47) : menu admin « Anons », public abonné / non abonné / tous, défilement 30 s, glisser du doigt, liste prête de 10 annonces (seule l'ancienne note active ; parrainage prêt à activer).
+- **Avis abonnés** : preuve de gain (capture obligatoire, fiche optionnelle), validation admin Wi/Non, landing, groupe Telegram public (`avis-telegram.js`).
+- **Rapport du jour** (`rapport-jour.js`) : landing, historique abonné et admin, partage WhatsApp, image TikTok (sans pourcentage).
+- **Bot foot** : compétitions élargies (32 compétitions en plus, filtre `competitionAutorisee`, rang de priorité).
+- **Calcul des résultats** : match reporté annulé (`void`) tout de suite, sans alerte (leçon 44) ; API surveillée pendant le calcul (leçon 46).
+- **Alertes** (`alerte-watchdog.js`, leçon 45) : seulement les vraies pannes ; sites hors production ignorés ; diagnostics clairs.
+- **Paiements** : Stripe sans montant attendu laissé en attente, `paiement-verify` limité à 20/min, comparaison de secret en temps constant.
+- **Écran de démarrage iPhone** : 13 images `assets/splash/` (`?v=20261112`).
+- TikTok `@thebetcote` (JSON-LD et pied de page ; empreinte CSP du JSON-LD recalculée dans `_headers`).
 
-**Sur git et déployé** : `1ca3147` (`domaine.js`), vérifié sur Netlify (`commit_ref`).
-
-**Sur git le 19/10 (nuit), à déployer par l'utilisateur puis vérifier `commit_ref`** (`app.js?v=20261019f`) :
-- collage du code OTP : presse-papiers vérifié avant `getData` (3 champs) ;
-- landing, fiche score exact gagnée : cote = **produit des seuls matchs gagnés** (18 oct. : 6.50 au lieu de 268.12). `total_odd` en base inchangé ;
-- connexion : messages précis (mauvais identifiants / trop de tentatives / email non confirmé / erreur serveur / hors ligne / email invalide) ; attente de Supabase ; plus de « mot de passe incorrect » venant du registre local ;
-- déconnexion utilisateur et admin : plus aucune donnée du compte sortant sur l'appareil ;
-- historique admin : bouton « Pataje kat la » sur les fiches **perdues** (admin seulement) : « 3/5 MATCH GENYEN », ✓/✗ réels, cote totale de la fiche inchangée, fond sombre ;
-- cadre « installer l'app » refait (format AyiPay) : en bas, arrière-plan net, icône dorée 36 px, titre « App la prèske fini », 3 étapes, « Mwen konprann → », bouton ×, fermeture auto 4 s (un toucher la suspend).
-
-**Attend l'accord de l'utilisateur (backend)** : même règle de cote (produit des matchs gagnés) pour le score exact dans Telegram (`telegram-public.js:54/86`, `telegram-relais.js:122`).
-
-**Cloudflare** (fait par l'utilisateur le 19/10) :
-- Redirect Rule `https://www.vipbetcote.com/*` → `https://vipbetcote.com/${1}`, code 301, paramètres gardés. Vérifiée.
-- **Always Use HTTPS** : recommandé, à confirmer.
-
-**Recherche Google** :
-- `site:vipbetcote.com` affichait encore une vieille copie de la page d'attente Namecheap (`http://www.vipbetcote.com`).
-- Search Console : la page `https://vipbetcote.com/` est indexée, canonique correcte, et le test en ligne montre le vrai landing.
-- Indexation à redemander, puis attendre quelques jours.
-
-**Retour Google** (journaux Supabase) :
-- Le login Google réussit, mais après le retour l'iPhone n'envoyait plus aucune requête.
-- Un rechargement manuel ouvrait la session, d'où le filet ajouté dans `5cb6bdf`.
-- À confirmer sur iPhone après déploiement. Si ça échoue : demander si l'adresse contient `#access_token`.
-
-**Base** : politique RLS « selections des fiches gagnees visibles par tous » sur `ticket_legs`, active.
-
-**Compte « b9986969 »** : plan p1 actif jusqu'au 22/10.
+**Tests** (scratchpad de la conversation précédente, non gardés) : toutes les séries réussies, dont 33/33 pour les annonces.
 
 ---
 
 ## 5. Roadmap
 
-### Priorité 1 — tout de suite
-1. Déploiement des changements du 19/10 (nuit) par l'utilisateur, puis vérification de `commit_ref` (MCP Netlify, site betcote). Sur iPhone : supprimer puis rajouter l'app (efface l'ancien registre local), tester la connexion admin et b9986969 dans l'app.
-2. Tests sur iPhone :
-   - **Google** : effacer les données Safari, puis **Konekte → Google** ; le tableau de bord doit s'ouvrir.
-   - **App** : la supprimer puis la rajouter ; un seul écran de lancement.
-   - **Langue** : `vipbetcote.com/?lang=fr` s'affiche en français.
-   - **Netlify** : `betcote.netlify.app` mène à vipbetcote.com.
-   - **Landing** : la carte du 18 oct. affiche ✗ et 1/3.
-3. Search Console : demander l'indexation de `https://vipbetcote.com/`, soumettre le sitemap, suivre `site:vipbetcote.com`.
-4. Optionnel, seulement sur demande explicite : remplacer l'image déjà publiée sur le **canal public** Telegram pour la fiche score exact du 18 oct. (`message_id` dans `telegram_envois` du canal public). Impossible dans les groupes VIP : l'identifiant du message de résultat n'est pas gardé.
-5. Optionnel : ajouter `https://vipbetcote.com/` et `https://www.vipbetcote.com/` aux Redirect URLs de Supabase.
-6. Site Netlify `vipbet1` (autre compte) : vérifier qu'il est bien supprimé.
+### Priorité 1 — dimanche, après le retour des crédits Netlify
+1. L'utilisateur lance le déploiement de `main`. Vérifier `commit_ref` = `a2fde35` (ou plus récent) via le MCP Netlify (site betcote).
+2. Vérifier en ligne : `app.js?v=20261113a` servi ; annonce affichée au-dessus des fiches du jour ; menu admin « Anons » ; fenêtre « avis » dans l'Istorik et la partie « genyen ».
+3. Vers **19:00 heure d'Haïti** : vérifier que la fiche foot du soir est créée (compétitions élargies) et la fiche basket.
+4. Le lendemain matin : vérifier le rapport du jour (landing + Telegram public) et le calcul des résultats (aucune alerte inutile).
+5. iPhone : supprimer puis rajouter le raccourci pour voir le nouvel écran de démarrage.
 
-### Priorité 2 — corrections rapides
-7. ~~Collage du code OTP~~ : fait le 19/10.
-8. **Bot basket** : traiter « Too many requests » comme une limite par minute (pause puis nouvel essai).
-9. **Alerte de surveillance** : ne plus conseiller de « supprimer un site » quand c'est une limite par minute.
-10. **Mode hors ligne de l'app** : le tableau de bord doit s'afficher à partir des données gardées en mémoire. À revérifier.
-11. **Score exact** : décision de l'utilisateur : cote = produit des matchs gagnés. Fait sur le landing ; Telegram en attente d'accord (backend).
+### Priorité 2 — proposé, en attente d'accord
+6. Règle « match reporté » aussi pour le **basket** (aujourd'hui seul le statut POST est annulé tout de suite).
+7. À la création des fiches : écarter les matchs déjà reportés une fois.
+8. Estatistik de l'abonné : « Reyisit NBA » lit le code `nba` au lieu de `basket` — à corriger.
+9. Score exact dans Telegram : cote = produit des seuls matchs gagnés (`telegram-public.js`, `telegram-relais.js`) — backend, attend l'accord.
 
-### Priorité 3 — application
-12. Écrans « vérification email » et « plan et paiement » : les mettre au nouveau style, avec un aperçu d'abord.
-13. Plus tard : vraies apps App Store et Google Play (TWA pour Android, Capacitor pour iOS).
+### Priorité 3 — anciens points encore ouverts
+10. Search Console : indexation de `https://vipbetcote.com/`, sitemap, suivi de `site:vipbetcote.com`.
+11. Mode hors ligne de l'app : tableau de bord à partir des données gardées. À revérifier.
+12. Écrans « vérification email » et « plan et paiement » au nouveau style (aperçu d'abord).
+13. Plus tard : vraies apps App Store / Google Play (TWA Android, Capacitor iOS).
 
 ### Priorité 4 — sécurité et exploitation
 14. Netlify : validation en 2 étapes, variables secrètes « sensibles », Deploy Previews désactivés si inutiles.
-15. GitHub : retirer les apps inutilisées, faire le ménage dans les vieilles branches.
-16. Quota API-Sports : revoir les horaires des bots, seulement sur demande.
-17. Validation en 2 étapes sur `contact@vipbetcote.com`.
+15. GitHub : retirer les apps inutilisées, ménage dans les vieilles branches.
+16. Validation en 2 étapes sur `contact@vipbetcote.com`.
 
 ---
 
 ## 6. Phrase à coller dans la nouvelle conversation
 
-> Lis `MEMOIRE_VIPBETCOTE.md` à la racine du dépôt et respecte strictement les règles de la section 1. Réponds en français. Rien sur git sans « Met sur git ». Continue la roadmap à partir de la priorité 1.
+> Lis `MEMOIRE_VIPBETCOTE.md` à la racine du dépôt et respecte strictement les règles de la section 1. Réponds en français. Rien sur git sans mon accord (« Met sur git »), à chaque fois. Aucune modification du backend ni de la base sans mon accord. Continue la roadmap à partir de la priorité 1 (déploiement de dimanche et vérifications).
