@@ -88,6 +88,7 @@ const {
 const { oddsApiIdVersEntier } = require('./lib/id-source.js');
 // Garde-fous quota (30/09, suite à l'audit) — voir lib/quota-guard.js.
 const garde = require('./lib/quota-guard.js');
+const apprentissage = require('./lib/basket-apprentissage.js'); // 14/11 : apprentissage par segment + journal
 
 // ============================================================================
 // SUIVI DE QUOTA BASKETBALL — même principe que le foot (voir
@@ -464,6 +465,17 @@ async function recupererProfilsEquipesBasket(dateCible) {
     else { p.nExt++; p.ptsPourExt += pour; p.ptsContreExt += contre; }
   }
 
+  // 14/11 : historique maison en base (points de TOUS les matchs termines, enregistres par le
+  // calcul des resultats, 45 derniers jours) — avant, seule la veille (1 jour) servait.
+  const dejaVus = new Set();
+  const histo = await apprentissage.lireHistoriquePoints(dateCible, 45, stats.erreurs);
+  histo.forEach(r => {
+    if (r.points_for == null || r.points_against == null) return;
+    const cle = `${r.game_id}|${r.team_id}`;
+    if (dejaVus.has(cle)) return;
+    dejaVus.add(cle);
+    ajouter(Number(r.team_id), Number(r.points_for), Number(r.points_against), !!r.is_home);
+  });
   const base = new Date(dateCible + 'T00:00:00Z');
   for (let i = 1; i <= HISTORIQUE_JOURS_BASKET; i++) {
     const d = new Date(base.getTime() - i * 86400000);
@@ -483,8 +495,8 @@ async function recupererProfilsEquipesBasket(dateCible) {
       if (typeof ptsHome !== 'number' || typeof ptsAway !== 'number') return; // jamais une moyenne calculée sur une donnée absente
       const homeId = g.teams && g.teams.home && g.teams.home.id;
       const awayId = g.teams && g.teams.away && g.teams.away.id;
-      if (homeId != null) ajouter(homeId, ptsHome, ptsAway, true);
-      if (awayId != null) ajouter(awayId, ptsAway, ptsHome, false);
+      if (homeId != null && !dejaVus.has(`${g.id}|${homeId}`)) { dejaVus.add(`${g.id}|${homeId}`); ajouter(homeId, ptsHome, ptsAway, true); }
+      if (awayId != null && !dejaVus.has(`${g.id}|${awayId}`)) { dejaVus.add(`${g.id}|${awayId}`); ajouter(awayId, ptsAway, ptsHome, false); }
     });
   }
   return profils;
@@ -519,6 +531,7 @@ const stats = {
   fichesPubliees: 0,
   methodeFiche: null, // AJOUTÉ (20/09) : 'optimisee' | 'classique'
   nbSelectionsPossibles: null, // AJOUTÉ (20/09) : nombres de sélections envisageables, ex. [3,4,5] (le tirage choisit)
+  apprentissage: null, // 14/11 : facteurs appris, segments exclus, pool renforcé, journal
   cibleTirage: null, // AJOUTÉ (20/09) : cote cible tirée pour le jour (5 à 25), transparence pure
   cibleAtteinte: null, // AJOUTÉ (06/09) : palier de cote réellement atteint par la cascade, transparence pure, jamais utilisé pour décider
   sourceBasket: null, // AJOUTÉ (29/09) : 'api-sports' | 'odds-api' — quelle source a réellement servi ce passage, transparence pure
@@ -535,6 +548,7 @@ function resetStatsBasket() {
   stats.methodeFiche = null;
   stats.nbSelectionsPossibles = null;
   stats.cibleTirage = null;
+  stats.apprentissage = null;
   stats.cibleAtteinte = null;
   stats.sourceBasket = null;
   _sourceBasketActuelle = 'api-sports'; // repart toujours prioritaire sur API-Sports à chaque nouveau passage
@@ -822,6 +836,11 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
         const projectionConfirmee = (projectionTotal != null && isFinite(seuil))
           ? (estOver ? projectionTotal > seuil : projectionTotal < seuil)
           : false;
+        // 14/11 : marge de la projection dans le sens du pari (en points), pour ne garder que
+        // les totaux NETTEMENT confirmes dans le pool renforce.
+        const projectionEcart = (projectionTotal != null && isFinite(seuil))
+          ? Math.round((estOver ? projectionTotal - seuil : seuil - projectionTotal) * 10) / 10
+          : null;
         // Over ET Under acceptés à l'identique (correctif du même jour,
         // avant : Under systématiquement ignoré), même fourchette continue.
         if (c >= COTE_MIN_BASKET && c <= COTE_MAX_BASKET_LEG) {
@@ -829,7 +848,7 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
             gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
             market: 'mk_basket_total', pick: traduirePointsBasket(v.value), odd: c, tier: c <= 1.95 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure,
-            projectionTotal, projectionConfirmee
+            projectionTotal, projectionConfirmee, projectionEcart
           });
         }
       });
@@ -1025,6 +1044,11 @@ const COTE_MAX_SELECTION_OPTIMISEE = 2.2;   // pas d'outsiders au-delà
 const FACTEUR_MARGE_PAR_SELECTION = 0.91;   // réussite observée / probabilité annoncée (66 % vs ~72 %)
 const LIMITE_NOEUDS_OPTIMISATION = 300000;  // borne de calcul : jamais un temps d'exécution incontrôlé
 
+// 14/11 : facteur appris par segment (type de pari x tranche de cote, voir lib/basket-apprentissage.js).
+// Sans apprentissage (table absente, generation manuelle) : l'ancien facteur fixe 0,91.
+function facteurSelectionBasket(b) {
+  return (b && Number.isFinite(b.facteurSegment)) ? b.facteurSegment : FACTEUR_MARGE_PAR_SELECTION;
+}
 function probaSelectionBasket(b) {
   const p = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd) + (b.projectionConfirmee ? 0.05 : 0);
   return Math.min(0.97, Math.max(0.05, p));
@@ -1049,10 +1073,16 @@ const ECART_MAX_NB_SELECTIONS = 2;
 // toujours : on ne bloque jamais la fiche.
 // 16/10 : 1,45 -> 1,55 (« plus de gain ») : à cote égale, moins de sélections mais mieux payées.
 const COTE_MOYENNE_MIN_PAR_SELECTION = 1.55;
+// 14/11 : totaux de points (voir le handler) — marge minimale de la projection et part minimale
+// de totaux dans la fiche du bot automatique (la generation manuelle n'est pas concernee).
+const ECART_MIN_PROJECTION_TOTAL = 4;
+const PART_MIN_TOTAUX = 1 / 3;
 
-function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
+function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme, minTotaux) {
   const n = jeux.length;
+  minTotaux = minTotaux || 0; // 14/11 : nombre MINIMUM de totaux de points dans la fiche (0 = libre)
   let best = null, noeuds = 0;
+  const nbTotaux = choix => choix.reduce((x, b) => x + (b.market === 'mk_basket_total' ? 1 : 0), 0);
   function meilleurQue(chance, cote) {
     if (!best) return true;
     if (chance > best.chance * (1 + 1e-9)) return true;
@@ -1064,7 +1094,7 @@ function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
     if (++noeuds > LIMITE_NOEUDS_OPTIMISATION) return;
     const restants = k - choix.length;
     if (restants === 0) {
-      if (cote >= bas && cote <= haut && meilleurQue(chance, cote)) best = { chance, cote, selections: choix.slice() };
+      if (cote >= bas && cote <= haut && nbTotaux(choix) >= minTotaux && meilleurQue(chance, cote)) best = { chance, cote, selections: choix.slice() };
       return;
     }
     if (n - i < restants) return;                                   // pas assez de matchs restants
@@ -1081,7 +1111,7 @@ function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
       if ((compte.get(cle) || 0) >= maxMeme) continue;              // jamais plus de 'maxMeme' sélections à la même cote
       compte.set(cle, (compte.get(cle) || 0) + 1);
       choix.push(b);
-      explorer(i + 1, c, chance * probaSelectionBasket(b) * FACTEUR_MARGE_PAR_SELECTION, choix);
+      explorer(i + 1, c, chance * probaSelectionBasket(b) * facteurSelectionBasket(b), choix);
       choix.pop();
       compte.set(cle, compte.get(cle) - 1);
     }
@@ -1100,8 +1130,9 @@ function tirerNbSelectionsBasket(ksValides, rnd) {
   return candidats[candidats.length - 1];
 }
 
-function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme) {
+function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme, options) {
   if (maxMeme == null) maxMeme = MAX_MEME_COTE_PAR_FICHE_BASKET;
+  const partTotaux = (options && options.partTotaux) || 0; // 14/11 : part minimale de totaux (0 = libre)
   const bas = cible * fractionBasse, haut = cible * 1.05;
   const parMatch = new Map();
   pool.forEach(b => {
@@ -1114,9 +1145,9 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
   jeux.sort((a, c) => c[0].odd - a[0].odd);
   if (jeux.length < 2) return null;
   // KAPPA = plus grand produit (chance x cote) parmi les sélections éligibles ; KF = KAPPA x marge.
-  let KAPPA = 0;
-  jeux.forEach(l => l.forEach(b => { KAPPA = Math.max(KAPPA, probaSelectionBasket(b) * b.odd); }));
-  const KF = KAPPA * FACTEUR_MARGE_PAR_SELECTION;
+  // 14/11 : le facteur de chaque selection entre dans la borne (KF = max chance x facteur x cote).
+  let KF = 0;
+  jeux.forEach(l => l.forEach(b => { KF = Math.max(KF, probaSelectionBasket(b) * facteurSelectionBasket(b) * b.odd); }));
 
   // Meilleure combinaison pour chaque nombre de sélections possible, en partant du plus petit.
   const parK = {};
@@ -1127,7 +1158,11 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
     // jamais trop de combiné : au plus kMin+2 sélections ET cote moyenne >= 1,45 par sélection
     // (sauf si kMin lui-même est déjà au-delà : la fiche doit toujours pouvoir exister).
     if (kMin !== null && k > Math.max(kMin, Math.min(kMin + ECART_MAX_NB_SELECTIONS, kMaxCoteMoyenne))) break;
-    const c = meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme);
+    // 14/11 : au moins partTotaux x k totaux de points (au moins 1), dans la limite des matchs
+    // qui proposent un total eligible.
+    const matchsAvecTotal = jeux.filter(l => l.some(b => b.market === 'mk_basket_total')).length;
+    const minTot = partTotaux > 0 ? Math.min(matchsAvecTotal, Math.max(1, Math.floor(k * partTotaux))) : 0;
+    const c = meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme, minTot);
     if (c) { parK[k] = c; if (kMin === null) kMin = k; }
   }
   if (kMin === null) return null;
@@ -1149,7 +1184,7 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
 
 // Cascade de paliers (100/85/70/50/30/15 % de la cote cible, jamais sous 2) — INCHANGÉE dans son
 // principe (06/09) ; extraite en fonction pour être testable et réutilisée par le handler.
-function cascadeFicheBasket(pool, cibleNominale, rnd) {
+function cascadeFicheBasket(pool, cibleNominale, rnd, options) {
   const paliers = [1, 0.85, 0.7, 0.5, 0.3, 0.15]
     .map(frac => Math.max(2, Math.round(cibleNominale * frac * 100) / 100))
     .filter((v, i, arr) => arr.indexOf(v) === i); // dédoublonne les paliers qui convergent vers la même valeur
@@ -1160,8 +1195,8 @@ function cascadeFicheBasket(pool, cibleNominale, rnd) {
     let essai = null, methodeEssai = 'classique';
     if (FICHE_BASKET_MOINS_DE_SELECTIONS) {
       // règle des cotes répétées : d'abord max 2 identiques, puis (si rien) max 3, jamais plus
-      essai = construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 2) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 2)
-           || construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 3) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 3);
+      essai = construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 2, options) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 2, options)
+           || construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 3, options) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 3, options);
       if (essai) methodeEssai = 'optimisee';
     }
     if (!essai) essai = construireFicheBasket(pool, cible);
@@ -1343,6 +1378,17 @@ async function handler(event) {
   const carteFiabilite = await recupererFiabiliteMarches();
   annoterPoolAvecFiabilite(poolBasket, carteFiabilite);
 
+  // 14/11 — APPRENTISSAGE (accord de James) : facteur appris par segment + journal de TOUT le
+  // pool (choisies ou non), regle ensuite par le calcul des resultats. Jamais bloquant.
+  const calibration = await apprentissage.lireCalibration(stats.erreurs);
+  apprentissage.appliquerCalibration(poolBasket, calibration);
+  stats.apprentissage = {
+    resultats: calibration ? calibration.resultats : 0,
+    facteurGlobal: calibration ? calibration.global : apprentissage.FACTEUR_DEFAUT,
+    segmentsExclus: calibration ? Object.keys(calibration.segments).filter(k => calibration.segments[k].exclu) : [],
+    journalises: await apprentissage.journaliserPool(poolBasket, dateCible, noms, stats.erreurs)
+  };
+
   // ANTI-DOUBLON RÉEL (session suivante, demande explicite de James : "pas
   // de doublons") — CORRIGÉ : l'ancienne vérification d'idempotence
   // (quelques lignes plus haut) ne regardait que "le BOT a-t-il déjà
@@ -1385,7 +1431,38 @@ async function handler(event) {
   console.log(`[BOT-BASKET] Cote cible du jour tirée pour ${dateCible} : ${cibleDuJour}`);
   // Le NOMBRE de sélections est aussi tiré au hasard (voir POIDS_NB_SELECTIONS), graine = la date.
   const hasardNbSelections = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
-  const cascadeBasket = cascadeFicheBasket(poolBasketFiltre, cibleDuJour, hasardNbSelections);
+  // 14/11 — POOL RENFORCE : sans les segments qui perdent nettement plus que leur cote
+  // (apprentissage) et sans les totaux de points que la projection maison ne confirme pas.
+  // Si ce pool ne permet aucune fiche, repli sur le pool complet (comportement d'avant).
+  // 14/11 (James : « privilégier les points aussi, pas seulement victoire ») : un total de points
+  // NETTEMENT confirmé par la projection maison est gardé même si son segment est écarté (les
+  // mauvais chiffres passés viennent de totaux SANS projection fiable) ; la fiche contient au
+  // moins 1/3 de totaux quand c'est possible (sinon : fiche libre, puis pool complet).
+  //   - projection qui CONTREDIT le pari -> écarté ;
+  //   - projection nettement favorable (marge >= 4 points) -> gardé, même si son segment est écarté ;
+  //   - pas de projection (historique encore trop court pour ces équipes) ou marge faible ->
+  //     gardé seulement si son segment (type x tranche de cote) n'est pas perdant.
+  const totalGarde = b => {
+    const ec = Number(b.projectionEcart);
+    if (b.projectionEcart != null && Number.isFinite(ec)) {
+      if (ec < 0) return false;
+      if (ec >= ECART_MIN_PROJECTION_TOTAL) return true;
+    }
+    return !b.segmentExclu;
+  };
+  const poolRenforce = poolBasketFiltre.filter(b => b.market === 'mk_basket_total' ? totalGarde(b) : !b.segmentExclu);
+  stats.apprentissage.poolComplet = poolBasketFiltre.length;
+  stats.apprentissage.poolRenforce = poolRenforce.length;
+  stats.apprentissage.totauxGardes = poolRenforce.filter(b => b.market === 'mk_basket_total').length;
+  const hasardMixte = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
+  let cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardMixte, { partTotaux: PART_MIN_TOTAUX });
+  stats.apprentissage.avecTotaux = !!cascadeBasket.fiche;
+  if (!cascadeBasket.fiche) cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardNbSelections);
+  stats.apprentissage.repliPoolComplet = !cascadeBasket.fiche;
+  if (!cascadeBasket.fiche) {
+    const hasardRepli = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
+    cascadeBasket = cascadeFicheBasket(poolBasketFiltre, cibleDuJour, hasardRepli);
+  }
   const paliersCascadeBasket = cascadeBasket.paliers;
   let fiche = cascadeBasket.fiche, cibleRetenueBasket = cascadeBasket.cibleRetenue;
   stats.methodeFiche = cascadeBasket.methode; // 'optimisee' (peu de sélections) ou 'classique' — transparence pure
@@ -1422,6 +1499,13 @@ async function handler(event) {
   const ok = await publierFiche(planPartage, fiche, dateCible, 'basket', nomsPourPublication, '');
   if (ok) {
     stats.fichesPubliees++;
+    // 14/11 : marque les selections choisies dans le journal (jamais bloquant).
+    let ticketId = null;
+    try {
+      const t = await sbSelect('tickets', `select=id&sport=eq.basket&play_date=eq.${dateCible}&source=eq.bot&order=created_at.desc&limit=1`);
+      ticketId = t && t[0] ? t[0].id : null;
+    } catch (e) { /* sans id : la selection reste marquee choisie */ }
+    await apprentissage.marquerChoisies(fiche.selections, dateCible, ticketId, stats.erreurs);
   } else {
     const nouvelles = bot.stats.erreurs.slice(nbErreursFootAvant);
     stats.erreurs.push(`publierFiche a échoué (basket) : ${nouvelles.length ? nouvelles.join(' | ') : 'raison inconnue, aucune erreur remontée par le module foot'}`);

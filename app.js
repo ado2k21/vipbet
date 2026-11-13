@@ -7806,8 +7806,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       kpi(avgOdd.toFixed(2),'dash_k_avgodd','gold')+
       kpi(avgConf+'%','dash_k_avgconf');
 
+    /* 'basket' et l'ancien code 'nba' comptent ensemble (comme ADMF_STATS_SPORTS) */
     const bySport=s=>{
-      const d=done.filter(k=>k.sport===s);
+      const codes=s==='nba'?['basket','nba']:[s];
+      const d=done.filter(k=>codes.indexOf(k.sport)!==-1);
       const w=d.filter(k=>k.status==='won').length;
       return {n:d.length,w:w,r:d.length?Math.round(w/d.length*100):0};
     };

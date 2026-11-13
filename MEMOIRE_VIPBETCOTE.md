@@ -1,6 +1,6 @@
 # VIPBETCOTE — Mémoire et roadmap (à coller au début d'une nouvelle conversation)
 
-*Mis à jour le 13/11/2026 (sections 1, 2, 4, 5 et 6 ; leçons jusqu'à la n° 48).*
+*Mis à jour le 14/11/2026 (sections 2, 3, 4 et 5 ; leçons jusqu'à la n° 53).*
 
 ---
 
@@ -37,7 +37,7 @@
 | Email | Resend, expéditeur `VipBetcote <contact@vipbetcote.com>` |
 | API sport | API-Sports : **10 requêtes/minute**, quota remis à zéro à 00:00 UTC. `settle-results` partage le compteur avec les bots |
 
-**Base** : dernières migrations appliquées et vérifiées le 13/11 : `rapports_jour`, `avis_abonnes`, `annonces` (enregistrée en base sous le nom `20261113_annonces_dashboard`). Aucune migration en attente.
+**Base** : dernières migrations appliquées et vérifiées le 13/11 : `rapports_jour`, `avis_abonnes`, `annonces` (enregistrée en base sous le nom `20261113_annonces_dashboard`). **14/11** : `20261114120000_journal_basket.sql` (table `basket_journal`) appliquée par `apply_migration` (MCP) et vérifiée (RLS active, 0 politique, anon/authenticated sans accès, 3 index). Aucune migration en attente.
 
 ---
 
@@ -111,6 +111,11 @@
 46. **API surveillée aussi pendant le calcul des résultats (13/11)** — avant, seule la création des fiches (16:00–~18:30 Haïti) voyait une suspension : une panne à 22:00 n'était signalée que le lendemain à 16:00. `bot-settle-results.js` note dans `bot_run_log` (bot `reglement-foot` / `reglement-basket`, avec `stats.site`) UNIQUEMENT les vrais refus (suspendu, clé invalide/absente, accès refusé, HTTP 401/403 — jamais les limites minute/jour), et le retour à la normale seulement après un refus (aucune ligne en temps normal) ; aucun appel API en plus ; jamais bloquant (`handler` → `handlerInterne` + `noterEtatApi` dans un finally). `alerte-watchdog.js` (`ajouterApiVueParLeCalcul`) : 2 refus de suite sans succès entre (≤ 48 h) → même alerte prioritaire API_BLOQUEE_x ; si la création des fiches signale déjà la panne → un seul message ; succès noté → « Rétabli ». Les requêtes SQL existantes filtrent `bot = 'foot'/'basket'` : non concernées.
 47. **Annonces du Dashboard (13/11, James)** — table `annonces` (migration `20261113120000_annonces.sql` : titre ≤ 90, texte ≤ 200, `public` abonne / non_abonne / tous, `actif`, `ordre` ; RLS : un compte connecté ne lit que les actives, seul l'admin écrit ; liste prête de 10 annonces, dont parrainage, avec seule l'ancienne note active). Elles remplacent la note au-dessus des fiches du jour (`#dashTipToday`, `majAnnonces()` dans `renderToday`) : abonné = même règle de plan actif que l'Istorik ; plusieurs actives → elles changent toutes les 30 s ; aucune → rien affiché ; table illisible → l'ancienne note fixe reste. Lecture au plus toutes les 5 min. Un seul texte (pas de traduction). Admin : menu « Anons » (`renderAnnoncesAdmin`) : Aktive/Dezaktive, Modifye, Efase (confirmation Wi/Non), « ＋ Nouvo anons ». Ne jamais inventer de promotion dans la liste prête. Plusieurs annonces : l'abonné peut aussi glisser du doigt (gauche = suivante, droite = précédente ; les 30 s repartent de zéro).
 48. **RÈGLE (13/11, James) : TOUJOURS rappeler les migrations SQL à appliquer AVANT chaque « Met sur git »** — lister chaque fichier `supabase/migrations/…` du lot pas encore appliqué en base (vérifier en base), et dire s'il peut être appliqué tout de suite sans danger.
+49. **Match basket reporté (14/11)** — `bot-settle-results.js` : même règle que le foot (leçon 44) pour les ids API-Sports (positifs) : match commencé depuis > 3 h, absent ou encore NS → relance ciblée `/games?id` (`retenterMatchBasketUnique`, max 6 par passage) ; déplacé ≥ 12 h et non terminé → `void` tout de suite, sans alerte ; terminé → réglé avec le vrai score. Jamais d'annulation sans réponse. Les ids The Odds API (NBA, négatifs) gardent l'ancienne règle (pas d'appel par match). « Reyisit NBA » de l'abonné compte `basket` + `nba` (`app.js`, `bySport`).
+50. **Bot basket : constat (14/11)** — 90 jours : 6 fiches gagnées / 36 ; une sélection seule gagne ~61 %, mais la cote cible 5-25 (règle de James du 20/09, CONFIRMÉE le 14/11 : ne pas la réduire) oblige 3 à 10 matchs. Réussite d'une fiche ≈ produit des réussites (4 matchs ≈ 14 %, 6 ≈ 5 %). Totaux « Plus » 1,30-1,69 et victoires 1,70-1,99 perdent nettement plus que leur cote ; favoris < 1,30 gagnent plus (88 % pour 81 % annoncés).
+51. **Apprentissage du bot basket (14/11, accord de James)** — `lib/basket-apprentissage.js`. (1) **Segments** : type (V victoire / P plus / M moins) × tranche de cote (1.19-1.29, 1.30-1.49, 1.50-1.69, 1.70-1.99, 2.00+), tous championnats confondus. **Facteur** = réussite réelle / annoncée, lissé (K 20) vers le facteur global (lui-même lissé K 50 vers l'ancien 0,91), borné 0,70-1,15 ; remplace le facteur fixe 0,91 dans l'optimiseur (`facteurSelectionBasket`, borne KF incluse). Segment **exclu** si ≥ 15 résultats ET facteur < 0,85. Données : `basket_journal` + sélections basket publiées (120 jours, doublons comptés une fois). (2) **Pool renforcé** : sans segments exclus ni totaux non confirmés par la projection ; aucune fiche possible → repli sur le pool complet (comportement d'avant). Cote cible 5-25 et tirage du nombre de sélections INCHANGÉS. (3) **Projection des totaux** : historique de 45 jours en base (`basket_team_game_stats`) + la veille par l'API (avant : 1 seul jour). (4) **Journal** `basket_journal` (migration `20261114120000_journal_basket.sql`, RLS sans politique, serveur seul) : TOUT le pool du jour (choisies ou non : cote, autre côté, ligne, projection, segment, facteur, `choisie`, `ticket_id`). Le calcul (`apprendreAvecScoresBasket`) règle le journal et enregistre les points de TOUS les matchs terminés (sans appel API en plus, jamais un match déjà enregistré) ; jours sans fiche en attente : `reglerJournalBasketSeul` (12 h et 18 h UTC, 2 dates max). Génération MANUELLE inchangée (300/300 fiches identiques testées). Simulation (400 jours, cote 5-25) : réussite attendue 5,9 % → 7,6 %. Suivi : `bot_run_log.stats.apprentissage` (facteur global, segments exclus, pools, repli). Annulation : revenir au commit précédent (la table peut rester).
+52. **Score exact dans Telegram (14/11, accord de James)** — fiche SCORE EXACT **gagnée** : la cote affichée = cote du (des) seul(s) match(s) gagné(s) (`coteGagneeTexte` dans `telegram-relais.js`, utilisée par `formaterResultat`, `imageGagnanteGroupe`, et dans `telegram-public.js` par `formaterGagnante` (« 💰 Cote gagnée ») et `imageGagnante`). Ex. 3 scores à 7 / 8 / 9, un seul juste → « GAGNÉE 1/3 — COTE 9.00 » (avant : 504.00). Plusieurs bons scores → produit des cotes gagnées. Fiche perdue, fiche publiée (avant résultat) et toutes les autres fiches : cote totale, inchangée.
+53. **Bot basket : place aux totaux de points (14/11, James : « privilégier les points aussi, pas seulement victoire »)** — pool renforcé, pour un total : projection qui CONTREDIT le pari → écarté ; projection favorable d'au moins `ECART_MIN_PROJECTION_TOTAL` = 4 points (`projectionEcart`) → gardé même si son segment est exclu ; pas de projection ou marge < 4 → gardé si son segment n'est pas exclu. La fiche du bot automatique contient **au moins 1/3 de totaux** (`PART_MIN_TOTAUX`, au moins 1, dans la limite des matchs qui en proposent ; paramètre `minTotaux` de `meilleureCombinaisonPourK`) ; impossible → fiche libre, puis pool complet. Manuel inchangé (300/300). Simulation (400 jours, cote 5-25, 70 % des totaux sans projection) : 0,8 → 2,1 totaux par fiche, réussite attendue 8,0 % → 9,5 %. Suivi : `stats.apprentissage.totauxGardes` / `avecTotaux`.
 ---
 
 ## 4. État au 13/11/2026
@@ -139,11 +144,11 @@
 4. Le lendemain matin : vérifier le rapport du jour (landing + Telegram public) et le calcul des résultats (aucune alerte inutile).
 5. iPhone : supprimer puis rajouter le raccourci pour voir le nouvel écran de démarrage.
 
-### Priorité 2 — proposé, en attente d'accord
-6. Règle « match reporté » aussi pour le **basket** (aujourd'hui seul le statut POST est annulé tout de suite).
-7. À la création des fiches : écarter les matchs déjà reportés une fois.
-8. Estatistik de l'abonné : « Reyisit NBA » lit le code `nba` au lieu de `basket` — à corriger.
-9. Score exact dans Telegram : cote = produit des seuls matchs gagnés (`telegram-public.js`, `telegram-relais.js`) — backend, attend l'accord.
+### Priorité 2 — lot du 14/11 (fait en local, PAS encore sur git)
+6. ✅ Match basket reporté (leçon 49) ; ✅ « Reyisit NBA » (`app.js?v=20261113b`) ; ✅ apprentissage du bot basket (leçon 51). Migration `20261114120000_journal_basket.sql` appliquée et vérifiée le 14/11.
+7. Après déploiement : suivre `bot_run_log` (bot `basket`, `stats.apprentissage`) et remplissage de `basket_journal` ; dans 2-3 semaines, relire les facteurs par segment.
+8. À la création des fiches : écarter les matchs déjà reportés une fois (en attente d'accord).
+9. ✅ Score exact dans Telegram (leçon 52), fait le 14/11.
 
 ### Priorité 3 — anciens points encore ouverts
 10. Search Console : indexation de `https://vipbetcote.com/`, sitemap, suivi de `site:vipbetcote.com`.

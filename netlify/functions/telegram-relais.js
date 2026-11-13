@@ -122,6 +122,21 @@ function coteTexte(tk) {
   const total = Number(tk.total_odd);
   return Number.isFinite(total) && total > 0 ? total.toFixed(2) : '';
 }
+// 14/11 (accord de James) : fiche SCORE EXACT gagnee -> la cote affichee est celle des SEULS
+// matchs gagnes (un seul bon score suffit : le joueur touche la cote de ce score, jamais le
+// produit de tous les matchs, ex. « 1/3 — COTE 9.00 » et non « COTE 504.00 »). Plusieurs bons
+// scores : produit des cotes gagnees. Toute autre fiche : cote totale, inchangee.
+function estFicheScoreExact(legs) {
+  const joues = (legs || []).filter(l => l.result !== 'void');
+  return joues.length > 0 && joues.every(l => MARCHES_SCORE.includes(String(l.market || '')));
+}
+function coteGagneeTexte(tk, legs) {
+  if (!estFicheScoreExact(legs)) return coteTexte(tk);
+  const gagnes = (legs || []).filter(l => l.result === 'won' && Number(l.odd) > 1);
+  if (!gagnes.length) return coteTexte(tk);
+  const p = gagnes.reduce((x, l) => x * Number(l.odd), 1);
+  return Number.isFinite(p) && p > 1 ? p.toFixed(2) : coteTexte(tk);
+}
 
 // Libelle du choix, identique au message texte (« Les deux équipes marquent : Oui »).
 function choixLeg(l) {
@@ -156,7 +171,7 @@ async function imageFiche(tk, legs) {
 // Chaque match garde son VRAI resultat (score exact gagne avec un seul bon score).
 async function imageGagnanteGroupe(tk, legs) {
   const { rendrePng } = require('./lib/image-fiche');
-  const cote = coteTexte(tk);
+  const cote = coteGagneeTexte(tk, legs);
   const type = typeFiche(tk, legs);
   const perdus = legs.filter(l => l.result === 'lost').length;
   // 19/10 : fiche score exact -> « GAGNÉE 1/3 » (bons scores / matchs joues), ✗ sur les matchs perdus.
@@ -202,7 +217,7 @@ function formaterMessage(tk, legs) {
 
 // Message de RESULTAT, envoye en reponse a la fiche d'origine.
 function formaterResultat(tk, legs, gagne) {
-  const cote = coteTexte(tk);
+  const cote = gagne ? coteGagneeTexte(tk, legs) : coteTexte(tk);
   const titre = `FICHE ${typeFiche(tk, legs)}${cote ? ' — COTE ' + cote : ''}`;
   const joues = (legs || []).filter(l => l.result !== 'void');
   const exact = joues.length > 0 && joues.every(l => MARCHES_SCORE.includes(String(l.market || '')));
@@ -423,4 +438,4 @@ async function handler() {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, libellePick, choixLeg, heureLeg, coteTexte, envoyerTelegram, imageFiche, imageGagnanteGroupe, dateCourte, passage, passageResultats, dateHaiti };
+module.exports.__test = { plafondGroupe, lireConfig, ficheVisiblePourGroupe, formaterMessage, formaterResultat, typeFiche, libelleMarche, libellePick, choixLeg, heureLeg, coteTexte, coteGagneeTexte, estFicheScoreExact, envoyerTelegram, imageFiche, imageGagnanteGroupe, dateCourte, passage, passageResultats, dateHaiti };
