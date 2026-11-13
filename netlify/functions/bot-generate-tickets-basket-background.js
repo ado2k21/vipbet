@@ -836,6 +836,11 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
         const projectionConfirmee = (projectionTotal != null && isFinite(seuil))
           ? (estOver ? projectionTotal > seuil : projectionTotal < seuil)
           : false;
+        // 14/11 : marge de la projection dans le sens du pari (en points), pour ne garder que
+        // les totaux NETTEMENT confirmes dans le pool renforce.
+        const projectionEcart = (projectionTotal != null && isFinite(seuil))
+          ? Math.round((estOver ? projectionTotal - seuil : seuil - projectionTotal) * 10) / 10
+          : null;
         // Over ET Under acceptés à l'identique (correctif du même jour,
         // avant : Under systématiquement ignoré), même fourchette continue.
         if (c >= COTE_MIN_BASKET && c <= COTE_MAX_BASKET_LEG) {
@@ -843,7 +848,7 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
             gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
             market: 'mk_basket_total', pick: traduirePointsBasket(v.value), odd: c, tier: c <= 1.95 ? 'SAFE' : 'PREMIUM',
             kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure,
-            projectionTotal, projectionConfirmee
+            projectionTotal, projectionConfirmee, projectionEcart
           });
         }
       });
@@ -1068,10 +1073,16 @@ const ECART_MAX_NB_SELECTIONS = 2;
 // toujours : on ne bloque jamais la fiche.
 // 16/10 : 1,45 -> 1,55 (« plus de gain ») : à cote égale, moins de sélections mais mieux payées.
 const COTE_MOYENNE_MIN_PAR_SELECTION = 1.55;
+// 14/11 : totaux de points (voir le handler) — marge minimale de la projection et part minimale
+// de totaux dans la fiche du bot automatique (la generation manuelle n'est pas concernee).
+const ECART_MIN_PROJECTION_TOTAL = 4;
+const PART_MIN_TOTAUX = 1 / 3;
 
-function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
+function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme, minTotaux) {
   const n = jeux.length;
+  minTotaux = minTotaux || 0; // 14/11 : nombre MINIMUM de totaux de points dans la fiche (0 = libre)
   let best = null, noeuds = 0;
+  const nbTotaux = choix => choix.reduce((x, b) => x + (b.market === 'mk_basket_total' ? 1 : 0), 0);
   function meilleurQue(chance, cote) {
     if (!best) return true;
     if (chance > best.chance * (1 + 1e-9)) return true;
@@ -1083,7 +1094,7 @@ function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
     if (++noeuds > LIMITE_NOEUDS_OPTIMISATION) return;
     const restants = k - choix.length;
     if (restants === 0) {
-      if (cote >= bas && cote <= haut && meilleurQue(chance, cote)) best = { chance, cote, selections: choix.slice() };
+      if (cote >= bas && cote <= haut && nbTotaux(choix) >= minTotaux && meilleurQue(chance, cote)) best = { chance, cote, selections: choix.slice() };
       return;
     }
     if (n - i < restants) return;                                   // pas assez de matchs restants
@@ -1119,8 +1130,9 @@ function tirerNbSelectionsBasket(ksValides, rnd) {
   return candidats[candidats.length - 1];
 }
 
-function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme) {
+function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme, options) {
   if (maxMeme == null) maxMeme = MAX_MEME_COTE_PAR_FICHE_BASKET;
+  const partTotaux = (options && options.partTotaux) || 0; // 14/11 : part minimale de totaux (0 = libre)
   const bas = cible * fractionBasse, haut = cible * 1.05;
   const parMatch = new Map();
   pool.forEach(b => {
@@ -1146,7 +1158,11 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
     // jamais trop de combiné : au plus kMin+2 sélections ET cote moyenne >= 1,45 par sélection
     // (sauf si kMin lui-même est déjà au-delà : la fiche doit toujours pouvoir exister).
     if (kMin !== null && k > Math.max(kMin, Math.min(kMin + ECART_MAX_NB_SELECTIONS, kMaxCoteMoyenne))) break;
-    const c = meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme);
+    // 14/11 : au moins partTotaux x k totaux de points (au moins 1), dans la limite des matchs
+    // qui proposent un total eligible.
+    const matchsAvecTotal = jeux.filter(l => l.some(b => b.market === 'mk_basket_total')).length;
+    const minTot = partTotaux > 0 ? Math.min(matchsAvecTotal, Math.max(1, Math.floor(k * partTotaux))) : 0;
+    const c = meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme, minTot);
     if (c) { parK[k] = c; if (kMin === null) kMin = k; }
   }
   if (kMin === null) return null;
@@ -1168,7 +1184,7 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
 
 // Cascade de paliers (100/85/70/50/30/15 % de la cote cible, jamais sous 2) — INCHANGÉE dans son
 // principe (06/09) ; extraite en fonction pour être testable et réutilisée par le handler.
-function cascadeFicheBasket(pool, cibleNominale, rnd) {
+function cascadeFicheBasket(pool, cibleNominale, rnd, options) {
   const paliers = [1, 0.85, 0.7, 0.5, 0.3, 0.15]
     .map(frac => Math.max(2, Math.round(cibleNominale * frac * 100) / 100))
     .filter((v, i, arr) => arr.indexOf(v) === i); // dédoublonne les paliers qui convergent vers la même valeur
@@ -1179,8 +1195,8 @@ function cascadeFicheBasket(pool, cibleNominale, rnd) {
     let essai = null, methodeEssai = 'classique';
     if (FICHE_BASKET_MOINS_DE_SELECTIONS) {
       // règle des cotes répétées : d'abord max 2 identiques, puis (si rien) max 3, jamais plus
-      essai = construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 2) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 2)
-           || construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 3) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 3);
+      essai = construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 2, options) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 2, options)
+           || construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 3, options) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 3, options);
       if (essai) methodeEssai = 'optimisee';
     }
     if (!essai) essai = construireFicheBasket(pool, cible);
@@ -1418,10 +1434,30 @@ async function handler(event) {
   // 14/11 — POOL RENFORCE : sans les segments qui perdent nettement plus que leur cote
   // (apprentissage) et sans les totaux de points que la projection maison ne confirme pas.
   // Si ce pool ne permet aucune fiche, repli sur le pool complet (comportement d'avant).
-  const poolRenforce = poolBasketFiltre.filter(b => !b.segmentExclu && !(b.market === 'mk_basket_total' && !b.projectionConfirmee));
+  // 14/11 (James : « privilégier les points aussi, pas seulement victoire ») : un total de points
+  // NETTEMENT confirmé par la projection maison est gardé même si son segment est écarté (les
+  // mauvais chiffres passés viennent de totaux SANS projection fiable) ; la fiche contient au
+  // moins 1/3 de totaux quand c'est possible (sinon : fiche libre, puis pool complet).
+  //   - projection qui CONTREDIT le pari -> écarté ;
+  //   - projection nettement favorable (marge >= 4 points) -> gardé, même si son segment est écarté ;
+  //   - pas de projection (historique encore trop court pour ces équipes) ou marge faible ->
+  //     gardé seulement si son segment (type x tranche de cote) n'est pas perdant.
+  const totalGarde = b => {
+    const ec = Number(b.projectionEcart);
+    if (b.projectionEcart != null && Number.isFinite(ec)) {
+      if (ec < 0) return false;
+      if (ec >= ECART_MIN_PROJECTION_TOTAL) return true;
+    }
+    return !b.segmentExclu;
+  };
+  const poolRenforce = poolBasketFiltre.filter(b => b.market === 'mk_basket_total' ? totalGarde(b) : !b.segmentExclu);
   stats.apprentissage.poolComplet = poolBasketFiltre.length;
   stats.apprentissage.poolRenforce = poolRenforce.length;
-  let cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardNbSelections);
+  stats.apprentissage.totauxGardes = poolRenforce.filter(b => b.market === 'mk_basket_total').length;
+  const hasardMixte = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
+  let cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardMixte, { partTotaux: PART_MIN_TOTAUX });
+  stats.apprentissage.avecTotaux = !!cascadeBasket.fiche;
+  if (!cascadeBasket.fiche) cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardNbSelections);
   stats.apprentissage.repliPoolComplet = !cascadeBasket.fiche;
   if (!cascadeBasket.fiche) {
     const hasardRepli = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
