@@ -69,6 +69,22 @@
 <link rel="icon" type="image/x-icon" href="assets/favicon.ico?v=20261021">
 <link rel="icon" type="image/png" sizes="512x512" href="assets/favicon-512.png?v=20261021">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=20261021">
+<!-- 12/11 : images de demarrage iPhone (ecran d'accueil, iOS 26 = plein ecran) : premiere image EXACTE de
+     l'animation de chargement (.vbsplash), pour qu'il n'y ait ni ecran blanc ni transition visible.
+     Seulement ces images : pas de manifeste, pas de mode hors ligne (version app supprimee le 19/10). -->
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1320x2868.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1206x2622.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1290x2796.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1179x2556.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1284x2778.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1170x2532.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1080x2340.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1125x2436.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1242x2688.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="assets/splash/splash-828x1792.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="assets/splash/splash-1242x2208.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="assets/splash/splash-750x1334.png?v=20261112">
+<link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="assets/splash/splash-640x1136.png?v=20261112">
 <!-- 19/10 (nuit) : nom court du raccourci sur l'ecran d'accueil (iPhone / Android). Simple nom : aucun mode application. -->
 <meta name="apple-mobile-web-app-title" content="VipBetcote">
 <meta name="application-name" content="VipBetcote">
@@ -117,7 +133,7 @@
    "sameAs": [
     "https://www.instagram.com/vipbetcote",
     "https://t.me/VipBetcote",
-    "https://www.tiktok.com/@vipbetcote"
+    "https://www.tiktok.com/@thebetcote"
    ],
    "contactPoint": [
     {
@@ -2060,6 +2076,125 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 
 /* --- Filtres --- */
 .dash-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center}
+/* 09/11 : avis des abonnes */
+.fb-bar{margin:0 14px 14px;padding:12px;border-radius:14px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.25)}
+.fb-bar:empty{display:none}
+.fb-q{font-size:13px;font-weight:700;color:#F4F3ED;margin-bottom:10px}
+.fb-row{display:flex;gap:8px}
+.fb-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 8px;border-radius:12px;border:1px solid rgba(244,243,237,.14);background:rgba(244,243,237,.04);color:#F4F3ED;font:700 13px inherit;cursor:pointer;text-align:center;line-height:1.25}
+.fb-btn.on{background:rgba(37,211,102,.16);border-color:rgba(37,211,102,.6);color:#8CF5B8}
+.fb-btn.gold{background:linear-gradient(180deg,#FFE6A3,#D9B766);color:#2a1c00;border:0}
+.fb-btn.etat{cursor:default;font-weight:600;font-size:12px;color:#C5D0DC}
+.fb-btn:disabled{opacity:.6}
+.fb-count{margin-top:10px;font-size:12px;color:var(--gris)}
+.fb-bar.fb-fixe{margin:0 0 18px;padding:16px}
+.fb-bar[hidden]{display:none}
+.fb-fixe-s{font-size:12.5px;line-height:1.45;color:#9AA8BA;margin:-4px 0 12px}
+.fb-btn.fb-large{padding:13px 10px;font-size:14px}
+.fb-fiche{display:block;margin:2px 0 14px;font-size:13px;font-weight:700;color:#F4F3ED}
+.fb-fiche select{display:block;width:100%;margin-top:6px;padding:12px;border-radius:12px;background:#111b2d;color:#F4F3ED;border:1px solid rgba(244,243,237,.16);font:600 14px inherit;font-family:inherit}
+.fb-voile{position:fixed;inset:0;z-index:100000;background:rgba(3,6,23,.72);display:flex;align-items:flex-end;justify-content:center;padding:0}
+.fb-voile[hidden]{display:none}
+.fb-sheet{width:100%;max-width:520px;max-height:92vh;overflow:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px));border-radius:22px 22px 0 0;background:#0A1324;border:1px solid rgba(244,243,237,.1);color:#F4F3ED}
+@media(min-width:600px){.fb-voile{align-items:center}.fb-sheet{border-radius:22px}}
+.fb-sheet h3{margin:0 0 4px;font-size:17px}.fb-sheet .s{margin:0 0 14px;font-size:12.5px;color:var(--gris)}
+.fb-stars{display:flex;gap:6px;margin-bottom:14px}.fb-stars button{font-size:32px;line-height:1;background:none;border:0;color:#E8B84B;cursor:pointer;padding:0}
+.fb-stars button.off{color:rgba(244,243,237,.2)}
+.fb-drop{display:flex;gap:12px;align-items:center;border:1.5px dashed rgba(37,211,102,.45);border-radius:14px;padding:12px;margin-bottom:12px;background:rgba(37,211,102,.04);cursor:pointer}
+.fb-drop img{width:58px;height:90px;object-fit:cover;border-radius:8px;background:#1f2b44}
+.fb-drop b{display:block;font-size:13.5px}.fb-drop small{color:var(--gris);font-size:12px}
+.fb-txt{width:100%;min-height:74px;border-radius:12px;border:1px solid rgba(244,243,237,.14);background:rgba(244,243,237,.04);color:#F4F3ED;padding:10px 12px;font:13.5px var(--body,inherit);box-sizing:border-box;resize:vertical}
+.fb-cnt{text-align:right;font-size:11px;color:var(--gris);margin:4px 0 10px}
+.fb-warn{font-size:12px;color:#E8CE8A;background:rgba(232,206,138,.08);border-radius:10px;padding:9px 11px;margin:6px 0 12px;line-height:1.45}
+.fb-chk{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:#C5D0DC;margin-bottom:12px;line-height:1.45}
+.fb-chk input{margin-top:2px;width:18px;height:18px;accent-color:#25D366;flex-shrink:0}
+.fb-err{color:#F0735E;font-size:12.5px;margin:0 0 10px}
+.fb-acts{display:grid;grid-template-columns:1fr 2fr;gap:10px}
+.fb-acts button{padding:13px;border-radius:14px;font:800 14px inherit;cursor:pointer}
+.fb-acts .no{border:1px solid rgba(244,243,237,.2);background:none;color:#F4F3ED}
+.fb-acts .go{border:0;background:#25D366;color:#04150C}.fb-acts .go:disabled{opacity:.6;cursor:wait}
+.av-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.av-kpis div{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:14px;padding:12px 8px;text-align:center}
+.av-kpis b{display:block;font-size:22px;color:#F4F3ED}.av-kpis small{font-size:11px;color:var(--gris)}
+.av-card{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:18px;padding:14px;display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;margin-bottom:12px}
+.av-card a.shot{display:block;width:76px;height:118px;border-radius:10px;overflow:hidden;background:#1f2b44}
+.av-card a.shot img{width:100%;height:100%;object-fit:cover;object-position:top}
+.av-who{font-size:13px;font-weight:700;color:#F4F3ED}.av-meta{font-size:11.5px;color:var(--gris);margin:2px 0 6px}
+.av-stars{color:#E8B84B;font-size:14px;letter-spacing:1px}
+.av-note{font-size:12.5px;color:#C5D0DC;line-height:1.45;margin:6px 0 10px;word-break:break-word}
+.av-acts{display:flex;gap:6px;flex-wrap:wrap}
+.av-acts button{font:700 12px inherit;padding:8px 12px;border-radius:999px;border:1px solid rgba(244,243,237,.16);background:none;color:#F4F3ED;cursor:pointer}
+.av-acts .pub{background:rgba(46,212,127,.14);border-color:rgba(46,212,127,.5);color:#7FF0B5}
+.av-acts .ref{color:#F0735E}
+.av-tg{font-size:11px;color:#8CF5B8;margin-top:6px}
+.av-conf{position:fixed;inset:0;z-index:100001;background:rgba(3,6,23,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+.av-conf[hidden]{display:none}
+.av-conf .box{width:100%;max-width:380px;background:#0A1324;border:1px solid rgba(46,212,127,.4);border-radius:20px;padding:20px 18px;color:#F4F3ED}
+.av-conf h3{margin:0 0 8px;font-size:17px}.av-conf p{margin:0 0 16px;font-size:13px;color:#C5D0DC;line-height:1.5}
+.av-conf .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.av-conf .btns button{padding:13px;border-radius:14px;font:800 14px inherit;cursor:pointer}
+.av-conf .non{border:1px solid rgba(244,243,237,.2);background:none;color:#F4F3ED}.av-conf .wi{border:0;background:#25D366;color:#04150C}
+.av-conf .wi.danger{background:#F0735E;color:#1a0503}
+/* 13/11 : annonces (Dashboard abonne + admin « Anons ») */
+#dashTipToday{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.dash-anons{transition:opacity .35s ease}.dash-anons.fondu{opacity:0}
+@media (prefers-reduced-motion:reduce){.dash-anons{transition:none}}
+.dash-anons-lbl{display:block;font:800 10.5px var(--mono);letter-spacing:.14em;color:#8CF5B8;margin-bottom:5px}
+.dash-anons-dots{display:flex;gap:5px;margin-top:8px}.dash-anons-dots:empty{display:none}
+.dash-tip-tx .dash-anons-dots b{display:block;width:6px;height:6px;margin:0;border-radius:50%;background:rgba(244,243,237,.22)}.dash-tip-tx .dash-anons-dots b.on{background:#25D366}
+.an-card{grid-template-columns:minmax(0,1fr)}
+.an-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.an-pub{font:700 11.5px var(--body);padding:5px 10px;border-radius:999px;background:rgba(232,206,138,.1);border:1px solid rgba(232,206,138,.35);color:#E8CE8A}
+.an-etat{font:800 11px var(--mono);letter-spacing:.08em;padding:5px 10px;border-radius:999px;background:rgba(244,243,237,.06);color:#9AA8BA;border:1px solid rgba(244,243,237,.14)}
+.an-etat.on{background:rgba(37,211,102,.16);color:#8CF5B8;border-color:rgba(37,211,102,.5)}
+.an-card .av-who{font-size:15px;word-break:break-word}
+.an-form label.l{display:block;font:700 13px var(--body);margin:12px 0 6px}.an-form label.l small{color:#9AA8BA;font-weight:500}
+.an-form input[type=text],.an-form textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;background:#111b2d;color:#F4F3ED;border:1px solid rgba(244,243,237,.16);font:600 14px var(--body)}
+.an-form textarea{height:90px;resize:vertical;font-weight:500}
+.an-form .an-cnt{text-align:right;font-size:11px;color:#9AA8BA;margin-top:4px}
+.an-form .an-pubs{display:flex;gap:6px;flex-wrap:wrap}
+.an-form .an-chk{display:flex;align-items:center;gap:10px;margin:14px 0 6px;font:600 13.5px var(--body)}.an-form .an-chk input{width:20px;height:20px}
+.an-form .an-err{color:#F0735E;font-size:12.5px;margin:6px 0 0}
+.an-form .btns{margin-top:14px}
+.win-avis .wa{position:relative;aspect-ratio:560/800;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;color:#F4F3ED;border:1.5px solid rgba(232,206,138,.55);background:linear-gradient(180deg,#0E1A2F,#0A1324);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.wa-shot{position:relative;height:52%;overflow:hidden;background:#0A1120}
+.wa-shot img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.wa-shot::after{content:'';position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(180deg,transparent,#0E1A2F)}
+.wa-tag{position:absolute;top:10px;left:10px;z-index:2;font:800 10.5px var(--body);letter-spacing:.06em;color:#2a1c00;background:linear-gradient(180deg,#FFE6A3,#D9B766);padding:5px 9px;border-radius:20px}
+.wa-body{flex:1;display:flex;flex-direction:column;padding:4px 14px 14px;min-height:0}
+.wa-stars{color:#E8B84B;font-size:17px;letter-spacing:2px}
+.wa-q{font:600 13.5px/1.45 var(--body);margin:6px 0 8px;flex:1;overflow:hidden;word-break:break-word}
+.wa-by{font-size:11.5px;color:#9AA8BA}
+.wa-ok{margin-top:8px;align-self:flex-start;font:800 10.5px var(--body);color:#8CF5B8;background:rgba(37,211,102,.14);border:1px solid rgba(37,211,102,.45);padding:4px 9px;border-radius:999px}
+/* 09/11 : fenetre « pronostics » (statistiques abonne et admin) */
+.pr-box{margin:0 0 18px;padding:18px 18px 16px;border-radius:20px;border:1px solid rgba(37,211,102,.35);background:radial-gradient(120% 140% at 100% 0%,rgba(37,211,102,.14),transparent 55%),linear-gradient(180deg,#12203A,#0A1324)}
+.pr-k{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#93A89B}
+.pr-pct{font-family:var(--display);font-weight:800;font-size:clamp(52px,12vw,72px);line-height:1;letter-spacing:-.03em;color:#25D366;margin:12px 0 10px;font-variant-numeric:tabular-nums}
+.pr-bar{height:8px;border-radius:5px;background:rgba(244,243,237,.1);overflow:hidden}
+.pr-bar i{display:block;height:100%;background:#25D366}
+.pr-nums{display:flex;gap:18px;margin-top:12px;font-size:13px;color:#93A89B}
+.pr-nums b{font-size:20px;color:#F4F3ED;margin-right:4px;font-variant-numeric:tabular-nums}
+.pr-nums .ok{color:#25D366}.pr-nums .ko{color:#F0735E}
+.pr-note{margin-top:10px;font-size:11.5px;color:#93A89B;line-height:1.45}
+.prj{margin:0 0 18px;padding:14px 14px 10px;border-radius:18px;border:1px solid rgba(244,243,237,.08);background:linear-gradient(180deg,#0E1A2F,#0A1324)}
+.prj-h{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#93A89B;margin-bottom:8px}
+.prj-list{max-height:430px;overflow-y:auto;display:grid}
+.prj-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 2px;border-top:1px solid rgba(244,243,237,.06);font-size:13px;color:#C5D0DC}
+.prj-row:first-child{border-top:0}
+.prj-d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prj-d::first-letter{text-transform:uppercase}
+.prj-bar{height:6px;border-radius:4px;background:rgba(244,243,237,.08);overflow:hidden}
+.prj-bar i{display:block;height:100%;background:#8F9BB0}
+.prj-row.ok .prj-bar i{background:#25D366}
+.prj-p{font-family:var(--display);font-size:16px;color:#F4F3ED;min-width:52px;text-align:right;font-variant-numeric:tabular-nums}
+.prj-row.ok .prj-p{color:#25D366}
+.prj-n{font-family:var(--mono);font-size:12px;color:#93A89B;min-width:48px;text-align:right}
+.prj-note{margin-top:8px;font-size:11.5px;color:#93A89B}
+.dash-tip{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;margin:0 0 16px;border-radius:16px;background:linear-gradient(180deg,rgba(37,211,102,.10),rgba(37,211,102,.04));border:1px solid rgba(37,211,102,.32)}
+.dash-tip-ic{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(37,211,102,.16);color:#25D366}
+.dash-tip-tx{flex:1;min-width:0;line-height:1.5}
+.dash-tip-tx b{display:block;font-size:14px;color:#F4F3ED;font-weight:700;margin-bottom:4px;line-height:1.35}
+.dash-tip-tx span{display:block;font-size:12.5px;color:var(--gris);line-height:1.55}
 .dash-fgroup{display:flex;gap:5px;background:#0B1425;border:1px solid var(--ligne);border-radius:999px;padding:4px}
 .dash-fbtn{
   background:none;border:none;border-radius:999px;cursor:pointer;
@@ -3086,6 +3221,28 @@ html.vb-offline .vb-horsligne{display:inline-flex}
 .wf-brand{font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.02em}
 .wf-brand span{color:var(--or-clair)}
 .wf-badge{font:800 11px var(--body);letter-spacing:.06em;color:#04130B;background:#2ED47F;padding:5px 10px;border-radius:20px}
+/* 07/11 : carte « Rapport du jour » (landing) */
+.wf-rapo .wf-badge{background:linear-gradient(180deg,#FFE6A3,#D9B766);color:#2a1c00}
+.wf-pct{display:flex;align-items:baseline;gap:10px;margin:2px 0 8px;flex-wrap:wrap}
+.wf-pct b{font-size:40px;line-height:1;font-weight:800;color:#25D366;letter-spacing:-.03em}
+.wf-pct span{font-size:13px;color:#C5D0DC;font-weight:600}
+.wf-pbar{height:6px;border-radius:4px;background:rgba(244,243,237,.1);overflow:hidden;margin-bottom:10px}
+.wf-pbar i{display:block;height:100%;background:#25D366}
+/* 07/11 : carte « Rapport du jour » (historique abonne et admin) */
+.dtk-rapo{border-color:rgba(37,211,102,.45)!important}
+.dtk-rapo .rp-big{display:flex;align-items:baseline;gap:10px;padding:14px 16px 4px;flex-wrap:wrap}
+.dtk-rapo .rp-big b{font-size:38px;font-weight:800;color:#25D366;line-height:1;letter-spacing:-.03em}
+.dtk-rapo .rp-big span{font-size:13px;color:#C5D0DC;font-weight:600}
+.dtk-rapo .rp-bar{margin:6px 16px 10px;height:6px;border-radius:4px;background:rgba(244,243,237,.1);overflow:hidden}
+.dtk-rapo .rp-bar i{display:block;height:100%;background:#25D366}
+.dtk-rapo .rp-note{padding:0 16px 14px;font-size:12px;color:var(--gris)}
+.dtk-rapo .rp-plans{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 14px}
+.dtk-rapo .rp-plans span{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;border:1px solid rgba(244,243,237,.12);color:#C5D0DC}
+.dtk-rapo .rp-plans span.ok{border-color:rgba(37,211,102,.45);color:#8CF5B8}
+.dtk-rapo .rp-share{display:flex;gap:8px;padding:0 14px 14px}
+.dtk-rapo .rp-share .dtk-share-btn{width:auto;flex:1;min-width:0;margin:0}
+.dtk-rapo .rp-share .rp-tt{background:#0B1F6B;color:#fff}
+.dtk-rapo .rp-share .dtk-share-btn:disabled{opacity:.6;cursor:wait}
 .wf-h{font-family:var(--display);font-weight:800;font-size:22px;line-height:1.1;text-align:center;margin:14px 0 4px;text-transform:uppercase}
 .wf-sub{text-align:center;font:700 11px var(--body);letter-spacing:.12em;color:var(--or-clair);margin:0 0 12px}
 .wf-legs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;flex:1;min-height:0;overflow:hidden}
@@ -3714,7 +3871,7 @@ html[lang="en"] .lp-h1{font-size:clamp(38px,4.6vw,68px)}
    ADMIN REDESIGN (15/10) : Vue d'ensemble, Statistiques, filtres Istorik.
    Affichage uniquement : aucune donnee, requete ou configuration modifiee.
    ===================================================================== */
-[data-adview="home"],[data-adview="revenus"],[data-adview="renouvellement"],[data-adview="kat"],[data-adview="sources"],[data-adview="parrainage"],[data-adview="championnats"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
+[data-adview="home"],[data-adview="revenus"],[data-adview="avis"],[data-adview="anons"],[data-adview="renouvellement"],[data-adview="kat"],[data-adview="sources"],[data-adview="parrainage"],[data-adview="championnats"]{--ov-gold:#E8CE8A;--ov-green:#2ED47F;--ov-red:#F0735E;--ov-blue:#7CB8FF;--ov-card:#0A1324;--ov-card2:#0E1A2F;--ov-line:rgba(244,243,237,.08)}
 .ov-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 22px}
 .ov-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ov-green)}
 .ov-live{width:7px;height:7px;border-radius:50%;background:var(--ov-green);box-shadow:0 0 0 0 rgba(46,212,127,.6);animation:ovPulse 2s infinite}
@@ -4651,7 +4808,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
       </details>
       <details>
         <summary><span data-i18n="faq6_q">Kijan map resevwa Cote yo?</span><span class="pl"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
-        <p data-i18n="faq6_a">Wap jwenn 2 fich chak jou lè w abòne nan VIP la.</p>
+        <p data-i18n="faq6_a">Wap jwenn 4 fich chak jou lè w abòne nan VIP la.</p>
       </details>
       <details>
         <summary><span data-i18n="faq2_q">Garantissez-vous des gains ?</span><span class="pl"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
@@ -4742,7 +4899,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         <summary><span data-i18n="faq6_q">Comment vais-je recevoir les Cote ?</span>
           <span class="pl"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
         </summary>
-        <p data-i18n="faq6_a">Wap jwenn 2 fich chak jou lè w abòne nan VIP la. Lè w fin peye, w ap jwenn yon dashboard kote chak jou w ap resevwa fich yo ladan l. W ap resevwa fich yo tou sou Telegram nan gwoup VIP la. Lè w fin enskri, w ap jwenn lyen gwoup la pou resevwa fich yo.</p>
+        <p data-i18n="faq6_a">Wap jwenn 4 fich chak jou lè w abòne nan VIP la. Lè w fin peye, w ap jwenn yon dashboard kote chak jou w ap resevwa fich yo ladan l. W ap resevwa fich yo tou sou Telegram nan gwoup VIP la. Lè w fin enskri, w ap jwenn lyen gwoup la pou resevwa fich yo.</p>
       </details>
       <details>
         <summary><span data-i18n="faq7_q">Comment est calculé le taux de réussite affiché ?</span>
@@ -5545,6 +5702,12 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         </div>
         <span class="dash-count" id="dashCountToday"></span>
       </div>
+      <!-- 07/11 : une seule note au-dessus des fiches en cours. 13/11 : remplacee par les ANNONCES actives (admin « Anons ») ; la note fixe ne reste que si les annonces ne peuvent pas etre lues. -->
+      <div class="dash-tip" id="dashTipToday">
+        <span class="dash-tip-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></span>
+        <span class="dash-tip-tx dash-tip-fixe"><b data-i18n="dash_tip_h">Ou pa oblije jwe yon fich antye chak jou.</b><span data-i18n="dash_tip_p">Ou ka chwazi match ou pi renmen nan chak fich, epi mete yo ansanm pou fè pwòp fich pa w : yon sèl oswa plizyè. Jwe ak kontwòl.</span></span>
+        <span class="dash-tip-tx dash-anons" hidden aria-live="polite"><small class="dash-anons-lbl" data-i18n="dash_anons_lbl">ANONS</small><b></b><span></span><i class="dash-anons-dots" aria-hidden="true"></i></span>
+      </div>
       <div class="dash-tickets" id="dashListToday"></div>
       <div class="dash-note">
         <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>
@@ -5564,6 +5727,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         <p data-i18n="dash_hist_p">Tout fich ki pibliye yo ak rezilta reyèl yo — sa ki genyen kou sa ki pèdi.</p>
       </div>
       <div class="dash-kpis" id="dashKpisHist"></div>
+      <div class="fb-bar fb-fixe" id="dashAvisFixe" hidden></div>
       <div class="dash-filters">
         <div class="dash-fgroup" data-dfilter="sport">
           <button class="dash-fbtn on" data-val="all" type="button" data-i18n="dash_f_all">Tout</button>
@@ -5590,6 +5754,8 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         <h2 data-i18n="dash_stats_h">Estatistik</h2>
         <p data-i18n="dash_stats_p">Tout chif sa yo kalkile apati istorik la — yo pa ekri alamen.</p>
       </div>
+      <!-- 09/11 : fenetre « pronostics » (sans score exact) en haut des statistiques -->
+      <div id="dashPronosStats"></div>
       <div class="dash-kpis" id="dashKpisStats"></div>
       <div id="dashStatsMsgWrap"></div>
       <div id="dashStatsBySportWrap">
@@ -5776,6 +5942,14 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="faq">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.8 2.8 0 1 1 3.9 2.6c-.9.4-1.6 1-1.6 2v.3"/><circle cx="12" cy="17" r=".3" fill="currentColor"/></svg>
             <span data-i18n="adm_nav_faq">FAQ</span>
+          </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="avis">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg>
+            <span data-i18n="adm_nav_avis">Avi abòne</span>
+          </button>
+          <button class="dash-menu-item" type="button" role="menuitem" data-adm="anons">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+            <span data-i18n="adm_nav_anons">Anons</span>
           </button>
           <button class="dash-menu-item" type="button" role="menuitem" data-adm="landing">
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
@@ -6254,6 +6428,48 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
 
     <!-- VUE : FAQ -->
+    <!-- VUE : AVIS DES ABONNES (09/11) -->
+    <div class="dash-view" data-adview="avis">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="ov-head">
+        <div>
+          <h2 data-i18n="adm_avis_h">Avi abòne</h2>
+          <p data-i18n="adm_avis_p">Prèv gen abòne yo voye. Okenn avi pa pibliye san ou pa di « Wi ».</p>
+        </div>
+        <div class="ov-head-act"><button type="button" class="ov-refresh" id="admAvisRefresh"><span data-i18n="adm_refresh">Rafrechi</span></button></div>
+      </div>
+      <div class="av-kpis" id="admAvisKpis"></div>
+      <div class="ren-per" id="admAvisFiltres">
+        <button type="button" class="adm-src-chip on" data-avf="attente" data-i18n="adm_avis_f_attente">An atant</button>
+        <button type="button" class="adm-src-chip" data-avf="publie" data-i18n="adm_avis_f_publie">Pibliye</button>
+        <button type="button" class="adm-src-chip" data-avf="refuse" data-i18n="adm_avis_f_refuse">Refize / retire</button>
+      </div>
+      <div id="admAvisListe"><div class="admdash-empty" data-i18n="adm_k_loading">Chajman...</div></div>
+    </div>
+
+    <!-- VUE : ANNONCES DU DASHBOARD (13/11) -->
+    <div class="dash-view" data-adview="anons">
+      <button class="dash-back" type="button" data-adback>
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        <span data-i18n="dash_back">Retounen</span>
+      </button>
+      <div class="ov-head">
+        <div>
+          <h2 data-i18n="adm_anons_h">Anons</h2>
+          <p data-i18n="adm_anons_p">Mesaj ki parèt anlè fich jodi a yo. Chwazi pou kiyès, epi aktive l lè w vle. Si plizyè aktif, yo chanje chak 30 segonn.</p>
+        </div>
+        <div class="ov-head-act"><button type="button" class="ov-refresh" id="admAnonsRefresh"><span data-i18n="adm_refresh">Rafrechi</span></button></div>
+      </div>
+      <div class="av-kpis" id="admAnonsKpis"></div>
+      <div class="ren-per" id="admAnonsFiltres">
+        <button type="button" class="adm-src-chip on" id="admAnonsNouvo" data-i18n="adm_anons_new">＋ Nouvo anons</button>
+      </div>
+      <div id="admAnonsListe"><div class="admdash-empty" data-i18n="adm_k_loading">Chajman...</div></div>
+    </div>
+
     <div class="dash-view" data-adview="faq">
       <button class="dash-back" type="button" data-adback>
         <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
@@ -6499,7 +6715,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
           <a class="soc-link" href="https://wa.me/50938089335" data-url="https://wa.me/50938089335" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.8 14.14c-.25.7-1.44 1.33-1.99 1.41-.53.08-1.2.11-1.94-.12-.45-.14-1.02-.33-1.76-.65-3.1-1.34-5.13-4.46-5.28-4.67-.16-.21-1.27-1.69-1.27-3.22 0-1.53.8-2.29 1.09-2.6.28-.31.62-.39.82-.39h.59c.19.01.44-.07.69.53.25.6.86 2.07.94 2.22.08.15.13.33.03.54-.1.21-.15.33-.3.51-.15.18-.31.4-.45.53-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.07 1.31 2.36 1.46.29.15.46.13.63-.08.17-.21.73-.85.92-1.14.19-.29.39-.24.65-.15.26.1 1.68.79 1.96.94.29.15.48.22.55.34.07.12.07.7-.18 1.4Z"/></svg></a>
           <a class="soc-link" href="https://t.me/VipBetcote" data-url="https://t.me/VipBetcote" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.5-1.4ZM8.8 14l9.6-6.1c.5-.3.9-.1.5.2l-8.2 7.4-.3 3.4L8.8 14Z"/></svg></a>
           <a class="soc-link" href="https://www.instagram.com/vipbetcote?igsh=MWE3OXB1NW5ib3d6bg==" data-url="https://www.instagram.com/vipbetcote?igsh=MWE3OXB1NW5ib3d6bg==" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#igGrad)" stroke-width="2.1" aria-hidden="true"><defs><linearGradient id="igGrad" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFB400"/><stop offset=".45" stop-color="#F5276C"/><stop offset="1" stop-color="#7A3DF0"/></linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.2" cy="6.8" r="1.2" fill="url(#igGrad)" stroke="none"/></svg></a>
-          <a class="soc-link" href="https://tiktok.com/@vipbetcote" data-url="https://tiktok.com/@vipbetcote" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3h-3.1v13.1a2.6 2.6 0 1 1-2.6-2.6c.28 0 .55.05.8.13v-3.1a5.9 5.9 0 0 0-.8-.06 5.68 5.68 0 1 0 5.68 5.68V9.6a7.2 7.2 0 0 0 4.1 1.28V7.78c-2.2-.1-3.9-1.7-4.08-4.78Z"/></svg></a>
+          <a class="soc-link" href="https://www.tiktok.com/@thebetcote" data-url="https://www.tiktok.com/@thebetcote" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3h-3.1v13.1a2.6 2.6 0 1 1-2.6-2.6c.28 0 .55.05.8.13v-3.1a5.9 5.9 0 0 0-.8-.06 5.68 5.68 0 1 0 5.68 5.68V9.6a7.2 7.2 0 0 0 4.1 1.28V7.78c-2.2-.1-3.9-1.7-4.08-4.78Z"/></svg></a>
         </div>
       </div>
       <div class="lp-foot-cols">
@@ -6574,6 +6790,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261106a"></script>
+<script src="app.js?v=20261113a"></script>
 </body>
 </html>

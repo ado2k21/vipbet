@@ -259,7 +259,7 @@ async function handler(event) {
   fixturesJour.forEach(f => {
     const league = f.league, fixture = f.fixture;
     if (!league || !fixture) return;
-    if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) return;
+    if (!(bot.competitionAutorisee ? bot.competitionAutorisee(league) : ALLOWED_LEAGUES_FOOT.includes(league.id))) return;
     const h = heureHaitiDuMatch(fixture.date);
     if (!h || h.iso !== playDate) return;
     const minutesJour = h.heureNum * 60 + h.minuteNum;

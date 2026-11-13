@@ -116,6 +116,15 @@ async function envoyerWhatsapp(texte) {
   }
 }
 
+// 12/11 (securisation) : comparaison en temps constant (une comparaison classique !== peut
+// laisser deviner le secret caractere par caractere en mesurant le temps de reponse).
+function secretEgal(recu, attendu) {
+  const a = Buffer.from(String(recu || ''), 'utf8');
+  const b = Buffer.from(String(attendu || ''), 'utf8');
+  if (!a.length || a.length !== b.length) return false;
+  try { return require('crypto').timingSafeEqual(a, b); } catch (_) { return false; }
+}
+
 async function handler(event) {
   if (event.httpMethod && event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Méthode non autorisée.' };
@@ -123,7 +132,7 @@ async function handler(event) {
 
   const secretAttendu = process.env.WEBHOOK_PAIEMENT_MANUEL_SECRET;
   const secretRecu = (event.headers && (event.headers['x-webhook-secret'] || event.headers['X-Webhook-Secret'])) || '';
-  if (!secretAttendu || secretRecu !== secretAttendu) {
+  if (!secretAttendu || !secretEgal(secretRecu, secretAttendu)) {
     console.log('[ALERTE PAIEMENT] secret invalide ou absent');
     return { statusCode: 401, body: 'Accès refusé.' };
   }

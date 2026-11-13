@@ -138,6 +138,15 @@
 # Canal Telegram PUBLIC : fiches gagnantes (additif) — voir telegram-public.js
 [functions."telegram-public"]
   schedule = "*/10 * * * *"
+
+# 07/11 : rapport du jour (taux de reussite des pronostics, sans score exact) -> rapports_jour
+# + Telegram (groupe VIP de chaque plan, canal public pour le rapport complet).
+[functions."rapport-jour"]
+  schedule = "*/30 * * * *"
+
+# 09/11 : avis d'abonnes PUBLIES par l'admin -> canal Telegram public (une seule fois).
+[functions."avis-telegram"]
+  schedule = "*/10 * * * *"
   # Image des fiches (moteur WebAssembly + police Inter, integres au projet)
   included_files = ["netlify/functions/lib/resvg/**", "netlify/functions/lib/fonts/**"]
 

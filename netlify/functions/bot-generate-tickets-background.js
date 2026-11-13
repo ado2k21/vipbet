@@ -167,7 +167,78 @@ const SECONDARY_LEAGUES_FOOT = [
   48,   // EFL Cup / Carabao Cup (Angleterre) — à confirmer
   848   // UEFA Europa Conference League — à confirmer
 ];
-const ALLOWED_LEAGUES_FOOT = [...TOP_LEAGUES_FOOT, ...SECONDARY_LEAGUES_FOOT];
+
+// ============================================================================
+// COMPÉTITIONS ÉLARGIES (10-12/11, demande explicite de James : « toutes les compétitions que
+// les bookmakers proposent : matchs internationaux, coupes de clubs ») — trêve du 10/11 :
+// 112 matchs reçus, 1 seul utilisable. Servies EN DERNIER (voir rangCompetition) : un jour
+// normal, les championnats ci-dessus sont choisis EXACTEMENT comme avant ; ces compétitions
+// ne prennent que les places restantes sous le plafond d'appels /odds. Un match n'entre de
+// toute façon dans une fiche que si le bookmaker propose réellement des cotes (/odds).
+// Volontairement EXCLUS : amicaux de clubs, réserves, jeunes, divisions amateurs (EFL Trophy,
+// Non League...) — trop imprévisibles. IDs « vu » = confirmés par stats.championnatsVus ;
+// les autres viennent de la documentation API-Sports, à confirmer au premier passage.
+// ============================================================================
+const COMPETITIONS_ELARGIES_FOOT = [
+  // --- Sélections nationales ---
+  10,   // Matchs amicaux internationaux (sélections A) — vu le 09/11
+  5,    // UEFA Nations League
+  536,  // CONCACAF Nations League
+  6,    // Coupe d'Afrique des Nations (CAN)
+  36,   // CAN — Qualifications
+  7,    // Coupe d'Asie (AFC Asian Cup)
+  22,   // CONCACAF Gold Cup
+  960,  // Euro — Qualifications
+  29,   // Coupe du Monde — Qualifications Afrique
+  30,   // Coupe du Monde — Qualifications Asie
+  37,   // Coupe du Monde — Barrages intercontinentaux
+  // --- Coupes nationales de clubs ---
+  143,  // Copa del Rey (Espagne) — vu le 09/11
+  45,   // FA Cup (Angleterre)
+  66,   // Coupe de France
+  81,   // DFB-Pokal (Allemagne)
+  137,  // Coppa Italia
+  96,   // Taça de Portugal
+  90,   // KNVB Beker (Pays-Bas)
+  206,  // Coupe de Turquie
+  147,  // Coupe de Belgique
+  // --- Supercoupes ---
+  531,  // Supercoupe de l'UEFA
+  528,  // Community Shield (Angleterre)
+  556,  // Supercopa de España
+  547,  // Supercoppa Italiana
+  526,  // Trophée des Champions (France)
+  529,  // Supercoupe d'Allemagne
+  // --- Coupes continentales de clubs ---
+  11,   // CONMEBOL Sudamericana
+  16,   // CONCACAF Champions Cup
+  12,   // CAF Champions League
+  17,   // AFC Champions League
+  15,   // Coupe du Monde des Clubs FIFA
+  525   // UEFA Champions League féminine — vu le 09/11 (demande explicite de James)
+];
+
+const ALLOWED_LEAGUES_FOOT = [...new Set([...TOP_LEAGUES_FOOT, ...SECONDARY_LEAGUES_FOOT, ...COMPETITIONS_ELARGIES_FOOT])];
+// 12/11 (demande explicite de James : « si une compétition arrive sans que son nom soit dans la
+// liste, par exemple les Jeux olympiques ») : toute compétition INTERNATIONALE (pays « World »
+// chez API-Sports) est acceptée automatiquement, sauf féminines, jeunes, réserves, amateurs,
+// futsal, beach soccer, virtuels, vétérans, universitaires et amicaux de clubs. Servie au rang 2
+// comme les compétitions élargies. La Ligue des champions féminine reste acceptée (liste ci-dessus).
+const EXCLUS_AUTO_FOOT = /wom[ae]n|f[eé]min|ladies|girls|\bu-?\d{2}\b|under[ -]?\d|youth|junior|club|reserve|amateur|futsal|beach|e-?soccer|virtual|indoor|legend|veteran|master|student|univers|military|school|regional|olympic(s)? women/i;
+function competitionAutorisee(league) {
+  if (!league) return false;
+  if (ALLOWED_LEAGUES_FOOT.includes(league.id)) return true;
+  return String(league.country || '').trim().toLowerCase() === 'world' && !EXCLUS_AUTO_FOOT.test(String(league.name || ''));
+}
+
+// Ordre de service sous le plafond d'appels /odds : grands championnats (0), puis la liste
+// habituelle (1), puis les compétitions élargies (2). Tri stable : à l'intérieur d'un même
+// rang, l'ordre reste celui d'avant.
+function rangCompetition(id) {
+  if (TOP_LEAGUES_FOOT.includes(id)) return 0;
+  if (SECONDARY_LEAGUES_FOOT.includes(id)) return 1;
+  return 2;
+}
 
 // Ligues domestiques où le marché buteur est activé — grands championnats
 // uniquement, jamais les compétitions continentales/qualifications (clubs
@@ -818,7 +889,7 @@ function filtrerCandidatsJour(fixturesJour, dateCible) {
     const league = f.league;
     const fixture = f.fixture;
     if (!league || !fixture) return;
-    if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) {
+    if (!competitionAutorisee(league)) {
       const clef = `${league.id} — ${league.name} (${league.country || '?'})`;
       stats.championnatsVus[clef] = (stats.championnatsVus[clef] || 0) + 1;
       return;
@@ -858,7 +929,8 @@ function filtrerCandidatsJour(fixturesJour, dateCible) {
     };
     candidats.push({
       fixtureId: fixture.id,
-      prioritaire: TOP_LEAGUES_FOOT.includes(league.id)
+      prioritaire: TOP_LEAGUES_FOOT.includes(league.id),
+      rang: rangCompetition(league.id)
     });
   });
 
@@ -877,7 +949,7 @@ function filtrerCandidatsJour(fixturesJour, dateCible) {
   // l'API, pas le temps total disponible : 85 appels à 6.5s tiennent
   // largement dans le budget de 15 min d'une fonction Background).
   const PLAFOND_APPELS_COTES = 85;
-  candidats.sort((a, b) => (b.prioritaire ? 1 : 0) - (a.prioritaire ? 1 : 0));
+  candidats.sort((a, b) => a.rang - b.rang);
   if (candidats.length > PLAFOND_APPELS_COTES) candidats = candidats.slice(0, PLAFOND_APPELS_COTES);
   return { noms, candidats };
 }
@@ -1199,7 +1271,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
   const fixture = oddsItem.fixture;
   const league = oddsItem.league;
   if (!fixture || !league) { rejeter('donnees_incompletes'); return []; }
-  if (!ALLOWED_LEAGUES_FOOT.includes(league.id)) {
+  if (!competitionAutorisee(league)) {
     rejeter('championnat_non_autorise');
     const clef = `${league.id} — ${league.name} (${league.country || '?'})`;
     stats.championnatsVus[clef] = (stats.championnatsVus[clef] || 0) + 1;
@@ -3958,6 +4030,7 @@ module.exports.construireFicheScoreExact = construireFicheScoreExact;
 module.exports.pickCompatibleAvecScore = pickCompatibleAvecScore;
 module.exports.publierFiche = publierFiche;
 module.exports.ALLOWED_LEAGUES_FOOT = ALLOWED_LEAGUES_FOOT;
+module.exports.competitionAutorisee = competitionAutorisee;
 module.exports.TOP_LEAGUES_FOOT = TOP_LEAGUES_FOOT;
 module.exports.TZ_HAITI = TZ_HAITI;
 module.exports.API_SPORTS_KEY = API_SPORTS_KEY;

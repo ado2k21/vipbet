@@ -242,11 +242,29 @@ function messageAutre(l) {
         court = 'Action : regarder les logs Netlify de la tâche de génération.';
         break;
       }
-      case 'AUCUN_ELEMENT':
+      case 'AUCUN_ELEMENT': {
         cause = `Le dernier passage${i.dernier_passage ? ' (' + i.dernier_passage + ', heure Haïti)' : ''} n'a signalé aucune erreur mais n'a rien publié (éléments trouvés : ${i.matchs_trouves !== '' && i.matchs_trouves != null ? i.matchs_trouves : '0'}).`;
         action = 'Causes possibles : rien à publier ce jour-là, ou une protection anti-doublon qui croit qu\'une publication existe déjà. Regarde les logs Netlify du dernier passage.';
         court = 'Action : regarder les logs Netlify du dernier passage (rien à publier, ou protection anti-doublon ?).';
+        // 10/11 : VRAIE cause lue dans le dernier résumé du passage (bot_run_log), si disponible.
+        const d = l.diag;
+        if (d && d.doublon) {
+          cause = 'Cause : la protection anti-doublon a cru qu\'une publication existait déjà pour cette date.';
+          action = 'Vérifie dans l\'admin qu\'aucune fiche n\'existe pour cette date ; si aucune n\'existe, signale-le.';
+          court = 'Cause : protection anti-doublon. Action : vérifier les fiches de cette date dans l\'admin.';
+        } else if (d && d.retenus != null && d.retenus < 3) {
+          const refus = (d.refuses || []).map(x => `${x.nom} (${x.n})`).join(', ');
+          cause = `Cause : seulement ${d.retenus} match(s) utilisable(s) sur ${d.trouves} reçu(s) — pas assez pour construire une fiche (minimum 3). L'API fonctionne normalement.`
+            + (refus ? ` Les autres matchs viennent de championnats non suivis : ${refus}.` : '');
+          action = 'Rien à réparer : jour pauvre en matchs (trêve internationale ou calendrier). Si un de ces championnats doit être couvert, demande son ajout.';
+          court = `Cause : seulement ${d.retenus} match(s) utilisable(s) sur ${d.trouves} (jour pauvre, API OK). Rien à réparer.`;
+        } else if (d && d.retenus != null) {
+          cause = `Cause : ${d.retenus} match(s) utilisable(s) sur ${d.trouves}, ${d.generees} essai(s) de fiche, mais aucune fiche ne respectait les règles (cote cible des plans, matchs déjà commencés, répétitions). L'API fonctionne normalement.`;
+          action = 'Regarde le détail du dernier passage (bot_run_log) : pool de sélections et raisons de rejet.';
+          court = `Cause : ${d.retenus} match(s) utilisable(s) mais aucune fiche conforme aux règles. API OK.`;
+        }
         break;
+      }
       default:
         cause = `Dernier passage automatique : ${i.dernier_passage || 'inconnu'}.`;
         action = 'Regarde les logs Netlify de la tâche de génération.';
@@ -262,7 +280,7 @@ function messageAutre(l) {
     const c1 = `${i.nb != null ? i.nb : '?'} élément(s) sans résultat plus de 6 h après l'heure de début${jours}.`;
     const c2 = i.plus_ancien ? `Le plus ancien a débuté le ${i.plus_ancien} (heure Haïti).` : '';
     const c3 = i.echeance ? `Annulation automatique au plus tôt le ${i.echeance} si le fournisseur ne donne aucun résultat.` : '';
-    const a1 = 'Le calcul repasse chaque heure. Vérifie qu\'aucune alerte API n\'est active, puis regarde les logs Netlify de la fonction de calcul des résultats.';
+    const a1 = `Le bot aurait dû régler ou annuler ce match lui-même depuis longtemps (plus de ${REGLEMENT_SEUIL_HEURES} h) : la tâche de calcul des résultats ne tourne probablement plus. Vérifie Netlify > Functions (bot-settle-results, badge « Scheduled ») et le dernier déploiement.`;
     const a2 = 'Si le quota du fournisseur était épuisé, les résultats seront calculés après la remise à zéro (20h00 Haïti).';
     return {
       titre,
@@ -367,6 +385,174 @@ async function rpc(nom, args) {
   return r.json();
 }
 
+// 10/11 : dernier résumé de passage d'un service (vue bot_run_log_prod = site de production
+// seulement ; repli sur bot_run_log). Retourne null si rien d'exploitable.
+// dateJJMM (« 11/11 ») : on prend le dernier passage qui VISAIT cette date (sinon le plus récent).
+async function dernierPassage(bot, dateJJMM) {
+  const base = process.env.SUPABASE_URL, cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let ligne = null;
+  const jjmm = st => (st && typeof st.dateCible === 'string') ? st.dateCible.slice(8, 10) + '/' + st.dateCible.slice(5, 7) : '';
+  for (const table of ['bot_run_log_prod', 'bot_run_log']) {
+    const r = await fetchAvecDelai(`${base}/rest/v1/${table}?select=ran_at,stats&bot=eq.${bot}&order=ran_at.desc&limit=60`,
+      { headers: { apikey: cle, Authorization: `Bearer ${cle}` } });
+    if (!r.ok) continue;
+    const j = await r.json();
+    if (Array.isArray(j) && j.length) { ligne = (dateJJMM && j.find(x => jjmm(x.stats) === dateJJMM)) || j[0]; break; }
+  }
+  const st = ligne && ligne.stats;
+  if (!st || typeof st !== 'object') return null;
+  const nb = v => (v == null || v === '' || Number.isNaN(Number(v))) ? null : Number(v);
+  const retenus = nb(st.matchsRetenus);
+  const refuses = Object.entries(st.championnatsVus || {})
+    .map(([nom, n]) => ({ nom: String(nom).replace(/^\d+\s*—\s*/, ''), n: Number(n) || 0 }))
+    .sort((a, b) => b.n - a.n).slice(0, 5);
+  const relais = st.relaisBSD && typeof st.relaisBSD === 'object' ? st.relaisBSD : null;
+  return { trouves: nb(st.matchsTrouves) || 0, retenus, generees: nb(st.fichesGenerees) || 0,
+    doublon: st.doublonsDetectes === true, refuses,
+    dateCible: typeof st.dateCible === 'string' ? st.dateCible : null,
+    erreurs: Array.isArray(st.erreurs) ? st.erreurs.length : 0,
+    publiees: nb(st.fichesPubliees) || 0,
+    pool: typeof st.poolFinal === 'number' ? st.poolFinal : null,
+    // le relais de secours a dû prendre le relais = l'API n'a pas répondu (vrai problème)
+    apiEnEchec: !!(relais && relais.declenche) };
+}
+
+// 12/11 (demande explicite de James : « aucune alerte si ce n'est pas un vrai problème ») :
+// décide si une alerte « publications manquantes » est un VRAI problème, à partir du dernier
+// passage du service. Retourne 'silence' (pas d'alerte), ou la cause à afficher.
+//  - Le dernier passage visait bien cette date, sans erreur, sans panne d'API, mais il n'y avait
+//    pas assez de matchs (jour pauvre, trêve, intersaison) → PAS un problème → aucune alerte.
+//  - Le dernier passage visait bien cette date → la tâche tourne : jamais « la tâche ne tourne
+//    plus » (le bot ne tourne que de 16h00 à 21h45 Haïti : 18 h sans passage chaque nuit est normal).
+//  - Sinon (aucun passage pour cette date, erreur, panne d'API, anti-doublon) → alerte gardée.
+function jugerPublicationManquante(l, d) {
+  if (!d || !d.dateCible) return l.cause;
+  const dc = String((l.infos || {}).date_cible || '');
+  const dd = d.dateCible.slice(8, 10) + '/' + d.dateCible.slice(5, 7);
+  if (!dc || dd !== dc) return l.cause;                  // le bot n'a pas tourné pour cette date : vrai problème
+  if (d.erreurs > 0 || d.apiEnEchec || d.doublon) return l.cause === 'AUCUN_PASSAGE' ? 'AUCUN_ELEMENT' : l.cause;
+  const foot = l.type === 'PUB_MANQUANTE_A';
+  // Foot : 0 match reçu n'est JAMAIS un jour pauvre (il y a toujours des dizaines de matchs dans le
+  // monde) → c'est un problème de l'API, du cache ou du plan : alerte. Jour pauvre = des matchs reçus,
+  // mais moins de 3 utilisables. Basket : 0 match peut être normal (intersaison).
+  const pauvre = foot ? (d.trouves > 0 && d.retenus != null && d.retenus < 3)
+                      : (d.trouves === 0 || (d.pool != null && d.pool < 2));
+  if (pauvre) return 'silence';
+  return 'AUCUN_ELEMENT';                                 // assez de matchs mais aucune fiche : vrai problème, cause dite
+}
+
+// 13/11 (regle de James : « je dois recevoir une alerte seulement quand l'API a un probleme ;
+// eviter les alertes inutiles pour des choses que le bot peut faire lui-meme ») :
+//  - API et quota (API_*, QUOTA_*) : TOUJOURS (l'API suspendue reste prioritaire) ;
+//  - publications manquantes : seulement si la cause est l'API, le quota, ou si le bot n'a PAS
+//    tourne du tout (il ne peut pas se relancer seul) ; jamais pour un jour pauvre, l'anti-doublon,
+//    les regles de construction ou une erreur ponctuelle ;
+//  - calcul des resultats : si l'API va bien, le bot regle ou annule LUI-MEME (match reporte :
+//    annule apres 3 h ; sinon regle des 23h59 + 12 h, 2 jours au plus). Alerte seulement si un
+//    match reste sans resultat plus de 60 h apres son debut : le calcul ne tourne plus.
+const CAUSES_PUB_URGENTES = ['AUCUN_PASSAGE', 'API', 'QUOTA_INTERNE'];
+const REGLEMENT_SEUIL_HEURES = 60;
+// « 12/11 16:00 » (heure Haiti, UTC-5 ; ecart d'une heure en ete sans importance a 60 h pres).
+function heuresDepuisHaiti(jjmm, maintenant) {
+  const m = /^(\d{1,2})\/(\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?/.exec(String(jjmm || '').trim());
+  if (!m) return null;
+  const now = maintenant || Date.now();
+  let an = new Date(now).getUTCFullYear();
+  let t = Date.UTC(an, Number(m[2]) - 1, Number(m[1]), Number(m[3] || 0) + 5, Number(m[4] || 0));
+  if (t > now + 86400000) t = Date.UTC(an - 1, Number(m[2]) - 1, Number(m[1]), Number(m[3] || 0) + 5, Number(m[4] || 0));
+  return (now - t) / 3600000;
+}
+function alerteUtile(l, maintenant) {
+  if (/^PUB_MANQUANTE_[AB]$/.test(l.type)) return CAUSES_PUB_URGENTES.includes(l.cause);
+  if (/^REGLEMENT_BLOQUE_[AB]$/.test(l.type) || l.type === 'REGLEMENT_BLOQUE') {
+    const h = heuresDepuisHaiti((l.infos || {}).plus_ancien, maintenant);
+    return h != null && h >= REGLEMENT_SEUIL_HEURES;   // date illisible : pas d'alerte (le bot regle seul)
+  }
+  return true;                                           // API, quota, site en echec, autres : toujours
+}
+
+// 13/11 — API surveillee AUSSI pendant le calcul des resultats (toutes les heures, toute la
+// journee). Le calcul note ses VRAIS refus dans bot_run_log (bot « reglement-foot/basket »,
+// voir bot-settle-results.js > noterEtatApi). Alerte si les 2 dernieres notes sont des refus
+// (refus repete, sans succes entre les deux), tant qu'aucun succes n'a ete note depuis (48 h max). Meme message
+// prioritaire que l'alerte API de la creation des fiches ; jamais deux messages pour la meme panne.
+function causeRefusApi(msg) {
+  const m = String(msg || '');
+  if (/absente|présentes dans les variables/i.test(m)) return 'CLE_ABSENTE';
+  if (/suspend/i.test(m)) return 'SUSPENDU';
+  if (/application key|api key|api_sports_key/i.test(m)) return 'CLE_INVALIDE';
+  if (/HTTP 40[13]|access denied|forbidden|unauthori/i.test(m)) return 'ACCES_REFUSE';
+  return 'AUTRE';
+}
+function hhmmHaiti(iso) {
+  const d = new Date(Date.parse(iso) - 5 * 3600000);
+  const p = n => String(n).padStart(2, '0');
+  return `${p(d.getUTCDate())}/${p(d.getUTCMonth() + 1)} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+}
+function jugerApiReglement(lignesNotes, maintenant) {
+  const L = (lignesNotes || []).filter(x => x && x.stats);
+  if (L.length < 2 || L[0].stats.refus !== true || L[1].stats.refus !== true) return null;
+  const now = maintenant || Date.now();
+  // La panne reste signalee tant qu'AUCUN succes n'a ete note apres (le calcul n'appelle l'API que
+  // s'il a des matchs a regler : une nuit sans appel ne veut pas dire que l'API est revenue).
+  // Au-dela de 48 h sans nouvelle note, on ne sait plus rien : pas d'alerte sur une donnee perimee.
+  if (now - Date.parse(L[0].ran_at) > 48 * 3600000) return null;
+  let n = 0; while (n < L.length && L[n].stats.refus === true) n++;
+  const msg = (L[0].stats.erreurs || [])[0] || '';
+  return { cause: causeRefusApi(msg), message_api: String(msg).slice(0, 200), nb_refus: n,
+    dernier_refus: hhmmHaiti(L[0].ran_at), premier_refus: hhmmHaiti(L[n - 1].ran_at) };
+}
+async function apiVueParLeCalcul(sport) {
+  const base = process.env.SUPABASE_URL, cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const h = { apikey: cle, Authorization: `Bearer ${cle}` };
+  const r = await fetchAvecDelai(`${base}/rest/v1/bot_run_log_prod?select=ran_at,stats&bot=eq.reglement-${sport}&order=ran_at.desc&limit=10`, { headers: h });
+  if (!r.ok) return null;
+  const j = jugerApiReglement(await r.json());
+  if (!j) return null;
+  // Resultats en attente (pour le message), jamais bloquant.
+  try {
+    const depuis = new Date(Date.now() - 3 * 3600000).toISOString();
+    const c = await fetchAvecDelai(`${base}/rest/v1/ticket_legs?select=id,tickets!inner(sport,status)&result=is.null&kickoff_at=lt.${encodeURIComponent(depuis)}&tickets.sport=eq.${sport}&tickets.status=eq.pending`,
+      { headers: Object.assign({ Prefer: 'count=exact', Range: '0-0' }, h) });
+    const cr = c.headers && c.headers.get && c.headers.get('content-range');
+    if (cr && /\/(\d+)$/.test(cr)) j.selections_attente = Number(/\/(\d+)$/.exec(cr)[1]);
+  } catch (_) { /* sans consequence */ }
+  return j;
+}
+// Fusionne avec les lignes de alert_check : remplace la ligne API_BLOQUEE_x « ok » (sinon elle
+// serait « resolue » au meme passage) ; ne fait rien si la base signale deja la panne.
+async function ajouterApiVueParLeCalcul(lignes) {
+  for (const [sport, svc] of [['foot', 'A'], ['basket', 'B']]) {
+    let j = null;
+    try { j = await apiVueParLeCalcul(sport); } catch (e) { console.log('[ALERTE] API vue par le calcul :', e.message); }
+    if (!j) continue;
+    const type = 'API_BLOQUEE_' + sport.toUpperCase();
+    const i = lignes.findIndex(x => x && x.type === type);
+    if (i >= 0 && lignes[i].probleme) continue;               // deja signale par la creation des fiches
+    const ligne = { type, probleme: true, cause: j.cause, detail: 'API (' + svc + ') : ' + j.cause + ' (vu par le calcul des résultats)',
+      infos: Object.assign({ service: svc, source: 'calcul des résultats' }, j) };
+    if (i >= 0) lignes[i] = ligne; else lignes.push(ligne);
+  }
+  return lignes;
+}
+
+// 12/11 : seules les alertes du site de PRODUCTION partent. Un autre site Netlify (autre équipe)
+// qui exécute ce même code ne doit JAMAIS envoyer d'alerte. Liste = table alert_sites
+// (la même que pour les passages des bots). Table vide ou illisible = aucun filtre (sécurité :
+// on ne coupe jamais l'alerte « API suspendue » par erreur).
+function siteCourant() {
+  return String(process.env.SITE_NAME || String(process.env.URL || process.env.DEPLOY_URL || '').replace(/^https?:\/\//, '') || '').slice(0, 80);
+}
+async function sitesProduction() {
+  try {
+    const base = process.env.SUPABASE_URL, cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const r = await fetchAvecDelai(`${base}/rest/v1/alert_sites?select=site`, { headers: { apikey: cle, Authorization: `Bearer ${cle}` } });
+    if (!r.ok) return [];
+    const j = await r.json();
+    return Array.isArray(j) ? j.map(x => String(x.site || '')).filter(Boolean) : [];
+  } catch (_) { return []; }
+}
+
 // Canaux, dans l'ordre de priorité : Telegram (gratuit, sans quota), email, puis
 // WhatsApp (CallMeBot, quota limité : dernier recours, facultatif).
 // Chaque fonction retourne true/false (envoi réussi ou non) ; l'appelant sait
@@ -465,12 +651,20 @@ async function handler(event) {
     return { statusCode: 200, body: JSON.stringify({ test: true, envoi: r }) };
   }
 
+  const prod = await sitesProduction();
+  if (prod.length && !prod.includes(siteCourant())) {
+    console.log(`[ALERTE] site « ${siteCourant()} » hors production (${prod.join(', ')}) : aucune alerte envoyée.`);
+    return { statusCode: 200, body: 'site hors production : aucune alerte' };
+  }
+
   let lignes;
   try { lignes = await rpc('alert_check'); }
   catch (e) {
     console.log('[ALERTE] alert_check impossible :', e.message);
     return { statusCode: 500, body: 'alert_check impossible : ' + e.message };
   }
+  try { lignes = await ajouterApiVueParLeCalcul(Array.isArray(lignes) ? lignes : []); }
+  catch (e) { console.log('[ALERTE] fusion API du calcul :', e.message); }
 
   const bilan = [];
   const aEnvoyer = [];   // { cle, l } : alertes gagnées ce passage (verrou pris)
@@ -478,6 +672,19 @@ async function handler(event) {
 
   for (const l of (lignes || [])) {
     try {
+      if (l.probleme && /^PUB_MANQUANTE_[AB]$/.test(l.type)) {
+        let d = null;
+        try { d = await dernierPassage(l.type === 'PUB_MANQUANTE_A' ? 'foot' : 'basket', String((l.infos || {}).date_cible || '')); }
+        catch (e) { console.log('[ALERTE] diagnostic du dernier passage :', e.message); }
+        l.diag = d;
+        const verdict = jugerPublicationManquante(l, d);
+        if (verdict === 'silence') { bilan.push(`${l.type}: jour sans assez de matchs, pas un problème (aucune alerte)`); continue; }
+        l.cause = verdict;
+      }
+      if (l.probleme && !alerteUtile(l)) {
+        bilan.push(`${l.type}${l.cause ? ':' + l.cause : ''}: le bot s'en occupe seul, pas d'alerte`);
+        continue;
+      }
       if (l.probleme) {
         // Un CHANGEMENT de cause (ex. suspendu -> limite du jour) est un nouveau problème :
         // la clé du verrou inclut la cause pour qu'il soit signalé tout de suite.
@@ -501,6 +708,10 @@ async function handler(event) {
       bilan.push(`${l.type}: erreur ${e.message}`);
     }
   }
+
+  // 10/11 : « rien publié sans erreur » -> on lit le dernier résumé du passage pour dire la VRAIE
+  // cause (jour pauvre, anti-doublon, règles). Lecture seule, jamais bloquant ; l'alerte
+  // prioritaire « API suspendue » n'est pas concernée.
 
   // --- UN SEUL message pour toutes les alertes de ce passage ---
   if (aEnvoyer.length) {
@@ -546,4 +757,4 @@ async function handler(event) {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports._interne = { assainir, construire, TITRES, grouperAlertes, envoyer };
+module.exports._interne = { assainir, construire, TITRES, grouperAlertes, envoyer, jugerPublicationManquante, dernierPassage, siteCourant, alerteUtile, heuresDepuisHaiti, jugerApiReglement, causeRefusApi };

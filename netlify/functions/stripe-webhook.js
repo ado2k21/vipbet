@@ -58,8 +58,6 @@ function baseSupabase() {
    n'empeche pas l'activation. Des qu'un plan y figure, l'ecart
    bloque l'activation automatique pour ce plan.
    ------------------------------------------------------------ */
-/* Prix de TEST temporaire du plan p1 (0,50 $), valable jusqu'a la date indiquee seulement. */
-const PRIX_TEST_P1 = { cents: 50, jusqua: '2026-10-17T23:59:00Z' };
 
 const MONTANTS_ATTENDUS = {
   p1: { montant: 199,  devise: 'usd' },   // 249 G  = 1,99 $
@@ -242,16 +240,7 @@ exports.handler = async function (event) {
        Empeche qu'une adresse modifiee a la main fasse payer le prix
        du petit plan tout en reclamant le grand. */
     let montantSuspect = false;
-    let attendu = MONTANTS_ATTENDUS[planId];
-    /* PRIX DE TEST TEMPORAIRE (plan p1 uniquement, dans le code : aucune variable Netlify).
-       Accepte PRIX_TEST_P1.cents (0,50 $) SEULEMENT jusqu'a PRIX_TEST_P1.jusqua : passee cette
-       date il est IGNORE automatiquement. A retirer du code apres le test. */
-    if (planId === 'p1' && Date.now() < Date.parse(PRIX_TEST_P1.jusqua)) {
-      if (orig.montant === PRIX_TEST_P1.cents && orig.devise === 'usd') {
-        attendu = { montant: PRIX_TEST_P1.cents, devise: 'usd' };
-        await journaliser('stripe_webhook_prix_test', 'Prix de TEST accepte pour p1 (' + PRIX_TEST_P1.cents + ' cents). session=' + refStripe);
-      }
-    }
+    const attendu = MONTANTS_ATTENDUS[planId];
     if (attendu) {
       // Montant HORS taxes : si la collecte de taxes de Stripe est activee, le total
       // peut depasser le prix du plan sans que le client ait mal paye.
@@ -266,9 +255,13 @@ exports.handler = async function (event) {
           ' — abonnement NON active, laisse en attente pour verification manuelle.');
       }
     } else {
+      /* 12/11 (securisation des paiements) : plan sans montant attendu = montant IMPOSSIBLE a
+         verifier -> jamais d'activation a l'aveugle. L'argent est trace (paiement en attente,
+         visible dans l'admin) et l'admin valide a la main. Avant : activation faite quand meme. */
+      montantSuspect = true;
       await journaliser('stripe_webhook_montant_non_configure',
         'Aucun montant attendu configure pour ' + planId + ' : recu ' + session.amount_total + ' ' +
-        session.currency + '. session=' + refStripe + ' — verification impossible, activation faite quand meme.');
+        session.currency + '. session=' + refStripe + ' — verification impossible : laisse en attente pour validation manuelle.');
     }
 
     /* ---- 3b. Remise inattendue : les codes promo sont desactives sur les liens. Un paiement

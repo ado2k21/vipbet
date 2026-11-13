@@ -49,6 +49,14 @@ exports.handler = async function (event) {
     return C.reponseJson(401, { ok: false, code: 'SESSION_INVALIDE' });
   }
 
+  /* 12/11 (securisation) : chaque appel interroge le prestataire et ecrit en base. Plafond
+     genereux (20/min par personne) : la page de retour qui reverifie toutes les quelques
+     secondes reste largement dessous. Echoue toujours OUVERT (voir verifierQuota). */
+  const quota = await C.verifierQuota(cfg, 'verify:user:' + utilisateur.id, 20, cfg.quotaFenetreSecondes);
+  if (!quota.autorise) {
+    return C.reponseJson(429, { ok: false, code: 'TROP_DE_TENTATIVES', reessayer_dans: quota.resteSecondes || 60 });
+  }
+
   try {
     /* Le filtre user_id est la garantie qu'on ne peut jamais declencher la
        verification — ni lire le statut — du paiement de quelqu'un d'autre,

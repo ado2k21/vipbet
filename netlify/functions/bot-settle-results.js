@@ -174,6 +174,38 @@ function delaiVoidEcoule(leg) {
   return Date.now() - k >= DELAI_VOID_MS;
 }
 
+// ============================================================================
+// 13/11 — MATCH REPORTE (demande explicite de James : « pour un match reporte, pas d'alerte :
+// le bot doit annuler le resultat de ce match »). Cas reel : Atletico Nacional — Once Caldas
+// annonce le 12/11 16:00, deplace au 14/11 : absent de la liste du 12/11, il restait « en
+// attente » 2 jours (et declenchait l'alerte « calcul bloque »).
+// Un match COMMENCE depuis plus de 3 h, absent de la liste du jour ou encore « NS/TBD », est
+// verifie par une relance ciblee. Il est ANNULE (void) tout de suite si le fournisseur le
+// marque « date a definir » (TBD) ou s'il a ete deplace d'au moins 12 h (autre jour) — meme
+// regle qu'un bookmaker. Jamais d'annulation si le fournisseur n'a pas repondu.
+// Budget : au plus 6 relances par passage (quota).
+// ============================================================================
+const DELAI_VERIF_REPORT_MS = 3 * 3600000;
+const ECART_REPORT_MS = 12 * 3600000;
+const MAX_VERIF_REPORT_PAR_PASSAGE = 6;
+function doitVerifierReport(leg, info) {
+  const k = leg && leg.kickoff_at ? Date.parse(leg.kickoff_at) : NaN;
+  if (!Number.isFinite(k) || Date.now() - k < DELAI_VERIF_REPORT_MS) return false;
+  return !info || ['NS', 'TBD'].includes(info.statut);
+}
+// Retourne la raison (texte) si le match est reporte, sinon null.
+function raisonReport(leg, r) {
+  if (!r) return null;
+  if (r.statut === 'TBD') return 'Match reporté (date à définir par le fournisseur)';
+  const k = leg && leg.kickoff_at ? Date.parse(leg.kickoff_at) : NaN;
+  const d = r.dateUtc ? Date.parse(r.dateUtc) : NaN;
+  if (Number.isFinite(k) && Number.isFinite(d) && Math.abs(d - k) >= ECART_REPORT_MS && !STATUTS_TERMINES.includes(r.statut)) {
+    const p = partsHaiti(new Date(d));
+    return `Match reporté au ${p.iso.slice(8, 10)}/${p.iso.slice(5, 7)} (prévu le ${partsHaiti(new Date(k)).iso.slice(8, 10)}/${partsHaiti(new Date(k)).iso.slice(5, 7)})`;
+  }
+  return null;
+}
+
 function joursEcoules(dateIso) {
   const a = new Date(dateIso + 'T00:00:00Z');
   const b = new Date(aujourdhuiHaiti() + 'T00:00:00Z');
@@ -275,12 +307,60 @@ async function enregistrerQuotaReelReglement(provider, resp) {
 // dépassé, avec response=[]) — LÈVE une exception. Avant le 30/09 ce dernier
 // cas passait pour « aucun match », et le règlement en concluait que le match
 // avait disparu : voir la règle des 23h59, qui voidait alors la sélection.
+// 13/11 — SURVEILLANCE DE L'API PENDANT LE CALCUL DES RESULTATS (demande de James). Le calcul
+// appelle l'API toutes les heures ; ses refus n'etaient vus par personne (seule la creation des
+// fiches, 16:00-18:30 Haiti, etait surveillee : une suspension a 22:00 n'etait signalee que le
+// lendemain a 16:00). On NOTE seulement ce que l'API a repondu (aucun appel en plus) ; la note
+// est ecrite a la fin du passage par noterEtatApi(), jamais bloquante.
+let suiviApi = null;
+function resetSuiviApi() { suiviApi = { foot: { ok: 0, refus: [] }, basket: { ok: 0, refus: [] } }; }
+resetSuiviApi();
+function noterReponseApi(libelle, ok, message) {
+  const s = /basket/i.test(libelle) ? suiviApi.basket : suiviApi.foot;
+  if (ok) s.ok++; else if (s.refus.length < 5) s.refus.push(String(message).slice(0, 300));
+}
+
 async function lireReponseApiSports(resp, libelle) {
-  if (!resp.ok) throw new Error(`${libelle} → HTTP ${resp.status}`);
+  if (!resp.ok) {
+    noterReponseApi(libelle, false, `${libelle} → HTTP ${resp.status}`);
+    throw new Error(`${libelle} → HTTP ${resp.status}`);
+  }
   const data = await resp.json();
   const messages = garde.messagesErreur(data.errors);
-  if (messages.length) throw new Error(`${libelle} → ${messages.join(' | ')}`);
+  if (messages.length) {
+    noterReponseApi(libelle, false, `${libelle} → ${messages.join(' | ')}`);
+    throw new Error(`${libelle} → ${messages.join(' | ')}`);
+  }
+  noterReponseApi(libelle, true);
   return data.response || [];
+}
+
+// Seuls les VRAIS refus comptent (compte suspendu, cle invalide/absente, acces refuse). Les
+// limites passageres (trop d'appels par minute, limite du jour) sont ignorees ici : elles ont
+// leurs propres alertes de quota et se reglent seules.
+const REFUS_API_GRAVE = /suspend|application key|api key|api_sports_key|access denied|unauthori|forbidden|HTTP 40[13]\b/i;
+async function noterEtatApi() {
+  const site = String(process.env.SITE_NAME || String(process.env.URL || process.env.DEPLOY_URL || '').replace(/^https?:\/\//, '') || 'inconnu').slice(0, 80);
+  for (const sport of ['foot', 'basket']) {
+    try {
+      const s = suiviApi[sport];
+      const graves = s.refus.filter(m => REFUS_API_GRAVE.test(m));
+      const bot = 'reglement-' + sport;
+      if (graves.length && s.ok === 0) {
+        // Refus sans aucun succes pendant ce passage : on le note.
+        await sbInsert('bot_run_log', [{ bot, stats: { site, refus: true, erreurs: graves, appelsOk: 0 } }]);
+      } else if (s.ok > 0) {
+        // L'API repond de nouveau : on note le retour a la normale SEULEMENT si la derniere note
+        // etait un refus (sinon rien n'est ecrit : aucune ligne inutile).
+        const dern = await sbSelect('bot_run_log', `select=stats&bot=eq.${bot}&order=ran_at.desc&limit=1`);
+        if (Array.isArray(dern) && dern.length && dern[0].stats && dern[0].stats.refus === true) {
+          await sbInsert('bot_run_log', [{ bot, stats: { site, refus: false, erreurs: [], appelsOk: s.ok } }]);
+        }
+      }
+    } catch (e) {
+      console.log('[SETTLE] note etat API impossible (sans consequence) :', e.message);
+    }
+  }
 }
 
 async function apiSportsGet(path, params) {
@@ -579,7 +659,8 @@ async function retenterFixtureUnique(fixtureId) {
       statut,
       golHome: ftFiable ? ft.home : (f.goals && f.goals.home),
       golAway: ftFiable ? ft.away : (f.goals && f.goals.away),
-      scoreFiable: !alleeEnProlongation || ftFiable
+      scoreFiable: !alleeEnProlongation || ftFiable,
+      dateUtc: f.fixture.date || null   // 13/11 : date REELLE du match (detection des matchs reportes)
     };
   } catch (e) {
     stats.erreurs.push(`fixtures?id=${fixtureId} (relance ciblée) : ${e.message}`);
@@ -967,6 +1048,7 @@ async function reglerDate(dateIso) {
   });
 
   const cacheButeurs = {}; // fixture_id → liste de noms, calculé une seule fois par match même si plusieurs legs buteur
+  let verifReportsRestants = MAX_VERIF_REPORT_PAR_PASSAGE; // 13/11 : budget des relances « match reporte »
 
   for (const ticket of tickets) {
     stats.ticketsExamines++;
@@ -1000,8 +1082,23 @@ async function reglerDate(dateIso) {
       }
       let nouveauResultat = null;
 
+      // 13/11 : match reporte -> annule tout de suite (voir raisonReport).
+      let raisonReportLeg = null;
+      if (!estLegBSD && !apiFootEnEchec && verifReportsRestants > 0 && doitVerifierReport(leg, info)) {
+        verifReportsRestants--;
+        stats.verifsReport = (stats.verifsReport || 0) + 1;
+        const r = await retenterFixtureUnique(leg.fixture_id);
+        raisonReportLeg = raisonReport(leg, r);
+        // Donnee plus fraiche que la liste du jour (ex. match absent de la liste mais termine) :
+        // on l'utilise pour la suite, avec exactement les memes regles qu'avant.
+        if (!raisonReportLeg && r && (!info || STATUTS_TERMINES.includes(r.statut) || STATUTS_ANNULES.includes(r.statut))) info = r;
+      }
+
       let buteursPourLog = null; // section 23 : trace la donnée réelle utilisée, si applicable
-      if (info && STATUTS_TERMINES.includes(info.statut) && info.scoreFiable) {
+      if (raisonReportLeg) {
+        nouveauResultat = 'void';
+        stats.matchsReportes = (stats.matchsReportes || 0) + 1;
+      } else if (info && STATUTS_TERMINES.includes(info.statut) && info.scoreFiable) {
         let buteurs = undefined;
         if (leg.market === 'mk_buteur') {
           if (!(leg.fixture_id in cacheButeurs)) {
@@ -1108,12 +1205,14 @@ async function reglerDate(dateIso) {
           leg_id: leg.id,
           market: leg.market,
           pick: leg.pick,
-          actual_result: !info
+          actual_result: raisonReportLeg ? raisonReportLeg + ' — sélection annulée (neutre)'
+            : !info
             ? 'Statut indisponible (fixture absente de la réponse API-Sports du jour) — règle 23h59 appliquée'
             : buteursPourLog !== null
               ? `Buteurs 90min : ${buteursPourLog.length ? buteursPourLog.join(', ') : 'aucun'}`
               : `Score temps réglementaire ${info.golHome}-${info.golAway} (statut ${info.statut})`,
-          statistic_used: !info
+          statistic_used: raisonReportLeg ? 'relance ciblée fixtures?id (date réelle du match)'
+            : !info
             ? 'aucune donnée fixture pour cette date'
             : `statut=${info.statut} fulltime_fiable=${info.scoreFiable}`,
           source: estLegBSD ? 'bsd' : 'api-sports',
@@ -1200,6 +1299,15 @@ async function reglerDate(dateIso) {
 // ============================================================================
 
 async function handler(event) {
+  resetSuiviApi();
+  try {
+    return await handlerInterne(event);
+  } finally {
+    await noterEtatApi();
+  }
+}
+
+async function handlerInterne(event) {
   resetStats();
   resetCacheBSD();
 
@@ -1259,3 +1367,4 @@ async function handler(event) {
 
 module.exports.handler = handler;
 module.exports.config = config;
+module.exports._interne = { raisonReport, doitVerifierReport, noterReponseApi, noterEtatApi, resetSuiviApi, REFUS_API_GRAVE };
