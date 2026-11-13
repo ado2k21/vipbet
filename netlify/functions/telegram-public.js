@@ -51,8 +51,7 @@ async function fetchDelai(url, opts, ms) {
 }
 
 function formaterGagnante(tk, legs) {
-  const total = Number(tk.total_odd);
-  const cote = Number.isFinite(total) && total > 0 ? total.toFixed(2) : '';
+  const cote = R.coteGagneeTexte(tk, legs); // 14/11 : score exact -> cote des seuls matchs gagnes
   const joues = legs.filter(l => l.result !== 'void');
   const exact = joues.length > 0 && joues.every(l => ['mk_score_l', 'mk_score_exact'].includes(String(l.market || '')));
   const fraction = exact ? ` ${joues.filter(l => l.result === 'won').length}/${joues.length}` : '';
@@ -70,7 +69,7 @@ function formaterGagnante(tk, legs) {
     lignes.push(`   ${echapper(choix)} — cote <b>${Number(l.odd).toFixed(2)}</b>`);
   });
   lignes.push('');
-  if (cote) lignes.push(`💰 Cote totale : <b>${cote}</b>`);
+  if (cote) lignes.push(exact ? `💰 Cote gagnée : <b>${cote}</b>` : `💰 Cote totale : <b>${cote}</b>`);
   lignes.push('');
   lignes.push(`🔓 Fiches VIP chaque jour : ${LIEN}`);
   lignes.push('<i>Jeu responsable, 18+. Jouez avec contrôle.</i>');
@@ -83,8 +82,7 @@ const envoyerTelegram = R.envoyerTelegram;
 // Image « fiche gagnee » + legende courte (16/10). ✓/✗ = resultat REEL de chaque match.
 async function imageGagnante(tk, legs) {
   const { rendrePng } = require('./lib/image-fiche');
-  const total = Number(tk.total_odd);
-  const cote = Number.isFinite(total) && total > 0 ? total.toFixed(2) : '';
+  const cote = R.coteGagneeTexte(tk, legs); // 14/11 : score exact -> cote des seuls matchs gagnes
   const type = R.typeFiche(tk, legs);
   const perdus = legs.filter(l => l.result === 'lost').length;
   // 19/10 : fiche score exact -> « GAGNÉE 1/3 » (bons scores / matchs joues), ✗ sur les matchs perdus.

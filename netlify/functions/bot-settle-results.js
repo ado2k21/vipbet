@@ -70,6 +70,7 @@ const ODDS_API_HOST = 'api.the-odds-api.com';
 const { oddsApiIdVersEntier, estIdOddsApi } = require('./lib/id-source.js');
 // Garde-fous quota (30/09, suite à l'audit) — voir lib/quota-guard.js.
 const garde = require('./lib/quota-guard.js');
+const apprentissage = require('./lib/basket-apprentissage.js'); // 14/11 : journal d'apprentissage du bot basket
 // Relais BSD (30/09) : règlement des sélections foot dont le match vient de BSD
 // (fixture_id négatif sur une fiche foot). Voir lib/bsd-relais.js.
 const bsdRelais = require('./lib/bsd-relais.js');
@@ -194,12 +195,13 @@ function doitVerifierReport(leg, info) {
   return !info || ['NS', 'TBD'].includes(info.statut);
 }
 // Retourne la raison (texte) si le match est reporte, sinon null.
-function raisonReport(leg, r) {
+function raisonReport(leg, r, statutsTermines) {
   if (!r) return null;
+  const termines = statutsTermines || STATUTS_TERMINES;
   if (r.statut === 'TBD') return 'Match reporté (date à définir par le fournisseur)';
   const k = leg && leg.kickoff_at ? Date.parse(leg.kickoff_at) : NaN;
   const d = r.dateUtc ? Date.parse(r.dateUtc) : NaN;
-  if (Number.isFinite(k) && Number.isFinite(d) && Math.abs(d - k) >= ECART_REPORT_MS && !STATUTS_TERMINES.includes(r.statut)) {
+  if (Number.isFinite(k) && Number.isFinite(d) && Math.abs(d - k) >= ECART_REPORT_MS && !termines.includes(r.statut)) {
     const p = partsHaiti(new Date(d));
     return `Match reporté au ${p.iso.slice(8, 10)}/${p.iso.slice(5, 7)} (prévu le ${partsHaiti(new Date(k)).iso.slice(8, 10)}/${partsHaiti(new Date(k)).iso.slice(5, 7)})`;
   }
@@ -439,6 +441,32 @@ async function recupererMatchsBasketDate(dateIso) {
     return await apiSportsGetBasket('/games', { date: dateIso });
   } catch (e) {
     stats.erreurs.push(`basket/games(${dateIso}): ${e.message}`);
+    return null;
+  }
+}
+
+// 14/11 — MATCH BASKET REPORTE : relance ciblee /games?id=X (meme principe que
+// retenterFixtureUnique cote foot). Seulement pour un id API-Sports (positif) :
+// The Odds API n'a pas d'appel par match. null = inconnu (jamais d'annulation).
+async function retenterMatchBasketUnique(gameId) {
+  if (!(Number(gameId) > 0)) return null;
+  try {
+    const reponse = await apiSportsGetBasket('/games', { id: gameId });
+    const g = reponse && reponse[0];
+    if (!g || !g.id) return null;
+    const ptsHome = g.scores && g.scores.home && g.scores.home.total;
+    const ptsAway = g.scores && g.scores.away && g.scores.away.total;
+    return {
+      statut: g.status && g.status.short,
+      ptsHome: (typeof ptsHome === 'number') ? ptsHome : null,
+      ptsAway: (typeof ptsAway === 'number') ? ptsAway : null,
+      teamHomeId: g.teams && g.teams.home && g.teams.home.id,
+      teamAwayId: g.teams && g.teams.away && g.teams.away.id,
+      dateUtc: g.date || null,
+      source: 'api-sports-basketball'
+    };
+  } catch (e) {
+    stats.erreurs.push(`basket/games?id=${gameId} (relance ciblée) : ${e.message}`);
     return null;
   }
 }
@@ -770,6 +798,73 @@ async function capturerStatsEquipesBasket(gameId, dateIso, teamHomeId, teamAwayI
 // sans résultat (voir trierTicketsAReglerSelonLegs) — dans ce cas on n'envoie
 // aucune requête à API-Sports ni à The Odds API. Absent = vrai (ancien
 // comportement, pour tout appelant qui ne le précise pas).
+function indexerMatchsBasket(matchsJour) {
+  const parGame = {};
+  (matchsJour || []).forEach(g => {
+    if (!g || !g.id) return;
+    const statut = g.status && g.status.short;
+    const ptsHome = g.scores && g.scores.home && g.scores.home.total;
+    const ptsAway = g.scores && g.scores.away && g.scores.away.total;
+    parGame[g.id] = {
+      statut,
+      ptsHome: (typeof ptsHome === 'number') ? ptsHome : null,
+      ptsAway: (typeof ptsAway === 'number') ? ptsAway : null,
+      // Session suivante (historique maison, voir capturerStatsEquipesBasket).
+      teamHomeId: g.teams && g.teams.home && g.teams.home.id,
+      teamAwayId: g.teams && g.teams.away && g.teams.away.id,
+      source: 'api-sports-basketball'
+    };
+  });
+  return parGame;
+}
+
+// 14/11 — APPRENTISSAGE DU BOT BASKET : avec les scores DEJA recus pour la date (aucun appel
+// API en plus), (1) enregistre les points de TOUS les matchs termines (projection des totaux)
+// et (2) regle les lignes du journal basket_journal. Jamais bloquant.
+let datesBasketVues = new Set();
+async function apprendreAvecScoresBasket(dateIso, parGame, gameIdsAvecPari, apiSportsRepondu) {
+  datesBasketVues.add(dateIso);
+  try {
+    if (apiSportsRepondu) {
+      const n = await apprentissage.enregistrerPointsMatchs(dateIso, parGame, STATUTS_TERMINES_BASKET, new Set((gameIdsAvecPari || []).map(Number)), stats.erreurs);
+      stats.basketPointsEnregistres = (stats.basketPointsEnregistres || 0) + n;
+    }
+    const r = await apprentissage.reglerJournalDate(dateIso, parGame, STATUTS_TERMINES_BASKET, STATUTS_ANNULES_BASKET, evaluerLegBasket, stats.erreurs);
+    stats.basketJournalRegles = (stats.basketJournalRegles || 0) + r;
+  } catch (e) {
+    stats.erreurs.push(`apprentissage basket(${dateIso}): ${e.message}`);
+  }
+}
+
+// Journal des jours ou plus aucune fiche basket n'est en attente (le calcul n'appelle plus
+// l'API pour eux) : au plus 2 dates, seulement aux passages de 12 h et 18 h UTC (2 fois par
+// jour), une liste de matchs par date et par source. Jamais bloquant.
+async function reglerJournalBasketSeul() {
+  const h = new Date().getUTCHours();
+  if (h !== 12 && h !== 18) return;
+  const parDate = await apprentissage.datesJournalARegler();
+  let faites = 0;
+  for (const [dateIso, ids] of parDate) {
+    if (faites >= 2) break;
+    if (datesBasketVues.has(dateIso)) continue;
+    faites++;
+    let parGame = {}, apiRepondu = false;
+    const idsListe = [...ids];
+    if (idsListe.some(id => id > 0)) {
+      const r = await recupererMatchsBasketDate(dateIso);
+      if (r !== null) { parGame = indexerMatchsBasket(r); apiRepondu = true; }
+    }
+    if (idsListe.some(id => id < 0) && ODDS_API_KEY) {
+      const ev = await recupererMatchsBasketDateOddsApi(dateIso);
+      (ev || []).forEach(e => {
+        const idNum = e && e.id ? oddsApiIdVersEntier(e.id) : null;
+        if (idNum !== null) parGame[idNum] = Object.assign(evenementOddsApiScoreVersInfo(e), { source: 'odds-api-basketball' });
+      });
+    }
+    await apprendreAvecScoresBasket(dateIso, parGame, [], apiRepondu);
+  }
+}
+
 async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
   if (besoinApi === undefined) besoinApi = true;
   // Déplacé AVANT la construction de parGame (30/09) : on a besoin de
@@ -803,22 +898,7 @@ async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
   // sur un vrai match terminé (voir avertissement plus haut) — si absent
   // ou de forme différente, ptsFiable=false et le leg reste "en attente",
   // jamais un score inventé.
-  const parGame = {};
-  matchsJour.forEach(g => {
-    if (!g || !g.id) return;
-    const statut = g.status && g.status.short;
-    const ptsHome = g.scores && g.scores.home && g.scores.home.total;
-    const ptsAway = g.scores && g.scores.away && g.scores.away.total;
-    parGame[g.id] = {
-      statut,
-      ptsHome: (typeof ptsHome === 'number') ? ptsHome : null,
-      ptsAway: (typeof ptsAway === 'number') ? ptsAway : null,
-      // Session suivante (historique maison, voir capturerStatsEquipesBasket).
-      teamHomeId: g.teams && g.teams.home && g.teams.home.id,
-      teamAwayId: g.teams && g.teams.away && g.teams.away.id,
-      source: 'api-sports-basketball'
-    };
-  });
+  const parGame = indexerMatchsBasket(matchsJour);
 
   // CRITIQUE (30/09) — fusion de la source The Odds API, UNIQUEMENT si au
   // moins un fixture_id pariés ce jour-là en a besoin (voir besoinOddsApi
@@ -859,6 +939,7 @@ async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
     }
   }
 
+  let verifReportsBasketRestants = MAX_VERIF_REPORT_PAR_PASSAGE; // 14/11 : budget des relances « match reporte » basket
   for (const ticket of ticketsBasket) {
     stats.ticketsExamines++;
     let legs;
@@ -875,10 +956,30 @@ async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
     let toutesResolues = true;
     for (const leg of legs) {
       if (leg.result) continue;
-      const info = parGame[leg.fixture_id];
+      let info = parGame[leg.fixture_id];
       let nouveauResultat = null;
 
-      if (info && STATUTS_TERMINES_BASKET.includes(info.statut) && info.ptsHome != null && info.ptsAway != null) {
+      // 14/11 : match basket reporte -> annule tout de suite, sans alerte (meme regle que le foot,
+      // lecon 44). Jamais d'annulation si le fournisseur n'a pas repondu.
+      let raisonReportLeg = null;
+      if (besoinApi && Number(leg.fixture_id) > 0 && !apiSportsIndisponible && verifReportsBasketRestants > 0 && doitVerifierReport(leg, info)) {
+        verifReportsBasketRestants--;
+        stats.verifsReport = (stats.verifsReport || 0) + 1;
+        const r = await retenterMatchBasketUnique(leg.fixture_id);
+        raisonReportLeg = raisonReport(leg, r, STATUTS_TERMINES_BASKET);
+        if (!raisonReportLeg && r && (!info || STATUTS_TERMINES_BASKET.includes(r.statut) || STATUTS_ANNULES_BASKET.includes(r.statut))) {
+          info = r;
+          parGame[leg.fixture_id] = r;
+          if (STATUTS_TERMINES_BASKET.includes(r.statut) && r.ptsHome != null && r.ptsAway != null) {
+            await capturerStatsEquipesBasket(leg.fixture_id, dateIso, r.teamHomeId, r.teamAwayId, r.ptsHome, r.ptsAway);
+          }
+        }
+      }
+
+      if (raisonReportLeg) {
+        nouveauResultat = 'void';
+        stats.matchsReportes = (stats.matchsReportes || 0) + 1;
+      } else if (info && STATUTS_TERMINES_BASKET.includes(info.statut) && info.ptsHome != null && info.ptsAway != null) {
         nouveauResultat = evaluerLegBasket(leg, info.ptsHome, info.ptsAway);
       } else if (info && STATUTS_ANNULES_BASKET.includes(info.statut)) {
         nouveauResultat = 'void';
@@ -902,8 +1003,10 @@ async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
         await enregistrerValidationLog({
           scope: 'leg', fixture_id: leg.fixture_id, ticket_id: ticket.id, ticket_code: ticket.code,
           leg_id: leg.id, market: leg.market, pick: leg.pick,
-          actual_result: info ? `Score final ${info.ptsHome}-${info.ptsAway} (statut ${info.statut})` : 'Statut indisponible — règle 23h59 appliquée',
-          statistic_used: info ? `statut=${info.statut}` : 'aucune donnée basketball pour cette date',
+          actual_result: raisonReportLeg ? raisonReportLeg
+            : (info ? `Score final ${info.ptsHome}-${info.ptsAway} (statut ${info.statut})` : 'Statut indisponible — règle 23h59 appliquée'),
+          statistic_used: raisonReportLeg ? 'relance ciblée games?id (date réelle du match)'
+            : (info ? `statut=${info.statut}` : 'aucune donnée basketball pour cette date'),
           source: info ? info.source : 'api-sports-basketball', status_before: null, status_after: nouveauResultat
         });
       } catch (e) {
@@ -933,6 +1036,9 @@ async function reglerTicketsBasket(dateIso, ticketsBasket, besoinApi) {
       stats.erreurs.push(`maj ticket basket(${ticket.id}): ${e.message}`);
     }
   }
+
+  // 14/11 : apprentissage (points de tous les matchs + journal), avec les scores deja recus.
+  if (besoinApi) await apprendreAvecScoresBasket(dateIso, parGame, gameIdsAvecPari, !apiSportsIndisponible);
 }
 
 async function reglerDate(dateIso) {
@@ -1310,6 +1416,7 @@ async function handler(event) {
 async function handlerInterne(event) {
   resetStats();
   resetCacheBSD();
+  datesBasketVues = new Set();
 
   const jetonTest = process.env.BOT_TEST_TOKEN || '';
   const jetonFourni = (event.queryStringParameters && event.queryStringParameters.token) || '';
@@ -1350,6 +1457,7 @@ async function handlerInterne(event) {
   }
 
   if (!dates.length) {
+    await reglerJournalBasketSeul(); // 14/11 : journal d'apprentissage, jamais bloquant
     logFinal();
     return { statusCode: 200, body: 'Rien à régler — aucune fiche pending avec une date passée.' };
   }
@@ -1357,6 +1465,7 @@ async function handlerInterne(event) {
   for (const d of dates) {
     await reglerDate(d);
   }
+  await reglerJournalBasketSeul(); // 14/11 : jamais bloquant
 
   logFinal();
   return {

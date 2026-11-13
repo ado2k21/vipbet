@@ -88,6 +88,7 @@ const {
 const { oddsApiIdVersEntier } = require('./lib/id-source.js');
 // Garde-fous quota (30/09, suite à l'audit) — voir lib/quota-guard.js.
 const garde = require('./lib/quota-guard.js');
+const apprentissage = require('./lib/basket-apprentissage.js'); // 14/11 : apprentissage par segment + journal
 
 // ============================================================================
 // SUIVI DE QUOTA BASKETBALL — même principe que le foot (voir
@@ -464,6 +465,17 @@ async function recupererProfilsEquipesBasket(dateCible) {
     else { p.nExt++; p.ptsPourExt += pour; p.ptsContreExt += contre; }
   }
 
+  // 14/11 : historique maison en base (points de TOUS les matchs termines, enregistres par le
+  // calcul des resultats, 45 derniers jours) — avant, seule la veille (1 jour) servait.
+  const dejaVus = new Set();
+  const histo = await apprentissage.lireHistoriquePoints(dateCible, 45, stats.erreurs);
+  histo.forEach(r => {
+    if (r.points_for == null || r.points_against == null) return;
+    const cle = `${r.game_id}|${r.team_id}`;
+    if (dejaVus.has(cle)) return;
+    dejaVus.add(cle);
+    ajouter(Number(r.team_id), Number(r.points_for), Number(r.points_against), !!r.is_home);
+  });
   const base = new Date(dateCible + 'T00:00:00Z');
   for (let i = 1; i <= HISTORIQUE_JOURS_BASKET; i++) {
     const d = new Date(base.getTime() - i * 86400000);
@@ -483,8 +495,8 @@ async function recupererProfilsEquipesBasket(dateCible) {
       if (typeof ptsHome !== 'number' || typeof ptsAway !== 'number') return; // jamais une moyenne calculée sur une donnée absente
       const homeId = g.teams && g.teams.home && g.teams.home.id;
       const awayId = g.teams && g.teams.away && g.teams.away.id;
-      if (homeId != null) ajouter(homeId, ptsHome, ptsAway, true);
-      if (awayId != null) ajouter(awayId, ptsAway, ptsHome, false);
+      if (homeId != null && !dejaVus.has(`${g.id}|${homeId}`)) { dejaVus.add(`${g.id}|${homeId}`); ajouter(homeId, ptsHome, ptsAway, true); }
+      if (awayId != null && !dejaVus.has(`${g.id}|${awayId}`)) { dejaVus.add(`${g.id}|${awayId}`); ajouter(awayId, ptsAway, ptsHome, false); }
     });
   }
   return profils;
@@ -519,6 +531,7 @@ const stats = {
   fichesPubliees: 0,
   methodeFiche: null, // AJOUTÉ (20/09) : 'optimisee' | 'classique'
   nbSelectionsPossibles: null, // AJOUTÉ (20/09) : nombres de sélections envisageables, ex. [3,4,5] (le tirage choisit)
+  apprentissage: null, // 14/11 : facteurs appris, segments exclus, pool renforcé, journal
   cibleTirage: null, // AJOUTÉ (20/09) : cote cible tirée pour le jour (5 à 25), transparence pure
   cibleAtteinte: null, // AJOUTÉ (06/09) : palier de cote réellement atteint par la cascade, transparence pure, jamais utilisé pour décider
   sourceBasket: null, // AJOUTÉ (29/09) : 'api-sports' | 'odds-api' — quelle source a réellement servi ce passage, transparence pure
@@ -535,6 +548,7 @@ function resetStatsBasket() {
   stats.methodeFiche = null;
   stats.nbSelectionsPossibles = null;
   stats.cibleTirage = null;
+  stats.apprentissage = null;
   stats.cibleAtteinte = null;
   stats.sourceBasket = null;
   _sourceBasketActuelle = 'api-sports'; // repart toujours prioritaire sur API-Sports à chaque nouveau passage
@@ -1025,6 +1039,11 @@ const COTE_MAX_SELECTION_OPTIMISEE = 2.2;   // pas d'outsiders au-delà
 const FACTEUR_MARGE_PAR_SELECTION = 0.91;   // réussite observée / probabilité annoncée (66 % vs ~72 %)
 const LIMITE_NOEUDS_OPTIMISATION = 300000;  // borne de calcul : jamais un temps d'exécution incontrôlé
 
+// 14/11 : facteur appris par segment (type de pari x tranche de cote, voir lib/basket-apprentissage.js).
+// Sans apprentissage (table absente, generation manuelle) : l'ancien facteur fixe 0,91.
+function facteurSelectionBasket(b) {
+  return (b && Number.isFinite(b.facteurSegment)) ? b.facteurSegment : FACTEUR_MARGE_PAR_SELECTION;
+}
 function probaSelectionBasket(b) {
   const p = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd) + (b.projectionConfirmee ? 0.05 : 0);
   return Math.min(0.97, Math.max(0.05, p));
@@ -1081,7 +1100,7 @@ function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme) {
       if ((compte.get(cle) || 0) >= maxMeme) continue;              // jamais plus de 'maxMeme' sélections à la même cote
       compte.set(cle, (compte.get(cle) || 0) + 1);
       choix.push(b);
-      explorer(i + 1, c, chance * probaSelectionBasket(b) * FACTEUR_MARGE_PAR_SELECTION, choix);
+      explorer(i + 1, c, chance * probaSelectionBasket(b) * facteurSelectionBasket(b), choix);
       choix.pop();
       compte.set(cle, compte.get(cle) - 1);
     }
@@ -1114,9 +1133,9 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
   jeux.sort((a, c) => c[0].odd - a[0].odd);
   if (jeux.length < 2) return null;
   // KAPPA = plus grand produit (chance x cote) parmi les sélections éligibles ; KF = KAPPA x marge.
-  let KAPPA = 0;
-  jeux.forEach(l => l.forEach(b => { KAPPA = Math.max(KAPPA, probaSelectionBasket(b) * b.odd); }));
-  const KF = KAPPA * FACTEUR_MARGE_PAR_SELECTION;
+  // 14/11 : le facteur de chaque selection entre dans la borne (KF = max chance x facteur x cote).
+  let KF = 0;
+  jeux.forEach(l => l.forEach(b => { KF = Math.max(KF, probaSelectionBasket(b) * facteurSelectionBasket(b) * b.odd); }));
 
   // Meilleure combinaison pour chaque nombre de sélections possible, en partant du plus petit.
   const parK = {};
@@ -1343,6 +1362,17 @@ async function handler(event) {
   const carteFiabilite = await recupererFiabiliteMarches();
   annoterPoolAvecFiabilite(poolBasket, carteFiabilite);
 
+  // 14/11 — APPRENTISSAGE (accord de James) : facteur appris par segment + journal de TOUT le
+  // pool (choisies ou non), regle ensuite par le calcul des resultats. Jamais bloquant.
+  const calibration = await apprentissage.lireCalibration(stats.erreurs);
+  apprentissage.appliquerCalibration(poolBasket, calibration);
+  stats.apprentissage = {
+    resultats: calibration ? calibration.resultats : 0,
+    facteurGlobal: calibration ? calibration.global : apprentissage.FACTEUR_DEFAUT,
+    segmentsExclus: calibration ? Object.keys(calibration.segments).filter(k => calibration.segments[k].exclu) : [],
+    journalises: await apprentissage.journaliserPool(poolBasket, dateCible, noms, stats.erreurs)
+  };
+
   // ANTI-DOUBLON RÉEL (session suivante, demande explicite de James : "pas
   // de doublons") — CORRIGÉ : l'ancienne vérification d'idempotence
   // (quelques lignes plus haut) ne regardait que "le BOT a-t-il déjà
@@ -1385,7 +1415,18 @@ async function handler(event) {
   console.log(`[BOT-BASKET] Cote cible du jour tirée pour ${dateCible} : ${cibleDuJour}`);
   // Le NOMBRE de sélections est aussi tiré au hasard (voir POIDS_NB_SELECTIONS), graine = la date.
   const hasardNbSelections = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
-  const cascadeBasket = cascadeFicheBasket(poolBasketFiltre, cibleDuJour, hasardNbSelections);
+  // 14/11 — POOL RENFORCE : sans les segments qui perdent nettement plus que leur cote
+  // (apprentissage) et sans les totaux de points que la projection maison ne confirme pas.
+  // Si ce pool ne permet aucune fiche, repli sur le pool complet (comportement d'avant).
+  const poolRenforce = poolBasketFiltre.filter(b => !b.segmentExclu && !(b.market === 'mk_basket_total' && !b.projectionConfirmee));
+  stats.apprentissage.poolComplet = poolBasketFiltre.length;
+  stats.apprentissage.poolRenforce = poolRenforce.length;
+  let cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardNbSelections);
+  stats.apprentissage.repliPoolComplet = !cascadeBasket.fiche;
+  if (!cascadeBasket.fiche) {
+    const hasardRepli = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
+    cascadeBasket = cascadeFicheBasket(poolBasketFiltre, cibleDuJour, hasardRepli);
+  }
   const paliersCascadeBasket = cascadeBasket.paliers;
   let fiche = cascadeBasket.fiche, cibleRetenueBasket = cascadeBasket.cibleRetenue;
   stats.methodeFiche = cascadeBasket.methode; // 'optimisee' (peu de sélections) ou 'classique' — transparence pure
@@ -1422,6 +1463,13 @@ async function handler(event) {
   const ok = await publierFiche(planPartage, fiche, dateCible, 'basket', nomsPourPublication, '');
   if (ok) {
     stats.fichesPubliees++;
+    // 14/11 : marque les selections choisies dans le journal (jamais bloquant).
+    let ticketId = null;
+    try {
+      const t = await sbSelect('tickets', `select=id&sport=eq.basket&play_date=eq.${dateCible}&source=eq.bot&order=created_at.desc&limit=1`);
+      ticketId = t && t[0] ? t[0].id : null;
+    } catch (e) { /* sans id : la selection reste marquee choisie */ }
+    await apprentissage.marquerChoisies(fiche.selections, dateCible, ticketId, stats.erreurs);
   } else {
     const nouvelles = bot.stats.erreurs.slice(nbErreursFootAvant);
     stats.erreurs.push(`publierFiche a échoué (basket) : ${nouvelles.length ? nouvelles.join(' | ') : 'raison inconnue, aucune erreur remontée par le module foot'}`);
