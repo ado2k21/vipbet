@@ -122,6 +122,18 @@ async function lire(table, requete) {
   if (!r.ok) throw new Error(`lecture ${table} → HTTP ${r.status}`);
   return r.json();
 }
+// 14/11 (lecon 58) : l'API renvoie au plus « Max rows » lignes par requete (1 000 par defaut,
+// 5 000 depuis le 14/11) — un « limit » plus grand ne passe JAMAIS. Lecture par pages de 1 000,
+// avec un ordre stable, jusqu'a la fin (plafond de securite : 50 000 lignes).
+async function lireTout(table, requete, ordre) {
+  const tout = [];
+  for (let offset = 0; offset < 50000; offset += 1000) {
+    const page = await lire(table, `${requete}&order=${ordre}&limit=1000&offset=${offset}`);
+    tout.push(...page);
+    if (page.length < 1000) break;
+  }
+  return tout;
+}
 async function ecrire(table, lignes, onConflict, fusion) {
   const c = cfg(); if (!c) throw new Error('configuration Supabase absente');
   if (!lignes.length) return;
@@ -149,13 +161,13 @@ async function lireCalibration(erreurs) {
   const depuis = dateMoinsJours(JOURS_HISTORIQUE);
   let lignes = [];
   try {
-    const j = await lire('basket_journal',
-      `select=play_date,game_id,market,pick,odd,result&result=in.(won,lost)&play_date=gte.${depuis}&limit=20000`);
+    const j = await lireTout('basket_journal',
+      `select=play_date,game_id,market,pick,odd,result&result=in.(won,lost)&play_date=gte.${depuis}`, 'play_date.asc,game_id.asc,market.asc,pick.asc');
     lignes = lignes.concat(j);
   } catch (e) { if (erreurs) erreurs.push(`apprentissage: journal illisible (${e.message})`); }
   try {
-    const legs = await lire('ticket_legs',
-      `select=fixture_id,market,pick,odd,result,tickets!inner(play_date,sport)&tickets.sport=eq.basket&tickets.play_date=gte.${depuis}&result=in.(won,lost)&limit=5000`);
+    const legs = await lireTout('ticket_legs',
+      `select=id,fixture_id,market,pick,odd,result,tickets!inner(play_date,sport)&tickets.sport=eq.basket&tickets.play_date=gte.${depuis}&result=in.(won,lost)`, 'id.asc');
     legs.forEach(l => lignes.push({
       play_date: l.tickets && l.tickets.play_date, game_id: l.fixture_id, market: l.market, pick: l.pick, odd: l.odd, result: l.result
     }));
@@ -268,8 +280,8 @@ async function enregistrerPointsMatchs(dateIso, parGame, termines, exclus, erreu
 async function lireHistoriquePoints(dateCible, jours, erreurs) {
   try {
     const depuis = new Date(Date.parse(dateCible + 'T00:00:00Z') - (jours || 45) * 86400000).toISOString().slice(0, 10);
-    return await lire('basket_team_game_stats',
-      `select=game_id,team_id,is_home,points_for,points_against,game_date&game_date=gte.${depuis}&game_date=lt.${dateCible}&limit=20000`);
+    return await lireTout('basket_team_game_stats',
+      `select=game_id,team_id,is_home,points_for,points_against,game_date&game_date=gte.${depuis}&game_date=lt.${dateCible}`, 'game_id.asc,team_id.asc');
   } catch (e) { if (erreurs) erreurs.push(`historique points basket (lecture): ${e.message}`); return []; }
 }
 

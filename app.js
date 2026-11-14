@@ -226,7 +226,7 @@ wiz_lock_h:"Tableau de bord verrouillé", wiz_lock_cta:"Continuer mon inscriptio
 wiz_lock_r1:"Vous devez d'abord créer un compte pour accéder au tableau de bord.",
 wiz_lock_r2:"Votre adresse e-mail n'est pas encore vérifiée. Terminez la vérification pour continuer.",
 wiz_lock_r3:"Aucun abonnement actif. Réglez votre abonnement pour débloquer le tableau de bord.",
-dash_t_today:"Fiches du jour", dash_t_history:"Historique", dash_t_stats:"Statistiques", dash_t_sub:"Mon abonnement",
+dash_session_fini_h:"Session expirée", dash_session_fini_p:"Reconnectez-vous pour voir vos fiches.", dash_t_today:"Fiches du jour", dash_t_history:"Historique", dash_t_stats:"Statistiques", dash_t_sub:"Mon abonnement",
 dash_t_parrain:"Parrainage", parr_h:"Parrainage", parr_p:"Invitez vos amis, gagnez des jours VIP offerts.", parr_hero_t:"Chaque ami qui paie = des jours VIP pour vous", parr_hero_p:"Quand un ami crée son compte avec votre lien et paie son premier plan, vous recevez des jours offerts sur votre plan.", parr_lien_lbl:"Votre lien personnel", parr_copier:"Copier", parr_copie:"Copié ✓", parr_st_inscrits:"Inscrits", parr_st_payants:"Ont payé", parr_st_jours:"Jours gagnés", parr_bareme_h:"Jours gagnés selon le plan de votre ami", parr_how_1:"Partagez votre lien", parr_how_2:"Votre ami crée son compte avec ce lien", parr_how_3:"Dès son premier paiement confirmé, les jours sont ajoutés automatiquement à votre plan", parr_regle:"• Maximum 10 récompenses par mois.<br>• Seul le premier plan de votre ami compte.<br>• Les comptes en double ou frauduleux ne comptent pas.<br>• Si vous renouvelez ou changez de plan avant la fin, vos jours de parrainage non utilisés sont reportés sur le nouveau plan.<br>• Votre ami doit ouvrir votre lien et créer son compte sur le même téléphone (dans les 7 jours).<br>• Si vous avez le plan Lifetime, votre accès est déjà illimité : les jours de parrainage ne s'ajoutent pas.<br>• Vous êtes prévenu par email et notification à chaque récompense.", parr_filleuls_h:"Vos amis", parr_vide:"Aucun ami inscrit pour le moment. Partagez votre lien !", parr_attente:"{n} jour(s) en attente : ils seront ajoutés dès que vous aurez un plan actif.", parr_s_inscrit:"Pas encore payé", parr_s_rec:"+{n} j", parr_s_plafond:"Plafond du mois", parr_s_hors:"Non compté", parr_jours:"{n} j", parr_wa_msg:"Rejoins VIP BETCOTE : fiches de foot et basket chaque jour 👉 {lien}", parr_erreur:"Impossible de charger votre parrainage. Réessayez.", dash_t_subhistory:"Historique abonnement", dash_subhistory_h:"Historique abonnement", dash_subhistory_p:"Tous vos plans confirmés, anciens et actuel.",
 dash_subh_actif:"Actif", dash_subh_expire:"Expiré", dash_subhistory_empty:"Aucun plan confirmé pour l'instant.",
 dash_hello:"Bonjour {name}", dash_hello_p:"Voici les fiches publiées aujourd'hui par notre équipe d'experts.",
@@ -343,7 +343,7 @@ notif_plan_change:"Vous avez changé d'abonnement : {plan}",
 notif_renewed:"Votre abonnement {plan} a été renouvelé",
 notif_expired:"Votre abonnement a expiré",
 notif_soon:"Votre abonnement expire dans {n} jour(s)",
-notif_today:"{n} fiche(s) disponible(s) aujourd'hui",
+notif_today:"{n} nouvelle(s) fiche(s) disponible(s)",
 notif_won_foot:"Une de vos fiches Football est gagnante", notif_won_basket:"Une de vos fiches Basketball est gagnante", notif_won_exact:"Votre fiche Score Exact est gagnante",
 notif_plan_removed:"Votre plan a été retiré", notif_cat_pay:"Paiement", notif_cat_plan:"Abonnement", notif_cat_fiche:"Fiches", notif_grp_today:"Aujourd'hui", notif_grp_week:"Cette semaine", notif_grp_older:"Plus ancien", notif_unread_n:"{n} non lue(s)", notif_ago_now:"À l'instant", notif_ago_min:"Il y a {n} min", notif_ago_h:"Il y a {n} h", notif_ago_d:"Il y a {n} j",
 dash_badge_none:"Aucun plan",
@@ -806,7 +806,7 @@ wiz_lock_h:"Dashboard locked", wiz_lock_cta:"Continue my sign-up",
 wiz_lock_r1:"You need to create an account first to access the dashboard.",
 wiz_lock_r2:"Your email address isn't verified yet. Complete verification to continue.",
 wiz_lock_r3:"No active plan. Complete your payment to unlock the dashboard.",
-dash_t_today:"Today's picks", dash_t_history:"History", dash_t_stats:"Statistics", dash_t_sub:"My plan",
+dash_session_fini_h:"Session expired", dash_session_fini_p:"Log in again to see your tickets.", dash_t_today:"Today's picks", dash_t_history:"History", dash_t_stats:"Statistics", dash_t_sub:"My plan",
 dash_t_parrain:"Referral", parr_h:"Referral", parr_p:"Invite your friends, earn free VIP days.", parr_hero_t:"Every friend who pays = VIP days for you", parr_hero_p:"When a friend creates an account with your link and pays for their first plan, you get free days added to your plan.", parr_lien_lbl:"Your personal link", parr_copier:"Copy", parr_copie:"Copied ✓", parr_st_inscrits:"Signed up", parr_st_payants:"Paid", parr_st_jours:"Days earned", parr_bareme_h:"Days earned by your friend's plan", parr_how_1:"Share your link", parr_how_2:"Your friend creates an account with this link", parr_how_3:"As soon as their first payment is confirmed, the days are added to your plan automatically", parr_regle:"• Up to 10 rewards per month.<br>• Only your friend's first plan counts.<br>• Duplicate or fraudulent accounts do not count.<br>• If you renew or change plan early, your unused referral days carry over to the new plan.<br>• Your friend must open your link and create their account on the same phone (within 7 days).<br>• If you have the Lifetime plan, your access is already unlimited: referral days are not added.<br>• You are notified by email and notification for each reward.", parr_filleuls_h:"Your friends", parr_vide:"No friends signed up yet. Share your link!", parr_attente:"{n} day(s) pending: they will be added as soon as you have an active plan.", parr_s_inscrit:"Not paid yet", parr_s_rec:"+{n} d", parr_s_plafond:"Monthly cap", parr_s_hors:"Not counted", parr_jours:"{n} d", parr_wa_msg:"Join VIP BETCOTE: football and basketball slips every day 👉 {lien}", parr_erreur:"Could not load your referral. Try again.", dash_t_subhistory:"Plan history", dash_subhistory_h:"Plan history", dash_subhistory_p:"All your confirmed plans, past and current.",
 dash_subh_actif:"Active", dash_subh_expire:"Expired", dash_subhistory_empty:"No confirmed plan yet.",
 dash_hello:"Hello {name}", dash_hello_p:"Here are the slips published today by our expert team.",
@@ -923,7 +923,7 @@ notif_plan_change:"You changed your plan: {plan}",
 notif_renewed:"Your {plan} plan has been renewed",
 notif_expired:"Your plan has expired",
 notif_soon:"Your plan expires in {n} day(s)",
-notif_today:"{n} slip(s) available today",
+notif_today:"{n} new slip(s) available",
 notif_won_foot:"One of your Football tickets is a winner", notif_won_basket:"One of your Basketball tickets is a winner", notif_won_exact:"Your Exact Score ticket is a winner",
 notif_plan_removed:"Your plan was removed", notif_cat_pay:"Payment", notif_cat_plan:"Subscription", notif_cat_fiche:"Tickets", notif_grp_today:"Today", notif_grp_week:"This week", notif_grp_older:"Older", notif_unread_n:"{n} unread", notif_ago_now:"Just now", notif_ago_min:"{n} min ago", notif_ago_h:"{n} h ago", notif_ago_d:"{n} d ago",
 dash_badge_none:"No plan",
@@ -1386,7 +1386,7 @@ wiz_lock_h:"Dashboard la fèmen", wiz_lock_cta:"Kontinye enskripsyon m",
 wiz_lock_r1:"Ou dwe kreye yon kont anvan pou w jwenn dashboard la.",
 wiz_lock_r2:"Imèl ou poko verifye. Fini verifikasyon an pou w kontinye.",
 wiz_lock_r3:"Pa gen abònman aktif. Peye abònman ou pou w debloke dashboard la.",
-dash_t_today:"Fich jodi a", dash_t_history:"Istorik", dash_t_stats:"Estatistik", dash_t_sub:"Abònman m",
+dash_session_fini_h:"Sesyon ou fini", dash_session_fini_p:"Konekte ankò pou w wè fich ou yo.", dash_t_today:"Fich jodi a", dash_t_history:"Istorik", dash_t_stats:"Estatistik", dash_t_sub:"Abònman m",
 dash_t_parrain:"Parenaj", parr_h:"Parenaj", parr_p:"Envite zanmi w, genyen jou VIP gratis.", parr_hero_t:"Chak zanmi ki peye = jou VIP pou ou", parr_hero_p:"Lè yon zanmi kreye kont li ak lyen ou epi li peye premye plan li, ou resevwa jou gratis sou plan ou.", parr_lien_lbl:"Lyen pèsonèl ou", parr_copier:"Kopye", parr_copie:"Kopye ✓", parr_st_inscrits:"Enskri", parr_st_payants:"Peye", parr_st_jours:"Jou genyen", parr_bareme_h:"Jou ou genyen selon plan zanmi w", parr_how_1:"Pataje lyen ou", parr_how_2:"Zanmi w kreye kont li ak lyen sa a", parr_how_3:"Lè premye peman li konfime, jou yo ajoute sou plan ou otomatikman", parr_regle:"• Maksimòm 10 rekonpans pa mwa.<br>• Se sèlman premye plan zanmi w lan ki konte.<br>• Kont an doub oswa fwod pa konte.<br>• Si w renouvle oswa chanje plan anvan li fini, jou parenaj ou poko itilize yo ap pase sou nouvo plan an.<br>• Zanmi w lan dwe louvri lyen ou epi kreye kont li sou menm telefòn nan (nan 7 jou).<br>• Si w gen plan Lifetime, aksè ou deja san limit : jou parenaj yo pa ajoute.<br>• W ap resevwa yon imèl ak yon notifikasyon pou chak rekonpans.", parr_filleuls_h:"Zanmi ou yo", parr_vide:"Poko gen zanmi ki enskri. Pataje lyen ou!", parr_attente:"{n} jou ap tann : y ap ajoute lè w gen yon plan aktif.", parr_s_inscrit:"Poko peye", parr_s_rec:"+{n} j", parr_s_plafond:"Plafon mwa a", parr_s_hors:"Pa konte", parr_jours:"{n} j", parr_wa_msg:"Vin jwenn VIP BETCOTE : fich foutbòl ak baskèt chak jou 👉 {lien}", parr_erreur:"Nou pa ka chaje parenaj ou. Eseye ankò.", dash_t_subhistory:"Istorik abònman", dash_subhistory_h:"Istorik abònman", dash_subhistory_p:"Tout plan konfime ou yo, ansyen kou aktyèl.",
 dash_subh_actif:"Aktif", dash_subh_expire:"Ekspire", dash_subhistory_empty:"Pa gen plan konfime pou kounye a.",
 dash_hello:"Bonjou {name}", dash_hello_p:"Men fich ekip ekspè nou an pibliye jodi a.",
@@ -1503,7 +1503,7 @@ notif_plan_change:"Ou chanje abònman ou : {plan}",
 notif_renewed:"Abònman {plan} ou an renouvle",
 notif_expired:"Abònman ou ekspire",
 notif_soon:"Abònman ou ap ekspire nan {n} jou",
-notif_today:"{n} fich disponib jodi a",
+notif_today:"{n} nouvo fich disponib",
 notif_won_foot:"Youn nan fich Foutbòl ou yo genyen", notif_won_basket:"Youn nan fich Basketball ou yo genyen", notif_won_exact:"Fich Score Egzat ou an genyen",
 notif_plan_removed:"Plan ou retire", notif_cat_pay:"Peman", notif_cat_plan:"Abònman", notif_cat_fiche:"Fich", notif_grp_today:"Jodi a", notif_grp_week:"Semèn sa a", notif_grp_older:"Pi ansyen", notif_unread_n:"{n} pa li", notif_ago_now:"Kounye a", notif_ago_min:"Gen {n} min", notif_ago_h:"Gen {n} è", notif_ago_d:"Gen {n} jou",
 dash_badge_none:"Okenn plan",
@@ -5140,6 +5140,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      distingue les deux cas et route vers openRenew (meme chrome que le
      clic "renouveler" depuis le Dashboard, sans stepper), en lui passant
      4 comme etape forcee au lieu de son defaut 3. */
+  /* 14/11 : ouvre la page de connexion (session perdue pendant l'utilisation du Dashboard). */
+  window.VB_openLogin=()=>{openAuth('login');};
   window.VB_openAuthWizardStep4=()=>{
     if(state.autoWasRenew)openRenew(null,4);
     else openAuth('wizard',null,4);
@@ -5625,6 +5627,26 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 })();
 
 // ---------- Dashboard ----------
+/* 14/11 (capture de James : abonne LIFETIME, fiches du jour ET de l'historique masquees) —
+   SELECTIONS PAR PAQUETS. L'API Supabase renvoie au plus 1 000 lignes par requete : le Dashboard
+   lisait en UNE fois les selections des fiches des 90 derniers jours (1 142 le 14/11), triees de
+   la plus ancienne a la plus recente -> les plus RECENTES etaient coupees, et les fiches du jour
+   s'affichaient vides (masquees). Le plan LIFETIME, qui voit tout, a ete touche le premier ; tous
+   les plans l'auraient ete. Les selections sont maintenant lues par paquets de 40 fiches (au plus
+   ~400 lignes par requete, adresse courte), en parallele, puis triees comme avant. Une erreur sur
+   un paquet = erreur de la lecture entiere (comportement d'avant, jamais une fiche a moitie vide). */
+(function(){
+  window.VB_legsParPaquets=async function(sb,colonnes,ids,comparer){
+    const PAQUET=40, uniques=[...new Set(ids||[])], paquets=[];
+    for(let i=0;i<uniques.length;i+=PAQUET)paquets.push(uniques.slice(i,i+PAQUET));
+    const res=await Promise.all(paquets.map(p=>sb.from('ticket_legs').select(colonnes).in('ticket_id',p)));
+    const lignes=[];
+    for(const r of res){if(r.error)return {data:null,error:r.error};lignes.push(...(r.data||[]));}
+    if(typeof comparer==='function')lignes.sort(comparer);
+    return {data:lignes,error:null};
+  };
+})();
+
 (function(){
   const dash=document.getElementById('dash');
   if(!dash)return;
@@ -6412,10 +6434,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
       let selections=[];
       if(uniques.length){
-        const {data:legs,error:errLegs}=await sb.from('ticket_legs')
-          .select('ticket_id,match_time,kickoff_at,league,league_country,match_label,market,pick,odd,position,result')
-          .in('ticket_id',uniques.map(tk=>tk.id))
-          .order('kickoff_at',{ascending:true}).order('position',{ascending:true});
+        const {data:legs,error:errLegs}=await window.VB_legsParPaquets(sb,
+          'ticket_id,match_time,kickoff_at,league,league_country,match_label,market,pick,odd,position,result',
+          uniques.map(tk=>tk.id),
+          (a,b)=>(Date.parse(a.kickoff_at||'')||0)-(Date.parse(b.kickoff_at||'')||0)||(a.position||0)-(b.position||0));
         if(errLegs)throw errLegs;
         selections=legs||[];
       }
@@ -6708,12 +6730,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
     }
 
-    // 4. Fiches du jour reellement accessibles avec le plan actif
-    // 20/10 : horodatee a la publication REELLE de la derniere fiche du jour.
-    const duJour=DATA.tickets.filter(k=>estDuJour(k)&&accessibleTk(k));
-    const dispo=duJour.length;
-    const tsPub=duJour.reduce((m,k)=>Math.max(m,k.publieTs||0),0);
-    if(dispo>0)out.push({id:'today'+dispo,type:'new',kind:'new',cat:'fiche',texte:t('notif_today').replace('{n}',dispo),ts:Math.min(Date.now(),tsPub||Date.now())});
+    // 4. NOUVELLES fiches (14/11, demande de James : « la notification doit compter SEULEMENT les
+    //    nouvelles fiches, ex. 3 nouvo fich disponib ») : une notification PAR PUBLICATION. Des
+    //    fiches publiees a moins de 20 min d'intervalle forment une meme publication ; chaque
+    //    notification compte uniquement ses fiches (avant : toutes les fiches encore en cours,
+    //    celles d'hier comprises). Fiches accessibles avec le plan actif, publiees ces 3 derniers
+    //    jours, quel que soit leur statut (le nombre affiche ne change pas quand une fiche est reglee).
+    //    Horodatee a la publication reelle de la derniere fiche du lot.
+    const LOT_MS=20*60000, depuisPub=Date.now()-3*86400000;
+    const publiees=DATA.tickets.filter(k=>k.publieTs&&k.publieTs>=depuisPub&&k.publieTs<=Date.now()&&accessibleTk(k))
+                               .sort((a,b)=>a.publieTs-b.publieTs);
+    const lots=[];
+    publiees.forEach(k=>{
+      const dernier=lots[lots.length-1];
+      if(dernier&&k.publieTs-dernier.fin<=LOT_MS){dernier.n++;dernier.fin=k.publieTs;}
+      else lots.push({uid:k.uid,n:1,fin:k.publieTs});
+    });
+    lots.forEach(l=>out.push({id:'pub'+l.uid,type:'new',kind:'new',cat:'fiche',texte:t('notif_today').replace('{n}',l.n),ts:l.fin}));
 
     // 5. Dernier resultat gagnant de l'historique
     // 20/10 : la plus RECENTE reglee (settled_at), horodatee a son vrai reglement.
@@ -8213,6 +8246,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   let rechargeEnCours=false;
   async function rechargerDash(){
     if(rechargeEnCours)return;
+    if(await verifierSessionDashboard())return;   // 14/11 : session perdue -> page de connexion
     rechargeEnCours=true;
     const btns=document.querySelectorAll('.dash-reload');
     btns.forEach(b=>{b.classList.add('tourne');b.disabled=true;});
@@ -8335,6 +8369,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   /* ---- Ouverture / fermeture ---- */
   function openDash(){
+    setTimeout(verifierSessionDashboard,2500);   // 14/11 : Dashboard rouvert sans session valide
     // le logo du dashboard reprend exactement celui de la page d'accueil
     const logo=document.querySelector('.logo-mark-img img');
     const dl=document.getElementById('dashLogo');
@@ -8427,12 +8462,45 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     });
   },30000);
 
+  /* 14/11 (signalement de James : abonne LIFETIME voyant ses fiches masquees) — SESSION PERDUE
+     PENDANT L'UTILISATION. Le Dashboard reste ouvert alors que la session Supabase a disparu
+     (telephone en veille plus de 2 h sans « Sonje m », jeton refuse...) : la base repond alors
+     comme a un visiteur (aucune selection) et les fiches s'affichent masquees, avec l'ancien badge
+     du plan. Regle de James (lecon 1) : revenir plus tard redemande la connexion. On verifie donc
+     la session au retour sur l'onglet, a chaque resynchronisation (45 s) et au bouton Rafrechi :
+     plus de session -> Dashboard ferme, page de connexion + message. Jamais sans reseau ni sur une
+     simple panne reseau (la session gardee est alors conservee, voir getSession plus haut). */
+  let verifSessionEnCours=false;
+  async function verifierSessionDashboard(){
+    if(verifSessionEnCours||!dash.classList.contains('open'))return false;
+    if(navigator.onLine===false)return false;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!sb.auth)return false;
+    verifSessionEnCours=true;
+    try{
+      const r=await sb.auth.getSession();
+      const err=r&&r.error;
+      if(err&&/fetch|network|Retryable|timeout/i.test(String(err.name||'')+' '+String(err.message||'')))return false;
+      if(r&&r.data&&r.data.session)return false;
+      if(!dash.classList.contains('open'))return false;
+      closeDash();
+      if(window.VB_openLogin)window.VB_openLogin();
+      if(window.VB_toast)window.VB_toast('dash_session_fini_h',t('dash_session_fini_p'));
+      return true;
+    }catch(e){return false;}
+    finally{verifSessionEnCours=false;}
+  }
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')verifierSessionDashboard();});
+  window.addEventListener('focus',()=>{verifierSessionDashboard();});
+  window.VB_verifierSessionDashboard=verifierSessionDashboard;
+
   let resyncTimer=null;
   function demarrerResyncPeriodique(){
     arreterResyncPeriodique();
     resyncTimer=setInterval(()=>{
       if(!dash.classList.contains('open')){arreterResyncPeriodique();return;}
       if(document.hidden)return;   // 19/10 (nuit) : onglet en arriere-plan -> aucune requete
+      verifierSessionDashboard();  // 14/11 : session perdue -> page de connexion
       if(window.VB_syncPayStatus){
         window.VB_syncPayStatus().then(changed=>{
           if(changed){rafraichirFiches(true);renderSub();}
@@ -11984,11 +12052,10 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
         const {data:tks,error:eT}=await admfAppliquerFiltresStatsPeriode(sb.from('tickets').select('id,play_date').eq('published',true)).limit(5000);
         if(eT)throw eT;
         const ids=(tks||[]).map(x=>x.id),legs=[];
-        for(let i=0;i<ids.length;i+=150){
-          const {data:ls,error:eL}=await sb.from('ticket_legs').select('ticket_id,fixture_id,match_label,market,pick,result').in('ticket_id',ids.slice(i,i+150)).limit(5000);
-          if(eL)throw eL;
-          legs.push(...(ls||[]));
-        }
+        // 14/11 : paquets de 40 fiches (150 fiches pouvaient depasser la limite de 1 000 lignes)
+        const {data:ls,error:eL}=await window.VB_legsParPaquets(sb,'ticket_id,fixture_id,match_label,market,pick,result',ids);
+        if(eL)throw eL;
+        legs.push(...(ls||[]));
         prHtml=window.VB_statsPronosHtml(window.VB_statsPronos(legs),t('pr_titre_adm'),t('pr_note_adm'),{won:t('pr_won'),lost:t('pr_lost'),tot:t('pr_tot')});
         // 09/11 : liste JOUR PAR JOUR (meme calcul, une ligne par date de jeu, la plus recente d'abord).
         const jourDe={};(tks||[]).forEach(x=>{jourDe[x.id]=x.play_date;});
@@ -12108,9 +12175,9 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
          le panneau montre exactement ce que voit le Dashboard client
          (matchs, heures, marches, cotes, resultats), pas un simple compteur. */
       const ids=tickets.map(tk=>tk.id);
-      const {data:legs}=await sb.from('ticket_legs')
-        .select('ticket_id,match_label,match_time,kickoff_at,league,league_country,market,pick,odd,position,result,fixture_id')
-        .in('ticket_id',ids).order('position',{ascending:true});
+      const {data:legs}=await window.VB_legsParPaquets(sb,
+        'ticket_id,match_label,match_time,kickoff_at,league,league_country,market,pick,odd,position,result,fixture_id',
+        ids,(a,b)=>(a.position||0)-(b.position||0));   // 14/11 : par paquets (limite de 1 000 lignes)
       const parFiche={};
       (legs||[]).forEach(l=>{(parFiche[l.ticket_id]=parFiche[l.ticket_id]||[]).push(l);});
 
