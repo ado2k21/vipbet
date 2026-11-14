@@ -2,6 +2,12 @@
   publish = "."
   # Site statique : aucune etape de build, les HTML sont deja prets.
   command = ""
+  # 14/11 (demande de James) : SEUL le vrai site (betcote) construit, et seulement en
+  # production. D'autres sites Netlify (synco23, onliye, misy...) sont relies a ce depot et
+  # certains sont suspendus (impossible de les detacher) : chez eux, et pour les versions
+  # d'essai (Deploy Previews), la construction est annulee tout de suite (exit 0 = annuler,
+  # exit 1 = construire). SITE_NAME et CONTEXT sont fournis par Netlify au moment du build.
+  ignore = 'if [ "$SITE_NAME" = "betcote" ] && [ "$CONTEXT" = "production" ]; then exit 1; else exit 0; fi'
 
 [build.environment]
   # index.html et admin.html contiennent l'URL Supabase et la cle "anon"
