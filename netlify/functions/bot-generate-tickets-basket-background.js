@@ -532,7 +532,7 @@ const stats = {
   methodeFiche: null, // AJOUTÉ (20/09) : 'optimisee' | 'classique'
   nbSelectionsPossibles: null, // AJOUTÉ (20/09) : nombres de sélections envisageables, ex. [3,4,5] (le tirage choisit)
   apprentissage: null, // 14/11 : facteurs appris, segments exclus, pool renforcé, journal
-  cibleTirage: null, // AJOUTÉ (20/09) : cote cible tirée pour le jour (5 à 25), transparence pure
+  cibleTirage: null, // AJOUTÉ (20/09) : cote cible tirée pour le jour (2 à 25 depuis le 14/11), transparence pure
   cibleAtteinte: null, // AJOUTÉ (06/09) : palier de cote réellement atteint par la cascade, transparence pure, jamais utilisé pour décider
   sourceBasket: null, // AJOUTÉ (29/09) : 'api-sports' | 'odds-api' — quelle source a réellement servi ce passage, transparence pure
   erreurs: []
@@ -884,12 +884,14 @@ const MAX_SELECTIONS_BASKET = 10;
 // jour, cote max 25, pas une grosse cote et ALÉATOIRE — une cote différente tous les jours,
 // ça peut être 6 / 20 / 10 / 5 / 7 / 9 / 14… »). AVANT : le bot visait TOUJOURS 25 (8 à 10
 // sélections, une fiche presque toujours perdante : constaté 2 gagnées sur 13). MAINTENANT :
-// chaque jour tire un entier entre CIBLE_MIN_JOUR_BASKET et CIBLE_MAX_BASKET (5 à 25), et la
+// chaque jour tire un entier entre CIBLE_MIN_JOUR_BASKET et CIBLE_MAX_BASKET (2 à 25 depuis le 14/11), et la
 // cascade existante vise CETTE cote (puis redescend par paliers si le pool ne le permet pas).
 // Le tirage est déterministe pour une date donnée (même cote si le bot repasse le même jour
 // ou tourne sur plusieurs sites Netlify — jamais deux fiches de cotes différentes), mais varie
 // d'un jour à l'autre. Une cote basse (5-9) = 3-4 sélections ; une cote haute (20-25) = 8-10.
-const CIBLE_MIN_JOUR_BASKET = 5;
+// 14/11 (James) : « pour le basket, cote 2 à 25 » — minimum abaissé de 5 à 2 (tirage toujours
+// aléatoire, un entier par jour). La base n'impose aucun minimum aux fiches basket.
+const CIBLE_MIN_JOUR_BASKET = 2;
 const COTE_MIN_BASKET_OPT = 1.19; // même plancher de cote par sélection que l'extraction (COTE_MIN_BASKET)
 function hash32Basket(texte) {
   let h = 2166136261 >>> 0;
@@ -1424,7 +1426,7 @@ async function handler(event) {
   // silencieusement en dessous de ce qui était réellement possible.
   // Aucun nouveau chemin de construction : construireFicheBasket() reste
   // strictement identique, seul le nombre d'appels change.
-  // 20/09 : la cascade vise la COTE CIBLE DU JOUR (tirée entre 5 et 25, voir
+  // 20/09 : la cascade vise la COTE CIBLE DU JOUR (tirée entre 2 et 25 depuis le 14/11, voir
   // tirerCibleDuJourBasket) au lieu du plafond fixe de 25.
   const cibleDuJour = tirerCibleDuJourBasket(dateCible);
   stats.cibleTirage = cibleDuJour;

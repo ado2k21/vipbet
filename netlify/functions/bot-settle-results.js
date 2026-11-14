@@ -197,11 +197,14 @@ function doitVerifierReport(leg, info) {
 // Retourne la raison (texte) si le match est reporte, sinon null.
 function raisonReport(leg, r, statutsTermines) {
   if (!r) return null;
-  const termines = statutsTermines || STATUTS_TERMINES;
   if (r.statut === 'TBD') return 'Match reporté (date à définir par le fournisseur)';
   const k = leg && leg.kickoff_at ? Date.parse(leg.kickoff_at) : NaN;
   const d = r.dateUtc ? Date.parse(r.dateUtc) : NaN;
-  if (Number.isFinite(k) && Number.isFinite(d) && Math.abs(d - k) >= ECART_REPORT_MS && !termines.includes(r.statut)) {
+  // 14/11 (audit) : un match DEPLACE d'au moins 12 h est annule MEME s'il a ete joue depuis a sa
+  // nouvelle date (regle des bookmakers) — sinon une fiche du 12/11 serait reglee avec le score
+  // d'un match joue le 14/11 (cas reel : Atletico Nacional — Once Caldas). Un match joue a
+  // l'heure prevue (meme absent de la liste du jour) n'est pas concerne : ecart < 12 h.
+  if (Number.isFinite(k) && Number.isFinite(d) && Math.abs(d - k) >= ECART_REPORT_MS) {
     const p = partsHaiti(new Date(d));
     return `Match reporté au ${p.iso.slice(8, 10)}/${p.iso.slice(5, 7)} (prévu le ${partsHaiti(new Date(k)).iso.slice(8, 10)}/${partsHaiti(new Date(k)).iso.slice(5, 7)})`;
   }
