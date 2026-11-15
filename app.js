@@ -238,7 +238,7 @@ dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
 dash_anons_lbl:"ANNONCE", adm_nav_anons:"Annonces", adm_anons_h:"Annonces", adm_anons_p:"Messages affichés au-dessus des fiches du jour. Choisissez le public, puis activez-les quand vous voulez. Plusieurs actives : elles changent toutes les 30 secondes.", adm_anons_k_on:"actives", adm_anons_k_off:"désactivées", adm_anons_k_tot:"au total", adm_anons_new:"＋ Nouvelle annonce", adm_anons_new_h:"Nouvelle annonce", adm_anons_edit_h:"Modifier l'annonce", adm_anons_tit:"Titre", adm_anons_tx:"Texte", adm_anons_tx_s:"(200 caractères max.)", adm_anons_pou:"Pour qui ?", adm_anons_pub_abonne:"👑 Abonnés", adm_anons_pub_non_abonne:"👤 Non abonnés", adm_anons_pub_tous:"🌍 Tout le monde", adm_anons_act_now:"Activer maintenant", adm_anons_on:"● ACTIVE", adm_anons_off:"○ DÉSACTIVÉE", adm_anons_activer:"Activer", adm_anons_desactiver:"Désactiver", adm_anons_modifier:"✏️ Modifier", adm_anons_suppr:"Supprimer", adm_anons_cancel:"Annuler", adm_anons_save:"Enregistrer", adm_anons_conf_h:"Supprimer cette annonce ?", adm_anons_conf_p:"Elle ne pourra pas être récupérée. Pour seulement la masquer, choisissez « Désactiver ».", adm_anons_non:"Non", adm_anons_wi:"Oui, supprimer", adm_anons_vide:"Aucune annonce. Cliquez sur « Nouvelle annonce ».", adm_anons_err_tit:"Ajoutez un titre.", adm_anons_absent:"La table des annonces n'existe pas encore : appliquez la migration 20261113120000_annonces.sql.",
-fb_fixe_q:"💬 Vous avez gagné avec les fiches VIP BETCOTE ?", fb_fixe_s:"Même si une fiche est perdue, si vous avez choisi les matchs gagnants et que vous avez gagné, envoyez votre preuve. L'équipe la vérifie avant publication.", fb_fixe_count:"{p} preuves vérifiées", fb_fiche_lbl:"Quelle fiche avez-vous jouée ? (facultatif)", fb_fiche_aucune:"— Je ne précise pas —", fb_err_limite:"Vous avez déjà 3 preuves en attente. Attendez la validation de l'équipe.", fb_err_double:"Vous avez déjà envoyé une preuve pour cette fiche.", adm_avis_sans_fiche:"fiche non précisée", adm_avis_fiche_lost:"fiche perdue", adm_avis_tg_echec:"⚠️ Non envoyé sur Telegram (capture introuvable)", adm_avis_fiche_du:"fiche du {d}", adm_avis_f_attente:"En attente", adm_avis_f_publie:"Publiés", adm_avis_f_refuse:"Refusés / retirés", adm_avis_h:"Avis", fiche_note_x2:"Jouer par 1 ou par 2 matchs", pr_won:"réussis", pr_lost:"perdus", pr_tot:"au total", pr_titre:"Pronostics réussis (sans score exact)", pr_note:"Foot et basket. Un même match présent dans plusieurs fiches compte une fois. Matchs annulés exclus.", pr_jours:"Jour par jour", pr_jours_note:"En vert : 70 % ou plus (rapport publié). Date de jeu des fiches.", pr_titre_adm:"Pronostics du site (sans score exact)", pr_note_adm:"Toutes les fiches publiées de la période. Un même match dans plusieurs fiches compte une fois. Matchs annulés exclus.", rp_share_texte:"Rapport du jour : {g}/{t} pronostics réussis ({p} %) avec VIP BETCOTE 🎉", fb_q:"Avez-vous joué cette fiche ?", fb_joue:"👍 Je l'ai jouée", fb_prev:"📸 Envoyer ma preuve de gain", fb_attente:"⏳ Votre preuve attend la validation", fb_publie:"✓ Votre preuve est publiée", fb_refuse:"Preuve non acceptée", fb_count:"{j} abonnés l'ont jouée · {p} preuves", fb_h:"Partagez votre gain 🎉", fb_s:"L'équipe la vérifie avant de la publier.", fb_file:"Choisir la capture de votre ticket", fb_file_s:"Image JPG ou PNG, 5 Mo maximum", fb_note_ph:"Un petit mot (facultatif)…", fb_warn:"⚠️ Cachez votre nom, votre numéro de téléphone et le code du ticket avant d'envoyer la capture.", fb_consent:"J'accepte que VipBetcote publie cette preuve sur le site et sur Telegram, sans mon nom.", fb_send:"Envoyer la preuve", fb_cancel:"Annuler", fb_sending:"Envoi… {p}%", fb_err_file:"Choisissez une capture de votre ticket.", fb_err_size:"Image trop lourde (5 Mo maximum).", fb_err_consent:"Votre accord est nécessaire pour publier la preuve.", fb_err_send:"Échec. Réessayez.", fb_ok:"Merci ! Votre preuve attend la validation.", adm_nav_avis:"Avis abonnés", adm_avis_k_joue:"ont joué une fiche", adm_avis_k_prev:"preuves reçues", adm_avis_k_note:"note moyenne", adm_avis_pub:"✓ Publier", adm_avis_ref:"✗ Refuser", adm_avis_ret:"Retirer du landing", adm_avis_conf_pub_h:"Publier cet avis ?", adm_avis_conf_pub_p:"Il apparaîtra sur le landing et dans le groupe Telegram public, sans le nom de l'abonné. Vous pourrez le retirer du landing ; le message Telegram, lui, reste.", adm_avis_conf_ref_h:"Refuser cet avis ?", adm_avis_conf_ref_p:"Il ne sera jamais publié. L'abonné verra que sa preuve n'est pas acceptée.", adm_avis_conf_ret_h:"Retirer cet avis du landing ?", adm_avis_conf_ret_p:"Il n'apparaîtra plus sur le landing. Le message Telegram déjà envoyé reste.", adm_avis_wi:"Oui", adm_avis_non:"Non", adm_avis_vide:"Aucun avis ici.", adm_avis_tg_ok:"✓ Envoyé sur Telegram public", adm_avis_tg_att:"⏳ Envoi Telegram en attente", av_tag:"AVIS ABONNÉ", av_ok:"✓ Preuve vérifiée par l'équipe", av_by:"Abonné {plan} · {d}", rp_badge:"RAPPORT DU JOUR", rp_retro:"Rapport calculé après coup : visible seulement dans l’admin (ni landing, ni abonnés, ni Telegram).", rp_title:"Rapport du jour", rp_reussis:"{g}/{t} pronostics réussis", rp_more:"+{n} autres pronostics réussis", rp_sans:"Sans score exact", rp_won:"RÉUSSI", rp_fb:"FOOT + BASKET", rp_f:"FOOT", rp_b:"BASKET", rp_note:"Football et basketball, sans score exact", rp_plans:"Par plan", dash_tip_h:"Vous n’êtes pas obligé de jouer une fiche entière chaque jour.", dash_tip_p:"Vous pouvez choisir les matchs que vous préférez dans chaque fiche et les combiner pour créer vos propres fiches : une seule ou plusieurs. Jouez avec contrôle.",
+fb_fixe_q:"💬 Vous avez gagné avec les fiches VIP BETCOTE ?", fb_fixe_s:"Même si une fiche est perdue, si vous avez choisi les matchs gagnants et que vous avez gagné, envoyez votre preuve. L'équipe la vérifie avant publication.", fb_fixe_count:"{p} preuves vérifiées", fb_fiche_lbl:"Quelle fiche avez-vous jouée ?", fb_fiche_aucune:"— Choisissez la fiche —", fb_err_fiche:"Choisissez la fiche de votre gain.", fb_err_limite:"Vous avez déjà 3 preuves en attente. Attendez la validation de l'équipe.", fb_err_double:"Vous avez déjà envoyé une preuve pour cette fiche.", adm_avis_sans_fiche:"fiche non précisée", adm_avis_fiche_lost:"fiche perdue", adm_avis_tg_echec:"⚠️ Non envoyé sur Telegram (capture introuvable)", adm_avis_tg_echec_f:"⚠️ Non envoyé sur Telegram (fiche non gagnée)", adm_avis_fiche_du:"fiche du {d}", adm_avis_f_attente:"En attente", adm_avis_f_publie:"Publiés", adm_avis_f_refuse:"Refusés / retirés", adm_avis_h:"Avis", fiche_note_x2:"Jouer par 1 ou par 2 matchs", pr_won:"réussis", pr_lost:"perdus", pr_tot:"au total", pr_titre:"Pronostics réussis (sans score exact)", pr_note:"Foot et basket. Un même match présent dans plusieurs fiches compte une fois. Matchs annulés exclus.", pr_jours:"Jour par jour", pr_jours_note:"En vert : 70 % ou plus (rapport publié). Date de jeu des fiches.", pr_titre_adm:"Pronostics du site (sans score exact)", pr_note_adm:"Toutes les fiches publiées de la période. Un même match dans plusieurs fiches compte une fois. Matchs annulés exclus.", rp_share_texte:"Rapport du jour : {g}/{t} pronostics réussis ({p} %) avec VIP BETCOTE 🎉", fb_q:"Avez-vous joué cette fiche ?", fb_joue:"👍 Je l'ai jouée", fb_prev:"📸 Envoyer ma preuve de gain", fb_attente:"⏳ Votre preuve attend la validation", fb_publie:"✓ Votre preuve est publiée", fb_refuse:"Preuve non acceptée", fb_count:"{j} abonnés l'ont jouée · {p} preuves", fb_h:"Partagez votre gain 🎉", fb_s:"L'équipe la vérifie avant de la publier.", fb_file:"Choisir la capture de votre ticket", fb_file_s:"Facultatif · image JPG ou PNG, 5 Mo maximum", fb_note_ph:"Un petit mot (facultatif)…", fb_warn:"⚠️ Cachez votre nom, votre numéro de téléphone et le code du ticket avant d'envoyer la capture.", fb_consent:"J'accepte que VipBetcote publie cette preuve sur le site et sur Telegram, sans mon nom.", fb_send:"Envoyer la preuve", fb_cancel:"Annuler", fb_sending:"Envoi… {p}%", fb_err_file:"Choisissez une capture de votre ticket.", fb_err_size:"Image trop lourde (5 Mo maximum).", fb_err_consent:"Votre accord est nécessaire pour publier la preuve.", fb_err_send:"Échec. Réessayez.", fb_ok:"Merci ! Votre preuve attend la validation.", adm_nav_avis:"Avis abonnés", adm_avis_k_joue:"ont joué une fiche", adm_avis_k_prev:"preuves reçues", adm_avis_k_note:"note moyenne", adm_avis_pub:"✓ Publier", adm_avis_ref:"✗ Refuser", adm_avis_ret:"Retirer du landing", adm_avis_conf_pub_h:"Publier cet avis ?", adm_avis_conf_pub_p:"Il apparaîtra sur le landing et dans le groupe Telegram public, sans le nom de l'abonné. Vous pourrez le retirer du landing ; le message Telegram, lui, reste.", adm_avis_conf_ref_h:"Refuser cet avis ?", adm_avis_conf_ref_p:"Il ne sera jamais publié. L'abonné verra que sa preuve n'est pas acceptée.", adm_avis_conf_ret_h:"Retirer cet avis du landing ?", adm_avis_conf_ret_p:"Il n'apparaîtra plus sur le landing. Le message Telegram déjà envoyé reste.", adm_avis_wi:"Oui", adm_avis_non:"Non", adm_avis_vide:"Aucun avis ici.", adm_avis_tg_ok:"✓ Envoyé sur Telegram public", adm_avis_tg_att:"⏳ Envoi Telegram en attente", av_tag:"AVIS ABONNÉ", av_ok:"✓ Preuve vérifiée par l'équipe", av_by:"Abonné {plan} · {d}", av_joue:"✓ J'ai joué cette fiche", av_ok_fiche:"✓ Fiche vérifiée : gagnée", av_joue_rp:"✓ J'ai suivi ce rapport", av_ok_rp:"✓ Rapport vérifié : {g}/{t} réussis", av_rp_du:"Rapport du {d}", av_rp_g:"{g}/{t} réussis", fb_rapport_opt:"📊 Rapport du jour · {d} · {g}/{t} réussis", av_ok_part:"✓ Fiche vérifiée : {g}/{t} matchs gagnés", adm_avis_sans_img:"sans capture : « j'ai joué cette fiche »", rp_badge:"RAPPORT DU JOUR", rp_retro:"Rapport calculé après coup : visible seulement dans l’admin (ni landing, ni abonnés, ni Telegram).", rp_title:"Rapport du jour", rp_reussis:"{g}/{t} pronostics réussis", rp_more:"+{n} autres pronostics réussis", rp_sans:"Sans score exact", rp_won:"RÉUSSI", rp_fb:"FOOT + BASKET", rp_f:"FOOT", rp_b:"BASKET", rp_note:"Football et basketball, sans score exact", rp_plans:"Par plan", dash_tip_h:"Vous n’êtes pas obligé de jouer une fiche entière chaque jour.", dash_tip_p:"Vous pouvez choisir les matchs que vous préférez dans chaque fiche et les combiner pour créer vos propres fiches : une seule ou plusieurs. Jouez avec contrôle.",
 adm_fiche_gen_btn:"GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre le bot du soir. N'est jamais bloquée par l'anti-doublon.",
 adm_fiche_gen_exact_btn:"GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
 adm_fiche_gen_basket_h:"Générer une fiche basketball",
@@ -818,7 +818,7 @@ dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
 dash_anons_lbl:"ANNOUNCEMENT", adm_nav_anons:"Announcements", adm_anons_h:"Announcements", adm_anons_p:"Messages shown above today's tickets. Choose who sees them, then turn them on whenever you want. Several active: they rotate every 30 seconds.", adm_anons_k_on:"active", adm_anons_k_off:"inactive", adm_anons_k_tot:"total", adm_anons_new:"＋ New announcement", adm_anons_new_h:"New announcement", adm_anons_edit_h:"Edit announcement", adm_anons_tit:"Title", adm_anons_tx:"Text", adm_anons_tx_s:"(200 characters max)", adm_anons_pou:"For whom?", adm_anons_pub_abonne:"👑 Subscribers", adm_anons_pub_non_abonne:"👤 Non-subscribers", adm_anons_pub_tous:"🌍 Everyone", adm_anons_act_now:"Activate now", adm_anons_on:"● ACTIVE", adm_anons_off:"○ INACTIVE", adm_anons_activer:"Activate", adm_anons_desactiver:"Deactivate", adm_anons_modifier:"✏️ Edit", adm_anons_suppr:"Delete", adm_anons_cancel:"Cancel", adm_anons_save:"Save", adm_anons_conf_h:"Delete this announcement?", adm_anons_conf_p:"It cannot be recovered. To just hide it, choose “Deactivate”.", adm_anons_non:"No", adm_anons_wi:"Yes, delete", adm_anons_vide:"No announcements. Click “New announcement”.", adm_anons_err_tit:"Add a title.", adm_anons_absent:"The announcements table does not exist yet: apply migration 20261113120000_annonces.sql.",
-fb_fixe_q:"💬 Did you win with VIP BETCOTE tickets?", fb_fixe_s:"Even if a ticket lost, if you picked the winning matches and won, send your proof. The team checks it before publishing.", fb_fixe_count:"{p} verified proofs", fb_fiche_lbl:"Which ticket did you play? (optional)", fb_fiche_aucune:"— Not specified —", fb_err_limite:"You already have 3 proofs pending. Please wait for the team to review them.", fb_err_double:"You already sent a proof for this ticket.", adm_avis_sans_fiche:"ticket not specified", adm_avis_fiche_lost:"lost ticket", adm_avis_tg_echec:"⚠️ Not sent to Telegram (screenshot missing)", adm_avis_fiche_du:"ticket of {d}", adm_avis_f_attente:"Pending", adm_avis_f_publie:"Published", adm_avis_f_refuse:"Refused / removed", adm_avis_h:"Reviews", fiche_note_x2:"Play 1 or 2 matches at a time", pr_won:"won", pr_lost:"lost", pr_tot:"in total", pr_titre:"Successful picks (no exact score)", pr_note:"Football and basketball. A match found in several slips counts once. Void matches excluded.", pr_jours:"Day by day", pr_jours_note:"Green: 70 % or more (report published). Slip play date.", pr_titre_adm:"Site picks (no exact score)", pr_note_adm:"All published slips in the period. A match found in several slips counts once. Void matches excluded.", rp_share_texte:"Daily report: {g}/{t} successful picks ({p} %) with VIP BETCOTE 🎉", fb_q:"Did you play this slip?", fb_joue:"👍 I played it", fb_prev:"📸 Send my winning proof", fb_attente:"⏳ Your proof is awaiting review", fb_publie:"✓ Your proof is published", fb_refuse:"Proof not accepted", fb_count:"{j} subscribers played it · {p} proofs", fb_h:"Share your win 🎉", fb_s:"The team checks it before publishing.", fb_file:"Choose your ticket screenshot", fb_file_s:"JPG or PNG image, 5 MB max", fb_note_ph:"A short message (optional)…", fb_warn:"⚠️ Hide your name, phone number and ticket code before sending the screenshot.", fb_consent:"I agree that VipBetcote may publish this proof on the site and on Telegram, without my name.", fb_send:"Send the proof", fb_cancel:"Cancel", fb_sending:"Sending… {p}%", fb_err_file:"Choose a screenshot of your ticket.", fb_err_size:"Image too large (5 MB max).", fb_err_consent:"Your consent is needed to publish the proof.", fb_err_send:"Failed. Try again.", fb_ok:"Thanks! Your proof is awaiting review.", adm_nav_avis:"Subscriber reviews", adm_avis_k_joue:"played a slip", adm_avis_k_prev:"proofs received", adm_avis_k_note:"average rating", adm_avis_pub:"✓ Publish", adm_avis_ref:"✗ Reject", adm_avis_ret:"Remove from landing", adm_avis_conf_pub_h:"Publish this review?", adm_avis_conf_pub_p:"It will appear on the landing page and in the public Telegram group, without the subscriber's name. You can remove it from the landing later; the Telegram message stays.", adm_avis_conf_ref_h:"Reject this review?", adm_avis_conf_ref_p:"It will never be published. The subscriber will see their proof was not accepted.", adm_avis_conf_ret_h:"Remove this review from the landing?", adm_avis_conf_ret_p:"It will no longer appear on the landing. The Telegram message already sent stays.", adm_avis_wi:"Yes", adm_avis_non:"No", adm_avis_vide:"No reviews here.", adm_avis_tg_ok:"✓ Sent to public Telegram", adm_avis_tg_att:"⏳ Telegram sending pending", av_tag:"SUBSCRIBER REVIEW", av_ok:"✓ Proof checked by the team", av_by:"Subscriber {plan} · {d}", rp_badge:"DAILY REPORT", rp_retro:"Report computed afterwards: admin only (not on the landing, subscribers or Telegram).", rp_title:"Daily report", rp_reussis:"{g}/{t} successful picks", rp_more:"+{n} more successful picks", rp_sans:"No exact score", rp_won:"SUCCESS", rp_fb:"FOOTBALL + BASKETBALL", rp_f:"FOOTBALL", rp_b:"BASKETBALL", rp_note:"Football and basketball, no exact score", rp_plans:"By plan", dash_tip_h:"You don’t have to play a full slip every day.", dash_tip_p:"Pick the matches you like from each slip and combine them into your own slips, one or several. Play with control.",
+fb_fixe_q:"💬 Did you win with VIP BETCOTE tickets?", fb_fixe_s:"Even if a ticket lost, if you picked the winning matches and won, send your proof. The team checks it before publishing.", fb_fixe_count:"{p} verified proofs", fb_fiche_lbl:"Which ticket did you play?", fb_fiche_aucune:"— Choose the ticket —", fb_err_fiche:"Choose the ticket you won with.", fb_err_limite:"You already have 3 proofs pending. Please wait for the team to review them.", fb_err_double:"You already sent a proof for this ticket.", adm_avis_sans_fiche:"ticket not specified", adm_avis_fiche_lost:"lost ticket", adm_avis_tg_echec:"⚠️ Not sent to Telegram (screenshot missing)", adm_avis_tg_echec_f:"⚠️ Not sent to Telegram (ticket not won)", adm_avis_fiche_du:"ticket of {d}", adm_avis_f_attente:"Pending", adm_avis_f_publie:"Published", adm_avis_f_refuse:"Refused / removed", adm_avis_h:"Reviews", fiche_note_x2:"Play 1 or 2 matches at a time", pr_won:"won", pr_lost:"lost", pr_tot:"in total", pr_titre:"Successful picks (no exact score)", pr_note:"Football and basketball. A match found in several slips counts once. Void matches excluded.", pr_jours:"Day by day", pr_jours_note:"Green: 70 % or more (report published). Slip play date.", pr_titre_adm:"Site picks (no exact score)", pr_note_adm:"All published slips in the period. A match found in several slips counts once. Void matches excluded.", rp_share_texte:"Daily report: {g}/{t} successful picks ({p} %) with VIP BETCOTE 🎉", fb_q:"Did you play this slip?", fb_joue:"👍 I played it", fb_prev:"📸 Send my winning proof", fb_attente:"⏳ Your proof is awaiting review", fb_publie:"✓ Your proof is published", fb_refuse:"Proof not accepted", fb_count:"{j} subscribers played it · {p} proofs", fb_h:"Share your win 🎉", fb_s:"The team checks it before publishing.", fb_file:"Choose your ticket screenshot", fb_file_s:"Optional · JPG or PNG image, 5 MB max", fb_note_ph:"A short message (optional)…", fb_warn:"⚠️ Hide your name, phone number and ticket code before sending the screenshot.", fb_consent:"I agree that VipBetcote may publish this proof on the site and on Telegram, without my name.", fb_send:"Send the proof", fb_cancel:"Cancel", fb_sending:"Sending… {p}%", fb_err_file:"Choose a screenshot of your ticket.", fb_err_size:"Image too large (5 MB max).", fb_err_consent:"Your consent is needed to publish the proof.", fb_err_send:"Failed. Try again.", fb_ok:"Thanks! Your proof is awaiting review.", adm_nav_avis:"Subscriber reviews", adm_avis_k_joue:"played a slip", adm_avis_k_prev:"proofs received", adm_avis_k_note:"average rating", adm_avis_pub:"✓ Publish", adm_avis_ref:"✗ Reject", adm_avis_ret:"Remove from landing", adm_avis_conf_pub_h:"Publish this review?", adm_avis_conf_pub_p:"It will appear on the landing page and in the public Telegram group, without the subscriber's name. You can remove it from the landing later; the Telegram message stays.", adm_avis_conf_ref_h:"Reject this review?", adm_avis_conf_ref_p:"It will never be published. The subscriber will see their proof was not accepted.", adm_avis_conf_ret_h:"Remove this review from the landing?", adm_avis_conf_ret_p:"It will no longer appear on the landing. The Telegram message already sent stays.", adm_avis_wi:"Yes", adm_avis_non:"No", adm_avis_vide:"No reviews here.", adm_avis_tg_ok:"✓ Sent to public Telegram", adm_avis_tg_att:"⏳ Telegram sending pending", av_tag:"SUBSCRIBER REVIEW", av_ok:"✓ Proof checked by the team", av_by:"Subscriber {plan} · {d}", av_joue:"✓ I played this ticket", av_ok_fiche:"✓ Ticket checked: won", av_joue_rp:"✓ I followed this report", av_ok_rp:"✓ Report checked: {g}/{t} won", av_rp_du:"Report of {d}", av_rp_g:"{g}/{t} won", fb_rapport_opt:"📊 Daily report · {d} · {g}/{t} won", av_ok_part:"✓ Ticket checked: {g}/{t} matches won", adm_avis_sans_img:"no screenshot: “I played this ticket”", rp_badge:"DAILY REPORT", rp_retro:"Report computed afterwards: admin only (not on the landing, subscribers or Telegram).", rp_title:"Daily report", rp_reussis:"{g}/{t} successful picks", rp_more:"+{n} more successful picks", rp_sans:"No exact score", rp_won:"SUCCESS", rp_fb:"FOOTBALL + BASKETBALL", rp_f:"FOOTBALL", rp_b:"BASKETBALL", rp_note:"Football and basketball, no exact score", rp_plans:"By plan", dash_tip_h:"You don’t have to play a full slip every day.", dash_tip_p:"Pick the matches you like from each slip and combine them into your own slips, one or several. Play with control.",
 adm_fiche_gen_btn:"GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening bot. Never blocked by the duplicate-check.",
 adm_fiche_gen_exact_btn:"GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
 adm_fiche_gen_basket_h:"Generate a basketball ticket",
@@ -1398,7 +1398,7 @@ dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
 dash_anons_lbl:"ANONS", adm_nav_anons:"Anons", adm_anons_h:"Anons", adm_anons_p:"Mesaj ki parèt anlè fich jodi a yo. Chwazi pou kiyès, epi aktive l lè w vle. Si plizyè aktif, yo chanje chak 30 segonn.", adm_anons_k_on:"aktif", adm_anons_k_off:"dezaktive", adm_anons_k_tot:"an tout", adm_anons_new:"＋ Nouvo anons", adm_anons_new_h:"Nouvo anons", adm_anons_edit_h:"Modifye anons", adm_anons_tit:"Tit", adm_anons_tx:"Tèks", adm_anons_tx_s:"(200 karaktè maksimòm)", adm_anons_pou:"Pou kiyès ?", adm_anons_pub_abonne:"👑 Abòne", adm_anons_pub_non_abonne:"👤 Pa abòne", adm_anons_pub_tous:"🌍 Tout moun", adm_anons_act_now:"Aktive kounye a", adm_anons_on:"● AKTIF", adm_anons_off:"○ DEZAKTIVE", adm_anons_activer:"Aktive", adm_anons_desactiver:"Dezaktive", adm_anons_modifier:"✏️ Modifye", adm_anons_suppr:"Efase", adm_anons_cancel:"Anile", adm_anons_save:"Anrejistre", adm_anons_conf_h:"Efase anons sa a ?", adm_anons_conf_p:"Li p ap ka retounen. Si w jis vle kache l, chwazi « Dezaktive » pito.", adm_anons_non:"Non", adm_anons_wi:"Wi, efase", adm_anons_vide:"Pa gen anons. Klike « Nouvo anons ».", adm_anons_err_tit:"Mete yon tit.", adm_anons_absent:"Tab anons yo poko egziste : aplike migrasyon 20261113120000_annonces.sql.",
-fb_fixe_q:"💬 Ou te genyen ak fich VIP BETCOTE yo ?", fb_fixe_s:"Menm si fich la pèdi, si ou te chwazi match ki pase yo epi ou genyen, voye prèv ou. Ekip la verifye l anvan li parèt.", fb_fixe_count:"{p} prèv verifye", fb_fiche_lbl:"Ki fich ou te jwe ? (opsyonèl)", fb_fiche_aucune:"— Mwen pa presize —", fb_err_limite:"Ou gen 3 prèv deja k ap tann. Tann ekip la valide yo.", fb_err_double:"Ou deja voye yon prèv pou fich sa a.", adm_avis_sans_fiche:"fich pa presize", adm_avis_fiche_lost:"fich pèdi", adm_avis_tg_echec:"⚠️ Pa voye sou Telegram (kapti a pa la ankò)", adm_avis_fiche_du:"fich {d}", adm_avis_f_attente:"An atant", adm_avis_f_publie:"Pibliye", adm_avis_f_refuse:"Refize / retire", adm_avis_h:"Avi", fiche_note_x2:"Jwe pa 1 oswa pa 2 match", pr_won:"reyisi", pr_lost:"pèdi", pr_tot:"an tout", pr_titre:"Pwonostik ki reyisi (san skò egzak)", pr_note:"Foutbòl ak basketbòl. Yon match ki nan plizyè fich konte yon sèl fwa. Match anile pa konte.", pr_jours:"Jou pa jou", pr_jours_note:"An vèt : 70 % oswa plis (rapò a pibliye). Dat jwèt fich yo.", pr_titre_adm:"Pwonostik tout sit la (san skò egzak)", pr_note_adm:"Tout fich ki pibliye nan peryòd la. Yon match ki nan plizyè fich konte yon sèl fwa. Match anile pa konte.", rp_share_texte:"Rapò jounen an : {g}/{t} pwonostik reyisi ({p} %) ak VIP BETCOTE 🎉", fb_q:"Ou te jwe fich sa a ?", fb_joue:"👍 Mwen te jwe l", fb_prev:"📸 Voye prèv gen mwen", fb_attente:"⏳ Prèv ou an ap tann validasyon", fb_publie:"✓ Prèv ou an pibliye", fb_refuse:"Prèv la pa aksepte", fb_count:"{j} abòne te jwe l · {p} prèv", fb_h:"Pataje gen ou 🎉", fb_s:"Ekip la ap verifye l anvan nou pibliye l.", fb_file:"Chwazi kapti tikè ou", fb_file_s:"Imaj JPG oswa PNG, 5 Mo maksimòm", fb_note_ph:"Yon ti mesaj (opsyonèl)…", fb_warn:"⚠️ Kache non w, nimewo telefòn ou ak kòd tikè a anvan ou voye kapti a.", fb_consent:"Mwen dakò VipBetcote pibliye prèv sa a sou sit la ak sou Telegram, san non m.", fb_send:"Voye prèv la", fb_cancel:"Anile", fb_sending:"Ap voye… {p}%", fb_err_file:"Chwazi yon kapti tikè ou.", fb_err_size:"Imaj la twò gwo (5 Mo maksimòm).", fb_err_consent:"Ou dwe dakò pou nou ka pibliye prèv la.", fb_err_send:"Echèk. Eseye ankò.", fb_ok:"Mèsi ! Prèv ou an ap tann validasyon.", adm_nav_avis:"Avi abòne", adm_avis_k_joue:"te jwe fich", adm_avis_k_prev:"prèv resevwa", adm_avis_k_note:"nòt mwayèn", adm_avis_pub:"✓ Pibliye", adm_avis_ref:"✗ Refize", adm_avis_ret:"Retire sou landing", adm_avis_conf_pub_h:"Pibliye avi sa a ?", adm_avis_conf_pub_p:"Li pral parèt sou landing la epi nan gwoup Telegram piblik la, san non abòne a. Sou landing la ou ka retire l pita ; sou Telegram, mesaj la rete.", adm_avis_conf_ref_h:"Refize avi sa a ?", adm_avis_conf_ref_p:"Li p ap janm pibliye. Abòne a ap wè prèv li pa aksepte.", adm_avis_conf_ret_h:"Retire avi sa a sou landing la ?", adm_avis_conf_ret_p:"Li p ap parèt sou landing la ankò. Mesaj Telegram ki deja pati a rete.", adm_avis_wi:"Wi", adm_avis_non:"Non", adm_avis_vide:"Pa gen avi isit la.", adm_avis_tg_ok:"✓ Voye sou Telegram piblik", adm_avis_tg_att:"⏳ Ap tann voye sou Telegram", av_tag:"AVI ABÒNE", av_ok:"✓ Prèv verifye pa ekip la", av_by:"Abòne {plan} · {d}", rp_badge:"RAPÒ JOU A", rp_retro:"Rapò kalkile apre : admin sèlman ki wè l (ni landing, ni abòne, ni Telegram).", rp_title:"Rapò jounen an", rp_reussis:"{g}/{t} pwonostik reyisi", rp_more:"+{n} lòt pwonostik reyisi", rp_sans:"San skò egzak", rp_won:"REYISI", rp_fb:"FOUTBÒL + BASKETBÒL", rp_f:"FOUTBÒL", rp_b:"BASKETBÒL", rp_note:"Foutbòl ak basketbòl, san skò egzak", rp_plans:"Pa plan", dash_tip_h:"Ou pa oblije jwe yon fich antye chak jou.", dash_tip_p:"Ou ka chwazi match ou pi renmen nan chak fich, epi mete yo ansanm pou fè pwòp fich pa w : yon sèl oswa plizyè. Jwe ak kontwòl.",
+fb_fixe_q:"💬 Ou te genyen ak fich VIP BETCOTE yo ?", fb_fixe_s:"Menm si fich la pèdi, si ou te chwazi match ki pase yo epi ou genyen, voye prèv ou. Ekip la verifye l anvan li parèt.", fb_fixe_count:"{p} prèv verifye", fb_fiche_lbl:"Ki fich ou te jwe ?", fb_fiche_aucune:"— Chwazi fich la —", fb_err_fiche:"Chwazi fich ou te genyen an.", fb_err_limite:"Ou gen 3 prèv deja k ap tann. Tann ekip la valide yo.", fb_err_double:"Ou deja voye yon prèv pou fich sa a.", adm_avis_sans_fiche:"fich pa presize", adm_avis_fiche_lost:"fich pèdi", adm_avis_tg_echec:"⚠️ Pa voye sou Telegram (kapti a pa la ankò)", adm_avis_tg_echec_f:"⚠️ Pa voye sou Telegram (fich la pa t genyen)", adm_avis_fiche_du:"fich {d}", adm_avis_f_attente:"An atant", adm_avis_f_publie:"Pibliye", adm_avis_f_refuse:"Refize / retire", adm_avis_h:"Avi", fiche_note_x2:"Jwe pa 1 oswa pa 2 match", pr_won:"reyisi", pr_lost:"pèdi", pr_tot:"an tout", pr_titre:"Pwonostik ki reyisi (san skò egzak)", pr_note:"Foutbòl ak basketbòl. Yon match ki nan plizyè fich konte yon sèl fwa. Match anile pa konte.", pr_jours:"Jou pa jou", pr_jours_note:"An vèt : 70 % oswa plis (rapò a pibliye). Dat jwèt fich yo.", pr_titre_adm:"Pwonostik tout sit la (san skò egzak)", pr_note_adm:"Tout fich ki pibliye nan peryòd la. Yon match ki nan plizyè fich konte yon sèl fwa. Match anile pa konte.", rp_share_texte:"Rapò jounen an : {g}/{t} pwonostik reyisi ({p} %) ak VIP BETCOTE 🎉", fb_q:"Ou te jwe fich sa a ?", fb_joue:"👍 Mwen te jwe l", fb_prev:"📸 Voye prèv gen mwen", fb_attente:"⏳ Prèv ou an ap tann validasyon", fb_publie:"✓ Prèv ou an pibliye", fb_refuse:"Prèv la pa aksepte", fb_count:"{j} abòne te jwe l · {p} prèv", fb_h:"Pataje gen ou 🎉", fb_s:"Ekip la ap verifye l anvan nou pibliye l.", fb_file:"Chwazi kapti tikè ou", fb_file_s:"Opsyonèl · imaj JPG oswa PNG, 5 Mo maksimòm", fb_note_ph:"Yon ti mesaj (opsyonèl)…", fb_warn:"⚠️ Kache non w, nimewo telefòn ou ak kòd tikè a anvan ou voye kapti a.", fb_consent:"Mwen dakò VipBetcote pibliye prèv sa a sou sit la ak sou Telegram, san non m.", fb_send:"Voye prèv la", fb_cancel:"Anile", fb_sending:"Ap voye… {p}%", fb_err_file:"Chwazi yon kapti tikè ou.", fb_err_size:"Imaj la twò gwo (5 Mo maksimòm).", fb_err_consent:"Ou dwe dakò pou nou ka pibliye prèv la.", fb_err_send:"Echèk. Eseye ankò.", fb_ok:"Mèsi ! Prèv ou an ap tann validasyon.", adm_nav_avis:"Avi abòne", adm_avis_k_joue:"te jwe fich", adm_avis_k_prev:"prèv resevwa", adm_avis_k_note:"nòt mwayèn", adm_avis_pub:"✓ Pibliye", adm_avis_ref:"✗ Refize", adm_avis_ret:"Retire sou landing", adm_avis_conf_pub_h:"Pibliye avi sa a ?", adm_avis_conf_pub_p:"Li pral parèt sou landing la epi nan gwoup Telegram piblik la, san non abòne a. Sou landing la ou ka retire l pita ; sou Telegram, mesaj la rete.", adm_avis_conf_ref_h:"Refize avi sa a ?", adm_avis_conf_ref_p:"Li p ap janm pibliye. Abòne a ap wè prèv li pa aksepte.", adm_avis_conf_ret_h:"Retire avi sa a sou landing la ?", adm_avis_conf_ret_p:"Li p ap parèt sou landing la ankò. Mesaj Telegram ki deja pati a rete.", adm_avis_wi:"Wi", adm_avis_non:"Non", adm_avis_vide:"Pa gen avi isit la.", adm_avis_tg_ok:"✓ Voye sou Telegram piblik", adm_avis_tg_att:"⏳ Ap tann voye sou Telegram", av_tag:"AVI ABÒNE", av_ok:"✓ Prèv verifye pa ekip la", av_by:"Abòne {plan} · {d}", av_joue:"✓ Mwen te jwe fich sa a", av_ok_fiche:"✓ Fich verifye : li genyen", av_joue_rp:"✓ Mwen te swiv rapò sa a", av_ok_rp:"✓ Rapò verifye : {g}/{t} reyisi", av_rp_du:"Rapò {d}", av_rp_g:"{g}/{t} reyisi", fb_rapport_opt:"📊 Rapò jou a · {d} · {g}/{t} reyisi", av_ok_part:"✓ Fich verifye : {g}/{t} match genyen", adm_avis_sans_img:"san kapti : « mwen te jwe fich sa a »", rp_badge:"RAPÒ JOU A", rp_retro:"Rapò kalkile apre : admin sèlman ki wè l (ni landing, ni abòne, ni Telegram).", rp_title:"Rapò jounen an", rp_reussis:"{g}/{t} pwonostik reyisi", rp_more:"+{n} lòt pwonostik reyisi", rp_sans:"San skò egzak", rp_won:"REYISI", rp_fb:"FOUTBÒL + BASKETBÒL", rp_f:"FOUTBÒL", rp_b:"BASKETBÒL", rp_note:"Foutbòl ak basketbòl, san skò egzak", rp_plans:"Pa plan", dash_tip_h:"Ou pa oblije jwe yon fich antye chak jou.", dash_tip_p:"Ou ka chwazi match ou pi renmen nan chak fich, epi mete yo ansanm pou fè pwòp fich pa w : yon sèl oswa plizyè. Jwe ak kontwòl.",
 adm_fiche_gen_btn:"JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann bot aswè a. Anti-doub la pa janm bloke l.",
 adm_fiche_gen_exact_btn:"JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
 adm_fiche_gen_basket_h:"Jenere yon fich basketball",
@@ -2145,6 +2145,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 (function(){
   const page=document.getElementById('authpage');
   if(!page)return;
+  // 15/11 (allegement) : l'image de la page de connexion (137 Ko) ne se charge qu'a l'OUVERTURE de
+  // cette page (avant : telechargee par chaque visiteur du landing, page cachee mais presente).
+  (function(){
+    const charger=()=>{page.querySelectorAll('img[data-src]').forEach(i=>{i.src=i.dataset.src;i.removeAttribute('data-src');});};
+    if(page.classList.contains('open'))charger();
+    else try{const mo=new MutationObserver(()=>{if(page.classList.contains('open')){charger();mo.disconnect();}});mo.observe(page,{attributes:true,attributeFilter:['class']});}catch(e){charger();}
+  })();
 
   /* ---- Catalogue des plans (source unique de verite) ---- */
   const PLANS=[
@@ -5774,6 +5781,29 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if((m=p.match(/^(Plus|Moins) de ([\d.,]+)/i)))return sens(m[1])+m[2];
     return p;
   }
+  /* 15/11 (James) — choix ULTRA court des cartes TikTok : 1 / X / 2, 1X / 12 / X2, PLIS 1.5, MWENS 3.5,
+     1 PLIS 0.5 (total de l'equipe a domicile), 2 MWENS 1.5 (exterieur), GÒL/GÒL, score exact 2 - 1.
+     Lit le pari d'origine (« Victoire : Home », « Plus de 1.5 buts »…) et, a defaut, le libelle
+     kreyol (« Ki ekip ki genyen : 1 », « Total gòl : Plis pase 1.5 »…). Jamais de cote. */
+  function choixTikTok(pick,choix){
+    const essai=v=>{
+      const p=String(v||'').trim();let m;
+      if(!p)return null;
+      if((m=p.match(/^(?:Score exact|Sk[oò] egzak)\s*:\s*(\d+)\s*[:\-]\s*(\d+)/i)))return m[1]+' - '+m[2];
+      if(/^(?:Victoire|Ki ekip ki genyen|Vainqueur du match|Match winner)\s*:\s*(Home|1)$/i.test(p))return '1';
+      if(/^(?:Victoire|Ki ekip ki genyen|Vainqueur du match|Match winner)\s*:\s*(Away|2)$/i.test(p))return '2';
+      if(/^(?:Victoire|Ki ekip ki genyen)\s*:\s*(Nul|Draw|X)$/i.test(p))return 'X';
+      if((m=p.match(/^(?:Double chance|Doub chans)\s*:\s*(\S+)/i))){const d=m[1].toUpperCase();return d==='X1'?'1X':d==='2X'?'X2':d==='21'?'12':d;}
+      if(/(?:deux .quipes marquent|2 ekip make|both teams to score)\s*:\s*(Oui|Wi|Yes)/i.test(p))return 'GÒL/GÒL';
+      if(/(?:deux .quipes marquent|2 ekip make|both teams to score)\s*:\s*(Non|No)/i.test(p))return 'PA GÒL/GÒL';
+      const sens=x=>/^(plus|plis|over)/i.test(x)?'PLIS ':'MWENS ';
+      if((m=p.match(/^(?:Domicile|Ekip lakay)\s*:\s*(Plus|Moins|Plis|Mwens)(?: de| pase)? ([\d.,]+)/i)))return '1 '+sens(m[1])+m[2];
+      if((m=p.match(/^(?:Ext.rieur|Ekip dey[oò])\s*:\s*(Plus|Moins|Plis|Mwens)(?: de| pase)? ([\d.,]+)/i)))return '2 '+sens(m[1])+m[2];
+      if((m=p.match(/(?:^|:\s*)(Plus|Moins|Plis|Mwens|Over|Under)(?: de| pase)? ([\d.,]+)/i)))return sens(m[1])+m[2];
+      return null;
+    };
+    return essai(pick)||essai(choix)||String(choix||pick||'');
+  }
   async function genererCarteFullTime(tk){
     const W=1080,H=1920;
     const cv=document.createElement('canvas');cv.width=W;cv.height=H;
@@ -5897,25 +5927,31 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(l2){ctx.fillText(coupe(l1,max),cx,cy-fN*0.15);ctx.fillText(coupe(l2,max),cx,cy+fN*0.95);}
       else ctx.fillText(coupe(l1,max),cx,cy+fN*0.38);
     };
+    // 15/11 (James) : meme taille de texte pour le choix sur TOUTES les lignes (la plus grande qui
+    // tient pour le choix le plus long, marque ✓/✗ comprise sur les lignes serrees).
+    const choixDe=m=>String(choixTikTok(m.pick,m.choix)).toUpperCase();
+    let fU=fC;
+    legs.forEach(m=>{
+      const regle=m.result==='won'||m.result==='lost',txt=(regle&&HL<100?'✓ ':'')+choixDe(m);
+      ctx.font='900 '+fU+'px '+SORA;
+      while(fU>16&&ctx.measureText(txt).width>CW-30){fU-=2;ctx.font='900 '+fU+'px '+SORA;}
+    });
     legs.forEach(m=>{
       const parts=String(m.match_label||'').split(/\s+[—–-]\s+/);const home=parts[0]||'',away=parts[1]||'';
       ctx.save();ctx.shadowColor='rgba(11,31,107,.12)';ctx.shadowBlur=18;ctx.shadowOffsetY=6;
       ctx.fillStyle='#FFFFFF';rr(X,y,LW,HL,26);ctx.fill();ctx.restore();
-      ctx.save();rr(X,y,LW,HL,26);ctx.clip();ctx.fillStyle=BLEU;ctx.fillRect(X+SW,y,CW,HL);ctx.restore();
+      // 15/11 (James) : match perdu = bloc GRIS (gagne ou en cours : bleu).
+      ctx.save();rr(X,y,LW,HL,26);ctx.clip();ctx.fillStyle=m.result==='lost'?'#8C95A8':BLEU;ctx.fillRect(X+SW,y,CW,HL);ctx.restore();
       nomEquipe(home,X+SW/2,y+HL/2,SW-36);
       nomEquipe(away,X+SW+CW+SW/2,y+HL/2,SW-36);
-      let choix=choixCourt(m.pick||m.choix,home,away);
-      ctx.font='900 '+fC+'px '+SORA;
-      if(ctx.measureText(String(choix).toUpperCase()).width>CW-30){const c2=choixCourt(m.pick||m.choix,home.split(' ')[0],away.split(' ')[0]);if(c2)choix=c2;}
-      choix=String(choix).toUpperCase();let f=fC;
-      while(f>18&&(ctx.font='900 '+f+'px '+SORA,ctx.measureText(choix).width>CW-30))f-=2;
+      const choix=choixDe(m),f=fU;
+      ctx.font='900 '+f+'px '+SORA;
       const regle=m.result==='won'||m.result==='lost';
       // Lignes serrees (beaucoup de matchs) : ✓/✗ devant le choix, sans « FULL TIME » (rien ne deborde).
       if(regle&&HL<100){
         const marque=m.result==='lost'?'✗':'✓',wm=ctx.measureText(marque+' ').width;
-        while(f>16&&ctx.measureText(marque+' '+choix).width>CW-24){f-=2;ctx.font='900 '+f+'px '+SORA;}
         const wt=ctx.measureText(marque+' '+choix).width,x0=X+SW+CW/2-wt/2,yT=y+HL/2+f*0.36;
-        ctx.textAlign='left';ctx.fillStyle='#25D366';ctx.fillText(marque,x0,yT);
+        ctx.textAlign='left';ctx.fillStyle=m.result==='lost'?'#FFFFFF':'#25D366';ctx.fillText(marque,x0,yT);
         ctx.fillStyle='#FFFFFF';ctx.fillText(coupe(choix,CW-24-wm),x0+ctx.measureText(marque+' ').width,yT);ctx.textAlign='center';
         y+=HL+gap;return;
       }
@@ -5924,8 +5960,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       // Reussi : ✓ vert ; perdu : ✗ rouge (meme taille), puis « FULL TIME ».
       const perdu=m.result==='lost',yL=y+HL/2+f*0.2+fL*1.8;
       ctx.font='800 '+fL+'px '+INTER;const lab=' FULL TIME',wM=ctx.measureText(perdu?'✗':'✓').width,wL=ctx.measureText(lab).width,x0=X+SW+CW/2-(wM+wL)/2;
-      ctx.textAlign='left';ctx.fillStyle='#25D366';ctx.fillText(perdu?'✗':'✓',x0,yL);
-      ctx.fillStyle='#9FC1FF';ctx.fillText(lab,x0+wM,yL);ctx.textAlign='center';
+      ctx.textAlign='left';ctx.fillStyle=perdu?'#FFFFFF':'#25D366';ctx.fillText(perdu?'✗':'✓',x0,yL);
+      ctx.fillStyle=perdu?'#E4E8F0':'#9FC1FF';ctx.fillText(lab,x0+wM,yL);ctx.textAlign='center';
       y+=HL+gap;
     });
     if(reste>0){ctx.font='800 30px '+INTER;ctx.fillStyle='#3B4A7A';ctx.textAlign='center';ctx.fillText('+'+reste,W/2,y+30);}
@@ -6765,7 +6801,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(won){
       const estExact=won.scoreCount>0&&won.scoreCount>=won.legsCount;
       const cle=estExact?'notif_won_exact':((won.sport==='basket'||won.sport==='nba')?'notif_won_basket':'notif_won_foot');
-      out.push({id:'won'+won.uid,type:'won',kind:'won',cat:'fiche',texte:t(cle),
+      // 15/11 (James) : score exact -> nombre de bons scores sur les matchs joues (« 1/3 », « 2/3 »…),
+      // matchs annules non comptes.
+      let fraction='';
+      if(estExact){
+        const joues=(won.legs||[]).filter(l=>MARCHES_SCORE_EXACT_DASH.includes(l.market)&&l.result&&l.result!=='void');
+        if(joues.length)fraction=' '+joues.filter(l=>l.result==='won').length+'/'+joues.length;
+      }
+      out.push({id:'won'+won.uid,type:'won',kind:'won',cat:'fiche',texte:t(cle)+fraction,
                      ts:won.regleTs?Math.min(Date.now(),won.regleTs):Date.now()-won.day*86400000});
     }
 
@@ -7634,7 +7677,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(tot&&Number(tot.preuves)>0){const c=w.querySelector('.fb-count');c.textContent=t('fb_fixe_count').replace('{p}',tot.preuves);c.hidden=false;}
     }catch(e){}
   }
-  let fbForm=null,fbFichier=null,fbEtoiles=5,fbTicket=null;
+  let fbForm=null,fbFichier=null,fbEtoiles=5,fbTicket=null,fbRapportsDemandes=false;
   function construireFormPreuve(){
     const v=document.createElement('div');v.className='fb-voile';v.hidden=true;
     v.innerHTML='<div class="fb-sheet" role="dialog" aria-modal="true"><h3 data-k="fb_h"></h3><p class="s" data-k="fb_s"></p>'+
@@ -7659,19 +7702,31 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     q('.go').addEventListener('click',envoyerPreuveAvis);
     return v;
   }
-  // Fiches proposees (OPTIONNEL) : reglees (gagnees ou perdues) des 7 derniers jours, que le plan
-  // de l'abonne lui donnait. « Pa presize » par defaut ; preselectionnee depuis une fiche gagnee.
+  // 15/11 (James) — fiche OBLIGATOIRE, capture FACULTATIVE (sans capture = « Mwen te jwe fich sa a »).
+  // Liste : fiches reglees (gagnees ou perdues) des 7 derniers jours, comme avant, que le plan de
+  // l'abonne lui donnait (ficheEtaitAccessible, meme regle que l'Istorik : pause sans plan = rien de
+  // nouveau). Ouverte depuis la barre d'une fiche gagnee plus ancienne : cette fiche est ajoutee et preselectionnee.
   function remplirChoixFiche(choisie){
     const sel=fbForm.querySelector('.fb-fiche select');
-    const limite=new Date(Date.now()-7*864e5).toISOString().slice(0,10);
     const loc=currentLang==='en'?'en-US':'fr-FR';
+    const limite=new Date(Date.now()-7*864e5).toISOString().slice(0,10);   // 15/11 : 7 derniers jours, comme avant
     const liste=(DATA.tickets||[]).filter(k=>(k.status==='won'||k.status==='lost')&&k.playDate>=limite&&ficheEtaitAccessible(k))
       .sort((a,b)=>String(b.playDate).localeCompare(String(a.playDate)));
+    if(choisie&&!liste.some(k=>k.uid===choisie)){
+      const k=(DATA.tickets||[]).find(x=>x.uid===choisie&&(x.status==='won'||x.status==='lost')&&ficheEtaitAccessible(x));
+      if(k)liste.unshift(k);
+    }
     const fd=d=>{try{return new Date(d+'T12:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){return d;}};
     const esc=v=>String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    sel.innerHTML='<option value="">'+esc(t('fb_fiche_aucune'))+'</option>'+liste.map(k=>'<option value="'+esc(k.uid)+'">'+
+    // 15/11 : rapports du jour PUBLIES que l'abonne a recus (plan de CE jour-la : rapportsVisiblesUser,
+    // meme regle que l'Istorik), 7 derniers jours. Valeur « r:date|portee ».
+    if(rapportsUser===null&&!fbRapportsDemandes){fbRapportsDemandes=true;chargerRapportsUser().then(()=>{if(fbForm&&!fbForm.hidden)remplirChoixFiche(sel.value||choisie);});}
+    const rps=rapportsVisiblesUser().filter(r=>r.play_date>=limite);
+    sel.innerHTML='<option value="" disabled>'+esc(t('fb_fiche_aucune'))+'</option>'+
+      rps.map(r=>'<option value="'+esc('r:'+r.play_date+'|'+r.portee)+'">'+esc(t('fb_rapport_opt').replace('{d}',fd(r.play_date)).replace('{g}',r.gagnes).replace('{t}',r.total))+'</option>').join('')+
+      liste.map(k=>'<option value="'+esc(k.uid)+'">'+
       esc(fd(k.playDate)+' · '+t(k.sport==='basket'?'dash_f_nba':'dash_f_foot')+' · '+k.id+' · '+t(k.status==='won'?'dash_f_won':'dash_f_lost'))+'</option>').join('');
-    sel.value=choisie&&liste.some(k=>k.uid===choisie)?choisie:'';
+    sel.value=choisie&&[...sel.options].some(o=>o.value===choisie&&!o.disabled)?choisie:'';
   }
   function majEtoiles(){fbForm.querySelectorAll('[data-et]').forEach(b=>b.classList.toggle('off',Number(b.dataset.et)>fbEtoiles));}
   function ouvrirFormPreuve(ticketId){
@@ -7689,9 +7744,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const go=fbForm.querySelector('.go'),err=fbForm.querySelector('.fb-err');
     const erreur=k=>{err.textContent=t(k);err.hidden=false;};
     if(go.disabled)return;
-    if(!fbFichier)return erreur('fb_err_file');
-    if(!/^image\//.test(fbFichier.type||''))return erreur('fb_err_file');
-    if(fbFichier.size>5*1024*1024)return erreur('fb_err_size');
+    // 15/11 : capture facultative (la fiche, elle, est obligatoire)
+    if(fbFichier&&!/^image\//.test(fbFichier.type||''))return erreur('fb_err_file');
+    if(fbFichier&&fbFichier.size>5*1024*1024)return erreur('fb_err_size');
+    if(!fbForm.querySelector('.fb-fiche select').value)return erreur('fb_err_fiche');   // 15/11 : fiche obligatoire
     if(!fbForm.querySelector('.fb-chk input').checked)return erreur('fb_err_consent');
     err.hidden=true;go.disabled=true;
     try{
@@ -7699,10 +7755,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const {data:ses}=await sb.auth.getSession();
       const jeton=ses&&ses.session&&ses.session.access_token,uid=ses&&ses.session&&ses.session.user&&ses.session.user.id;
       if(!jeton||!uid)throw new Error('session');
-      const ext=(fbFichier.type.split('/')[1]||'jpg').replace('jpeg','jpg').replace(/[^a-z0-9]/g,'');
-      const choix=fbForm.querySelector('.fb-fiche select').value||null;
-      const chemin=uid+'/'+(choix||'general')+'-'+Date.now()+'.'+ext;
-      const ok=await new Promise(resolve=>{
+      const valeur=fbForm.querySelector('.fb-fiche select').value||null;
+      const rpChoix=valeur&&valeur.indexOf('r:')===0?valeur.slice(2).split('|'):null;   // 15/11 : avis sur un rapport du jour
+      const choix=rpChoix?null:valeur;
+      const ext=fbFichier?(fbFichier.type.split('/')[1]||'jpg').replace('jpeg','jpg').replace(/[^a-z0-9]/g,''):'';
+      const chemin=fbFichier?uid+'/'+(choix||(rpChoix?'rapport-'+rpChoix[0]:'general'))+'-'+Date.now()+'.'+ext:null;
+      const ok=!fbFichier||await new Promise(resolve=>{
         const base=(window.VB_SUPABASE_URL||'https://llqifjfcpyddwjkferpn.supabase.co');
         const xhr=new XMLHttpRequest();
         xhr.open('POST',base+'/storage/v1/object/avis/'+chemin.split('/').map(encodeURIComponent).join('/'),true);
@@ -7718,6 +7776,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(!ok)throw new Error('upload');
       const st=getState();const pl=st&&st.planId&&window.VB_planById?window.VB_planById(st.planId):null;
       const {error}=await sb.from('avis_abonnes').insert({user_id:uid,ticket_id:choix,etoiles:fbEtoiles,
+        rapport_date:rpChoix?rpChoix[0]:null,rapport_portee:rpChoix?rpChoix[1]:null,
         note:fbForm.querySelector('.fb-txt').value.trim().slice(0,140),capture_path:chemin,consentement:true,
         plan_libelle:pl&&window.VB_planLabel?String(window.VB_planLabel(pl)).replace(/<[^>]*>/g,''):null});
       if(error)throw error;
@@ -9328,7 +9387,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     liste.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
     try{
       const [{data:avis,error},jc,users]=await Promise.all([
-        sb.from('avis_abonnes').select('id,user_id,ticket_id,etoiles,note,capture_path,plan_libelle,statut,created_at,decide_at,telegram_statut').order('created_at',{ascending:false}).limit(300),
+        sb.from('avis_abonnes').select('*').order('created_at',{ascending:false}).limit(300),
         sb.from('fiche_joues').select('user_id',{count:'exact',head:true}),
         chargerUsers()]);
       if(error)throw error;
@@ -9348,17 +9407,20 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       const {data:tks}=idsTk.length?await sb.from('tickets').select('id,play_date,sport,status').in('id',idsTk):{data:[]};
       const tkById={};(tks||[]).forEach(x=>{tkById[x.id]=x;});
       let urls={};
-      try{const {data:su}=await sb.storage.from('avis').createSignedUrls(sel.map(a=>a.capture_path),3600);(su||[]).forEach(u=>{if(u&&u.path)urls[u.path]=u.signedUrl;});}catch(e){}
+      const chem=sel.map(a=>a.capture_path).filter(Boolean);   // 15/11 : avis sans capture possibles
+      if(chem.length)try{const {data:su}=await sb.storage.from('avis').createSignedUrls(chem,3600);(su||[]).forEach(u=>{if(u&&u.path)urls[u.path]=u.signedUrl;});}catch(e){}
       const masque=u=>{const b=String((u&&(u.username||(u.email||'').split('@')[0]))||'').trim();return b?b.slice(0,2)+'****'+(b.length>3?b.slice(-1):''):'—';};
       const fd=iso=>{try{return new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}};
       liste.innerHTML=sel.map(a=>{
         const tk=tkById[a.ticket_id]||{},u=urls[a.capture_path]||'';
         const acts=a.statut==='attente'?'<button type="button" class="pub" data-avact="publie" data-avid="'+a.id+'">'+escH(t('adm_avis_pub'))+'</button><button type="button" class="ref" data-avact="refuse" data-avid="'+a.id+'">'+escH(t('adm_avis_ref'))+'</button>'
           :a.statut==='publie'?'<button type="button" class="ref" data-avact="retire" data-avid="'+a.id+'">'+escH(t('adm_avis_ret'))+'</button>':'';
-        const tg=a.statut==='publie'?'<div class="av-tg">'+escH(t(a.telegram_statut==='envoye'?'adm_avis_tg_ok':a.telegram_statut==='echec'?'adm_avis_tg_echec':'adm_avis_tg_att'))+'</div>':'';
-        return '<div class="av-card"><a class="shot" href="'+escH(u)+'" target="_blank" rel="noopener">'+(u?'<img src="'+escH(u)+'" alt="" loading="lazy">':'')+'</a><div>'+
+        const tg=a.statut==='publie'?'<div class="av-tg">'+escH(t(a.telegram_statut==='envoye'?'adm_avis_tg_ok':a.telegram_statut==='echec'?(a.capture_path?'adm_avis_tg_echec':'adm_avis_tg_echec_f'):'adm_avis_tg_att'))+'</div>':'';
+        const shot=a.capture_path?'<a class="shot" href="'+escH(u)+'" target="_blank" rel="noopener">'+(u?'<img src="'+escH(u)+'" alt="" loading="lazy">':'')+'</a>'
+          :'<div class="shot av-sans-img">🎟️</div>';   // 15/11 : « Mwen te jwe fich sa a », sans capture
+        return '<div class="av-card">'+shot+'<div>'+
           '<div class="av-who">'+escH(masque(usersById[a.user_id]))+(a.plan_libelle?' · '+escH(a.plan_libelle):'')+'</div>'+
-          '<div class="av-meta">'+(!a.ticket_id?escH(t('adm_avis_sans_fiche')):escH((tk.sport==='basket'||tk.sport==='nba')?'NBA':'Foot')+(tk.status==='lost'?' · '+escH(t('adm_avis_fiche_lost')):''))+(tk.play_date?' · '+escH(t('adm_avis_fiche_du').replace('{d}',fd(tk.play_date+'T12:00:00Z').replace(/,?\s*\d{1,2}:\d{2}.*$/,''))):'')+' · '+escH(fd(a.created_at))+'</div>'+
+          '<div class="av-meta">'+(a.rapport_date?escH(t('av_rp_du').replace('{d}',fd(a.rapport_date+'T12:00:00Z').replace(/,?\s*\d{1,2}:\d{2}.*$/,''))):!a.ticket_id?escH(t('adm_avis_sans_fiche')):escH((tk.sport==='basket'||tk.sport==='nba')?'NBA':'Foot')+(tk.status==='lost'?' · '+escH(t('adm_avis_fiche_lost')):''))+(!a.capture_path?' · '+escH(t('adm_avis_sans_img')):'')+(tk.play_date?' · '+escH(t('adm_avis_fiche_du').replace('{d}',fd(tk.play_date+'T12:00:00Z').replace(/,?\s*\d{1,2}:\d{2}.*$/,''))):'')+' · '+escH(fd(a.created_at))+'</div>'+
           '<div class="av-stars">'+'★'.repeat(Math.max(1,Math.min(5,Number(a.etoiles)||0)))+'<span style="color:rgba(244,243,237,.2)">'+'★'.repeat(5-Math.max(1,Math.min(5,Number(a.etoiles)||0)))+'</span></div>'+
           (a.note?'<div class="av-note">« '+escH(a.note)+' »</div>':'')+
           '<div class="av-acts">'+acts+'</div>'+tg+'</div></div>';
@@ -13327,8 +13389,14 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     const trad=k=>table[k]!=null?table[k]:((translations.fr&&translations.fr[k])||k);
     const echapper=v=>String(v==null?'':v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     try{
-      const {data,error}=await sb.from('avis_publics').select('id,etoiles,note,plan_libelle,capture_path,decide_at')
+      // 15/11 : + fiche choisie (gagnee, ou perdue publiee par l'admin : « 12/13 GENYEN », sans cote). Repli sur
+      // l'ancienne selection tant que la migration 20261115120000_avis_sans_image n'est pas passee.
+      let {data,error}=await sb.from('avis_publics').select('id,etoiles,note,plan_libelle,capture_path,decide_at,play_date,ticket_id,sport,total_odd,ticket_statut,rapport_date,rapport_total,rapport_gagnes,rapport_taux,rapport_matchs')
         .order('decide_at',{ascending:false}).limit(6);
+      if(error)({data,error}=await sb.from('avis_publics').select('id,etoiles,note,plan_libelle,capture_path,decide_at,play_date,ticket_id,sport,total_odd,ticket_statut')
+        .order('decide_at',{ascending:false}).limit(6));
+      if(error)({data,error}=await sb.from('avis_publics').select('id,etoiles,note,plan_libelle,capture_path,decide_at')
+        .order('decide_at',{ascending:false}).limit(6));
       if(error||!data)return;
       const cles=data.map(a=>a.id).join(',')+'|'+lang;
       if(!forcer&&cles===avisLandingCles&&track.querySelector('.win-avis'))return;
@@ -13336,16 +13404,66 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       track.querySelectorAll('.win-avis').forEach(x=>x.remove());
       if(!data.length)return;
       let urls={};
-      try{const {data:su}=await sb.storage.from('avis').createSignedUrls(data.map(a=>a.capture_path),6*3600);(su||[]).forEach(u=>{if(u&&u.path&&u.signedUrl)urls[u.path]=u.signedUrl;});}catch(e){}
-      const cartes=data.filter(a=>urls[a.capture_path]).map(a=>{
+      const chemins=data.map(a=>a.capture_path).filter(Boolean);
+      if(chemins.length){try{const {data:su}=await sb.storage.from('avis').createSignedUrls(chemins,6*3600);(su||[]).forEach(u=>{if(u&&u.path&&u.signedUrl)urls[u.path]=u.signedUrl;});}catch(e){}}
+      // Avis SANS capture : la fiche choisie remplace l'image (matchs lus comme pour les cartes « fiche gagnee »).
+      const sansImg=data.filter(a=>!a.capture_path&&a.ticket_id);
+      const legsPar={};
+      if(sansImg.length){
+        try{
+          const {data:lg}=await sb.from('ticket_legs').select('ticket_id,match_label,market,pick,odd,result,position')
+            .in('ticket_id',sansImg.map(a=>a.ticket_id)).order('position',{ascending:true});
+          (lg||[]).forEach(l=>{if(l.result!=='void')(legsPar[l.ticket_id]=legsPar[l.ticket_id]||[]).push(l);});
+        }catch(e){}
+      }
+      const loc=lang==='en'?'en-US':'fr-FR';
+      const fd=(d,j)=>{try{return new Date(j?d+'T12:00:00Z':d).toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){return '';}};
+      const blocFiche=a=>{
+        const tous=legsPar[a.ticket_id]||[];
+        if(!tous.length)return '';
+        const exact=tous.every(l=>['mk_score_l','mk_score_exact'].indexOf(String(l.market||''))>-1);
+        const nbOk=tous.filter(l=>l.result==='won').length;
+        const coteG=tous.filter(l=>l.result==='won').reduce((p,l)=>p*(Number(l.odd)||1),1);
+        const perdue=a.ticket_statut==='lost';
+        const cote=perdue?0:(exact&&nbOk)?coteG:Number(a.total_odd);
+        const sel=tous.filter(l=>l.result==='won').concat(tous.filter(l=>l.result!=='won'));
+        const lignes=sel.slice(0,2).map(l=>{
+          const brut=String(l.pick||'').replace(/^Victoire\s*:\s*Home$/i,'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i,'Victoire : 2');
+          const pick=(brut.indexOf(' — ')>-1||!(translations.fr||{})[brut])?brut:trad(brut);
+          const o=Number(l.odd);
+          return '<div class="wa-leg'+(l.result==='lost'?' ko':'')+'"><i aria-hidden="true">'+(l.result==='lost'?'✗':'✓')+'</i><span>'+echapper(l.match_label)+'<small>'+echapper(pick)+'</small></span><em>'+(isFinite(o)?o.toFixed(2):'')+'</em></div>';
+        }).join('');
+        const reste=sel.length-2;
+        return '<div class="wa-fiche"><div class="wa-frow"><span class="wa-tag">'+echapper(trad('av_tag'))+'</span><span class="wa-joue">'+echapper(trad('av_joue'))+'</span></div>'+
+          '<div class="wa-fh"><span>'+echapper(fd(a.play_date,true)+' · '+trad(exact?'wf_exact':(a.sport==='basket'||a.sport==='nba')?'wf_bask':'wf_foot'))+'</span><b>'+(perdue?echapper(nbOk+'/'+tous.length+' '+trad('tick_won')):echapper(trad('tick_won'))+(exact?' '+nbOk+'/'+tous.length:''))+(isFinite(cote)&&cote>0?' · '+cote.toFixed(2):'')+'</b></div>'+
+          lignes+(reste>0?'<div class="wa-more">'+echapper(trad('wf_more').replace('{n}',reste))+'</div>':'')+'</div>';
+      };
+      // 15/11 : avis sur un RAPPORT DU JOUR sans capture : le rapport remplace l'image (style carte « Rapò jou a »).
+      const blocRapport=a=>{
+        if(!a.rapport_date||a.rapport_total==null)return '';
+        const pct=Math.round(Number(a.rapport_taux)||0);
+        const m=(Array.isArray(a.rapport_matchs)?a.rapport_matchs:[]).filter(x=>x.result!=='lost');
+        const lignes=m.slice(0,2).map(x=>'<div class="wa-leg"><i aria-hidden="true">✓</i><span>'+echapper(x.match_label)+'<small>'+echapper(x.choix||x.pick)+'</small></span><em>'+(Number(x.odd)>1?Number(x.odd).toFixed(2):'')+'</em></div>').join('');
+        const reste=(Number(a.rapport_gagnes)||0)-Math.min(2,m.length);
+        return '<div class="wa-fiche wa-rapo"><div class="wa-frow"><span class="wa-tag">'+echapper(trad('av_tag'))+'</span><span class="wa-joue">'+echapper(trad('av_joue_rp'))+'</span></div>'+
+          '<div class="wa-rp"><b>'+pct+' %</b><span>'+echapper(trad('av_rp_g').replace('{g}',a.rapport_gagnes).replace('{t}',a.rapport_total))+'</span><small>'+echapper(fd(a.rapport_date,true).replace(/\./g,'').toUpperCase())+'</small></div>'+
+          '<div class="wf-pbar wa-pbar"><i style="width:'+Math.max(0,Math.min(100,pct))+'%"></i></div>'+
+          lignes+(reste>0?'<div class="wa-more">'+echapper(trad('rp_more').replace('{n}',reste))+'</div>':'')+'</div>';
+      };
+      const cartes=data.map(a=>{
+        const img=a.capture_path&&urls[a.capture_path];
+        const haut=img?'<div class="wa-shot"><span class="wa-tag">'+echapper(trad('av_tag'))+'</span><img src="'+echapper(img)+'" alt="" loading="lazy" decoding="async"></div>'
+          :(!a.capture_path&&a.ticket_id?blocFiche(a):!a.capture_path&&a.rapport_date?blocRapport(a):'');
+        if(!haut)return '';   // capture introuvable, ou fiche sans matchs lisibles : pas sur le landing
+        const tl=legsPar[a.ticket_id]||[],okF=a.rapport_date&&!a.ticket_id?trad('av_ok_rp').replace('{g}',a.rapport_gagnes).replace('{t}',a.rapport_total)
+          :trad(a.ticket_statut==='lost'?'av_ok_part':'av_ok_fiche').replace('{g}',tl.filter(l=>l.result==='won').length).replace('{t}',tl.length);
         const n=Math.max(1,Math.min(5,Number(a.etoiles)||5));
-        return '<article class="win win-auto win-avis"><div class="wa">'+
-          '<div class="wa-shot"><span class="wa-tag">'+echapper(trad('av_tag'))+'</span><img src="'+echapper(urls[a.capture_path])+'" alt="" loading="lazy" decoding="async"></div>'+
+        return '<article class="win win-auto win-avis"><div class="wa">'+haut+
           '<div class="wa-body"><div class="wa-stars" aria-label="'+n+'/5">'+'★'.repeat(n)+'<span style="opacity:.25">'+'★'.repeat(5-n)+'</span></div>'+
           (a.note?'<p class="wa-q">« '+echapper(a.note)+' »</p>':'<p class="wa-q"></p>')+
-          '<div class="wa-by">'+echapper(trad('av_by').replace('{plan}',a.plan_libelle||'VIP').replace('{d}',(()=>{try{return new Date(a.decide_at).toLocaleDateString(lang==='en'?'en-US':'fr-FR',{day:'numeric',month:'short'});}catch(e){return '';}})()))+'</div>'+
-          '<span class="wa-ok">'+echapper(trad('av_ok'))+'</span></div></div></article>';
-      });
+          '<div class="wa-by">'+echapper(trad('av_by').replace('{plan}',a.plan_libelle||'VIP').replace('{d}',fd(a.decide_at,false))+(img&&a.rapport_date?' · '+trad('av_rp_du').replace('{d}',fd(a.rapport_date,true)):''))+'</div>'+
+          '<span class="wa-ok">'+echapper(img?trad('av_ok'):okF)+'</span></div></div></article>';
+      }).filter(Boolean);
       if(!cartes.length)return;
       const rapos=track.querySelectorAll('.win-rapo');
       if(rapos.length)rapos[rapos.length-1].insertAdjacentHTML('afterend',cartes.join(''));

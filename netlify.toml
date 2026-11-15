@@ -144,11 +144,17 @@
 # Canal Telegram PUBLIC : fiches gagnantes (additif) — voir telegram-public.js
 [functions."telegram-public"]
   schedule = "*/10 * * * *"
+  # Image des fiches (moteur WebAssembly + police Inter, integres au projet).
+  # 15/11 : ligne perdue le 09/11 (blocs rapport-jour / avis-telegram inseres au milieu)
+  # -> fiche score exact du 14/11 postee en texte seul (« fichier introuvable : resvg/index_bg.wasm »).
+  included_files = ["netlify/functions/lib/resvg/**", "netlify/functions/lib/fonts/**"]
 
 # 07/11 : rapport du jour (taux de reussite des pronostics, sans score exact) -> rapports_jour
 # + Telegram (groupe VIP de chaque plan, canal public pour le rapport complet).
 [functions."rapport-jour"]
   schedule = "*/30 * * * *"
+  # Image du rapport (meme moteur que les fiches)
+  included_files = ["netlify/functions/lib/resvg/**", "netlify/functions/lib/fonts/**"]
 
 # 09/11 : avis d'abonnes PUBLIES par l'admin -> canal Telegram public (une seule fois).
 [functions."avis-telegram"]
@@ -246,6 +252,66 @@
   for = "/"
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
+
+# 15/11 (allegement, accord de James) : fichiers qui ne changent jamais gardes 7 jours par le
+# telephone du visiteur (moins de bande passante, page plus rapide au retour).
+# REGLE : pour MODIFIER un de ces fichiers, lui donner un NOUVEAU NOM (ou ajouter ?v=2 dans
+# index.html) : tout le monde voit alors la nouvelle version tout de suite. Le logo VIP BETCOTE,
+# le QR MonCash, index.html et app.js ne sont PAS concernes (ils se revalident comme avant).
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/ticket-*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/moncash.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/natcash.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/mastercard.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/american-express.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/paypal.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/cash-app.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/paryajpam.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/paryajlakay.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/1xbet.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
 
 # Parrainage : attribution / application des jours offerts (additif) — voir parrainage-recompenses.js
 [functions."parrainage-recompenses"]

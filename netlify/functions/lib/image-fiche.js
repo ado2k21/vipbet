@@ -131,19 +131,19 @@ function svgGagnante(info, legs) {
   <text x="130" y="94" font-size="34" font-weight="800" fill="#fff">VIP<tspan fill="${OR}">BETCOTE</tspan></text>
   ${(() => { /* 19/10 : score exact -> « GAGNÉE 1/3 » (bons scores / matchs), badge elargi */
     const fr = info.fraction ? ' ' + esc(info.fraction) : '';
-    const lb = fr ? 312 : 232, x0 = W - 48 - lb;
+    const lb = info.partiel ? 232 : fr ? 312 : 232, x0 = W - 48 - lb;
     return `<rect x="${x0}" y="52" width="${lb}" height="60" rx="30" fill="${VERT}"/>
   <path d="M${x0 + 32} 82 L${x0 + 42} 92 L${x0 + 60} 72" fill="none" stroke="#06140C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="${x0 + 70 + (lb - 82) / 2}" y="93" text-anchor="middle" font-size="27" font-weight="800" fill="#06140C">GAGNÉE${fr}</text>`;
+  <text x="${x0 + 70 + (lb - 82) / 2}" y="93" text-anchor="middle" font-size="27" font-weight="800" fill="#06140C">${info.partiel ? esc(info.partiel) : 'GAGNÉE' + fr}</text>`;
   })()}
   ${trophee(W / 2, 242)}
-  <text x="${W / 2}" y="392" text-anchor="middle" font-size="78" font-weight="800" fill="#FFFFFF" letter-spacing="1">FICHE GAGNÉE</text>
+  <text x="${W / 2}" y="392" text-anchor="middle" font-size="78" font-weight="800" fill="#FFFFFF" letter-spacing="1">${info.partiel ? 'FICHE JOUÉE' : 'FICHE GAGNÉE'}</text>
   <text x="${W / 2}" y="446" text-anchor="middle" font-size="30" font-weight="700" fill="${OR}" letter-spacing="3">${type}${cote ? ' · COTE ' + cote : ''}${info.date ? ' · ' + esc(info.date) : ''}</text>
   <text x="${W / 2}" y="494" text-anchor="middle" font-size="22" font-weight="500" fill="#BDEFD3">${esc(info.sousTitre || '')}</text>
   ${lignes}
   <line x1="44" y1="${yBas + 24}" x2="${W - 44}" y2="${yBas + 24}" stroke="rgba(232,206,138,.35)" stroke-width="2"/>
-  <text x="44" y="${yBas + 80}" font-size="20" font-weight="700" letter-spacing="4" fill="#BDEFD3">COTE TOTALE GAGNÉE</text>
-  <text x="44" y="${yBas + 168}" font-size="100" font-weight="800" fill="url(#gCote)">${cote || '—'}</text>
+  <text x="44" y="${yBas + 80}" font-size="20" font-weight="700" letter-spacing="4" fill="#BDEFD3">${info.partiel ? 'MATCHS GAGNÉS' : 'COTE TOTALE GAGNÉE'}</text>
+  <text x="44" y="${yBas + 168}" font-size="100" font-weight="800" fill="url(#gCote)">${info.partiel ? esc(info.partiel) : (cote || '—')}</text>
   <rect x="${W - 424}" y="${yBas + 96}" width="380" height="76" rx="22" fill="${OR}"/>
   <text x="${W - 234}" y="${yBas + 144}" text-anchor="middle" font-size="28" font-weight="800" fill="#1A1405">vipbetcote.com</text>
   <text x="${W / 2}" y="${H - 44}" text-anchor="middle" font-size="19" font-weight="500" fill="#8FD9AE">Jeu responsable, 18+. Jouez avec contrôle.</text>

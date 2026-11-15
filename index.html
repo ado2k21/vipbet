@@ -2125,6 +2125,7 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 .av-card{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:18px;padding:14px;display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;margin-bottom:12px}
 .av-card a.shot{display:block;width:76px;height:118px;border-radius:10px;overflow:hidden;background:#1f2b44}
 .av-card a.shot img{width:100%;height:100%;object-fit:cover;object-position:top}
+.av-card .av-sans-img{width:76px;height:118px;border-radius:10px;display:grid;place-items:center;font-size:28px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.35)}
 .av-who{font-size:13px;font-weight:700;color:#F4F3ED}.av-meta{font-size:11.5px;color:var(--gris);margin:2px 0 6px}
 .av-stars{color:#E8B84B;font-size:14px;letter-spacing:1px}
 .av-note{font-size:12.5px;color:#C5D0DC;line-height:1.45;margin:6px 0 10px;word-break:break-word}
@@ -2172,6 +2173,29 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 .wa-q{font:600 13.5px/1.45 var(--body);margin:6px 0 8px;flex:1;overflow:hidden;word-break:break-word}
 .wa-by{font-size:11.5px;color:#9AA8BA}
 .wa-ok{margin-top:8px;align-self:flex-start;font:800 10.5px var(--body);color:#8CF5B8;background:rgba(37,211,102,.14);border:1px solid rgba(37,211,102,.45);padding:4px 9px;border-radius:999px}
+/* 15/11 : avis SANS capture (fiche gagnee choisie) : la fiche remplace l'image */
+.wa-fiche{position:relative;height:52%;overflow:hidden;padding:10px 12px 8px;background:radial-gradient(120% 90% at 100% 0%,rgba(37,211,102,.16),transparent 60%),#0A1120;display:flex;flex-direction:column;gap:6px}
+.wa-frow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.wa-fiche .wa-tag{position:static}
+.wa-joue{font:800 10.5px var(--body);color:#04130B;background:#25D366;padding:5px 9px;border-radius:20px}
+.wa-fh{font:800 10.5px var(--mono,monospace);letter-spacing:.06em;color:#E8CE8A;display:flex;justify-content:space-between;gap:6px}
+.wa-fh b{color:#8CF5B8;white-space:nowrap}
+.wa-leg{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:rgba(244,243,237,.05);border:1px solid rgba(244,243,237,.07)}
+.wa-leg i{font-style:normal;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;background:rgba(37,211,102,.18);color:#25D366;flex:none}
+.wa-leg.ko i{background:rgba(255,92,92,.16);color:#FF7A7A}
+.wa-leg span{flex:1;min-width:0;font:700 11.5px/1.25 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-leg small{display:block;font-weight:500;color:#9AA8BA;font-size:10.5px;overflow:hidden;text-overflow:ellipsis}
+.wa-leg em{font-style:normal;font:800 11.5px var(--mono,monospace);color:#E8CE8A}
+.wa-more{font:700 10.5px var(--body);color:#9AA8BA;text-align:center}
+/* 15/11 : avis sur un RAPPORT DU JOUR (sans capture) */
+.wa-rapo{background:radial-gradient(120% 90% at 100% 0%,rgba(232,206,138,.18),transparent 60%),#0A1120}
+.wa-rapo .wa-joue{background:linear-gradient(180deg,#FFE6A3,#D9B766);color:#2a1c00}
+.wa-rp{display:flex;align-items:baseline;gap:8px}
+.wa-rp b{font:800 30px/1 var(--body);color:#25D366;letter-spacing:-.03em;white-space:nowrap;flex:none}
+.wa-rp span{font:700 11.5px var(--body);color:#C5D0DC;white-space:nowrap}
+.wa-rp small{margin-left:auto;font:800 10.5px var(--mono,monospace);color:#E8CE8A;letter-spacing:.06em;white-space:nowrap}
+.wa-pbar{margin-bottom:2px}
+.wa-fiche>*{flex-shrink:0}
 /* 09/11 : fenetre « pronostics » (statistiques abonne et admin) */
 .pr-box{margin:0 0 18px;padding:18px 18px 16px;border-radius:20px;border:1px solid rgba(37,211,102,.35);background:radial-gradient(120% 140% at 100% 0%,rgba(37,211,102,.14),transparent 55%),linear-gradient(180deg,#12203A,#0A1324)}
 .pr-k{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#93A89B}
@@ -4389,7 +4413,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
       <div class="lp-stage" aria-hidden="true">
         <span class="lp-halo"></span>
         <figure class="lp-tk lp-tk-l"><img src="assets/ticket-6.webp" alt="" width="560" height="783" decoding="async"></figure>
-        <figure class="lp-tk lp-tk-r"><img src="assets/ticket-22.jpg" alt="" width="720" height="834" decoding="async"></figure>
+        <figure class="lp-tk lp-tk-r"><img src="assets/ticket-22.webp" alt="" width="720" height="834" decoding="async"></figure>
         <div class="lp-phone">
           <div class="lp-phone-scr">
             <div class="lp-app-top">
@@ -4400,7 +4424,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
               <span class="lp-app-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
               <span class="lp-app-win-tx"><small data-i18n="tick_won">GENYEN</small><b>+336 000 HTG</b></span>
             </div>
-            <div class="lp-app-shot"><img src="assets/ticket-24.jpg" alt="" width="720" height="1066" decoding="async" fetchpriority="high"></div>
+            <div class="lp-app-shot"><img src="assets/ticket-24.webp" alt="" width="720" height="1066" decoding="async" fetchpriority="high"></div>
           </div>
           <span class="lp-phone-glare"></span>
         </div>
@@ -4661,32 +4685,32 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     <div class="win-track" id="winTrack" role="region" aria-label="Tickets gagnants — glisser ou utiliser les fleches" tabindex="0">
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 1">
-            <img src="assets/ticket-1.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº1 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-1.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº1 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 2">
-            <img src="assets/ticket-2.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº2 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-2.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº2 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 3">
-            <img src="assets/ticket-22.jpg" width="720" height="834" alt="Fich VIPBETCOTE ki genyen nº3 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-22.webp" width="720" height="834" alt="Fich VIPBETCOTE ki genyen nº3 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 4">
-            <img src="assets/ticket-3.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº4 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-3.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº4 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 5">
-            <img src="assets/ticket-4.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº5 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-4.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº5 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 6">
-            <img src="assets/ticket-5.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº6 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-5.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº6 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
@@ -4696,7 +4720,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 8">
-            <img src="assets/ticket-7.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº8 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-7.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº8 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
@@ -4721,62 +4745,62 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 13">
-            <img src="assets/ticket-12.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº13 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-12.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº13 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 14">
-            <img src="assets/ticket-13.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº14 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-13.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº14 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 15">
-            <img src="assets/ticket-14.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº15 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-14.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº15 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 16">
-            <img src="assets/ticket-15.jpg" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº16 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-15.webp" width="700" height="1000" alt="Fich VIPBETCOTE ki genyen nº16 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 17">
-            <img src="assets/ticket-16.jpg" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº17 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-16.webp" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº17 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 18">
-            <img src="assets/ticket-17.jpg" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº18 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-17.webp" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº18 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 19">
-            <img src="assets/ticket-18.jpg" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº19 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-18.webp" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº19 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 20">
-            <img src="assets/ticket-19.jpg" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº20 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-19.webp" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº20 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 21">
-            <img src="assets/ticket-20.jpg" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº21 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-20.webp" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº21 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 22">
-            <img src="assets/ticket-21.jpg" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº22 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-21.webp" width="560" height="800" alt="Fich VIPBETCOTE ki genyen nº22 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 23">
-            <img src="assets/ticket-23.jpg" width="720" height="1535" alt="Fich VIPBETCOTE ki genyen nº23 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-23.webp" width="720" height="1535" alt="Fich VIPBETCOTE ki genyen nº23 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
         <article class="win win-proof">
           <button class="proof-shot" type="button" aria-label="Ticket 24">
-            <img src="assets/ticket-24.jpg" width="720" height="1066" alt="Fich VIPBETCOTE ki genyen nº24 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
+            <img src="assets/ticket-24.webp" width="720" height="1066" alt="Fich VIPBETCOTE ki genyen nº24 — pronostik paryaj sou ParyajPam, ParyajLakay ak 1xBet" loading="lazy" decoding="async">
           </button>
         </article>
     </div>
@@ -4945,7 +4969,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
 
       <aside class="authpage-brand">
         <span class="authpage-emblem" aria-hidden="true">
-          <img src="assets/auth-emblem.webp" alt="VIPBETCOTE — fich ak pronostik foutbòl ak NBA pou ParyajPam ak ParyajLakay" width="1536" height="1024" loading="lazy" decoding="async">
+          <img data-src="assets/auth-emblem.webp" alt="VIPBETCOTE — fich ak pronostik foutbòl ak NBA pou ParyajPam ak ParyajLakay" width="1536" height="1024" loading="lazy" decoding="async">
         </span>
         <span class="tag" data-i18n="auth_tag">ESPAS MANM</span>
         <h2 class="authpage-brand-h" id="authpage-t">VIP BETCOTE</h2>
@@ -6800,6 +6824,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261114d"></script>
+<script src="app.js?v=20261115f"></script>
 </body>
 </html>
