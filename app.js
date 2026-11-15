@@ -7303,7 +7303,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const foot=document.createElement('div');
     foot.className='dtk-foot';
     foot.innerHTML='<span class="dtk-foot-lbl">'+t('dash_score_count').replace('{n}',total)+'</span>'+
-      '<span class="dtk-tag-pair">'+t('dash_tag_pair')+'</span>';
+      // 15/11 (James) : carte score exact MASQUEE -> la cote (comme les autres fiches masquees) au lieu
+      // de « Jwe pa de ». Carte ouverte : « Jwe pa de » inchange.
+      (locked?(()=>{const c=Math.max.apply(null,fichesScoreDuJour().filter(k=>k.day===jourSc).map(totalOdd).concat([0]));return c>1?'<span class="dtk-foot-odd">'+c.toFixed(2)+'</span>':'';})()
+        :'<span class="dtk-tag-pair">'+t('dash_tag_pair')+'</span>');
     el.appendChild(foot);
 
     if(locked){
@@ -7458,7 +7461,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const rangScores=rangScoresDuJour();
     const ilYaScores=rangScores!=null;
     const scoresVisibles=ilYaScores&&rangScores<=userRank();
-    const montreScores=ilYaScores&&((f.sport==='all'&&scoresVisibles)||(f.sport==='other'&&!scoresVisibles));
+    // 15/11 (James) : compte SANS plan actif (plan expire, en attente, refuse — quel que soit l'ancien
+    // plan) : TOUTES les fiches du jour dans « Tout », masquees, carte score exact comprise (avant :
+    // seulement dans « Fich lòt plan »). Le contenu reste verrouille (ticketEl / scoreCardEls).
+    const sansPlanActif=userRank()===0;
+    const montreScores=ilYaScores&&((f.sport==='all'&&(scoresVisibles||sansPlanActif))||(f.sport==='other'&&!scoresVisibles));
     if(!list.length&&!montreScores){
       // Une panne de lecture ne doit jamais ressembler a "aucune fiche".
       wrap.appendChild(emptyEl(etatFiches==='erreur'?'dash_empty_err'
