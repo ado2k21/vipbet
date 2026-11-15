@@ -2145,6 +2145,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 (function(){
   const page=document.getElementById('authpage');
   if(!page)return;
+  // 15/11 (allegement) : l'image de la page de connexion (137 Ko) ne se charge qu'a l'OUVERTURE de
+  // cette page (avant : telechargee par chaque visiteur du landing, page cachee mais presente).
+  (function(){
+    const charger=()=>{page.querySelectorAll('img[data-src]').forEach(i=>{i.src=i.dataset.src;i.removeAttribute('data-src');});};
+    if(page.classList.contains('open'))charger();
+    else try{const mo=new MutationObserver(()=>{if(page.classList.contains('open')){charger();mo.disconnect();}});mo.observe(page,{attributes:true,attributeFilter:['class']});}catch(e){charger();}
+  })();
 
   /* ---- Catalogue des plans (source unique de verite) ---- */
   const PLANS=[

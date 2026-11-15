@@ -253,6 +253,66 @@
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
 
+# 15/11 (allegement, accord de James) : fichiers qui ne changent jamais gardes 7 jours par le
+# telephone du visiteur (moins de bande passante, page plus rapide au retour).
+# REGLE : pour MODIFIER un de ces fichiers, lui donner un NOUVEAU NOM (ou ajouter ?v=2 dans
+# index.html) : tout le monde voit alors la nouvelle version tout de suite. Le logo VIP BETCOTE,
+# le QR MonCash, index.html et app.js ne sont PAS concernes (ils se revalident comme avant).
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/ticket-*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/moncash.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/natcash.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/mastercard.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/american-express.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/paypal.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/cash-app.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/paryajpam.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/paryajlakay.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/assets/1xbet.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
 # Parrainage : attribution / application des jours offerts (additif) — voir parrainage-recompenses.js
 [functions."parrainage-recompenses"]
   schedule = "*/15 * * * *"
