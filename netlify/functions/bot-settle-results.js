@@ -249,10 +249,27 @@ function resetStats() {
   stats.ticketsSansRienARegler = 0;
   stats.datesSansAppelApi = 0;
   stats.bsd = { legsExaminees: 0, legsResolues: 0 };
+  stats.datesListeRefusee = [];   // 15/11 : dates dont la liste a echoue (plan B match par match)
   stats.erreurs = [];
 }
 function logFinal() {
   console.log('[SETTLE]', JSON.stringify(stats, null, 2));
+}
+
+// 15/11 : les erreurs du reglement n'etaient visibles que dans les journaux Netlify. Elles sont
+// aussi ecrites dans error_log (contexte « bot_settle »), au plus une ligne par passage, et pas
+// deux fois le meme message en 6 h. Jamais bloquant.
+async function journaliserErreursSettle() {
+  try {
+    const lignes = [...new Set(stats.erreurs || [])];
+    if (stats.datesListeRefusee && stats.datesListeRefusee.length) lignes.unshift(`liste du jour refusee/ratee pour ${stats.datesListeRefusee.join(', ')} : relance match par match`);
+    if (!lignes.length) return;
+    const message = lignes.slice(0, 6).join(' | ').slice(0, 500);
+    const depuis = new Date(Date.now() - 6 * 3600000).toISOString();
+    const deja = await sbSelect('error_log', `select=id&context=eq.bot_settle&created_at=gte.${depuis}&message=eq.${encodeURIComponent(message)}&limit=1`);
+    if (deja && deja.length) return;
+    await sbInsert('error_log', [{ context: 'bot_settle', message }]);
+  } catch (_) { /* le journal ne doit jamais faire echouer le reglement */ }
 }
 
 // ============================================================================
@@ -1109,10 +1126,14 @@ async function reglerDate(dateIso) {
     // qu'API-Sports réponde de nouveau.
     // Relais BSD : seules les fiches ayant une sélection BSD en attente
     // continuent (via BSD) ; les sélections API-Sports restent en attente.
-    if (!(besoinBsdIds && ticketsFoot.some(t => besoinBsdIds.has(t.id)))) {
-      stats.ticketsEnAttente += ticketsFoot.length;
-      return;
-    }
+    // 15/11 (fiche du 12/11 bloquee 3 jours) : la liste d'une date ANCIENNE peut etre refusee par
+    // API-Sports (plage de dates du plan) alors que la relance PAR MATCH (fixtures?id=) repond.
+    // Avant : return ici -> la verification « match reporte » n'etait jamais atteinte et la fiche
+    // restait « en cours » indefiniment. Maintenant : on continue avec apiFootEnEchec=true ; chaque
+    // match en attente est relance individuellement (budget MAX_VERIF_REPORT_PAR_PASSAGE) avec
+    // EXACTEMENT les memes regles (reporte >= 12 h -> void ; termine -> vrai score ; annule -> void).
+    // Sans reponse : il reste en attente (jamais de resultat invente, jamais la regle des 23h59).
+    stats.datesListeRefusee = (stats.datesListeRefusee || []).concat(dateIso);
     apiFootEnEchec = true;
     fixturesJour = [];
   }
@@ -1193,7 +1214,7 @@ async function reglerDate(dateIso) {
 
       // 13/11 : match reporte -> annule tout de suite (voir raisonReport).
       let raisonReportLeg = null;
-      if (!estLegBSD && !apiFootEnEchec && verifReportsRestants > 0 && doitVerifierReport(leg, info)) {
+      if (!estLegBSD && verifReportsRestants > 0 && doitVerifierReport(leg, info)) {   // 15/11 : aussi quand la liste du jour a echoue (plan B)
         verifReportsRestants--;
         stats.verifsReport = (stats.verifsReport || 0) + 1;
         const r = await retenterFixtureUnique(leg.fixture_id);
@@ -1455,12 +1476,14 @@ async function handlerInterne(event) {
     dates = [...new Set(lignes.map(l => l.play_date))];
   } catch (e) {
     stats.erreurs.push('lecture dates pending: ' + e.message);
+    await journaliserErreursSettle();
     logFinal();
     return { statusCode: 500, body: 'Impossible de lire les tickets en attente.' };
   }
 
   if (!dates.length) {
     await reglerJournalBasketSeul(); // 14/11 : journal d'apprentissage, jamais bloquant
+    await journaliserErreursSettle();
     logFinal();
     return { statusCode: 200, body: 'Rien à régler — aucune fiche pending avec une date passée.' };
   }
@@ -1470,6 +1493,7 @@ async function handlerInterne(event) {
   }
   await reglerJournalBasketSeul(); // 14/11 : jamais bloquant
 
+  await journaliserErreursSettle();
   logFinal();
   return {
     statusCode: 200,
@@ -1479,4 +1503,4 @@ async function handlerInterne(event) {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports._interne = { raisonReport, doitVerifierReport, noterReponseApi, noterEtatApi, resetSuiviApi, REFUS_API_GRAVE };
+module.exports._interne = { reglerDate, stats, raisonReport, doitVerifierReport, noterReponseApi, noterEtatApi, resetSuiviApi, REFUS_API_GRAVE };
