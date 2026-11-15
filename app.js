@@ -5774,6 +5774,29 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if((m=p.match(/^(Plus|Moins) de ([\d.,]+)/i)))return sens(m[1])+m[2];
     return p;
   }
+  /* 15/11 (James) — choix ULTRA court des cartes TikTok : 1 / X / 2, 1X / 12 / X2, PLIS 1.5, MWENS 3.5,
+     1 PLIS 0.5 (total de l'equipe a domicile), 2 MWENS 1.5 (exterieur), GÒL/GÒL, score exact 2 - 1.
+     Lit le pari d'origine (« Victoire : Home », « Plus de 1.5 buts »…) et, a defaut, le libelle
+     kreyol (« Ki ekip ki genyen : 1 », « Total gòl : Plis pase 1.5 »…). Jamais de cote. */
+  function choixTikTok(pick,choix){
+    const essai=v=>{
+      const p=String(v||'').trim();let m;
+      if(!p)return null;
+      if((m=p.match(/^(?:Score exact|Sk[oò] egzak)\s*:\s*(\d+)\s*[:\-]\s*(\d+)/i)))return m[1]+' - '+m[2];
+      if(/^(?:Victoire|Ki ekip ki genyen|Vainqueur du match|Match winner)\s*:\s*(Home|1)$/i.test(p))return '1';
+      if(/^(?:Victoire|Ki ekip ki genyen|Vainqueur du match|Match winner)\s*:\s*(Away|2)$/i.test(p))return '2';
+      if(/^(?:Victoire|Ki ekip ki genyen)\s*:\s*(Nul|Draw|X)$/i.test(p))return 'X';
+      if((m=p.match(/^(?:Double chance|Doub chans)\s*:\s*(\S+)/i))){const d=m[1].toUpperCase();return d==='X1'?'1X':d==='2X'?'X2':d==='21'?'12':d;}
+      if(/(?:deux .quipes marquent|2 ekip make|both teams to score)\s*:\s*(Oui|Wi|Yes)/i.test(p))return 'GÒL/GÒL';
+      if(/(?:deux .quipes marquent|2 ekip make|both teams to score)\s*:\s*(Non|No)/i.test(p))return 'PA GÒL/GÒL';
+      const sens=x=>/^(plus|plis|over)/i.test(x)?'PLIS ':'MWENS ';
+      if((m=p.match(/^(?:Domicile|Ekip lakay)\s*:\s*(Plus|Moins|Plis|Mwens)(?: de| pase)? ([\d.,]+)/i)))return '1 '+sens(m[1])+m[2];
+      if((m=p.match(/^(?:Ext.rieur|Ekip dey[oò])\s*:\s*(Plus|Moins|Plis|Mwens)(?: de| pase)? ([\d.,]+)/i)))return '2 '+sens(m[1])+m[2];
+      if((m=p.match(/(?:^|:\s*)(Plus|Moins|Plis|Mwens|Over|Under)(?: de| pase)? ([\d.,]+)/i)))return sens(m[1])+m[2];
+      return null;
+    };
+    return essai(pick)||essai(choix)||String(choix||pick||'');
+  }
   async function genererCarteFullTime(tk){
     const W=1080,H=1920;
     const cv=document.createElement('canvas');cv.width=W;cv.height=H;
@@ -5897,25 +5920,31 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       if(l2){ctx.fillText(coupe(l1,max),cx,cy-fN*0.15);ctx.fillText(coupe(l2,max),cx,cy+fN*0.95);}
       else ctx.fillText(coupe(l1,max),cx,cy+fN*0.38);
     };
+    // 15/11 (James) : meme taille de texte pour le choix sur TOUTES les lignes (la plus grande qui
+    // tient pour le choix le plus long, marque ✓/✗ comprise sur les lignes serrees).
+    const choixDe=m=>String(choixTikTok(m.pick,m.choix)).toUpperCase();
+    let fU=fC;
+    legs.forEach(m=>{
+      const regle=m.result==='won'||m.result==='lost',txt=(regle&&HL<100?'✓ ':'')+choixDe(m);
+      ctx.font='900 '+fU+'px '+SORA;
+      while(fU>16&&ctx.measureText(txt).width>CW-30){fU-=2;ctx.font='900 '+fU+'px '+SORA;}
+    });
     legs.forEach(m=>{
       const parts=String(m.match_label||'').split(/\s+[—–-]\s+/);const home=parts[0]||'',away=parts[1]||'';
       ctx.save();ctx.shadowColor='rgba(11,31,107,.12)';ctx.shadowBlur=18;ctx.shadowOffsetY=6;
       ctx.fillStyle='#FFFFFF';rr(X,y,LW,HL,26);ctx.fill();ctx.restore();
-      ctx.save();rr(X,y,LW,HL,26);ctx.clip();ctx.fillStyle=BLEU;ctx.fillRect(X+SW,y,CW,HL);ctx.restore();
+      // 15/11 (James) : match perdu = bloc GRIS (gagne ou en cours : bleu).
+      ctx.save();rr(X,y,LW,HL,26);ctx.clip();ctx.fillStyle=m.result==='lost'?'#8C95A8':BLEU;ctx.fillRect(X+SW,y,CW,HL);ctx.restore();
       nomEquipe(home,X+SW/2,y+HL/2,SW-36);
       nomEquipe(away,X+SW+CW+SW/2,y+HL/2,SW-36);
-      let choix=choixCourt(m.pick||m.choix,home,away);
-      ctx.font='900 '+fC+'px '+SORA;
-      if(ctx.measureText(String(choix).toUpperCase()).width>CW-30){const c2=choixCourt(m.pick||m.choix,home.split(' ')[0],away.split(' ')[0]);if(c2)choix=c2;}
-      choix=String(choix).toUpperCase();let f=fC;
-      while(f>18&&(ctx.font='900 '+f+'px '+SORA,ctx.measureText(choix).width>CW-30))f-=2;
+      const choix=choixDe(m),f=fU;
+      ctx.font='900 '+f+'px '+SORA;
       const regle=m.result==='won'||m.result==='lost';
       // Lignes serrees (beaucoup de matchs) : ✓/✗ devant le choix, sans « FULL TIME » (rien ne deborde).
       if(regle&&HL<100){
         const marque=m.result==='lost'?'✗':'✓',wm=ctx.measureText(marque+' ').width;
-        while(f>16&&ctx.measureText(marque+' '+choix).width>CW-24){f-=2;ctx.font='900 '+f+'px '+SORA;}
         const wt=ctx.measureText(marque+' '+choix).width,x0=X+SW+CW/2-wt/2,yT=y+HL/2+f*0.36;
-        ctx.textAlign='left';ctx.fillStyle='#25D366';ctx.fillText(marque,x0,yT);
+        ctx.textAlign='left';ctx.fillStyle=m.result==='lost'?'#FFFFFF':'#25D366';ctx.fillText(marque,x0,yT);
         ctx.fillStyle='#FFFFFF';ctx.fillText(coupe(choix,CW-24-wm),x0+ctx.measureText(marque+' ').width,yT);ctx.textAlign='center';
         y+=HL+gap;return;
       }
@@ -5924,8 +5953,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       // Reussi : ✓ vert ; perdu : ✗ rouge (meme taille), puis « FULL TIME ».
       const perdu=m.result==='lost',yL=y+HL/2+f*0.2+fL*1.8;
       ctx.font='800 '+fL+'px '+INTER;const lab=' FULL TIME',wM=ctx.measureText(perdu?'✗':'✓').width,wL=ctx.measureText(lab).width,x0=X+SW+CW/2-(wM+wL)/2;
-      ctx.textAlign='left';ctx.fillStyle='#25D366';ctx.fillText(perdu?'✗':'✓',x0,yL);
-      ctx.fillStyle='#9FC1FF';ctx.fillText(lab,x0+wM,yL);ctx.textAlign='center';
+      ctx.textAlign='left';ctx.fillStyle=perdu?'#FFFFFF':'#25D366';ctx.fillText(perdu?'✗':'✓',x0,yL);
+      ctx.fillStyle=perdu?'#E4E8F0':'#9FC1FF';ctx.fillText(lab,x0+wM,yL);ctx.textAlign='center';
       y+=HL+gap;
     });
     if(reste>0){ctx.font='800 30px '+INTER;ctx.fillStyle='#3B4A7A';ctx.textAlign='center';ctx.fillText('+'+reste,W/2,y+30);}
