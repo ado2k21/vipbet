@@ -2125,6 +2125,7 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 .av-card{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:18px;padding:14px;display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;margin-bottom:12px}
 .av-card a.shot{display:block;width:76px;height:118px;border-radius:10px;overflow:hidden;background:#1f2b44}
 .av-card a.shot img{width:100%;height:100%;object-fit:cover;object-position:top}
+.av-card .av-sans-img{width:76px;height:118px;border-radius:10px;display:grid;place-items:center;font-size:28px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.35)}
 .av-who{font-size:13px;font-weight:700;color:#F4F3ED}.av-meta{font-size:11.5px;color:var(--gris);margin:2px 0 6px}
 .av-stars{color:#E8B84B;font-size:14px;letter-spacing:1px}
 .av-note{font-size:12.5px;color:#C5D0DC;line-height:1.45;margin:6px 0 10px;word-break:break-word}
@@ -2172,6 +2173,29 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 .wa-q{font:600 13.5px/1.45 var(--body);margin:6px 0 8px;flex:1;overflow:hidden;word-break:break-word}
 .wa-by{font-size:11.5px;color:#9AA8BA}
 .wa-ok{margin-top:8px;align-self:flex-start;font:800 10.5px var(--body);color:#8CF5B8;background:rgba(37,211,102,.14);border:1px solid rgba(37,211,102,.45);padding:4px 9px;border-radius:999px}
+/* 15/11 : avis SANS capture (fiche gagnee choisie) : la fiche remplace l'image */
+.wa-fiche{position:relative;height:52%;overflow:hidden;padding:10px 12px 8px;background:radial-gradient(120% 90% at 100% 0%,rgba(37,211,102,.16),transparent 60%),#0A1120;display:flex;flex-direction:column;gap:6px}
+.wa-frow{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.wa-fiche .wa-tag{position:static}
+.wa-joue{font:800 10.5px var(--body);color:#04130B;background:#25D366;padding:5px 9px;border-radius:20px}
+.wa-fh{font:800 10.5px var(--mono,monospace);letter-spacing:.06em;color:#E8CE8A;display:flex;justify-content:space-between;gap:6px}
+.wa-fh b{color:#8CF5B8;white-space:nowrap}
+.wa-leg{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:rgba(244,243,237,.05);border:1px solid rgba(244,243,237,.07)}
+.wa-leg i{font-style:normal;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;background:rgba(37,211,102,.18);color:#25D366;flex:none}
+.wa-leg.ko i{background:rgba(255,92,92,.16);color:#FF7A7A}
+.wa-leg span{flex:1;min-width:0;font:700 11.5px/1.25 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-leg small{display:block;font-weight:500;color:#9AA8BA;font-size:10.5px;overflow:hidden;text-overflow:ellipsis}
+.wa-leg em{font-style:normal;font:800 11.5px var(--mono,monospace);color:#E8CE8A}
+.wa-more{font:700 10.5px var(--body);color:#9AA8BA;text-align:center}
+/* 15/11 : avis sur un RAPPORT DU JOUR (sans capture) */
+.wa-rapo{background:radial-gradient(120% 90% at 100% 0%,rgba(232,206,138,.18),transparent 60%),#0A1120}
+.wa-rapo .wa-joue{background:linear-gradient(180deg,#FFE6A3,#D9B766);color:#2a1c00}
+.wa-rp{display:flex;align-items:baseline;gap:8px}
+.wa-rp b{font:800 30px/1 var(--body);color:#25D366;letter-spacing:-.03em;white-space:nowrap;flex:none}
+.wa-rp span{font:700 11.5px var(--body);color:#C5D0DC;white-space:nowrap}
+.wa-rp small{margin-left:auto;font:800 10.5px var(--mono,monospace);color:#E8CE8A;letter-spacing:.06em;white-space:nowrap}
+.wa-pbar{margin-bottom:2px}
+.wa-fiche>*{flex-shrink:0}
 /* 09/11 : fenetre « pronostics » (statistiques abonne et admin) */
 .pr-box{margin:0 0 18px;padding:18px 18px 16px;border-radius:20px;border:1px solid rgba(37,211,102,.35);background:radial-gradient(120% 140% at 100% 0%,rgba(37,211,102,.14),transparent 55%),linear-gradient(180deg,#12203A,#0A1324)}
 .pr-k{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#93A89B}
@@ -6800,6 +6824,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261114d"></script>
+<script src="app.js?v=20261115d"></script>
 </body>
 </html>
