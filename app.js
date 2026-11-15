@@ -117,7 +117,7 @@ stat_garanti:"GARANTI", stat_garanti_lab:"REMBOURSEMENT SI VOUS NE GAGNEZ PAS UN
 stat_pronostiqueurs:"UTILISATEURS ACTIFS", stat_pronostics_jour:"PRONOSTICS RÉUSSIS", stat_gratuits:"PRONOSTICS GAGNANTS",
 ticket_title:"TICKETS GAGNANTS",
 mk_btts:"Les deux équipes marquent", mk_over:"Plus de 225.5",
-mk_1x2:"Victoire directe", mk_double_chance:"Double chance", mk_total_buts:"Total buts",
+mk_1x2:"Victoire directe", mk_basket_1x2:"Vainqueur du match", mk_basket_total:"Total de points", mk_double_chance:"Double chance", mk_total_buts:"Total buts",
 mk_total_domicile:"Total buts domicile", mk_total_exterieur:"Total buts extérieur",
 mk_score_exact:"Score exact", mk_buteur:"Buteur",
 lbl_cote:"Cote", lbl_cote_totale:"COTE TOTALE", badge_valide:"VALIDÉ",
@@ -697,7 +697,7 @@ stat_garanti:"GUARANTEED", stat_garanti_lab:"REFUND IF YOU DO NOT WIN ONCE",
 stat_pronostiqueurs:"ACTIVE USERS", stat_pronostics_jour:"SUCCESSFUL PICKS", stat_gratuits:"WINNING PICKS",
 ticket_title:"WINNING TICKETS",
 mk_btts:"Both teams to score", mk_over:"Over 225.5",
-mk_1x2:"Match winner", mk_double_chance:"Double chance", mk_total_buts:"Total goals",
+mk_1x2:"Match winner", mk_basket_1x2:"Match winner", mk_basket_total:"Total points", mk_double_chance:"Double chance", mk_total_buts:"Total goals",
 mk_total_domicile:"Home team total goals", mk_total_exterieur:"Away team total goals",
 mk_score_exact:"Correct score", mk_buteur:"Goalscorer",
 lbl_cote:"Odds", lbl_cote_totale:"TOTAL ODDS", badge_valide:"VERIFIED",
@@ -1277,7 +1277,7 @@ stat_garanti:"GARANTI", stat_garanti_lab:"RANBOUSMAN SIW PA GENYEN 1 FWA",
 stat_pronostiqueurs:"ITILIZATÈ AKTIF", stat_pronostics_jour:"PRONOSTIK REYISI", stat_gratuits:"PRONOSTIC KI GENYEN",
 ticket_title:"TIKÈ KI GENYEN YO",
 mk_btts:"De ekip yo make", mk_over:"Plis pase 225.5",
-mk_1x2:"Viktwa dirèk", mk_double_chance:"Doub chans", mk_total_buts:"Total gòl",
+mk_1x2:"Viktwa dirèk", mk_basket_1x2:"Ki ekip ki genyen", mk_basket_total:"Total pwen", mk_double_chance:"Doub chans", mk_total_buts:"Total gòl",
 mk_total_domicile:"Total gòl lakay", mk_total_exterieur:"Total gòl deyò",
 mk_score_exact:"Eskò egzak", mk_buteur:"Moun ki make",
 lbl_cote:"Cote", lbl_cote_totale:"COTE TOTAL", badge_valide:"VALIDE",
@@ -6354,7 +6354,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(isNaN(d.getTime()))return iso;
     const loc={fr:'fr-FR',en:'en-GB',ht:'fr-FR'}[currentLang]||'fr-FR';
     try{
-      return new Intl.DateTimeFormat(loc,{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(d);
+      // 14/11 (James) : mois abrege, sans point (« 14 nov 2026 », « 3 janv 2026 », « 1 déc 2026 »).
+      return new Intl.DateTimeFormat(loc,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(d).replace(/\./g,'');
     }catch(e){return iso;}
   }
   /* Deux valeurs de marché coexistent reellement en base (meme constat que
@@ -6369,6 +6370,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(tk.sport==='nba'||tk.sport==='basket')genre='dash_kind_basket';
     else if(tk.scoreCount>0&&tk.legsCount>0&&tk.scoreCount===tk.legsCount)genre='dash_kind_exact';
     else genre='dash_kind_normal';
+    // 14/11 (James) : le badge dit deja « BASKETBALL » / « ESKÒ EGZAK » -> seulement la date,
+    // jamais le meme mot deux fois dans l'en-tete. Fiche normale : « — Kòt nòmal » garde.
+    if(genre!=='dash_kind_normal')return dateLongueDash(tk.playDate);
     return dateLongueDash(tk.playDate)+' — '+t(genre);
   }
   /* Badge V / X / — par selection dans le Dashboard utilisateur (25/08,
@@ -7205,7 +7209,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const head=document.createElement('div');
     head.className='dtk-head';
     head.innerHTML='<span class="dtk-sport score">'+t('mk_score_l').toUpperCase()+'</span>'+
-      '<span class="dtk-date">'+dateLongueDash(dayDate(jourSc).toISOString().slice(0,10))+' — '+t('dash_kind_exact')+'</span>'+
+      '<span class="dtk-date">'+dateLongueDash(dayDate(jourSc).toISOString().slice(0,10))+'</span>'+   // 14/11 : badge deja « ESKÒ EGZAK »
       '<span class="dtk-res pending">'+t('dash_st_pending')+'</span>';
     el.appendChild(head);
 
@@ -11767,7 +11771,8 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     if(isNaN(d.getTime()))return iso;
     const loc={fr:'fr-FR',en:'en-GB',ht:'fr-FR'}[currentLang]||'fr-FR';
     try{
-      return new Intl.DateTimeFormat(loc,{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(d);
+      // 14/11 (James) : mois abrege, sans point (« 14 nov 2026 », « 3 janv 2026 », « 1 déc 2026 »).
+      return new Intl.DateTimeFormat(loc,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(d).replace(/\./g,'');
     }catch(e){return iso;}
   }
   function titreFiche(tk,legs){
@@ -11852,7 +11857,8 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
 
     return '<div class="admf-card" data-card="'+tk.id+'">'+
       '<div class="admf-card-h">'+
-        '<span class="admf-card-title">'+stripTags(titreFiche(tk,legs))+
+        // 14/11 : fiche basket -> la date seule (la ligne du dessous dit deja « BASKETBALL »)
+        '<span class="admf-card-title">'+stripTags((tk.sport==='basket'||tk.sport==='nba')?dateLongue(tk.play_date):titreFiche(tk,legs))+
           '<span class="admf-card-sub">'+((tk.sport==='basket'||tk.sport==='nba')?t('adm_fiche_sport_nba'):t('adm_fiche_sport_foot'))+
           ' · '+stripTags(tk.code||'')+(tk.published?'':' · '+t('adm_fiche_draft'))+'</span></span>'+
         '<span class="admf-src '+src+'">'+t('adm_fiche_src_'+src)+'</span>'+

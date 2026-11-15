@@ -598,6 +598,8 @@ function resetStats() {
   stats.bsd = { actif: false, evenementsRecuperes: 0, correspondances: 0, repliTente: 0, repliReussi: 0, erreur: null };
   stats.relaisBSD = null;
   stats.erreurs = [];
+  stats.ciblesDuJour = null;     // 14/11 : cotes visees + style du jour (classique / varie)
+  stats.stylesPaliers = [];      // 14/11 : style reellement retenu par palier (avec secours)
   // 30/09 : ces drapeaux vivent au niveau du module. Sur un conteneur Netlify
   // « chaud » réutilisé d'une invocation à l'autre, un drapeau resté vrai
   // bloquait TOUS les appels API-Sports des passages suivants sans le dire
@@ -2138,6 +2140,10 @@ function construireFiche(pool, plan, options) {
     // strict du plan ne s'applique qu'aux cotes hors de ces plages
     // contrôlées. EXACT_SCORE et PREMIUM sont donc tous deux exemptés.
     if (bet.odd > maxLeg && bet.tier !== 'EXACT_SCORE' && bet.tier !== 'PREMIUM') return false;
+    // 14/11 (James) : palier 3 (grosse cote) — chaque selection a au moins cette cote (1,25), pour
+    // viser 20+ avec des pronostics plus grands (2,10 · 1,70 · 1,90…) au lieu d'empiler des 1,20. Parmi ces
+    // cotes, la fiabilite decide toujours (meme tri). Absent = comportement d'avant (paliers 1 et 2).
+    if (options.coteMinSelection && bet.odd < options.coteMinSelection && bet.tier !== 'EXACT_SCORE') return false;
     // ANTI-DOUBLON EN CHAÎNE (11/09, demande explicite de James) — deux
     // règles distinctes, toutes deux dures (jamais un simple malus, la
     // répétition visible de cotes identiques est un défaut d'affichage, pas
@@ -3708,13 +3714,64 @@ async function handler(event) {
   // risquées mais probabilités avantageuses, au maximum 10 à 18 matchs selon les matchs du jour.
   const maxSelectionsEffortMax = Math.min(18, Math.max(10, nbMatchsDisponibles));
 
+  // 14/11 (James : « je ne veux pas ecraser le systeme, seulement l'ameliorer ») — COTES ALEATOIRES
+  // DANS TOUTE LA FOURCHETTE DE CHAQUE PALIER. Avant, le bot s'arretait des que la cote depassait le
+  // minimum du palier (toujours ~2,3 / ~4,5) et le palier 3 visait 100+ sans jamais l'atteindre.
+  // Chaque jour tire maintenant une cote VISEE au hasard (graine = la date : meme tirage si le bot
+  // repasse le meme jour) :
+  //   palier 1 : entre 2 et 4 ; palier 2 : entre 4 et 15 ; jour pauvre : entre 2 et 15 (borne par le
+  //   nombre de matchs) ; palier 3 : entre 16 et un maximum qui depend du NOMBRE DE MATCHS et de la
+  //   FIABILITE moyenne des meilleurs pronostics du jour (16/20/30/70/100…).
+  // INCHANGE : fourchettes et plafonds des plans, rang de chaque fiche selon sa cote finale, ordre de
+  // construction (score exact, petites cotes, grosse cote), choix des selections par fiabilite, toute
+  // fiche creee est publiee (palier 2 : jamais sous 4, comme avant). Si la cote visee n'est pas
+  // atteignable ce jour-la, la fiche garde la meilleure cote atteinte, classee selon sa cote.
+  const graineJour = String(dateCible).split('').reduce((h, c) => (Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0), 2166136261);
+  const hasardJour = (() => { let a = graineJour | 0; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
+  const tirerCible = (min, max) => Math.round((min + (max - min) * hasardJour()) * 100) / 100;
+  // Fiabilite du jour : moyenne du score de fiabilite des 20 meilleurs pronostics (1 par match).
+  const fiabiliteDuJour = (() => {
+    const parMatch = new Map();
+    poolFoot.forEach(b => { const v = Number(b.scoreFiabilite); if (!Number.isFinite(v)) return; if (!parMatch.has(b.fixtureId) || v > parMatch.get(b.fixtureId)) parMatch.set(b.fixtureId, v); });
+    const top = [...parMatch.values()].sort((x, y) => y - x).slice(0, 20);
+    return top.length ? top.reduce((x, y) => x + y, 0) / top.length : null;
+  })();
+  // 0,6 (pronostics peu surs) a 1,2 (tres surs) ; 0,72 ~ niveau habituel -> 1
+  const facteurFiabilite = fiabiliteDuJour == null ? 1 : Math.min(1.2, Math.max(0.6, fiabiliteDuJour / 0.72));
+  const maxPalier3 = Math.max(20, Math.round(Math.min(150, 16 + 3 * nbMatchsDisponibles) * facteurFiabilite));
+  const ciblePalier1 = tirerCible(2, 4);
+  const ciblePalier2 = tirerCible(4, 15);
+  const ciblePalier3 = tirerCible(16, maxPalier3);
+  const cibleJourPauvre = tirerCible(2, Math.min(15, 2 + nbMatchsDisponibles));
+  // 14/11 (James) : NOMBRE DE MATCHS varie aussi (cote 2 en 2-3 matchs, cote 4 en 2, 3, 4 matchs…), au
+  // lieu de 4-5 matchs pour une cote 2 ou 6-7 pour une cote 4. Tire chaque jour ; ce n'est qu'une
+  // VERSION de plus : la fiche n'est retenue que si elle est la plus proche de la cote visee, avec les
+  // pronostics les plus fiables (jamais moins de 2 matchs : regle du bot inchangee).
+  const tirerEntier = (min, max) => min + Math.floor(hasardJour() * (max - min + 1));
+  const nbMatchsPalier1 = tirerEntier(2, 4);
+  const nbMatchsPalier2 = tirerEntier(2, 6);
+  // Style du jour, par palier : 'classique' (ancien systeme) ou 'varie' (nouveau), au hasard.
+  const tirerStyle = () => (hasardJour() < 0.5 ? 'classique' : 'varie');
+  const style1 = tirerStyle(), style2 = tirerStyle(), style3 = tirerStyle(), stylePauvre = tirerStyle();
+  stats.ciblesDuJour = { palier1: ciblePalier1, palier2: ciblePalier2, palier3: ciblePalier3, maxPalier3, jourPauvre: cibleJourPauvre,
+    nbMatchsPalier1, nbMatchsPalier2, styles: { palier1: style1, palier2: style2, palier3: style3, jourPauvre: stylePauvre },
+    fiabiliteDuJour: fiabiliteDuJour == null ? null : Math.round(fiabiliteDuJour * 1000) / 1000 };
+
   const PALIERS_JOUR_RICHE = [
-    { nom: 'Palier 1 (2-4)',  cibleMin: 2,  cibleMax: 4,     avecRepli: true  },
-    { nom: 'Palier 2 (4-15)', cibleMin: 4,  cibleMax: 15,    avecRepli: false },
-    { nom: `Palier 3 — effort max (vise ${CIBLE_GARANTIE}+)`, cibleMin: CIBLE_GARANTIE, cibleMax: 99999, avecRepli: true, pousserVersCibleMax: true, maxSelectionsOverride: maxSelectionsEffortMax }
+    { nom: `Palier 1 (2-4, vise ${ciblePalier1})`,  cibleMin: ciblePalier1, cibleMax: 4,  avecRepli: true, nbMatchsVise: nbMatchsPalier1,
+      style: style1, classique: { cibleMin: 2 } },
+    { nom: `Palier 2 (4-15, vise ${ciblePalier2})`, cibleMin: ciblePalier2, cibleMax: 15, avecRepli: false, seuilPublication: 4, nbMatchsVise: nbMatchsPalier2,
+      style: style2, classique: { cibleMin: 4 } },
+    // Palier 3 : vise la cote tiree (16 a maxPalier3), sans plafond ; selections d'au moins 1,25 (les
+    // plus fiables parmi elles ; 1,30+/1,45 testes sur les vrais pools : moins bien). Ancienne cible :
+    // ${CIBLE_GARANTIE}+ (plafond le plus haut des plans), jamais atteinte en 60 jours.
+    { nom: `Palier 3 — grosse cote (vise ${ciblePalier3})`, cibleMin: ciblePalier3, cibleMax: 99999, avecRepli: true,
+      maxSelectionsOverride: maxSelectionsEffortMax, coteMinSelection: 1.25,
+      style: style3, classique: { cibleMin: CIBLE_GARANTIE, pousser: true, maxSel: maxSelectionsEffortMax } }
   ];
   const PALIER_JOUR_PAUVRE = [
-    { nom: 'Fiche unique (2-15, jour pauvre)', cibleMin: 2, cibleMax: 15, avecRepli: true }
+    { nom: `Fiche unique (2-15, jour pauvre, vise ${cibleJourPauvre})`, cibleMin: cibleJourPauvre, cibleMax: 15, avecRepli: true,
+      style: stylePauvre, classique: { cibleMin: 2 } }
   ];
 
   // ============================================================================
@@ -3883,27 +3940,90 @@ async function handler(event) {
   // et n'entre donc jamais dans ce compteur.
   const rangsDejaPublies = new Map();
 
-  async function tenterEtPublierPalier(palier) {
-    const buteursTmp = new Set(buteursUtilises);
-    const equipesTmp = new Map(equipesUtilisees);
-    // plans[0] (rang 1) sert uniquement de plan "porteur" pour les
-    // quelques usages internes de construireFiche qui lisent plan.rank —
-    // cibleMinOverride/cibleMaxOverride priment TOUJOURS sur plan.min_
-    // total_odd/max_total_odd (voir construireFiche, déjà en place),
-    // donc le palier réellement visé n'est jamais celui du rang 1.
-    const fiche = construireFiche(poolFoot, plans[0], {
-      buteursUtilises: buteursTmp, equipesUtilisees: equipesTmp, selectionsExclues, selectionsParFixture, matchUsageCount,
-      fixturesExclues: partageAvecScoreExact ? fixturesExclusesNormales : fixturesUtiliseesScoreExact,
-      scoresExactsParFixture: partageAvecScoreExact ? scoresExactsParFixture : null,
-      nbMatchsDisponibles, marchesUtiliseesJour, marchesHier,
-      cibleMinOverride: palier.cibleMin, cibleMaxOverride: palier.cibleMax,
-      pousserVersCibleMax: palier.pousserVersCibleMax || false,
-      maxSelectionsOverride: palier.maxSelectionsOverride,
-      buteurBloqueAutreFiche: buteurDejaUtiliseAujourdhuiAilleurs
+  async function tenterEtPublierPalier(palier, palierSuivant) {
+    // 14/11 (James : « ne pas ecraser le systeme d'avant, mais ajouter cela aussi ; selon le jour le bot
+    // decide ») — DEUX STYLES, l'ancien est TOUJOURS construit :
+    //   • CLASSIQUE = la fiche EXACTE de l'ancien systeme (memes cibles/options qu'avant le 14/11) ;
+    //   • VARIE = cote visee tiree au hasard dans la fourchette, nombre de matchs variable, et pour une
+    //     cible haute des pronostics un peu plus grands (toujours les plus fiables) ; on garde la
+    //     variante VALIDE la plus proche de la cote visee (a ecart presque egal : le moins de matchs).
+    // Le style du jour est tire au hasard (palier.style). FILET DE SECURITE : si le style choisi ne
+    // donne pas de fiche valide, l'autre est pris -> jamais moins de fiches qu'avec l'ancien systeme.
+    // Chaque version travaille sur ses PROPRES copies (aucune trace d'une version ecartee).
+    const construire = cfg => {
+      const buteursV = new Set(buteursUtilises), equipesV = new Map(equipesUtilisees), marchesJourV = new Map(marchesUtiliseesJour);
+      const f = construireFiche(poolFoot, plans[0], {
+        buteursUtilises: buteursV, equipesUtilisees: equipesV, selectionsExclues, selectionsParFixture, matchUsageCount,
+        fixturesExclues: partageAvecScoreExact ? fixturesExclusesNormales : fixturesUtiliseesScoreExact,
+        scoresExactsParFixture: partageAvecScoreExact ? scoresExactsParFixture : null,
+        nbMatchsDisponibles, marchesUtiliseesJour: marchesJourV, marchesHier,
+        cibleMinOverride: cfg.cibleMin, cibleMaxOverride: palier.cibleMax,
+        pousserVersCibleMax: cfg.pousser || false,
+        maxSelectionsOverride: cfg.maxSel,
+        coteMinSelection: cfg.coteMin,
+        buteurBloqueAutreFiche: buteurDejaUtiliseAujourdhuiAilleurs
+      });
+      return { f, buteursV, equipesV, marchesJourV };
+    };
+    const seuilV = palier.seuilPublication != null ? palier.seuilPublication : 0;
+    const estValide = v => !!(v && v.f.valide && v.f.coteTotale >= seuilV);
+    // Ancien systeme (inchange)
+    const vClassique = palier.classique ? construire(palier.classique) : null;
+    // Nouveau : variantes autour de la cote visee
+    const nbSelMax = palier.maxSelectionsOverride || (palier.cibleMax <= 15 ? 7 : 10);
+    const coteMinAuto = palier.cibleMin >= 6 ? Math.round(Math.pow(palier.cibleMin, 1 / nbSelMax) * 100) / 100 : null;
+    const configs = [{ coteMin: palier.coteMinSelection, maxSel: palier.maxSelectionsOverride }];
+    if (coteMinAuto && (!palier.coteMinSelection || coteMinAuto > palier.coteMinSelection)) configs.push({ coteMin: coteMinAuto, maxSel: palier.maxSelectionsOverride });
+    if (palier.nbMatchsVise) {
+      const n = palier.nbMatchsVise;
+      configs.push({ coteMin: Math.max(palier.coteMinSelection || 0, Math.round(Math.pow(palier.cibleMin, 1 / n) * 100) / 100), maxSel: n });
+    }
+    const variantes = configs.map(c => construire({ cibleMin: palier.cibleMin, pousser: palier.pousserVersCibleMax, maxSel: c.maxSel, coteMin: c.coteMin }));
+    const ecart = v => Math.abs(Math.log(v.f.coteTotale / palier.cibleMin));
+    const variantesValides = variantes.filter(estValide).sort((x, y) => {
+      const d = ecart(x) - ecart(y);
+      return Math.abs(d) < 0.1 ? x.f.selections.length - y.f.selections.length : d;
     });
+    const meilleureVariante = variantesValides[0] || null;
+    // GARDE « JAMAIS MOINS DE FICHES » : une fiche variee ne doit pas prendre les matchs dont la fiche
+    // SUIVANTE (dans sa version classique) a besoin. Teste sur copies, rien n'est modifie.
+    const suivantPossibleApres = v => {
+      if (!palierSuivant || !palierSuivant.classique || !v || !v.f.valide) return true;
+      const exclusV = new Set(partageAvecScoreExact ? fixturesExclusesNormales : fixturesUtiliseesScoreExact);
+      const selExclV = new Set(selectionsExclues);
+      v.f.selections.forEach(x => { exclusV.add(x.fixtureId); selExclV.add(`${x.fixtureId}|${x.market}|${x.pick}`); });
+      const g = construireFiche(poolFoot, plans[0], {
+        buteursUtilises: new Set(v.buteursV), equipesUtilisees: new Map(v.equipesV), selectionsExclues: selExclV, selectionsParFixture, matchUsageCount,
+        fixturesExclues: exclusV, scoresExactsParFixture: partageAvecScoreExact ? scoresExactsParFixture : null,
+        nbMatchsDisponibles, marchesUtiliseesJour: new Map(v.marchesJourV), marchesHier,
+        cibleMinOverride: palierSuivant.classique.cibleMin, cibleMaxOverride: palierSuivant.cibleMax,
+        pousserVersCibleMax: palierSuivant.classique.pousser || false, maxSelectionsOverride: palierSuivant.classique.maxSel,
+        buteurBloqueAutreFiche: buteurDejaUtiliseAujourdhuiAilleurs
+      });
+      const seuilS = palierSuivant.seuilPublication != null ? palierSuivant.seuilPublication : 0;
+      return g.valide && g.coteTotale >= seuilS;
+    };
+    let choisie, styleRetenu;
+    if (palier.style === 'varie') {
+      if (meilleureVariante && (!estValide(vClassique) || suivantPossibleApres(meilleureVariante) || !suivantPossibleApres(vClassique))) { choisie = meilleureVariante; styleRetenu = 'varie'; }
+      else { choisie = vClassique || variantes[0]; styleRetenu = meilleureVariante ? 'classique (garde fiche suivante)' : 'classique (secours)'; }
+    } else {
+      if (estValide(vClassique) || !meilleureVariante) { choisie = vClassique || variantes[0]; styleRetenu = 'classique'; }
+      else { choisie = meilleureVariante; styleRetenu = 'varie (secours)'; }
+    }
+    (stats.stylesPaliers = stats.stylesPaliers || []).push(`${palier.nom} : ${styleRetenu}`);
+    const fiche = choisie.f;
+    const buteursTmp = choisie.buteursV, equipesTmp = choisie.equipesV;
+    marchesUtiliseesJour.clear(); choisie.marchesJourV.forEach((v, k) => marchesUtiliseesJour.set(k, v));
     stats.fichesGenerees++;
     if (!fiche.valide) return false;
-    if (!palier.avecRepli && fiche.coteTotale < palier.cibleMin) return false;
+    // 14/11 : la cible VISEE peut etre tiree au hasard (voir paliers) ; le refus se fait sur le
+    // seuil de publication du palier (palier 2 : 4 ; palier 3 : 20), jamais sur la cible tiree.
+    const seuilPub = palier.seuilPublication != null ? palier.seuilPublication : palier.cibleMin;
+    if ((!palier.avecRepli || palier.seuilPublication != null) && fiche.coteTotale < seuilPub) {
+      if (palier.seuilPublication != null) console.log(`[BOT] ${palier.nom} : cote ${fiche.coteTotale.toFixed(2)} sous ${seuilPub} — pas publiée (évite un doublon au plan 1).`);
+      return false;
+    }
     buteursTmp.forEach(p => buteursUtilises.add(p));
     equipesTmp.forEach((v, k) => equipesUtilisees.set(k, v));
     const fixturesDeCetteFiche = new Set();
@@ -3969,8 +4089,9 @@ async function handler(event) {
   const MAX_FICHES_JOUR_PAUVRE = 1; // 20/09 : « une seule cote qui partage avec tous les plans » (demande de James)
   const paliersATenter = jourRiche ? PALIERS_JOUR_RICHE : PALIER_JOUR_PAUVRE;
   console.log(`[BOT] Jour ${jourRiche ? 'RICHE' : 'PAUVRE'} (${nbMatchsDisponibles} matchs utilisables, seuil=${SEUIL_JOUR_RICHE}) — ${paliersATenter.length} palier(s) à tenter. Effort max toujours actif, vise ${CIBLE_GARANTIE}+ (plafond réel le plus haut des plans, max ${maxSelectionsEffortMax} sélections selon matchs dispo).`);
-  for (const palier of paliersATenter) {
-    const ok = await tenterEtPublierPalier(palier);
+  for (let ip = 0; ip < paliersATenter.length; ip++) {
+    const palier = paliersATenter[ip];
+    const ok = await tenterEtPublierPalier(palier, paliersATenter[ip + 1]);
     if (!ok) {
       console.log(`[BOT] ${palier.nom} non publié (pool insuffisant pour cette cible, ou aucune sélection valide restante).`);
       // Le palier GARANTI (1 un jour riche, l'unique un jour pauvre) qui
