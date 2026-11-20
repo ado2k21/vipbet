@@ -12,6 +12,33 @@ const legsBase = () => [
   { id: 'l3', ticket_id: 't12', fixture_id: 333, market: 'mk_total_buts', pick: 'Plus de 1.5 buts', result: 'won', kickoff_at: '2026-11-13T00:00:00+00:00' }
 ];
 let echecs = 0;
+// 18/11 : cas reel « Poland U21 — Serbia U21 », pari « Double chance : Away/Home », termine 0-1.
+async function scenarioDoubleChance() {
+  const legs = [{ id: 'd1', ticket_id: 't17', fixture_id: 1649552, market: 'mk_double_chance', pick: 'Double chance : Away/Home', result: null, kickoff_at: '2026-11-17T17:00:00+00:00' },
+    { id: 'd2', ticket_id: 't17', fixture_id: 9, market: 'mk_total_buts', pick: 'Plus de 1.5 buts', result: 'lost', kickoff_at: '2026-11-17T19:00:00+00:00' }];
+  const rep = (b, status) => ({ ok: (status || 200) < 400, status: status || 200, json: async () => b, text: async () => JSON.stringify(b), headers: { get: () => null } });
+  const ecrit = [];
+  global.fetch = async (url, o) => {
+    const u = String(url), m = (o && o.method) || 'GET';
+    if (u.includes('/rest/v1/rpc/')) return rep(true);
+    if (u.includes('/rest/v1/tickets?') && m === 'GET') return rep([{ id: 't17', code: 'BOT-2026-11-17-FOOT-R3', play_date: '2026-11-17', sport: 'foot' }]);
+    if (u.includes('/rest/v1/ticket_legs?') && m === 'GET') return rep(legs.map(l => Object.assign({}, l)));
+    if (u.includes('/rest/v1/') && m === 'PATCH') { ecrit.push(u.split('/rest/v1/')[1].split('?')[0] + ' ' + o.body); const id = u.split('id=eq.')[1]; const l = legs.find(x => x.id === id); if (l) Object.assign(l, JSON.parse(o.body)); return rep(null); }
+    if (u.includes('/rest/v1/')) return rep([]);
+    if (u.includes('api-sports.io/fixtures')) return rep({ errors: [], response: [{ fixture: { id: 1649552, date: '2026-11-17T17:00:00+00:00', status: { short: 'FT' } }, goals: { home: 0, away: 1 }, score: { fulltime: { home: 0, away: 1 } } }] });
+    return rep({ errors: [], response: [] });
+  };
+  const I = S._interne;
+  I.stats.erreurs = []; I.stats.datesTraitees = []; I.stats.datesListeRefusee = [];
+  I.stats.ticketsRegles = { won: 0, lost: 0 }; I.stats.legsMisAJour = { won: 0, lost: 0, void: 0 };
+  I.stats.appelsApiSports = { foot: 0, basket: 0 }; I.stats.bsd = { legsExaminees: 0, legsResolues: 0 };
+  console.log = () => {};
+  await I.reglerDate('2026-11-17');
+  const leg = legs[0].result, ticket = (ecrit.find(e => e.startsWith('tickets ')) || '').includes('"lost"') ? 'lost' : 'pending';
+  const ok = leg === 'won' && ticket === 'lost';
+  if (!ok) echecs++;
+  process.stdout.write(`\n=== 2b. Double chance « Away/Home », termine 0-1\n${ok ? 'OK' : 'ECHEC'} (match : ${leg}, fiche : ${ticket})\n`);
+}
 async function scenario(nom, { listeRefusee, relanceRepond }, attendu) {
   const legs = legsBase(), ecrit = [], err = [];
   const rep = (b, status) => ({ ok: (status || 200) < 400, status: status || 200, json: async () => b, text: async () => JSON.stringify(b), headers: { get: () => null } });
@@ -52,6 +79,7 @@ async function scenario(nom, { listeRefusee, relanceRepond }, attendu) {
 (async () => {
   await scenario('1. Liste du 12/11 REFUSEE, relance par match OK (cas reel)', { listeRefusee: true, relanceRepond: true }, { leg: 'void', ticket: 'lost' });
   await scenario('2. Liste refusee ET relance sans reponse', { listeRefusee: true, relanceRepond: false }, { leg: null, ticket: 'pending' });
+  await scenarioDoubleChance();
   await scenario('3. Liste OK (match absent de la liste), relance OK', { listeRefusee: false, relanceRepond: true }, { leg: 'void', ticket: 'lost' });
   process.stdout.write(echecs ? `\n${echecs} cas en ECHEC\n` : '\nTous les cas OK\n');
   process.exit(echecs ? 1 : 0);

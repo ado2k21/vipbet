@@ -57,7 +57,7 @@ function formaterGagnante(tk, legs) {
   const fraction = exact ? ` ${joues.filter(l => l.result === 'won').length}/${joues.length}` : '';
   const lignes = [`✅ <b>FICHE ${R.typeFiche(tk, legs)} GAGNANTE${fraction}${cote ? ' — COTE ' + cote : ''}</b>`, ''];
   legs.forEach(l => {
-    const pick = R.libellePick(l.pick);
+    const pick = R.libellePick(l.pick, l.market, l.match_label);
     const marche = R.libelleMarche(l.market);
     const choix = pick.includes(':') ? pick : (marche ? marche + ' : ' + pick : pick);
     const ligue = (String(l.league || '') + (l.league_country ? ' (' + l.league_country + ')' : '')).toUpperCase();
