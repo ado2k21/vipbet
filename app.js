@@ -203,8 +203,8 @@ pl1_name:"VIP 7 JOURS", pl1_per:"7 jours d’accès",
 plan_per_days:"{n} jours d'accès", plan_name_days:"VIP {n} JOURS",
 pl2_name:"VIP 21 JOURS", pl2_per:"21 jours d’accès",
 pl3_name:"VIP 30 JOURS", pl3_per:"30 jours d’accès",
-pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"Tout cotes yo disponib pou tout tan",
-pl4_f1:"Score exact", pl4_f2:"Betcote 1xBet", pl4_f3:"Fich illimité", pl4_foot:"Aksè a tout fich yo pou tout tan",
+pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"Toutes les cotes, pour toujours",
+pl4_f1:"Score exact", pl4_f2:"Betcote 1xBet", pl4_f3:"Fiches illimitées", pl4_foot:"Accès à toutes les fiches pour toujours",
 pf_c515:"Cotes 5 / 10 / 15", pf_c1580:"Cotes 15 / 30 / 60 / 80",
 pf_c1000:"Cotes 100 / 1000+", pf_c1000p:"Cotes 100 / 1000+", pf_c20:"Cotes 20 / 100 / 1000+",
 pf_betcote:"Betcote ParyajPam &amp; Paryaj Lakay", pf_lien:"Liens &amp; captures des fiches",
@@ -283,7 +283,7 @@ dash_f_all:"Tout", dash_f_foot:"Football", dash_f_nba:"Basketball",
 dash_f_allres:"Tous les résultats", dash_f_won:"Gagnées", dash_f_lost:"Perdues",
 dash_count:"{n} fiche(s)",
 dash_st_won:"GAGNÉ", dash_st_lost:"PERDU", dash_st_pending:"EN COURS", dash_kind_normal:"Cote normal", dash_kind_exact:"Score exact", dash_kind_basket:"Basketball",
-dash_anons_lbl:"ANNONCE", adm_nav_anons:"Annonces", adm_anons_h:"Annonces", adm_anons_p:"Messages affichés au-dessus des fiches du jour. Choisissez le public, puis activez-les quand vous voulez. Plusieurs actives : elles changent toutes les 30 secondes.", adm_anons_k_on:"actives", adm_anons_k_off:"désactivées", adm_anons_k_tot:"au total", adm_anons_new:"＋ Nouvelle annonce", adm_anons_new_h:"Nouvelle annonce", adm_anons_edit_h:"Modifier l'annonce", adm_anons_tit:"Titre", adm_anons_tx:"Texte", adm_anons_tx_s:"(200 caractères max.)", adm_anons_pou:"Pour qui ?", adm_anons_pub_abonne:"👑 Abonnés", adm_anons_pub_non_abonne:"👤 Non abonnés", adm_anons_pub_tous:"🌍 Tout le monde", adm_anons_act_now:"Activer maintenant", adm_anons_on:"● ACTIVE", adm_anons_off:"○ DÉSACTIVÉE", adm_anons_activer:"Activer", adm_anons_desactiver:"Désactiver", adm_anons_modifier:"✏️ Modifier", adm_anons_suppr:"Supprimer", adm_anons_cancel:"Annuler", adm_anons_save:"Enregistrer", adm_anons_act_h:"Activer cette annonce ?", adm_anons_act_p:"Elle apparaîtra tout de suite au-dessus des fiches du jour, pour le public choisi.", adm_anons_des_h:"Désactiver cette annonce ?", adm_anons_des_p:"Elle ne sera plus affichée. Elle reste dans la liste : vous pourrez la réactiver.", adm_anons_conf_h:"Supprimer cette annonce ?", adm_anons_conf_p:"Elle ne pourra pas être récupérée. Pour seulement la masquer, choisissez « Désactiver ».", adm_anons_non:"Non", adm_anons_wi:"Oui, supprimer", adm_anons_vide:"Aucune annonce. Cliquez sur « Nouvelle annonce ».", adm_anons_err_tit:"Ajoutez un titre.", adm_anons_absent:"La table des annonces n'existe pas encore : appliquez la migration 20261113120000_annonces.sql.",
+dash_anons_lbl:"ANNONCE", adm_nav_anons:"Annonces", adm_anons_h:"Annonces", adm_anons_p:"Messages affichés au-dessus des fiches du jour. Choisissez le public, puis activez-les quand vous voulez. Plusieurs actives : elles changent toutes les 30 secondes.", adm_anons_k_on:"actives", adm_anons_k_off:"désactivées", adm_anons_k_tot:"au total", adm_anons_new:"＋ Nouvelle annonce", adm_anons_new_h:"Nouvelle annonce", adm_anons_edit_h:"Modifier l'annonce", adm_anons_tit:"Titre", adm_anons_tx:"Texte", adm_anons_tx_s:"(200 caractères max.)", adm_anons_pou:"Pour qui ?", adm_anons_pub_abonne:"👑 Abonnés", adm_anons_pub_non_abonne:"👤 Non abonnés", adm_anons_pub_tous:"🌍 Tout le monde", adm_anons_act_now:"Activer maintenant", adm_anons_on:"● ACTIVE", adm_anons_off:"○ DÉSACTIVÉE", adm_anons_activer:"Activer", adm_anons_desactiver:"Désactiver", adm_anons_modifier:"✏️ Modifier", adm_anons_suppr:"Supprimer", adm_anons_cancel:"Annuler", adm_anons_save:"Enregistrer", adm_anons_act_h:"Activer cette annonce ?", adm_anons_act_p:"Elle apparaîtra tout de suite au-dessus des fiches du jour, pour le public choisi.", adm_anons_des_h:"Désactiver cette annonce ?", adm_anons_des_p:"Elle ne sera plus affichée. Elle reste dans la liste : vous pourrez la réactiver.", adm_anons_conf_h:"Supprimer cette annonce ?", adm_anons_conf_p:"Elle ne pourra pas être récupérée. Pour seulement la masquer, choisissez « Désactiver ».", adm_anons_non:"Non", adm_anons_wi:"Oui, supprimer", adm_anons_wi_act:"Oui, activer", adm_anons_wi_des:"Oui, désactiver", adm_anons_tr_h:"Traductions (facultatif) : sans traduction, le texte créole s'affiche", adm_anons_tit_fr:"Titre en français", adm_anons_tx_fr:"Texte en français", adm_anons_tit_en:"Titre en anglais", adm_anons_tx_en:"Texte en anglais", adm_anons_vide:"Aucune annonce. Cliquez sur « Nouvelle annonce ».", adm_anons_err_tit:"Ajoutez un titre.", adm_anons_absent:"La table des annonces n'existe pas encore : appliquez la migration 20261113120000_annonces.sql.",
 fb_fixe_q:"💬 Vous avez gagné avec les fiches VIP BETCOTE ?", fb_fixe_s:"Même si une fiche est perdue, si vous avez choisi les matchs gagnants et que vous avez gagné, envoyez votre preuve. L'équipe la vérifie avant publication.", fb_fixe_count:"{p} preuves vérifiées", fb_fiche_lbl:"Quelle fiche avez-vous jouée ?", fb_fiche_aucune:"— Choisissez la fiche —", fb_err_fiche:"Choisissez la fiche de votre gain.", fb_err_limite:"Vous avez déjà 3 preuves en attente. Attendez la validation de l'équipe.", fb_err_double:"Vous avez déjà envoyé une preuve pour cette fiche.", adm_avis_sans_fiche:"fiche non précisée", adm_avis_fiche_lost:"fiche perdue", adm_avis_tg_echec:"⚠️ Non envoyé sur Telegram (capture introuvable)", adm_avis_tg_echec_f:"⚠️ Non envoyé sur Telegram (fiche non gagnée)", adm_avis_voir:"🎟️ Voir la fiche", adm_avis_voir_rp:"📊 Voir le rapport", adm_avis_vue_jouee:"Fiche jouée", adm_avis_vue_code:"Fiche choisie par l'abonné :", adm_avis_fiche_du:"fiche du {d}", adm_avis_f_attente:"En attente", adm_avis_f_publie:"Publiés", adm_avis_f_refuse:"Refusés / retirés", adm_avis_h:"Avis", fiche_note_x2:"Jouer par 1 ou par 2 matchs", pr_won:"réussis", pr_lost:"perdus", pr_tot:"au total", pr_titre:"Pronostics réussis (sans score exact)", pr_note:"Foot et basket. Un même match présent dans plusieurs fiches compte une fois. Matchs annulés exclus.", pr_jours:"Jour par jour", pr_jours_note:"En vert : 70 % ou plus (rapport publié). Date de jeu des fiches.", pr_titre_adm:"Pronostics du site (sans score exact)", pr_note_adm:"Toutes les fiches publiées de la période. Un même match dans plusieurs fiches compte une fois. Matchs annulés exclus.", rp_share_texte:"Rapport du jour : {g}/{t} pronostics réussis ({p} %) avec VIP BETCOTE 🎉", fb_q:"Avez-vous joué cette fiche ?", fb_joue:"👍 Je l'ai jouée", fb_prev:"📸 Envoyer ma preuve de gain", fb_attente:"⏳ Votre preuve attend la validation", fb_publie:"✓ Votre preuve est publiée", fb_refuse:"Preuve non acceptée", fb_count:"{j} abonnés l'ont jouée · {p} preuves", fb_h:"Partagez votre gain 🎉", fb_s:"L'équipe la vérifie avant de la publier.", fb_file:"Choisir la capture de votre ticket", fb_file_s:"Facultatif · image JPG ou PNG, 5 Mo maximum", fb_note_ph:"Un petit mot (facultatif)…", fb_warn:"⚠️ Cachez votre nom, votre numéro de téléphone et le code du ticket avant d'envoyer la capture.", fb_consent:"J'accepte que VipBetcote publie cette preuve sur le site et sur Telegram, sans mon nom.", fb_send:"Envoyer la preuve", fb_cancel:"Annuler", fb_sending:"Envoi… {p}%", fb_err_file:"Choisissez une capture de votre ticket.", fb_err_size:"Image trop lourde (5 Mo maximum).", fb_err_consent:"Votre accord est nécessaire pour publier la preuve.", fb_err_send:"Échec. Réessayez.", fb_ok:"Merci ! Votre preuve attend la validation.", adm_nav_avis:"Avis abonnés", adm_avis_k_joue:"ont joué une fiche", adm_avis_k_prev:"preuves reçues", adm_avis_k_note:"note moyenne", adm_avis_pub:"✓ Publier", adm_avis_ref:"✗ Refuser", adm_avis_ret:"Retirer du landing", adm_avis_conf_pub_h:"Publier cet avis ?", adm_avis_conf_pub_p:"Il apparaîtra sur le landing et dans le groupe Telegram public, sans le nom de l'abonné. Vous pourrez le retirer du landing ; le message Telegram, lui, reste.", adm_avis_conf_ref_h:"Refuser cet avis ?", adm_avis_conf_ref_p:"Il ne sera jamais publié. L'abonné verra que sa preuve n'est pas acceptée.", adm_avis_conf_ret_h:"Retirer cet avis du landing ?", adm_avis_conf_ret_p:"Il n'apparaîtra plus sur le landing. Le message Telegram déjà envoyé reste.", adm_avis_wi:"Oui", adm_avis_non:"Non", adm_avis_vide:"Aucun avis ici.", adm_avis_tg_ok:"✓ Envoyé sur Telegram public", adm_avis_tg_att:"⏳ Envoi Telegram en attente", av_tag:"AVIS ABONNÉ", av_ok:"✓ Preuve vérifiée par l'équipe", av_by:"Abonné {plan} · {d}", av_joue:"✓ J'ai joué cette fiche", av_ok_fiche:"✓ Fiche vérifiée : gagnée", av_joue_rp:"✓ J'ai suivi ce rapport", av_ok_rp:"✓ Rapport vérifié : {g}/{t} réussis", av_rp_du:"Rapport du {d}", av_rp_g:"{g}/{t} réussis", fb_rapport_opt:"📊 Rapport du jour · {d} · {g}/{t} réussis", fb_opt_cote:"Cote {c}", fb_opt_match:"{n} matchs", av_ok_part:"✓ Fiche vérifiée : {g}/{t} matchs gagnés", adm_avis_sans_img:"sans capture : « j'ai joué cette fiche »", rp_badge:"RAPPORT DU JOUR", rp_retro:"Rapport calculé après coup : visible seulement dans l’admin (ni landing, ni abonnés, ni Telegram).", rp_title:"Rapport du jour", rp_reussis:"{g}/{t} pronostics réussis", rp_more:"+{n} autres pronostics réussis", rp_sans:"Sans score exact", rp_won:"RÉUSSI", rp_fb:"FOOT + BASKET", rp_f:"FOOT", rp_b:"BASKET", rp_note:"Football et basketball, sans score exact", rp_plans:"Par plan", dash_tip_h:"Vous n’êtes pas obligé de jouer une fiche entière chaque jour.", dash_tip_p:"Vous pouvez choisir les matchs que vous préférez dans chaque fiche et les combiner pour créer vos propres fiches : une seule ou plusieurs. Jouez avec contrôle.",
 adm_fiche_gen_btn:"GÉNÉRER FICHE", adm_fiche_gen_h:"Générer une fiche", adm_fiche_gen_p:"Génère une fiche immédiatement pour la date choisie, sans attendre la génération automatique du soir. N'est jamais bloquée par l'anti-doublon.",
 adm_fiche_gen_exact_btn:"GÉNÉRER SCORE EXACT", adm_fiche_gen_exact_h:"Générer un score exact", adm_fiche_gen_exact_p:"Génère uniquement des fiches score exact pour la date choisie — choisissez le nombre de matchs, pas de cote à définir.",
@@ -657,7 +657,7 @@ faq2_q:"Garantissez-vous des gains ?",
 legal_tag_cgu:"Légal", legal_tag_confid:"Légal", legal_tag_jeu:"Légal",
 legal_note:"Ce document est une version générale. Avant publication officielle, il doit être relu par un conseiller juridique.",
 legal_cgu_body:"<h3>1. Objet</h3><p>VIP BETCOTE est un service d'information qui publie des analyses et des sélections sportives à titre indicatif. La plateforme n'est ni un opérateur de paris, ni un intermédiaire de mise. Aucun pari n'est placé, encaissé ni reversé par VIP BETCOTE.</p><h3>2. Accès au service</h3><p>L'accès est réservé aux personnes âgées de <strong>18 ans ou plus</strong>. La création d'un compte nécessite une adresse e-mail valide et un numéro de téléphone. Vous êtes responsable de l'exactitude des informations fournies et de la confidentialité de votre mot de passe.</p><h3>3. Abonnements et paiement</h3><ul><li>Les tarifs sont affichés en gourdes (HTG) et payables via MonCash, NatCash ou carte bancaire.</li><li>L'abonnement démarre à la validation du paiement et prend fin à la date d'expiration indiquée dans votre tableau de bord.</li><li>Les abonnements à durée déterminée ne se renouvellent pas automatiquement.</li><li>Le plan à vie est un paiement unique, sans renouvellement.</li></ul><h3>4. Absence de garantie de gains</h3><p>Les paris sportifs comportent un risque de perte financière. <strong>Aucune sélection publiée ne constitue une garantie de gain.</strong> Les scores de confiance sont une évaluation subjective de notre équipe. Les performances passées ne préjugent pas des résultats futurs. Vous restez seul décideur de vos mises et seul responsable de vos pertes éventuelles.</p><h3>5. Utilisation du contenu</h3><p>Les sélections publiées sont réservées à votre usage personnel. Leur revente, rediffusion ou publication sur un autre support est interdite et peut entraîner la fermeture immédiate du compte, sans remboursement.</p><h3>6. Suspension et résiliation</h3><p>Nous pouvons suspendre un compte en cas de partage d'identifiants, de fraude au paiement, ou de non-respect des présentes conditions. Vous pouvez cesser d'utiliser le service à tout moment.</p><h3>7. Modifications</h3><p>Ces conditions peuvent évoluer. Les utilisateurs actifs sont informés des changements importants par e-mail ou via une notification dans le tableau de bord.</p>",
-legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement ce qui est nécessaire au fonctionnement du service :</p><ul><li><strong>Compte</strong> : nom, adresse e-mail, numéro de téléphone, mot de passe (stocké sous forme chiffrée, jamais en clair).</li><li><strong>Abonnement</strong> : plan choisi, dates de début et d'expiration, référence de transaction, moyen de paiement utilisé.</li><li><strong>Usage</strong> : date de dernière connexion et préférence de langue.</li></ul><h3>2. Données bancaires</h3><p>Les numéros de carte et identifiants de portefeuille mobile sont saisis directement chez le prestataire de paiement. <strong>Nous ne stockons aucune donnée bancaire</strong> sur nos serveurs.</p><h3>3. Utilisation</h3><p>Vos données servent à créer et sécuriser votre compte, activer et suivre votre abonnement, vous envoyer les notifications liées au service, et répondre à vos demandes de support. Elles ne sont pas utilisées à d'autres fins.</p><h3>4. Partage</h3><p>Nous ne vendons ni ne louons vos données. Elles ne sont transmises qu'aux prestataires strictement nécessaires — hébergement, envoi d'e-mails, traitement des paiements — et uniquement pour la part nécessaire à leur mission.</p><h3>5. Conservation</h3><p>Les données de compte sont conservées tant que le compte est actif. Après suppression, elles sont effacées sous 30 jours, à l'exception des justificatifs de paiement conservés pour obligation comptable.</p><h3>6. Vos droits</h3><p>Vous pouvez demander à consulter, corriger ou supprimer vos données, ainsi qu'à recevoir une copie de votre compte. Une demande envoyée depuis l'adresse e-mail enregistrée est traitée sous 30 jours.</p><h3>7. Sécurité</h3><p>Les mots de passe sont chiffrés, les échanges circulent en HTTPS, et l'accès aux données est limité aux personnes qui en ont besoin. Aucun système n'étant infaillible, nous vous recommandons un mot de passe unique et long.</p>",
+legal_confid_body:"<h3>1. Données collectées</h3><p>Nous collectons uniquement ce qui est nécessaire au fonctionnement du service :</p><ul><li><strong>Compte</strong> : nom, adresse e-mail, numéro de téléphone, mot de passe (stocké sous forme chiffrée, jamais en clair).</li><li><strong>Abonnement</strong> : plan choisi, dates de début et d'expiration, référence de transaction, moyen de paiement utilisé.</li><li><strong>Usage</strong> : date de dernière connexion et préférence de langue.</li></ul><h3>2. Données bancaires</h3><p>Les numéros de carte et identifiants de portefeuille mobile sont saisis directement chez le prestataire de paiement. <strong>Nous ne stockons aucune donnée bancaire</strong> sur nos serveurs.</p><h3>3. Utilisation</h3><p>Vos données servent à créer et sécuriser votre compte, activer et suivre votre abonnement, vous envoyer les notifications liées au service, répondre à vos demandes de support et, avec le pixel Meta (voir section 8), mesurer l'efficacité de nos publicités. Elles ne sont pas utilisées à d'autres fins.</p><h3>4. Partage</h3><p>Nous ne vendons ni ne louons vos données. Elles ne sont transmises qu'aux prestataires strictement nécessaires — hébergement, envoi d'e-mails, traitement des paiements — ainsi qu'à Meta (Facebook / Instagram) pour la mesure des publicités, et uniquement pour la part nécessaire à leur mission.</p><h3>5. Conservation</h3><p>Les données de compte sont conservées tant que le compte est actif. Après suppression, elles sont effacées sous 30 jours, à l'exception des justificatifs de paiement conservés pour obligation comptable.</p><h3>6. Vos droits</h3><p>Vous pouvez demander à consulter, corriger ou supprimer vos données, ainsi qu'à recevoir une copie de votre compte. Une demande envoyée depuis l'adresse e-mail enregistrée est traitée sous 30 jours.</p><h3>7. Sécurité</h3><p>Les mots de passe sont chiffrés, les échanges circulent en HTTPS, et l'accès aux données est limité aux personnes qui en ont besoin. Aucun système n'étant infaillible, nous vous recommandons un mot de passe unique et long.</p><h3>8. Mesure d'audience et publicité</h3><p>Le site utilise le pixel de Meta (Facebook / Instagram). Il enregistre les pages visitées et, lors d'un abonnement, le plan et le montant payé, afin de mesurer nos publicités et de proposer nos offres aux personnes qui ont déjà visité le site. Il ne transmet ni votre mot de passe ni vos données bancaires. Vous pouvez le bloquer avec les réglages de votre navigateur ou un bloqueur de publicité, et gérer vos préférences publicitaires dans votre compte Facebook.</p>",
 legal_jeu_body:"<h3>Le pari doit rester un loisir</h3><p>Parier n'est pas une source de revenus et ne doit jamais être considéré comme un moyen de rembourser une dette ou de compenser une perte. <strong>Ne misez que ce que vous pouvez perdre sans que cela change votre quotidien.</strong></p><h3>Ce que nous ne promettons pas</h3><p>VIP BETCOTE publie des analyses, pas des certitudes. Aucune sélection n'est garantie. Notre historique affiche les fiches perdantes au même titre que les gagnantes, précisément parce que les pertes font partie de l'activité.</p><h3>Signaux qui doivent alerter</h3><ul><li>Vous misez des sommes de plus en plus élevées pour ressentir le même intérêt.</li><li>Vous rejouez immédiatement pour récupérer une perte.</li><li>Vous empruntez de l'argent, ou vous puisez dans un budget prévu pour autre chose.</li><li>Vous cachez vos mises à vos proches.</li><li>Vous jouez pour échapper au stress, à l'ennui ou à la tristesse.</li><li>Vous avez déjà essayé d'arrêter sans y parvenir.</li></ul><h3>Garder le contrôle</h3><ul><li>Fixez un budget mensuel avant de commencer, et n'en sortez pas.</li><li>Fixez aussi une limite de temps.</li><li>Ne jouez jamais sous l'effet de l'alcool, de la fatigue ou de la colère.</li><li>Après une perte, arrêtez la journée plutôt que de rejouer.</li><li>Vérifiez régulièrement le total réellement misé sur un mois.</li></ul><h3>Interdit aux mineurs</h3><p>Ce service est strictement réservé aux personnes de <strong>18 ans ou plus</strong>. Tout compte identifié comme appartenant à un mineur est fermé sans remboursement.</p><h3>Demander de l'aide</h3><p>Si le jeu prend une place qui vous inquiète, parlez-en à une personne de confiance, à un médecin ou à un psychologue. En parler tôt rend les choses beaucoup plus simples. Vous pouvez aussi nous écrire pour demander la fermeture définitive de votre compte : nous appliquons cette demande sans discussion.</p>",
 },
 en: {
@@ -783,8 +783,8 @@ pl1_name:"VIP 7 DAYS", pl1_per:"7 days of access",
 plan_per_days:"{n} days of access", plan_name_days:"VIP {n} DAYS",
 pl2_name:"VIP 21 DAYS", pl2_per:"21 days of access",
 pl3_name:"VIP 30 DAYS", pl3_per:"30 days of access",
-pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"Tout cotes yo disponib pou tout tan",
-pl4_f1:"Score exact", pl4_f2:"Betcote 1xBet", pl4_f3:"Fich illimité", pl4_foot:"Aksè a tout fich yo pou tout tan",
+pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"All odds, forever",
+pl4_f1:"Exact score", pl4_f2:"Betcote 1xBet", pl4_f3:"Unlimited tickets", pl4_foot:"Access to every ticket, forever",
 pf_c515:"Odds 5 / 10 / 15", pf_c1580:"Odds 15 / 30 / 60 / 80",
 pf_c1000:"Odds 100 / 1000+", pf_c1000p:"Odds 100 / 1000+", pf_c20:"Odds 20 / 100 / 1000+",
 pf_betcote:"Betcote ParyajPam &amp; Paryaj Lakay", pf_lien:"Links &amp; slip screenshots",
@@ -863,7 +863,7 @@ dash_f_all:"All", dash_f_foot:"Football", dash_f_nba:"Basketball",
 dash_f_allres:"All results", dash_f_won:"Won", dash_f_lost:"Lost",
 dash_count:"{n} slip(s)",
 dash_st_won:"WON", dash_st_lost:"LOST", dash_st_pending:"PENDING", dash_kind_normal:"Standard odds", dash_kind_exact:"Correct score", dash_kind_basket:"Basketball",
-dash_anons_lbl:"ANNOUNCEMENT", adm_nav_anons:"Announcements", adm_anons_h:"Announcements", adm_anons_p:"Messages shown above today's tickets. Choose who sees them, then turn them on whenever you want. Several active: they rotate every 30 seconds.", adm_anons_k_on:"active", adm_anons_k_off:"inactive", adm_anons_k_tot:"total", adm_anons_new:"＋ New announcement", adm_anons_new_h:"New announcement", adm_anons_edit_h:"Edit announcement", adm_anons_tit:"Title", adm_anons_tx:"Text", adm_anons_tx_s:"(200 characters max)", adm_anons_pou:"For whom?", adm_anons_pub_abonne:"👑 Subscribers", adm_anons_pub_non_abonne:"👤 Non-subscribers", adm_anons_pub_tous:"🌍 Everyone", adm_anons_act_now:"Activate now", adm_anons_on:"● ACTIVE", adm_anons_off:"○ INACTIVE", adm_anons_activer:"Activate", adm_anons_desactiver:"Deactivate", adm_anons_modifier:"✏️ Edit", adm_anons_suppr:"Delete", adm_anons_cancel:"Cancel", adm_anons_save:"Save", adm_anons_act_h:"Turn on this announcement?", adm_anons_act_p:"It will show right away above today's tickets, for the chosen audience.", adm_anons_des_h:"Turn off this announcement?", adm_anons_des_p:"It will no longer be shown. It stays in the list: you can turn it on again.", adm_anons_conf_h:"Delete this announcement?", adm_anons_conf_p:"It cannot be recovered. To just hide it, choose “Deactivate”.", adm_anons_non:"No", adm_anons_wi:"Yes, delete", adm_anons_vide:"No announcements. Click “New announcement”.", adm_anons_err_tit:"Add a title.", adm_anons_absent:"The announcements table does not exist yet: apply migration 20261113120000_annonces.sql.",
+dash_anons_lbl:"ANNOUNCEMENT", adm_nav_anons:"Announcements", adm_anons_h:"Announcements", adm_anons_p:"Messages shown above today's tickets. Choose who sees them, then turn them on whenever you want. Several active: they rotate every 30 seconds.", adm_anons_k_on:"active", adm_anons_k_off:"inactive", adm_anons_k_tot:"total", adm_anons_new:"＋ New announcement", adm_anons_new_h:"New announcement", adm_anons_edit_h:"Edit announcement", adm_anons_tit:"Title", adm_anons_tx:"Text", adm_anons_tx_s:"(200 characters max)", adm_anons_pou:"For whom?", adm_anons_pub_abonne:"👑 Subscribers", adm_anons_pub_non_abonne:"👤 Non-subscribers", adm_anons_pub_tous:"🌍 Everyone", adm_anons_act_now:"Activate now", adm_anons_on:"● ACTIVE", adm_anons_off:"○ INACTIVE", adm_anons_activer:"Activate", adm_anons_desactiver:"Deactivate", adm_anons_modifier:"✏️ Edit", adm_anons_suppr:"Delete", adm_anons_cancel:"Cancel", adm_anons_save:"Save", adm_anons_act_h:"Turn on this announcement?", adm_anons_act_p:"It will show right away above today's tickets, for the chosen audience.", adm_anons_des_h:"Turn off this announcement?", adm_anons_des_p:"It will no longer be shown. It stays in the list: you can turn it on again.", adm_anons_conf_h:"Delete this announcement?", adm_anons_conf_p:"It cannot be recovered. To just hide it, choose “Deactivate”.", adm_anons_non:"No", adm_anons_wi:"Yes, delete", adm_anons_wi_act:"Yes, turn on", adm_anons_wi_des:"Yes, turn off", adm_anons_tr_h:"Translations (optional): without one, the Creole text is shown", adm_anons_tit_fr:"Title in French", adm_anons_tx_fr:"Text in French", adm_anons_tit_en:"Title in English", adm_anons_tx_en:"Text in English", adm_anons_vide:"No announcements. Click “New announcement”.", adm_anons_err_tit:"Add a title.", adm_anons_absent:"The announcements table does not exist yet: apply migration 20261113120000_annonces.sql.",
 fb_fixe_q:"💬 Did you win with VIP BETCOTE tickets?", fb_fixe_s:"Even if a ticket lost, if you picked the winning matches and won, send your proof. The team checks it before publishing.", fb_fixe_count:"{p} verified proofs", fb_fiche_lbl:"Which ticket did you play?", fb_fiche_aucune:"— Choose the ticket —", fb_err_fiche:"Choose the ticket you won with.", fb_err_limite:"You already have 3 proofs pending. Please wait for the team to review them.", fb_err_double:"You already sent a proof for this ticket.", adm_avis_sans_fiche:"ticket not specified", adm_avis_fiche_lost:"lost ticket", adm_avis_tg_echec:"⚠️ Not sent to Telegram (screenshot missing)", adm_avis_tg_echec_f:"⚠️ Not sent to Telegram (ticket not won)", adm_avis_voir:"🎟️ See the ticket", adm_avis_voir_rp:"📊 See the report", adm_avis_vue_jouee:"Ticket played", adm_avis_vue_code:"Ticket chosen by the subscriber:", adm_avis_fiche_du:"ticket of {d}", adm_avis_f_attente:"Pending", adm_avis_f_publie:"Published", adm_avis_f_refuse:"Refused / removed", adm_avis_h:"Reviews", fiche_note_x2:"Play 1 or 2 matches at a time", pr_won:"won", pr_lost:"lost", pr_tot:"in total", pr_titre:"Successful picks (no exact score)", pr_note:"Football and basketball. A match found in several slips counts once. Void matches excluded.", pr_jours:"Day by day", pr_jours_note:"Green: 70 % or more (report published). Slip play date.", pr_titre_adm:"Site picks (no exact score)", pr_note_adm:"All published slips in the period. A match found in several slips counts once. Void matches excluded.", rp_share_texte:"Daily report: {g}/{t} successful picks ({p} %) with VIP BETCOTE 🎉", fb_q:"Did you play this slip?", fb_joue:"👍 I played it", fb_prev:"📸 Send my winning proof", fb_attente:"⏳ Your proof is awaiting review", fb_publie:"✓ Your proof is published", fb_refuse:"Proof not accepted", fb_count:"{j} subscribers played it · {p} proofs", fb_h:"Share your win 🎉", fb_s:"The team checks it before publishing.", fb_file:"Choose your ticket screenshot", fb_file_s:"Optional · JPG or PNG image, 5 MB max", fb_note_ph:"A short message (optional)…", fb_warn:"⚠️ Hide your name, phone number and ticket code before sending the screenshot.", fb_consent:"I agree that VipBetcote may publish this proof on the site and on Telegram, without my name.", fb_send:"Send the proof", fb_cancel:"Cancel", fb_sending:"Sending… {p}%", fb_err_file:"Choose a screenshot of your ticket.", fb_err_size:"Image too large (5 MB max).", fb_err_consent:"Your consent is needed to publish the proof.", fb_err_send:"Failed. Try again.", fb_ok:"Thanks! Your proof is awaiting review.", adm_nav_avis:"Subscriber reviews", adm_avis_k_joue:"played a slip", adm_avis_k_prev:"proofs received", adm_avis_k_note:"average rating", adm_avis_pub:"✓ Publish", adm_avis_ref:"✗ Reject", adm_avis_ret:"Remove from landing", adm_avis_conf_pub_h:"Publish this review?", adm_avis_conf_pub_p:"It will appear on the landing page and in the public Telegram group, without the subscriber's name. You can remove it from the landing later; the Telegram message stays.", adm_avis_conf_ref_h:"Reject this review?", adm_avis_conf_ref_p:"It will never be published. The subscriber will see their proof was not accepted.", adm_avis_conf_ret_h:"Remove this review from the landing?", adm_avis_conf_ret_p:"It will no longer appear on the landing. The Telegram message already sent stays.", adm_avis_wi:"Yes", adm_avis_non:"No", adm_avis_vide:"No reviews here.", adm_avis_tg_ok:"✓ Sent to public Telegram", adm_avis_tg_att:"⏳ Telegram sending pending", av_tag:"SUBSCRIBER REVIEW", av_ok:"✓ Proof checked by the team", av_by:"Subscriber {plan} · {d}", av_joue:"✓ I played this ticket", av_ok_fiche:"✓ Ticket checked: won", av_joue_rp:"✓ I followed this report", av_ok_rp:"✓ Report checked: {g}/{t} won", av_rp_du:"Report of {d}", av_rp_g:"{g}/{t} won", fb_rapport_opt:"📊 Daily report · {d} · {g}/{t} won", fb_opt_cote:"Odds {c}", fb_opt_match:"{n} matches", av_ok_part:"✓ Ticket checked: {g}/{t} matches won", adm_avis_sans_img:"no screenshot: “I played this ticket”", rp_badge:"DAILY REPORT", rp_retro:"Report computed afterwards: admin only (not on the landing, subscribers or Telegram).", rp_title:"Daily report", rp_reussis:"{g}/{t} successful picks", rp_more:"+{n} more successful picks", rp_sans:"No exact score", rp_won:"SUCCESS", rp_fb:"FOOTBALL + BASKETBALL", rp_f:"FOOTBALL", rp_b:"BASKETBALL", rp_note:"Football and basketball, no exact score", rp_plans:"By plan", dash_tip_h:"You don’t have to play a full slip every day.", dash_tip_p:"Pick the matches you like from each slip and combine them into your own slips, one or several. Play with control.",
 adm_fiche_gen_btn:"GENERATE SLIP", adm_fiche_gen_h:"Generate a slip", adm_fiche_gen_p:"Generates a slip immediately for the chosen date, without waiting for the evening automatic generation. Never blocked by the duplicate-check.",
 adm_fiche_gen_exact_btn:"GENERATE EXACT SCORE", adm_fiche_gen_exact_h:"Generate an exact score slip", adm_fiche_gen_exact_p:"Generates exact-score slips only for the chosen date — pick the number of matches, no odds to set.",
@@ -1237,7 +1237,7 @@ faq2_q:"Do you guarantee winnings?",
 legal_tag_cgu:"Legal", legal_tag_confid:"Legal", legal_tag_jeu:"Legal",
 legal_note:"This document is a general version. Before official publication it must be reviewed by a legal adviser.",
 legal_cgu_body:"<h3>1. Purpose</h3><p>VIP BETCOTE is an information service publishing sports analysis and selections for guidance only. The platform is neither a betting operator nor a stake intermediary. No bet is placed, collected or paid out by VIP BETCOTE.</p><h3>2. Access</h3><p>Access is restricted to people aged <strong>18 or over</strong>. Creating an account requires a valid email address and a phone number. You are responsible for the accuracy of the information provided and for keeping your password confidential.</p><h3>3. Plans and payment</h3><ul><li>Prices are shown in gourdes (HTG) and payable via MonCash, NatCash or bank card.</li><li>A plan starts once payment is confirmed and ends on the expiry date shown in your dashboard.</li><li>Fixed-term plans do not renew automatically.</li><li>The lifetime plan is a one-off payment with no renewal.</li></ul><h3>4. No guarantee of winnings</h3><p>Sports betting carries a risk of financial loss. <strong>No published selection is a guarantee of winning.</strong> Confidence scores are our team's subjective assessment. Past performance does not predict future results. You alone decide your stakes and bear any losses.</p><h3>5. Use of content</h3><p>Published selections are for your personal use. Reselling, redistributing or republishing them elsewhere is prohibited and may lead to immediate account closure without refund.</p><h3>6. Suspension and termination</h3><p>We may suspend an account for credential sharing, payment fraud, or breach of these terms. You may stop using the service at any time.</p><h3>7. Changes</h3><p>These terms may change. Active users are informed of significant changes by email or through a dashboard notification.</p>",
-legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service needs to work:</p><ul><li><strong>Account</strong>: name, email address, phone number, password (stored hashed, never in plain text).</li><li><strong>Plan</strong>: chosen plan, start and expiry dates, transaction reference, payment method used.</li><li><strong>Usage</strong>: last login date and language preference.</li></ul><h3>2. Banking data</h3><p>Card numbers and mobile wallet credentials are entered directly with the payment provider. <strong>We store no banking data</strong> on our servers.</p><h3>3. Use</h3><p>Your data is used to create and secure your account, activate and track your plan, send service notifications, and answer support requests. It is not used for anything else.</p><h3>4. Sharing</h3><p>We do not sell or rent your data. It is shared only with strictly necessary providers — hosting, email delivery, payment processing — and only to the extent their task requires.</p><h3>5. Retention</h3><p>Account data is kept while the account is active. After deletion it is erased within 30 days, except payment records kept for accounting obligations.</p><h3>6. Your rights</h3><p>You may request access to, correction or deletion of your data, and a copy of your account. A request sent from your registered email address is handled within 30 days.</p><h3>7. Security</h3><p>Passwords are hashed, traffic runs over HTTPS, and data access is limited to those who need it. As no system is infallible, we recommend a long and unique password.</p>",
+legal_confid_body:"<h3>1. Data collected</h3><p>We collect only what the service needs to work:</p><ul><li><strong>Account</strong>: name, email address, phone number, password (stored hashed, never in plain text).</li><li><strong>Plan</strong>: chosen plan, start and expiry dates, transaction reference, payment method used.</li><li><strong>Usage</strong>: last login date and language preference.</li></ul><h3>2. Banking data</h3><p>Card numbers and mobile wallet credentials are entered directly with the payment provider. <strong>We store no banking data</strong> on our servers.</p><h3>3. Use</h3><p>Your data is used to create and secure your account, activate and track your plan, send service notifications, answer support requests, and, through the Meta pixel (see section 8), measure how well our ads perform. It is not used for anything else.</p><h3>4. Sharing</h3><p>We do not sell or rent your data. It is shared only with strictly necessary providers — hosting, email delivery, payment processing — as well as Meta (Facebook / Instagram) for ad measurement, and only to the extent their task requires.</p><h3>5. Retention</h3><p>Account data is kept while the account is active. After deletion it is erased within 30 days, except payment records kept for accounting obligations.</p><h3>6. Your rights</h3><p>You may request access to, correction or deletion of your data, and a copy of your account. A request sent from your registered email address is handled within 30 days.</p><h3>7. Security</h3><p>Passwords are hashed, traffic runs over HTTPS, and data access is limited to those who need it. As no system is infallible, we recommend a long and unique password.</p><h3>8. Audience measurement and advertising</h3><p>The site uses the Meta (Facebook / Instagram) pixel. It records the pages visited and, when you subscribe, the plan and the amount paid, so we can measure our ads and show our offers to people who have already visited the site. It never sends your password or your banking details. You can block it in your browser settings or with an ad blocker, and manage your ad preferences in your Facebook account.</p>",
 legal_jeu_body:"<h3>Betting should stay a pastime</h3><p>Betting is not an income and should never be seen as a way to repay a debt or recover a loss. <strong>Only stake what you can lose without it changing your daily life.</strong></p><h3>What we do not promise</h3><p>VIP BETCOTE publishes analysis, not certainties. No selection is guaranteed. Our history shows losing slips alongside winning ones, precisely because losses are part of it.</p><h3>Warning signs</h3><ul><li>You stake more and more to feel the same interest.</li><li>You bet again immediately to recover a loss.</li><li>You borrow money, or dip into a budget meant for something else.</li><li>You hide your stakes from those close to you.</li><li>You play to escape stress, boredom or sadness.</li><li>You have tried to stop and could not.</li></ul><h3>Staying in control</h3><ul><li>Set a monthly budget before you start, and stick to it.</li><li>Set a time limit too.</li><li>Never play under the influence of alcohol, tiredness or anger.</li><li>After a loss, stop for the day rather than betting again.</li><li>Regularly check the real total staked over a month.</li></ul><h3>Strictly no minors</h3><p>This service is strictly for people aged <strong>18 or over</strong>. Any account identified as belonging to a minor is closed without refund.</p><h3>Getting help</h3><p>If betting is taking a place that worries you, talk to someone you trust, a doctor or a psychologist. Speaking up early makes things far easier. You can also write to us to request permanent closure of your account: we act on that request without argument.</p>",
 },
 ht: {
@@ -1318,7 +1318,7 @@ hero_badge:"EKSPÈ AN LIY &nbsp;•&nbsp; +42 PRONOSTIK JODI A",
 hero_t1:"EKSELANS", hero_t2:"NAN", hero_t3:"PRONOSTIK", hero_t4:"PREMIUM",
 hero_sub:"6 an eksperyans nan pronostik espò. Chak jou, ekip ekspè nou an voye w fich ki deja analize pou ParyajPam, ParyajLakay ak 1xBet. Chwazi yon plan epi sispann pèdi kòb ou.",
 hero_cta1:"KÒMANSE KOUNYE A",
-rating_label:"Excellent sur Trustpilot",
+rating_label:"Ekselan sou Trustpilot",
 stat_garanti:"GARANTI", stat_garanti_lab:"RANBOUSMAN SIW PA GENYEN 1 FWA",
 stat_pronostiqueurs:"ITILIZATÈ AKTIF", stat_pronostics_jour:"PRONOSTIK REYISI", stat_gratuits:"PRONOSTIC KI GENYEN",
 ticket_title:"TIKÈ KI GENYEN YO",
@@ -1364,7 +1364,7 @@ plan_per_days:"{n} jou aksè", plan_name_days:"VIP {n} JOU",
 pl2_name:"VIP 21 JOU", pl2_per:"21 jou aksè",
 pl3_name:"VIP 30 JOU", pl3_per:"30 jou aksè",
 pl4_name:"LIFETIME VIP A VIE", pl4_sub:"FULL ACCESS", pl4_per:"Tout cotes yo disponib pou tout tan",
-pl4_f1:"Score exact", pl4_f2:"Betcote 1xBet", pl4_f3:"Fich illimité", pl4_foot:"Aksè a tout fich yo pou tout tan",
+pl4_f1:"Skò egzak", pl4_f2:"Betcote 1xBet", pl4_f3:"Fich san limit", pl4_foot:"Aksè a tout fich yo pou tout tan",
 pf_c515:"Cote 5 / 10 / 15", pf_c1580:"Cote 15 / 30 / 60 / 80",
 pf_c1000:"Cote 100 / 1000+", pf_c1000p:"Cote 100 / 1000+", pf_c20:"Cote 20 / 100 / 1000+",
 pf_betcote:"Betcote ParyajPam &amp; Paryaj Lakay", pf_lien:"Lyen &amp; foto fich yo",
@@ -1443,7 +1443,7 @@ dash_f_all:"Tout", dash_f_foot:"Foutbòl", dash_f_nba:"Basketball",
 dash_f_allres:"Tout rezilta", dash_f_won:"Genyen", dash_f_lost:"Pèdi",
 dash_count:"{n} fich",
 dash_st_won:"GENYEN", dash_st_lost:"PÈDI", dash_st_pending:"KAP TANN", dash_kind_normal:"Kòt nòmal", dash_kind_exact:"Eskò egzak", dash_kind_basket:"Basketball",
-dash_anons_lbl:"ANONS", adm_nav_anons:"Anons", adm_anons_h:"Anons", adm_anons_p:"Mesaj ki parèt anlè fich jodi a yo. Chwazi pou kiyès, epi aktive l lè w vle. Si plizyè aktif, yo chanje chak 30 segonn.", adm_anons_k_on:"aktif", adm_anons_k_off:"dezaktive", adm_anons_k_tot:"an tout", adm_anons_new:"＋ Nouvo anons", adm_anons_new_h:"Nouvo anons", adm_anons_edit_h:"Modifye anons", adm_anons_tit:"Tit", adm_anons_tx:"Tèks", adm_anons_tx_s:"(200 karaktè maksimòm)", adm_anons_pou:"Pou kiyès ?", adm_anons_pub_abonne:"👑 Abòne", adm_anons_pub_non_abonne:"👤 Pa abòne", adm_anons_pub_tous:"🌍 Tout moun", adm_anons_act_now:"Aktive kounye a", adm_anons_on:"● AKTIF", adm_anons_off:"○ DEZAKTIVE", adm_anons_activer:"Aktive", adm_anons_desactiver:"Dezaktive", adm_anons_modifier:"✏️ Modifye", adm_anons_suppr:"Efase", adm_anons_cancel:"Anile", adm_anons_save:"Anrejistre", adm_anons_act_h:"Aktive anons sa a ?", adm_anons_act_p:"L ap parèt touswit anlè fich jodi a yo, pou moun ou te chwazi yo.", adm_anons_des_h:"Dezaktive anons sa a ?", adm_anons_des_p:"Li p ap parèt ankò. Li rete nan lis la : ou ka aktive l ankò.", adm_anons_conf_h:"Efase anons sa a ?", adm_anons_conf_p:"Li p ap ka retounen. Si w jis vle kache l, chwazi « Dezaktive » pito.", adm_anons_non:"Non", adm_anons_wi:"Wi, efase", adm_anons_vide:"Pa gen anons. Klike « Nouvo anons ».", adm_anons_err_tit:"Mete yon tit.", adm_anons_absent:"Tab anons yo poko egziste : aplike migrasyon 20261113120000_annonces.sql.",
+dash_anons_lbl:"ANONS", adm_nav_anons:"Anons", adm_anons_h:"Anons", adm_anons_p:"Mesaj ki parèt anlè fich jodi a yo. Chwazi pou kiyès, epi aktive l lè w vle. Si plizyè aktif, yo chanje chak 30 segonn.", adm_anons_k_on:"aktif", adm_anons_k_off:"dezaktive", adm_anons_k_tot:"an tout", adm_anons_new:"＋ Nouvo anons", adm_anons_new_h:"Nouvo anons", adm_anons_edit_h:"Modifye anons", adm_anons_tit:"Tit", adm_anons_tx:"Tèks", adm_anons_tx_s:"(200 karaktè maksimòm)", adm_anons_pou:"Pou kiyès ?", adm_anons_pub_abonne:"👑 Abòne", adm_anons_pub_non_abonne:"👤 Pa abòne", adm_anons_pub_tous:"🌍 Tout moun", adm_anons_act_now:"Aktive kounye a", adm_anons_on:"● AKTIF", adm_anons_off:"○ DEZAKTIVE", adm_anons_activer:"Aktive", adm_anons_desactiver:"Dezaktive", adm_anons_modifier:"✏️ Modifye", adm_anons_suppr:"Efase", adm_anons_cancel:"Anile", adm_anons_save:"Anrejistre", adm_anons_act_h:"Aktive anons sa a ?", adm_anons_act_p:"L ap parèt touswit anlè fich jodi a yo, pou moun ou te chwazi yo.", adm_anons_des_h:"Dezaktive anons sa a ?", adm_anons_des_p:"Li p ap parèt ankò. Li rete nan lis la : ou ka aktive l ankò.", adm_anons_conf_h:"Efase anons sa a ?", adm_anons_conf_p:"Li p ap ka retounen. Si w jis vle kache l, chwazi « Dezaktive » pito.", adm_anons_non:"Non", adm_anons_wi:"Wi, efase", adm_anons_wi_act:"Wi, aktive", adm_anons_wi_des:"Wi, dezaktive", adm_anons_tr_h:"Tradiksyon (pa oblije) : si pa gen tradiksyon, se tèks kreyòl la ki parèt", adm_anons_tit_fr:"Tit an fransè", adm_anons_tx_fr:"Tèks an fransè", adm_anons_tit_en:"Tit an anglè", adm_anons_tx_en:"Tèks an anglè", adm_anons_vide:"Pa gen anons. Klike « Nouvo anons ».", adm_anons_err_tit:"Mete yon tit.", adm_anons_absent:"Tab anons yo poko egziste : aplike migrasyon 20261113120000_annonces.sql.",
 fb_fixe_q:"💬 Ou te genyen ak fich VIP BETCOTE yo ?", fb_fixe_s:"Menm si fich la pèdi, si ou te chwazi match ki pase yo epi ou genyen, voye prèv ou. Ekip la verifye l anvan li parèt.", fb_fixe_count:"{p} prèv verifye", fb_fiche_lbl:"Ki fich ou te jwe ?", fb_fiche_aucune:"— Chwazi fich la —", fb_err_fiche:"Chwazi fich ou te genyen an.", fb_err_limite:"Ou gen 3 prèv deja k ap tann. Tann ekip la valide yo.", fb_err_double:"Ou deja voye yon prèv pou fich sa a.", adm_avis_sans_fiche:"fich pa presize", adm_avis_fiche_lost:"fich pèdi", adm_avis_tg_echec:"⚠️ Pa voye sou Telegram (kapti a pa la ankò)", adm_avis_tg_echec_f:"⚠️ Pa voye sou Telegram (fich la pa t genyen)", adm_avis_voir:"🎟️ Wè fich la", adm_avis_voir_rp:"📊 Wè rapò a", adm_avis_vue_jouee:"Fich li te jwe", adm_avis_vue_code:"Fich abòne a chwazi a :", adm_avis_fiche_du:"fich {d}", adm_avis_f_attente:"An atant", adm_avis_f_publie:"Pibliye", adm_avis_f_refuse:"Refize / retire", adm_avis_h:"Avi", fiche_note_x2:"Jwe pa 1 oswa pa 2 match", pr_won:"reyisi", pr_lost:"pèdi", pr_tot:"an tout", pr_titre:"Pwonostik ki reyisi (san skò egzak)", pr_note:"Foutbòl ak basketbòl. Yon match ki nan plizyè fich konte yon sèl fwa. Match anile pa konte.", pr_jours:"Jou pa jou", pr_jours_note:"An vèt : 70 % oswa plis (rapò a pibliye). Dat jwèt fich yo.", pr_titre_adm:"Pwonostik tout sit la (san skò egzak)", pr_note_adm:"Tout fich ki pibliye nan peryòd la. Yon match ki nan plizyè fich konte yon sèl fwa. Match anile pa konte.", rp_share_texte:"Rapò jounen an : {g}/{t} pwonostik reyisi ({p} %) ak VIP BETCOTE 🎉", fb_q:"Ou te jwe fich sa a ?", fb_joue:"👍 Mwen te jwe l", fb_prev:"📸 Voye prèv gen mwen", fb_attente:"⏳ Prèv ou an ap tann validasyon", fb_publie:"✓ Prèv ou an pibliye", fb_refuse:"Prèv la pa aksepte", fb_count:"{j} abòne te jwe l · {p} prèv", fb_h:"Pataje gen ou 🎉", fb_s:"Ekip la ap verifye l anvan nou pibliye l.", fb_file:"Chwazi kapti tikè ou", fb_file_s:"Opsyonèl · imaj JPG oswa PNG, 5 Mo maksimòm", fb_note_ph:"Yon ti mesaj (opsyonèl)…", fb_warn:"⚠️ Kache non w, nimewo telefòn ou ak kòd tikè a anvan ou voye kapti a.", fb_consent:"Mwen dakò VipBetcote pibliye prèv sa a sou sit la ak sou Telegram, san non m.", fb_send:"Voye prèv la", fb_cancel:"Anile", fb_sending:"Ap voye… {p}%", fb_err_file:"Chwazi yon kapti tikè ou.", fb_err_size:"Imaj la twò gwo (5 Mo maksimòm).", fb_err_consent:"Ou dwe dakò pou nou ka pibliye prèv la.", fb_err_send:"Echèk. Eseye ankò.", fb_ok:"Mèsi ! Prèv ou an ap tann validasyon.", adm_nav_avis:"Avi abòne", adm_avis_k_joue:"te jwe fich", adm_avis_k_prev:"prèv resevwa", adm_avis_k_note:"nòt mwayèn", adm_avis_pub:"✓ Pibliye", adm_avis_ref:"✗ Refize", adm_avis_ret:"Retire sou landing", adm_avis_conf_pub_h:"Pibliye avi sa a ?", adm_avis_conf_pub_p:"Li pral parèt sou landing la epi nan gwoup Telegram piblik la, san non abòne a. Sou landing la ou ka retire l pita ; sou Telegram, mesaj la rete.", adm_avis_conf_ref_h:"Refize avi sa a ?", adm_avis_conf_ref_p:"Li p ap janm pibliye. Abòne a ap wè prèv li pa aksepte.", adm_avis_conf_ret_h:"Retire avi sa a sou landing la ?", adm_avis_conf_ret_p:"Li p ap parèt sou landing la ankò. Mesaj Telegram ki deja pati a rete.", adm_avis_wi:"Wi", adm_avis_non:"Non", adm_avis_vide:"Pa gen avi isit la.", adm_avis_tg_ok:"✓ Voye sou Telegram piblik", adm_avis_tg_att:"⏳ Ap tann voye sou Telegram", av_tag:"AVI ABÒNE", av_ok:"✓ Prèv verifye pa ekip la", av_by:"Abòne {plan} · {d}", av_joue:"✓ Mwen te jwe fich sa a", av_ok_fiche:"✓ Fich verifye : li genyen", av_joue_rp:"✓ Mwen te swiv rapò sa a", av_ok_rp:"✓ Rapò verifye : {g}/{t} reyisi", av_rp_du:"Rapò {d}", av_rp_g:"{g}/{t} reyisi", fb_rapport_opt:"📊 Rapò jou a · {d} · {g}/{t} reyisi", fb_opt_cote:"Kòt {c}", fb_opt_match:"{n} match", av_ok_part:"✓ Fich verifye : {g}/{t} match genyen", adm_avis_sans_img:"san kapti : « mwen te jwe fich sa a »", rp_badge:"RAPÒ JOU A", rp_retro:"Rapò kalkile apre : admin sèlman ki wè l (ni landing, ni abòne, ni Telegram).", rp_title:"Rapò jounen an", rp_reussis:"{g}/{t} pwonostik reyisi", rp_more:"+{n} lòt pwonostik reyisi", rp_sans:"San skò egzak", rp_won:"REYISI", rp_fb:"FOUTBÒL + BASKETBÒL", rp_f:"FOUTBÒL", rp_b:"BASKETBÒL", rp_note:"Foutbòl ak basketbòl, san skò egzak", rp_plans:"Pa plan", dash_tip_h:"Ou pa oblije jwe yon fich antye chak jou.", dash_tip_p:"Ou ka chwazi match ou pi renmen nan chak fich, epi mete yo ansanm pou fè pwòp fich pa w : yon sèl oswa plizyè. Jwe ak kontwòl.",
 adm_fiche_gen_btn:"JENERE FICH", adm_fiche_gen_h:"Jenere yon fich", adm_fiche_gen_p:"Jenere yon fich imedyatman pou dat la ou chwazi a, san w pa tann jenerasyon otomatik aswè a. Anti-doub la pa janm bloke l.",
 adm_fiche_gen_exact_btn:"JENERE SKÒ EGZAK", adm_fiche_gen_exact_h:"Jenere yon skò egzak", adm_fiche_gen_exact_p:"Jenere sèlman fich skò egzak pou dat la ou chwazi a — chwazi konbyen match, pa gen kòt pou defini.",
@@ -1817,7 +1817,7 @@ faq2_q:"Èske nou garanti benefis?",
 legal_tag_cgu:"Legal", legal_tag_confid:"Legal", legal_tag_jeu:"Legal",
 legal_note:"Dokiman sa a se yon vèsyon jeneral. Anvan piblikasyon ofisyèl la, li dwe reli pa yon konseye jiridik.",
 legal_cgu_body:"<h3>1. Objè</h3><p>VIP BETCOTE se yon sèvis enfòmasyon ki pibliye analiz ak seleksyon espòtif kòm endikasyon sèlman. Platfòm nan pa yon operatè paryaj, ni yon entèmedyè mizè. VIP BETCOTE pa plase, pa kolekte epi pa peye okenn paryaj.</p><h3>2. Aksè</h3><p>Aksè a rezève pou moun ki gen <strong>18 an oswa plis</strong>. Pou kreye yon kont, ou bezwen yon imèl valid ak yon nimewo telefòn. Se ou ki responsab enfòmasyon ou bay yo ak konfidansyalite modpas ou.</p><h3>3. Abònman ak peman</h3><ul><li>Pri yo an goud (HTG), peyab ak MonCash, NatCash oswa kat bankè.</li><li>Abònman an kòmanse lè peman an valide epi li fini nan dat ekspirasyon ki nan dashboard ou.</li><li>Abònman ki gen yon dire fiks pa renouvle otomatikman.</li><li>Plan a vi a se yon sèl peman, san renouvèlman.</li></ul><h3>4. Pa gen garanti benefis</h3><p>Paryaj espòtif gen yon risk pou pèdi lajan. <strong>Okenn seleksyon nou pibliye pa yon garanti pou genyen.</strong> Nòt konfyans yo se yon evalyasyon ekip nou an fè. Rezilta ki pase pa di sa k ap vini. Se ou menm ki deside mizè ou epi ki responsab pèt ou ka fè.</p><h3>5. Itilizasyon kontni an</h3><p>Seleksyon nou pibliye yo se pou itilizasyon pèsonèl ou. Revann yo, redistribiye yo oswa pibliye yo lòt kote entèdi epi sa ka fè kont ou fèmen imedyatman, san ranbousman.</p><h3>6. Sispansyon ak fèmti</h3><p>Nou ka sispann yon kont si gen pataj idantifyan, fwod nan peman, oswa si kondisyon sa yo pa respekte. Ou ka sispann itilize sèvis la nenpòt kilè.</p><h3>7. Chanjman</h3><p>Kondisyon sa yo ka chanje. Itilizatè aktif yo resevwa enfòmasyon sou chanjman enpòtan pa imèl oswa nan yon notifikasyon nan dashboard la.</p>",
-legal_confid_body:"<h3>1. Done nou kolekte</h3><p>Nou kolekte sèlman sa sèvis la bezwen pou fonksyone :</p><ul><li><strong>Kont</strong> : non, imèl, nimewo telefòn, modpas (konsève chiffre, pa janm an klè).</li><li><strong>Abònman</strong> : plan ou chwazi, dat kòmansman ak dat ekspirasyon, referans tranzaksyon, mwayen peman.</li><li><strong>Itilizasyon</strong> : dènye dat koneksyon ak lang ou pi renmen.</li></ul><h3>2. Done bankè</h3><p>Nimewo kat ak idantifyan pòtfèy mobil yo antre dirèkteman kay prestatè peman an. <strong>Nou pa konsève okenn done bankè</strong> sou sèvè nou yo.</p><h3>3. Itilizasyon</h3><p>Done ou yo sèvi pou kreye ak sekirize kont ou, aktive epi swiv abònman ou, voye notifikasyon sèvis la, epi reponn demann sipò ou. Yo pa sèvi pou lòt bagay.</p><h3>4. Pataj</h3><p>Nou pa vann ni lwe done ou. Yo pataje sèlman ak prestatè ki estriktèman nesesè yo — ebèjman, voye imèl, tretman peman — epi sèlman pou pati misyon yo mande a.</p><h3>5. Konsèvasyon</h3><p>Done kont yo konsève toutotan kont la aktif. Apre siprime, yo efase nan 30 jou, eksepte prèv peman yo ki konsève pou obligasyon kontabilite.</p><h3>6. Dwa ou</h3><p>Ou ka mande pou wè, korije oswa siprime done ou, epi resevwa yon kopi kont ou. Yon demann ki soti nan imèl anrejistre a trete nan 30 jou.</p><h3>7. Sekirite</h3><p>Modpas yo chiffre, echanj yo sikile an HTTPS, epi aksè a done yo limite ak moun ki bezwen yo. Kòm okenn sistèm pa enfayib, nou rekòmande yon modpas long epi inik.</p>",
+legal_confid_body:"<h3>1. Done nou kolekte</h3><p>Nou kolekte sèlman sa sèvis la bezwen pou fonksyone :</p><ul><li><strong>Kont</strong> : non, imèl, nimewo telefòn, modpas (konsève chiffre, pa janm an klè).</li><li><strong>Abònman</strong> : plan ou chwazi, dat kòmansman ak dat ekspirasyon, referans tranzaksyon, mwayen peman.</li><li><strong>Itilizasyon</strong> : dènye dat koneksyon ak lang ou pi renmen.</li></ul><h3>2. Done bankè</h3><p>Nimewo kat ak idantifyan pòtfèy mobil yo antre dirèkteman kay prestatè peman an. <strong>Nou pa konsève okenn done bankè</strong> sou sèvè nou yo.</p><h3>3. Itilizasyon</h3><p>Done ou yo sèvi pou kreye ak sekirize kont ou, aktive epi swiv abònman ou, voye notifikasyon sèvis la, reponn demann sipò ou, epi, ak pixel Meta a (gade seksyon 8), mezire si piblisite nou yo mache. Yo pa sèvi pou lòt bagay.</p><h3>4. Pataj</h3><p>Nou pa vann ni lwe done ou. Yo pataje sèlman ak prestatè ki estriktèman nesesè yo — ebèjman, voye imèl, tretman peman — ansanm ak Meta (Facebook / Instagram) pou mezire piblisite yo, epi sèlman pou pati misyon yo mande a.</p><h3>5. Konsèvasyon</h3><p>Done kont yo konsève toutotan kont la aktif. Apre siprime, yo efase nan 30 jou, eksepte prèv peman yo ki konsève pou obligasyon kontabilite.</p><h3>6. Dwa ou</h3><p>Ou ka mande pou wè, korije oswa siprime done ou, epi resevwa yon kopi kont ou. Yon demann ki soti nan imèl anrejistre a trete nan 30 jou.</p><h3>7. Sekirite</h3><p>Modpas yo chiffre, echanj yo sikile an HTTPS, epi aksè a done yo limite ak moun ki bezwen yo. Kòm okenn sistèm pa enfayib, nou rekòmande yon modpas long epi inik.</p><h3>8. Mezi odyans ak piblisite</h3><p>Sit la sèvi ak pixel Meta (Facebook / Instagram). Li anrejistre paj ou vizite yo epi, lè w pran yon abònman, plan an ak kantite lajan ou peye a, pou nou ka mezire piblisite nou yo epi montre òf nou yo bay moun ki te deja vizite sit la. Li pa janm voye modpas ou ni enfòmasyon bankè ou. Ou ka bloke l nan paramèt navigatè w oswa ak yon bloke piblisite, epi jere preferans piblisite w nan kont Facebook ou.</p>",
 legal_jeu_body:"<h3>Paryaj dwe rete yon lwazi</h3><p>Paryaj se pa yon sous revni epi li pa dwe janm konsidere kòm yon mwayen pou peye yon dèt oswa ranplase yon pèt. <strong>Mize sèlman sa ou ka pèdi san sa chanje lavi ou chak jou.</strong></p><h3>Sa nou pa pwomèt</h3><p>VIP BETCOTE pibliye analiz, se pa sètitid. Okenn seleksyon pa garanti. Istorik nou an montre fich ki pèdi yo menm jan ak sa ki genyen yo, jistman paske pèt fè pati aktivite a.</p><h3>Siy ki dwe alèsèt ou</h3><ul><li>Ou mize plis chak fwa pou santi menm enterè a.</li><li>Ou rejwe imedyatman pou ranplase yon pèt.</li><li>Ou prete lajan, oswa ou pran nan yon bidjè ki te pou lòt bagay.</li><li>Ou kache mizè ou bay moun pre ou yo.</li><li>Ou jwe pou chape anba estrès, raz oswa tristès.</li><li>Ou deja eseye kanpe san ou pa rive.</li></ul><h3>Kenbe kontwòl</h3><ul><li>Fikse yon bidjè chak mwa anvan ou kòmanse, epi rete ladan l.</li><li>Fikse yon limit tan tou.</li><li>Pa janm jwe lè ou bwè, lè ou fatige oswa lè ou fache.</li><li>Apre yon pèt, kanpe pou jounen an olye ou rejwe.</li><li>Tcheke regilyèman total ou reyèlman mize sou yon mwa.</li></ul><h3>Entèdi pou minè</h3><p>Sèvis sa a estriktèman rezève pou moun ki gen <strong>18 an oswa plis</strong>. Nenpòt kont yo idantifye kòm pou yon minè fèmen san ranbousman.</p><h3>Mande èd</h3><p>Si jwèt la ap pran yon plas ki enkyete ou, pale sou sa ak yon moun ou fè konfyans, yon doktè oswa yon sikològ. Pale bonè fè bagay yo pi fasil anpil. Ou ka ekri nou tou pou mande fèmti definitif kont ou : nou aplike demann sa a san diskisyon.</p>",
 },
 };
@@ -2198,6 +2198,39 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(page.classList.contains('open'))charger();
     else try{const mo=new MutationObserver(()=>{if(page.classList.contains('open')){charger();mo.disconnect();}});mo.observe(page,{attributes:true,attributeFilter:['class']});}catch(e){charger();}
   })();
+
+  /* 20/11 (James : « il ne faut jamais se tromper sur un faux paiement reussi cote pixel »,
+     « les paiements Stripe sont en dollars », « et si un prix est modifie ? ») :
+     le « Purchase » Meta ne part QUE si TOUT est vrai, sur la ligne lue dans la base :
+       - statut 'confirmed' (un abonne ne peut pas l'ecrire : seuls l'admin et la passerelle le peuvent),
+         avec une date de confirmation ET un abonnement cree ;
+       - Stripe (encaisse en DOLLARS) : confirme automatiquement par le serveur ET marque
+         « montant_verifie » par stripe-webhook.js (montant encaisse = prix attendu de SA liste,
+         MONTANTS_ATTENDUS) ; valeur envoyee = montant encaisse en USD. Aucun prix en dollars dans le
+         site : un prix Stripe qui change ne se modifie qu'a un seul endroit (le serveur) ;
+       - autres moyens (gourdes) : montant paye = prix du plan LU DANS LA BASE au moment de la
+         verification (un prix change dans l'admin est suivi tout seul), et montant attendu /
+         montant recu par la passerelle identiques s'ils existent ;
+       - filet de securite (prix baisse pour un test) : jamais sous 100 G ni sous 1 $.
+     Puis meta-pixel.js : une seule fois par paiement, confirme depuis moins de 3 jours. */
+  function pixelAchatSiReel(pay,ref,prixHtg){
+    try{
+      if(!window.VB_metaAchat||!pay||!ref||!prixHtg)return;
+      if(pay.status!=='confirmed'||!pay.confirmed_at||!pay.subscription_id)return;
+      if(pay.method==='stripe'){
+        const usd=Number(pay.provider_amount);
+        if(pay.confirmation_source!=='provider'||String(pay.verifie)!=='true')return;
+        if(!(usd>=1)||(pay.devise&&String(pay.devise).toLowerCase()!=='usd'))return;
+        window.VB_metaAchat({ref,montant:usd,devise:'USD',planId:pay.plan_id,confirmeLe:pay.confirmed_at});
+        return;
+      }
+      const montant=Number(pay.amount_htg),prix=Number(prixHtg[pay.plan_id]);
+      if(!(prix>0)||!(montant>=100)||montant!==prix)return;
+      if(pay.expected_amount_htg!=null&&Number(pay.expected_amount_htg)!==montant)return;
+      if(pay.provider_amount!=null&&Number(pay.provider_amount)!==montant)return;
+      window.VB_metaAchat({ref,montant,devise:'HTG',planId:pay.plan_id,confirmeLe:pay.confirmed_at});
+    }catch(e){ /* jamais bloquant */ }
+  }
 
   /* ---- Catalogue des plans (source unique de verite) ---- */
   const PLANS=[
@@ -5456,8 +5489,28 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      et debloquer le contenu a tort. On va chercher, via la reference
      unique de CE paiement precis (state.ref), le paiement qui lui
      correspond exactement — jamais un autre. */
+  /* 20/11 (James : « et pour Stripe ? ») : la reference d'un paiement Stripe (cs_…) est creee par
+     Stripe et le serveur, jamais par le navigateur. SEUL chemin du pixel « Purchase », TOUS les moyens (Stripe, MonCash, NatCash, validation admin) : les paiements CONFIRMES de ce
+     compte depuis moins de 3 jours, chacun passe par pixelAchatSiReel (vrai paiement seulement) puis
+     meta-pixel.js (une seule fois par reference). Au plus une lecture toutes les 5 minutes. */
+  let pixelLuA=0;
+  async function verifierAchatsPixel(sb){
+    try{
+      if(!window.VB_metaAchat||!state.supabaseUserId||Date.now()-pixelLuA<5*60000)return;
+      pixelLuA=Date.now();
+      const depuis=new Date(Date.now()-3*86400000).toISOString();
+      const {data,error}=await sb.from('payments').select('reference,status,subscription_id,plan_id,amount_htg,expected_amount_htg,confirmed_at,method,provider_amount,confirmation_source,devise:provider_payload->>devise_origine,verifie:provider_payload->>montant_verifie')
+        .eq('user_id',state.supabaseUserId).eq('status','confirmed').gte('confirmed_at',depuis).limit(5);
+      if(error||!data||!data.length)return;
+      const {data:pl}=await sb.from('plans').select('id,price_htg');   // prix ACTUELS en base (jamais une copie locale)
+      const prixHtg={};(pl||[]).forEach(x=>{prixHtg[x.id]=Number(x.price_htg);});
+      if(!Object.keys(prixHtg).length)return;
+      data.forEach(p=>pixelAchatSiReel(p,p.reference,prixHtg));
+    }catch(e){ /* jamais bloquant */ }
+  }
   window.VB_syncPayStatus=async function(){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(sb)verifierAchatsPixel(sb);
     if(!sb||!state.paid)return false;
     let changed=false;
     try{
@@ -7528,11 +7581,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      Relue au plus toutes les 5 min (renderToday est appele souvent : jamais une requete a chaque clic). */
   const ANONS_ROTATION_MS=30000,ANONS_CACHE_MS=5*60000;
   let anonsListe=null,anonsPub=null,anonsLu=0,anonsCle='',anonsIdx=0,anonsTimer=null,anonsEnCours=null;
+  // 20/11 (bug signale par James) : un compte dont le plan vient d'etre active voyait encore les
+  // annonces « sans plan ». La regle lisait l'etat gardé dans le navigateur (payStatus local, qui peut
+  // rester « en attente » apres la validation par l'admin). MEME regle que les fiches maintenant :
+  // userRank() (rang lu sur le serveur, user_plan_rank) > 0, ou Lifetime.
   function anonsPublic(){
     if(window.VB_estSuspendu&&window.VB_estSuspendu())return 'non_abonne';
     const life=!!(window.VB_isLifetime&&window.VB_isLifetime());
-    const st=getState();
-    return (life||!!(st&&st.paid&&st.payStatus==='confirmed'&&st.planId&&!isExpired()))?'abonne':'non_abonne';
+    return (life||userRank()>0)?'abonne':'non_abonne';
   }
   function anonsAfficher(){
     const box=document.getElementById('dashTipToday');if(!box)return;
@@ -7542,8 +7598,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!anonsListe.length){box.style.display='none';return;}   // aucune annonce active : rien
     if(anonsIdx>=anonsListe.length)anonsIdx=0;
     const a=anonsListe[anonsIdx];
-    zone.querySelector('b').textContent=a.titre||'';
-    const p=zone.querySelector('span');p.textContent=a.texte||'';p.hidden=!a.texte;
+    // 20/11 : langue choisie ; traduction vide -> texte kreyol (jamais une annonce vide).
+    const lg=(typeof currentLang!=='undefined'&&(currentLang==='fr'||currentLang==='en'))?currentLang:'';
+    const titreL=(lg&&String(a['titre_'+lg]||'').trim())||a.titre||'';
+    const texteL=lg&&String(a['titre_'+lg]||'').trim()?(String(a['texte_'+lg]||'').trim()):(a.texte||'');
+    zone.querySelector('b').textContent=titreL;
+    const p=zone.querySelector('span');p.textContent=texteL;p.hidden=!texteL;
     const dots=zone.querySelector('.dash-anons-dots');dots.innerHTML='';
     if(anonsListe.length>1)anonsListe.forEach((x,i)=>{const d=document.createElement('b');if(i===anonsIdx)d.className='on';dots.appendChild(d);});
     if(fixe)fixe.hidden=true;zone.hidden=false;box.style.display='';
@@ -7580,8 +7640,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       try{
         const sb=window.VB_getSupabase&&window.VB_getSupabase();
         if(sb){
-          const {data,error}=await sb.from('annonces').select('id,titre,texte,public,ordre,updated_at')
+          // 20/11 : + titres / textes FR et EN (migration 20261120150000) ; repli sur l'ancienne lecture.
+          const lire=cols=>sb.from('annonces').select(cols)
             .eq('actif',true).in('public',[pub,'tous']).order('ordre',{ascending:true}).order('created_at',{ascending:false}).limit(20);
+          let {data,error}=await lire('id,titre,texte,titre_fr,texte_fr,titre_en,texte_en,public,ordre,updated_at');
+          if(error)({data,error}=await lire('id,titre,texte,public,ordre,updated_at'));
           if(!error)liste=(data||[]).filter(a=>a&&String(a.titre||'').trim());
         }
       }catch(e){liste=null;}
@@ -7598,6 +7661,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     try{await anonsEnCours;}finally{anonsEnCours=null;}
   }
   window.VB_majAnnonces=()=>{anonsLu=0;return majAnnonces();};
+  // 20/11 : changement de langue -> l'annonce affichee change de langue tout de suite.
+  document.addEventListener('vb:langchange',()=>{try{if(anonsListe&&anonsListe.length)anonsAfficher();}catch(e){}});
 
   /* ---- Vue : historique ---- */
   /* 07/11 — RAPPORT DU JOUR dans l'historique. Carte au style des fiches (dtk). Memes regles
@@ -9630,6 +9695,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
   // ============================================================================
   const ANONS_PUBLICS=['abonne','non_abonne','tous'];
   let anonsAdmin=[];
+  let anonsTraductionsOk=false;   // 20/11 : colonnes titre_fr / texte_fr / titre_en / texte_en presentes en base
   async function renderAnnoncesAdmin(){
     const liste=document.getElementById('admAnonsListe'),kp=document.getElementById('admAnonsKpis');
     if(!liste)return;
@@ -9637,8 +9703,10 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     if(!sb){liste.innerHTML='<div class="admdash-empty">'+t('adm_k_offline')+'</div>';return;}
     liste.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
     try{
-      const {data,error}=await sb.from('annonces').select('id,titre,texte,public,actif,ordre,created_at,updated_at')
-        .order('ordre',{ascending:true}).order('created_at',{ascending:false}).limit(200);
+      const lireA=cols=>sb.from('annonces').select(cols).order('ordre',{ascending:true}).order('created_at',{ascending:false}).limit(200);
+      let {data,error}=await lireA('id,titre,texte,titre_fr,texte_fr,titre_en,texte_en,public,actif,ordre,created_at,updated_at');
+      anonsTraductionsOk=!error;
+      if(error)({data,error}=await lireA('id,titre,texte,public,actif,ordre,created_at,updated_at'));
       if(error){
         const absente=error.code==='PGRST205'||error.code==='42P01'||/annonces/.test(String(error.message||''))&&/exist|find|schema cache/i.test(String(error.message||''));
         liste.innerHTML='<div class="admdash-empty">'+escH(t(absente?'adm_anons_absent':'adm_k_error'))+'</div>';kp.innerHTML='';return;}
@@ -9671,7 +9739,8 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       anConf.querySelector('h3').textContent=t('adm_anons_'+k+'_h');anConf.querySelector('p').textContent=t('adm_anons_'+k+'_p');
       const non=anConf.querySelector('.non'),wi=anConf.querySelector('.wi');
       wi.classList.toggle('danger',k!=='act');
-      non.textContent=t('adm_anons_non');wi.textContent=t('adm_anons_wi');
+      // 20/11 (capture de James) : le bouton disait « Wi, efase » meme pour activer / desactiver.
+      non.textContent=t('adm_anons_non');wi.textContent=t(k==='act'?'adm_anons_wi_act':k==='des'?'adm_anons_wi_des':'adm_anons_wi');
       const fin=v=>{anConf.hidden=true;non.onclick=wi.onclick=null;resolve(v);};
       non.onclick=()=>fin(false);wi.onclick=()=>fin(true);
       anConf.hidden=false;non.focus();
@@ -9681,9 +9750,15 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
   let anForm=null;
   function ouvrirFormAnnonce(a){
     if(!anForm){anForm=document.createElement('div');anForm.className='av-conf';anForm.hidden=true;
-      anForm.innerHTML='<div class="box an-form" role="dialog" aria-modal="true" style="max-width:440px"><h3></h3>'+
+      anForm.innerHTML='<div class="box an-form" role="dialog" aria-modal="true" style="max-width:440px;max-height:92vh;overflow:auto"><h3></h3>'+
         '<label class="l" data-k="adm_anons_tit"></label><input type="text" class="an-tit" maxlength="90">'+
         '<label class="l"><span data-k="adm_anons_tx"></span> <small data-k="adm_anons_tx_s"></small></label><textarea class="an-tx" maxlength="200"></textarea><div class="an-cnt"></div>'+
+        // 20/11 : traductions francais / anglais (facultatives ; vides = le kreyol s'affiche).
+        '<p class="l" data-k="adm_anons_tr_h" style="margin-top:14px;opacity:.85"></p>'+
+        '<label class="l" data-k="adm_anons_tit_fr"></label><input type="text" class="an-tit-fr" maxlength="90">'+
+        '<label class="l" data-k="adm_anons_tx_fr"></label><textarea class="an-tx-fr" maxlength="200"></textarea>'+
+        '<label class="l" data-k="adm_anons_tit_en"></label><input type="text" class="an-tit-en" maxlength="90">'+
+        '<label class="l" data-k="adm_anons_tx_en"></label><textarea class="an-tx-en" maxlength="200"></textarea>'+
         '<label class="l" data-k="adm_anons_pou"></label><div class="an-pubs">'+ANONS_PUBLICS.map(p=>'<button type="button" class="adm-src-chip" data-anpub="'+p+'"></button>').join('')+'</div>'+
         '<label class="an-chk"><input type="checkbox" class="an-act"><span data-k="adm_anons_act_now"></span></label>'+
         '<p class="an-err" hidden></p><div class="btns"><button type="button" class="non" data-k="adm_anons_cancel"></button><button type="button" class="wi" data-k="adm_anons_save"></button></div></div>';
@@ -9700,6 +9775,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     anForm.dataset.id=a?a.id:'';
     anForm.querySelector('.an-tit').value=a?a.titre||'':'';
     const tx=anForm.querySelector('.an-tx');tx.value=a?a.texte||'':'';anForm.querySelector('.an-cnt').textContent=tx.value.length+' / 200';
+    ['tit-fr','tx-fr','tit-en','tx-en'].forEach(k=>{const el=anForm.querySelector('.an-'+k);if(el)el.value=a?(a[(k.startsWith('tit')?'titre_':'texte_')+k.slice(-2)]||''):'';});
     const pub=a&&ANONS_PUBLICS.includes(a.public)?a.public:'tous';anForm.dataset.pub=pub;
     anForm.querySelectorAll('[data-anpub]').forEach(b=>b.classList.toggle('on',b.dataset.anpub===pub));
     anForm.querySelector('.an-act').checked=a?!!a.actif:true;
@@ -9718,6 +9794,9 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     try{
       const sb=window.VB_getSupabase&&window.VB_getSupabase();
       const champs={titre,texte,public:pub,actif,updated_at:new Date().toISOString()};
+      // 20/11 : traductions (vide -> null : le kreyol s'affiche dans cette langue).
+      const val=(c,max)=>{const el=anForm.querySelector(c);const v=el?el.value.trim().slice(0,max):'';return v||null;};
+      if(anonsTraductionsOk){champs.titre_fr=val('.an-tit-fr',90);champs.texte_fr=val('.an-tx-fr',200);champs.titre_en=val('.an-tit-en',90);champs.texte_en=val('.an-tx-en',200);}
       let r;
       if(anForm.dataset.id)r=await sb.from('annonces').update(champs).eq('id',anForm.dataset.id);
       else{const ordre=anonsAdmin.reduce((m,x)=>Math.max(m,Number(x.ordre)||0),0)+1;r=await sb.from('annonces').insert(Object.assign({ordre},champs));}
@@ -11483,14 +11562,22 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     }
   }
 
+  /* 20/11 (James : « traduis ») : textes de l'onglet Telegram en 3 langues (avant : francais en dur,
+     avec le mot « robot » ; remplace par « compte Telegram » / « automatiquement »). */
+  const TG_TXT={
+    fr:{nc:'Connexion Telegram non configurée : ',NON:'NON',compte:'Compte Telegram',retraits:'Retraits automatiques',actifs:'Actifs : les accès terminés sont réellement retirés',essai:'Mode essai : rien n\'est retiré (TELEGRAM_VIP_ENFORCE=1 pour activer)',nonbr:'non branché',groupes:'Groupes VIP',nonconf:'(non configuré)',prive:'Privé : ',oui:'oui',admin:' · Administrateur : ',inviter:' · Inviter : ',bannir:' · Bannir : ',membres:' · Membres : ',relies:' · Reliés : ',manuels:' · Manuels : ',var:'Variable {v} absente',acces:'Accès enregistrés',mrelies:'Membres reliés',lattente:' · liens en attente ',retires:' · retirés ',sortis:' · sortis ',expires:' · expirés ',manuel_h:'Invité manuel (jamais retiré automatiquement)',manuel_p:'Les personnes que vous ajoutez vous-même au groupe (ajout direct, ou lien créé à la main à USAGE UNIQUE : limite de 1 membre) sont reconnues automatiquement. Un lien manuel illimité est refusé. Pour garder un membre déjà présent, entrez son identifiant Telegram ici.',groupe:'Groupe',ident:'Identifiant Telegram',note:'Note (facultatif)',note_ph:'ex. partenaire',autoriser:'Autoriser',retirer:'Retirer de la liste',webhook_btn:'Brancher le webhook',sync_btn:'Synchroniser maintenant',ident_err:'Identifiant Telegram invalide (chiffres seulement).',autorise_ok:'Autorisé : ce membre ne sera plus retiré.',retire_ok:'Retiré de la liste.',echec:'Échec : ',erreur:'erreur',echec_req:'Échec de la requête.',webhook_ok:'Webhook branché : ',sync_ok:'Synchronisation faite : ',sync_err:'Échec de la synchronisation'},
+    en:{nc:'Telegram connection not configured: ',NON:'NO',compte:'Telegram account',retraits:'Automatic removals',actifs:'On: ended access is really removed',essai:'Test mode: nothing is removed (TELEGRAM_VIP_ENFORCE=1 to turn on)',nonbr:'not connected',groupes:'VIP groups',nonconf:'(not configured)',prive:'Private: ',oui:'yes',admin:' · Admin rights: ',inviter:' · Invite: ',bannir:' · Ban: ',membres:' · Members: ',relies:' · Linked: ',manuels:' · Manual: ',var:'Variable {v} missing',acces:'Recorded access',mrelies:'Linked members',lattente:' · pending links ',retires:' · removed ',sortis:' · left ',expires:' · expired ',manuel_h:'Manual guest (never removed automatically)',manuel_p:'People you add to the group yourself (direct add, or a link made by hand for SINGLE USE: limit of 1 member) are recognised automatically. An unlimited manual link is refused. To keep a member who is already in, enter their Telegram ID here.',groupe:'Group',ident:'Telegram ID',note:'Note (optional)',note_ph:'e.g. partner',autoriser:'Allow',retirer:'Remove from list',webhook_btn:'Connect the webhook',sync_btn:'Sync now',ident_err:'Invalid Telegram ID (digits only).',autorise_ok:'Allowed: this member will no longer be removed.',retire_ok:'Removed from the list.',echec:'Failed: ',erreur:'error',echec_req:'Request failed.',webhook_ok:'Webhook connected: ',sync_ok:'Sync done: ',sync_err:'Sync failed'},
+    ht:{nc:'Koneksyon Telegram pa konfigire : ',NON:'NON',compte:'Kont Telegram',retraits:'Retrè otomatik',actifs:'Aktif : aksè ki fini yo retire tout bon',essai:'Mòd tès : anyen pa retire (TELEGRAM_VIP_ENFORCE=1 pou aktive)',nonbr:'pa konekte',groupes:'Gwoup VIP',nonconf:'(pa konfigire)',prive:'Prive : ',oui:'wi',admin:' · Administratè : ',inviter:' · Envite : ',bannir:' · Bani : ',membres:' · Manm : ',relies:' · Konekte : ',manuels:' · Manyèl : ',var:'Varyab {v} pa la',acces:'Aksè anrejistre',mrelies:'Manm konekte',lattente:' · lyen k ap tann ',retires:' · retire ',sortis:' · soti ',expires:' · ekspire ',manuel_h:'Envite manyèl (pa janm retire otomatikman)',manuel_p:'Moun ou ajoute oumenm nan gwoup la (ajoute dirèk, oswa yon lyen ou fè alamen pou YON SÈL MOUN : limit 1 manm) rekonèt otomatikman. Yon lyen manyèl san limit pa aksepte. Pou kenbe yon manm ki deja la, mete idantifyan Telegram li isit la.',groupe:'Gwoup',ident:'Idantifyan Telegram',note:'Nòt (pa oblije)',note_ph:'egz. patnè',autoriser:'Otorize',retirer:'Retire nan lis la',webhook_btn:'Konekte webhook la',sync_btn:'Senkronize kounye a',ident_err:'Idantifyan Telegram pa bon (chif sèlman).',autorise_ok:'Otorize : manm sa a p ap retire ankò.',retire_ok:'Retire nan lis la.',echec:'Echèk : ',erreur:'erè',echec_req:'Demann lan echwe.',webhook_ok:'Webhook konekte : ',sync_ok:'Senkronizasyon fèt : ',sync_err:'Senkronizasyon an echwe'}
+  };
+  const tg=k=>{const L=(typeof currentLang!=='undefined'&&TG_TXT[currentLang])?TG_TXT[currentLang]:TG_TXT.fr;return L[k]!=null?L[k]:(TG_TXT.fr[k]||k);};
   async function renderTelegramAdmin(){
     const box=document.getElementById('admTelegramBody');
     if(!box)return;
     box.innerHTML='<div class="admdash-empty">'+t('adm_k_loading')+'</div>';
     const e=await appelTelegramAdmin('telegram-admin','etat');
     if(!e){box.innerHTML='<div class="admdash-empty">'+t('adm_k_error')+'</div>';return;}
-    if(e.configure===false){box.innerHTML='<div class="admdash-empty">Robot non configuré : '+stripTags(e.raison||'')+'</div>';return;}
-    const ok=b=>'<span class="admdash-row-badge '+(b?'won':'lost')+'">'+(b?'OK':'NON')+'</span>';
+    if(e.configure===false){box.innerHTML='<div class="admdash-empty">'+tg('nc')+stripTags(e.raison||'')+'</div>';return;}
+    const ok=b=>'<span class="admdash-row-badge '+(b?'won':'lost')+'">'+(b?'OK':tg('NON'))+'</span>';
     const noms={p1:'VIP 7 JOU',p2:'VIP 21 JOU',p3:'VIP 30 JOU',p4:'LIFETIME'};
     let acces={};
     try{
@@ -11500,56 +11587,56 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     }catch(err){}
     box.innerHTML=
       '<div class="admdash-panel">'+
-        '<div class="admdash-row"><span class="admdash-row-tx"><b>Robot</b><span>@'+stripTags(e.robot||'?')+'</span></span></div>'+
-        '<div class="admdash-row"><span class="admdash-row-tx"><b>Retraits automatiques</b><span>'+(e.retraits_actifs?'Actifs : le robot retire réellement':'Mode essai : rien n\'est retiré (TELEGRAM_VIP_ENFORCE=1 pour activer)')+'</span></span>'+ok(e.retraits_actifs)+'</div>'+
-        '<div class="admdash-row"><span class="admdash-row-tx"><b>Webhook</b><span>'+stripTags((e.webhook&&e.webhook.url)||'non branché')+(e.webhook&&e.webhook.erreur?' — '+stripTags(e.webhook.erreur):'')+'</span></span>'+ok(!!(e.webhook&&e.webhook.url))+'</div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>'+tg('compte')+'</b><span>@'+stripTags(e.robot||'?')+'</span></span></div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>'+tg('retraits')+'</b><span>'+(e.retraits_actifs?tg('actifs'):tg('essai'))+'</span></span>'+ok(e.retraits_actifs)+'</div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>Webhook</b><span>'+stripTags((e.webhook&&e.webhook.url)||tg('nonbr'))+(e.webhook&&e.webhook.erreur?' — '+stripTags(e.webhook.erreur):'')+'</span></span>'+ok(!!(e.webhook&&e.webhook.url))+'</div>'+
       '</div>'+
-      '<div class="admdash-panel"><div class="admdash-section-h">Groupes VIP</div>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">'+tg('groupes')+'</div>'+
       (e.groupes||[]).map(g=>
-        '<div class="admdash-row"><span class="admdash-row-tx"><b>'+stripTags(noms[g.plan]||g.plan)+' — '+stripTags(g.nom||'(non configuré)')+'</b>'+
-        '<span>'+(g.configure?('Privé : '+(g.prive?'oui':'NON')+' · Robot admin : '+(g.robot_admin?'oui':'NON')+' · Inviter : '+(g.droit_inviter?'oui':'NON')+' · Bannir : '+(g.droit_bannir?'oui':'NON')+' · Membres : '+(g.effectif!=null?g.effectif:'?')+' · Reliés : '+(g.relies||0)+' · Manuels : '+(g.manuels||0)+(g.erreur?' · '+stripTags(g.erreur):'')):'Variable TELEGRAM_VIP_CHAT_'+g.plan.toUpperCase()+' absente')+'</span></span>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>'+stripTags(noms[g.plan]||g.plan)+' — '+stripTags(g.nom||tg('nonconf'))+'</b>'+
+        '<span>'+(g.configure?(tg('prive')+(g.prive?tg('oui'):tg('NON'))+tg('admin')+(g.robot_admin?tg('oui'):tg('NON'))+tg('inviter')+(g.droit_inviter?tg('oui'):tg('NON'))+tg('bannir')+(g.droit_bannir?tg('oui'):tg('NON'))+tg('membres')+(g.effectif!=null?g.effectif:'?')+tg('relies')+(g.relies||0)+tg('manuels')+(g.manuels||0)+(g.erreur?' · '+stripTags(g.erreur):'')):tg('var').replace('{v}','TELEGRAM_VIP_CHAT_'+g.plan.toUpperCase()))+'</span></span>'+
         ok(g.configure&&g.robot_admin&&g.droit_inviter&&g.droit_bannir&&g.prive)+'</div>').join('')+
       '</div>'+
-      '<div class="admdash-panel"><div class="admdash-section-h">Accès enregistrés</div>'+
-        '<div class="admdash-row"><span class="admdash-row-tx"><b>Membres reliés</b><span>'+(acces.joined||0)+' · liens en attente '+(acces.issued||0)+' · retirés '+(acces.revoked||0)+' · sortis '+(acces.left||0)+' · expirés '+(acces.expired||0)+'</span></span></div>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">'+tg('acces')+'</div>'+
+        '<div class="admdash-row"><span class="admdash-row-tx"><b>'+tg('mrelies')+'</b><span>'+(acces.joined||0)+tg('lattente')+(acces.issued||0)+tg('retires')+(acces.revoked||0)+tg('sortis')+(acces.left||0)+tg('expires')+(acces.expired||0)+'</span></span></div>'+
       '</div>'+
-      '<div class="admdash-panel"><div class="admdash-section-h">Invité manuel (jamais retiré par le robot)</div>'+
-        '<p class="admdash-count" style="margin:0 0 10px">Les personnes que vous ajoutez vous-même au groupe (ajout direct, ou lien créé à la main à USAGE UNIQUE : limite de 1 membre) sont reconnues automatiquement. Un lien manuel illimité est refusé. Pour garder un membre déjà présent, entrez son identifiant Telegram ici.</p>'+
+      '<div class="admdash-panel"><div class="admdash-section-h">'+tg('manuel_h')+'</div>'+
+        '<p class="admdash-count" style="margin:0 0 10px">'+tg('manuel_p')+'</p>'+
         '<div class="hf-dates" style="grid-template-columns:1fr 1fr">'+
-          '<label class="field"><span class="field-lbl">Groupe</span><select id="admTgManPlan">'+(e.groupes||[]).filter(g=>g.configure).map(g=>'<option value="'+g.plan+'">'+stripTags(noms[g.plan]||g.plan)+'</option>').join('')+'</select></label>'+
-          '<label class="field"><span class="field-lbl">Identifiant Telegram</span><input type="text" inputmode="numeric" id="admTgManId" placeholder="123456789" autocomplete="off"></label>'+
+          '<label class="field"><span class="field-lbl">'+tg('groupe')+'</span><select id="admTgManPlan">'+(e.groupes||[]).filter(g=>g.configure).map(g=>'<option value="'+g.plan+'">'+stripTags(noms[g.plan]||g.plan)+'</option>').join('')+'</select></label>'+
+          '<label class="field"><span class="field-lbl">'+tg('ident')+'</span><input type="text" inputmode="numeric" id="admTgManId" placeholder="123456789" autocomplete="off"></label>'+
         '</div>'+
-        '<label class="field"><span class="field-lbl">Note (facultatif)</span><input type="text" id="admTgManNote" maxlength="120" placeholder="ex. partenaire"></label>'+
-        '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-or" id="admTgManAdd">Autoriser</button><button type="button" class="btn btn-or-soft" id="admTgManDel">Retirer de la liste</button></div>'+
+        '<label class="field"><span class="field-lbl">'+tg('note')+'</span><input type="text" id="admTgManNote" maxlength="120" placeholder="'+tg('note_ph')+'"></label>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn btn-or" id="admTgManAdd">'+tg('autoriser')+'</button><button type="button" class="btn btn-or-soft" id="admTgManDel">'+tg('retirer')+'</button></div>'+
       '</div>'+
       '<div class="admdash-panel admdash-panel-toolbar">'+
-        '<button type="button" class="btn btn-or" id="admTgWebhook">Brancher le webhook</button>'+
-        '<button type="button" class="btn btn-or-soft" id="admTgSync">Synchroniser maintenant</button>'+
+        '<button type="button" class="btn btn-or" id="admTgWebhook">'+tg('webhook_btn')+'</button>'+
+        '<button type="button" class="btn btn-or-soft" id="admTgSync">'+tg('sync_btn')+'</button>'+
         '<button type="button" class="wiz-change" id="admTgRefresh">'+t('adm_refresh')+'</button>'+
       '</div><div id="admTgMsg" class="admdash-count"></div>';
     const msg=document.getElementById('admTgMsg');
     document.getElementById('admTgRefresh').addEventListener('click',renderTelegramAdmin);
     const manuel=async action=>{
       const plan=document.getElementById('admTgManPlan').value,id=document.getElementById('admTgManId').value.trim(),note=document.getElementById('admTgManNote').value.trim();
-      if(!/^\d{5,15}$/.test(id)){msg.textContent='Identifiant Telegram invalide (chiffres seulement).';return;}
+      if(!/^\d{5,15}$/.test(id)){msg.textContent=tg('ident_err');return;}
       msg.textContent='…';
       const sb=window.VB_getSupabase();const {data}=await sb.auth.getSession();const j=data&&data.session&&data.session.access_token;
       try{
         const r=await (await fetch('/.netlify/functions/telegram-admin',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+j},body:JSON.stringify({action:action,plan:plan,telegram_id:id,note:note})})).json();
-        msg.textContent=r&&r.ok?(action==='autoriser'?'Autorisé : ce membre ne sera plus retiré.':'Retiré de la liste.'):'Échec : '+stripTags((r&&r.raison)||'erreur');
+        msg.textContent=r&&r.ok?(action==='autoriser'?tg('autorise_ok'):tg('retire_ok')):tg('echec')+stripTags((r&&r.raison)||tg('erreur'));
         if(r&&r.ok)setTimeout(renderTelegramAdmin,700);
-      }catch(err){msg.textContent='Échec de la requête.';}
+      }catch(err){msg.textContent=tg('echec_req');}
     };
     document.getElementById('admTgManAdd').addEventListener('click',()=>manuel('autoriser'));
     document.getElementById('admTgManDel').addEventListener('click',()=>manuel('retirer_manuel'));
     document.getElementById('admTgWebhook').addEventListener('click',async()=>{
       msg.textContent='…';const r=await appelTelegramAdmin('telegram-admin','webhook');
-      msg.textContent=r&&r.ok?'Webhook branché : '+r.url:'Échec : '+stripTags((r&&(r.raison||r.detail))||'erreur');
+      msg.textContent=r&&r.ok?tg('webhook_ok')+r.url:tg('echec')+stripTags((r&&(r.raison||r.detail))||tg('erreur'));
       if(r&&r.ok)setTimeout(renderTelegramAdmin,800);
     });
     document.getElementById('admTgSync').addEventListener('click',async()=>{
       msg.textContent='…';const r=await appelTelegramAdmin('telegram-sync','sync');
-      msg.textContent=r&&r.ok?'Synchronisation faite : '+JSON.stringify(r.rapport):'Échec de la synchronisation';
+      msg.textContent=r&&r.ok?tg('sync_ok')+JSON.stringify(r.rapport):tg('sync_err');
     });
   }
 
@@ -13469,7 +13556,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
         const total=(exact&&nbOk)?Math.round(coteGagnee*100)/100:Number(f.total_odd);
         let date='';
         try{date=new Date(f.play_date+'T12:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){date=f.play_date;}
-        return '<article class="win win-auto" data-fiche="'+echapper(f.id)+'"><div class="wf'+(Math.min(sel.length,5)>3?' wf-dense':'')+'">'+
+        return '<article class="win win-auto" data-fiche="'+echapper(f.id)+'" data-date="'+echapper(f.play_date)+'"><div class="wf'+(Math.min(sel.length,5)>3?' wf-dense':'')+'">'+
           '<div class="wf-top"><span class="wf-brand">VIP<span>BETCOTE</span></span><span class="wf-badge">'+echapper(trad('tick_won'))+(exact?' '+nbOk+'/'+tous.length:'')+'</span></div>'+
           '<p class="wf-h">'+echapper(trad('wf_title'))+'</p>'+
           '<p class="wf-sub">'+echapper(trad(exact?'wf_exact':(f.sport==='basket'||f.sport==='nba')?'wf_bask':'wf_foot'))+' · '+echapper(date)+'</p>'+
@@ -13487,8 +13574,35 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       if(auDebut){const sb2=track.style.scrollBehavior;track.style.scrollBehavior='auto';track.scrollLeft=0;track.style.scrollBehavior=sb2;}
       fichesGagneesCles=cles;
       chargerRapportsLanding(true).then(()=>chargerAvisLanding(true));
+      ordonnerCarrouselGagnants(track);
       if(track._majCarrousel)track._majCarrousel();
     }catch(e){ /* sans donnees : le carrousel garde ses photos */ }
+  }
+  /* 20/11 (James : « pas trop bon de voir tous les rapports ensemble, puis plusieurs avis ensemble »,
+     puis « est-ce que la date va etre respectee pour les premiers ? ») : cartes automatiques
+     reordonnees. A chaque place : la carte LA PLUS RECENTE (data-date, jour) parmi les types
+     differents de la carte precedente — jamais deux du meme type a la suite tant qu'un autre type
+     reste. Meme jour : fiche, puis rapport, puis avis. Chaque type garde son ordre (plus recent
+     d'abord). Les photos (cartes fixes) restent apres. Simple deplacement des cartes construites. */
+  function ordonnerCarrouselGagnants(track){
+    try{
+      const auto=[...track.querySelectorAll(':scope > .win-auto')];
+      if(auto.length<2)return;
+      const typeDe=x=>x.classList.contains('win-rapo')?'R':x.classList.contains('win-avis')?'A':'F';
+      const files={F:[],R:[],A:[]};auto.forEach(x=>files[typeDe(x)].push(x));
+      const jour=x=>String((x&&x.dataset.date)||'').slice(0,10),RANG={F:0,R:1,A:2};
+      const ordre=[];let prec=null;
+      while(ordre.length<auto.length){
+        let types=['F','R','A'].filter(k=>files[k].length&&k!==prec);
+        if(!types.length)types=['F','R','A'].filter(k=>files[k].length);
+        types.sort((a,b)=>{const da=jour(files[a][0]),db=jour(files[b][0]);return da!==db?(da<db?1:-1):RANG[a]-RANG[b];});
+        prec=types[0];ordre.push(files[prec].shift());
+      }
+      const auDebut=track.scrollLeft<40,frag=document.createDocumentFragment();
+      ordre.forEach(el=>frag.appendChild(el));
+      track.insertBefore(frag,track.firstChild);
+      if(auDebut){const sb2=track.style.scrollBehavior;track.style.scrollBehavior='auto';track.scrollLeft=0;track.style.scrollBehavior=sb2;}
+    }catch(e){ /* l'ordre d'avant reste */ }
   }
   chargerFichesGagnees();
   window.VB_quandPret(chargerFichesGagnees);
@@ -13524,7 +13638,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
         const montres=m.slice(0,4);
         const lis=montres.map(x=>'<li><span class="wf-ok" aria-hidden="true"></span><span class="wf-m"><b>'+echapper(x.match_label)+'</b><small>'+echapper(x.choix)+'</small></span><em>'+(Number(x.odd)>1?Number(x.odd).toFixed(2):'')+'</em></li>').join('');
         const reste=(Number(r.gagnes)||0)-montres.length;
-        return '<article class="win win-auto win-rapo"><div class="wf wf-dense wf-rapo">'+
+        return '<article class="win win-auto win-rapo" data-date="'+echapper(r.play_date)+'"><div class="wf wf-dense wf-rapo">'+
           '<div class="wf-top"><span class="wf-brand">VIP<span>BETCOTE</span></span><span class="wf-badge">'+echapper(trad('rp_badge'))+'</span></div>'+
           '<p class="wf-h">'+echapper(trad('rp_title'))+'</p>'+
           '<p class="wf-sub">'+echapper(sports)+' · '+echapper(date)+'</p>'+
@@ -13539,6 +13653,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       track.querySelectorAll('.win-avis').forEach(x=>x.remove());avisLandingCles='';
       track.insertAdjacentHTML('afterbegin',cartes.join(''));
       if(auDebut){const sb2=track.style.scrollBehavior;track.style.scrollBehavior='auto';track.scrollLeft=0;track.style.scrollBehavior=sb2;}
+      ordonnerCarrouselGagnants(track);
       if(track._majCarrousel)track._majCarrousel();
     }catch(e){ /* table absente ou hors ligne : le carrousel reste tel quel */ }
   }
@@ -13624,7 +13739,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
         const tl=legsPar[a.ticket_id]||[],okF=a.rapport_date&&!a.ticket_id?trad('av_ok_rp').replace('{g}',a.rapport_gagnes).replace('{t}',a.rapport_total)
           :trad(a.ticket_statut==='lost'?'av_ok_part':'av_ok_fiche').replace('{g}',tl.filter(l=>l.result==='won').length).replace('{t}',tl.length);
         const n=Math.max(1,Math.min(5,Number(a.etoiles)||5));
-        return '<article class="win win-auto win-avis"><div class="wa">'+haut+
+        return '<article class="win win-auto win-avis" data-date="'+echapper(String(a.decide_at||'').slice(0,10))+'"><div class="wa">'+haut+
           '<div class="wa-body"><div class="wa-stars" aria-label="'+n+'/5">'+'★'.repeat(n)+'<span style="opacity:.25">'+'★'.repeat(5-n)+'</span></div>'+
           (a.note?'<p class="wa-q">« '+echapper(a.note)+' »</p>':'<p class="wa-q"></p>')+
           '<div class="wa-by">'+echapper(trad('av_by').replace('{plan}',a.plan_libelle||'VIP').replace('{d}',fd(a.decide_at,false))+(img&&a.rapport_date?' · '+trad('av_rp_du').replace('{d}',fd(a.rapport_date,true)):''))+'</div>'+
@@ -13634,6 +13749,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       const rapos=track.querySelectorAll('.win-rapo');
       if(rapos.length)rapos[rapos.length-1].insertAdjacentHTML('afterend',cartes.join(''));
       else track.insertAdjacentHTML('afterbegin',cartes.join(''));
+      ordonnerCarrouselGagnants(track);
       if(track._majCarrousel)track._majCarrousel();
     }catch(e){ /* vue absente ou hors ligne : le carrousel reste tel quel */ }
   }

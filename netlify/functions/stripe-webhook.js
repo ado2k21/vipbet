@@ -59,6 +59,8 @@ function baseSupabase() {
    bloque l'activation automatique pour ce plan.
    ------------------------------------------------------------ */
 
+// 20/11 : liste UNIQUE des prix Stripe. Le pixel Meta du site n'en a pas de copie : il se fie à la
+// marque provider_payload.montant_verifie, posée seulement quand le montant encaissé correspond.
 const MONTANTS_ATTENDUS = {
   p1: { montant: 199,  devise: 'usd' },   // 249 G  = 1,99 $
   p2: { montant: 399,  devise: 'usd' },   // 499 G  = 3,99 $
@@ -356,7 +358,10 @@ exports.handler = async function (event) {
           devise_paiement: String(session.currency || '').toLowerCase(),
           montant_paiement: session.amount_subtotal != null ? Number(session.amount_subtotal) / 100 : Number(session.amount_total) / 100,
           taux: (session.currency_conversion && session.currency_conversion.fx_rate) || null,
-          session: refStripe
+          session: refStripe,
+          // 20/11 : on n'arrive ICI que si le montant encaisse = MONTANTS_ATTENDUS (sinon : en attente,
+          // etape 3). Le pixel Meta du site ne compte un achat Stripe QUE avec cette marque.
+          montant_verifie: true
         },
         provider: 'stripe', provider_reference: refStripe,
         provider_transaction_id: session.payment_intent ? String(session.payment_intent) : null,

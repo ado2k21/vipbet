@@ -53,6 +53,9 @@
   ## et 2 blocs <style>. L'injection de style est bien moins dangereuse que
   ## l'injection de script, et frame-ancestors bloque deja le detournement
   ## visuel par iframe.
+  ## Pixel Meta (20/11) : connect.facebook.net (script fbevents.js, dans script-src et connect-src)
+  ## et www.facebook.com (envoi des evenements PageView / Purchase, connect-src ; l'image de
+  ## secours passe deja par img-src https:). Code dans meta-pixel.js, jamais dans la page.
   ## Domaines Sentry autorises :
   ##   * js.sentry-cdn.com      = le loader insere dans le <head>
   ##   * browser.sentry-cdn.com = le vrai SDK, charge ensuite par le loader
@@ -61,7 +64,7 @@
   ##     toutes les regions (us/de). Si tu veux verrouiller davantage,
   ##     remplace-le un jour par ton domaine d'ingestion exact, visible
   ##     dans ton DSN complet.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-4ZuvBCic+j5x7NNxPegk6dIM0TuKlLBbvYnfLew92r4=' https://cdn.jsdelivr.net https://js.sentry-cdn.com https://browser.sentry-cdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://llqifjfcpyddwjkferpn.supabase.co wss://llqifjfcpyddwjkferpn.supabase.co https://plopplop.solutionip.app https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; frame-src https://buy.stripe.com https://plopplop.solutionip.app; form-action 'self' https://buy.stripe.com https://plopplop.solutionip.app; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-5KjxWJjD9XJFcUJC7+qR3zNCbzocSbXtAuoB8aZNhPo=' https://cdn.jsdelivr.net https://js.sentry-cdn.com https://browser.sentry-cdn.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://llqifjfcpyddwjkferpn.supabase.co wss://llqifjfcpyddwjkferpn.supabase.co https://plopplop.solutionip.app https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io https://www.facebook.com https://connect.facebook.net; frame-src https://buy.stripe.com https://plopplop.solutionip.app; form-action 'self' https://buy.stripe.com https://plopplop.solutionip.app; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
 
 ## ============================================================
 ##  CACHE
