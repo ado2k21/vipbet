@@ -40,6 +40,8 @@ const JOURS_HISTORIQUE = 120;
 function typePari(market, pick) {
   if (market === 'mk_basket_1x2') return 'V';
   if (market === 'mk_basket_total') return /^Moins/i.test(String(pick || '')) ? 'M' : 'P';
+  // 20/11 : points d'une équipe (domicile ou extérieur) — segments séparés EP / EM.
+  if (market === 'mk_basket_total_domicile' || market === 'mk_basket_total_exterieur') return /:\s*Moins/i.test(String(pick || '')) ? 'EM' : 'EP';
   return null;
 }
 function tranche(odd) {
@@ -57,6 +59,7 @@ function ligneDuPick(pick) {
   return m ? parseFloat(m[1]) : null;
 }
 const borne = (x, a, b) => Math.min(b, Math.max(a, x));
+const aLigne = m => m === 'mk_basket_total' || m === 'mk_basket_total_domicile' || m === 'mk_basket_total_exterieur'; // 20/11
 
 // lignes : [{ play_date, game_id, market, pick, odd, result }] (won/lost seulement comptent).
 // Doublons (meme jour + match + marche + choix) comptes UNE fois.
@@ -180,7 +183,7 @@ async function lireCalibration(erreurs) {
 function lignesJournal(pool, dateCible, noms) {
   const parPari = new Map(); // autre cote du meme pari (meme match + marche + ligne)
   pool.forEach(b => {
-    const k = `${b.gameId}|${b.market}|${b.market === 'mk_basket_total' ? ligneDuPick(b.pick) : ''}`;
+    const k = `${b.gameId}|${b.market}|${aLigne(b.market) ? ligneDuPick(b.pick) : ''}`;
     if (!parPari.has(k)) parPari.set(k, []);
     parPari.get(k).push(b);
   });
@@ -190,7 +193,7 @@ function lignesJournal(pool, dateCible, noms) {
     const cle = `${b.gameId}|${b.market}|${b.pick}`;
     if (vus.has(cle) || !(b.odd > 1)) return;
     vus.add(cle);
-    const k = `${b.gameId}|${b.market}|${b.market === 'mk_basket_total' ? ligneDuPick(b.pick) : ''}`;
+    const k = `${b.gameId}|${b.market}|${aLigne(b.market) ? ligneDuPick(b.pick) : ''}`;
     const autre = (parPari.get(k) || []).find(x => x.pick !== b.pick);
     lignes.push({
       play_date: dateCible, game_id: b.gameId, market: b.market, pick: b.pick,
@@ -199,9 +202,9 @@ function lignesJournal(pool, dateCible, noms) {
       kickoff_at: b.kickoffUtc || null,
       odd: b.odd, odd_autre: autre ? autre.odd : null,
       segment: b.segment || segment(b.market, b.pick, b.odd) || 'inconnu',
-      ligne: b.market === 'mk_basket_total' ? ligneDuPick(b.pick) : null,
+      ligne: aLigne(b.market) ? ligneDuPick(b.pick) : null,
       projection_total: Number.isFinite(b.projectionTotal) ? Math.round(b.projectionTotal) : null,
-      projection_confirmee: b.market === 'mk_basket_total' ? !!b.projectionConfirmee : null,
+      projection_confirmee: aLigne(b.market) ? !!b.projectionConfirmee : null,
       score_fiabilite: Number.isFinite(b.scoreFiabilite) ? Math.round(b.scoreFiabilite * 10000) / 10000 : null,
       facteur_segment: Number.isFinite(b.facteurSegment) ? b.facteurSegment : null
     });

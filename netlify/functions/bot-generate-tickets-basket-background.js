@@ -86,6 +86,7 @@ const {
 // Encodage id The Odds API (chaîne hexadécimale) -> entier négatif compatible
 // avec ticket_legs.fixture_id (bigint). Module partagé avec le règlement.
 const { oddsApiIdVersEntier } = require('./lib/id-source.js');
+const oddsApiGarde = require('./lib/odds-api-garde.js'); // 20/11 : quota The Odds API (cache, compteur, marqueur)
 // Garde-fous quota (30/09, suite à l'audit) — voir lib/quota-guard.js.
 const garde = require('./lib/quota-guard.js');
 const apprentissage = require('./lib/basket-apprentissage.js'); // 14/11 : apprentissage par segment + journal
@@ -120,6 +121,7 @@ const CACHE_PROVIDER_BASKET = 'api-sports-basketball';
 const CACHE_TTL_BASKET_MS = 6 * 60 * 60 * 1000;      // réponse non vide
 const CACHE_TTL_BASKET_VIDE_MS = 90 * 60 * 1000;      // réponse valide mais vide (aucun match)
 const CACHE_TTL_ODDS_API_VIDE_MS = 60 * 60 * 1000;    // The Odds API : aucun match NBA ce jour-là
+const CACHE_TTL_ODDS_API_COTES_MS = 20 * 60 * 60 * 1000; // 20/11 : The Odds API, cotes NBA du jour lues 1 fois/jour
 async function lireCacheBasket(cle, ttlMs) {
   try {
     const rows = await sbSelect('api_fixtures_cache', `select=payload,fetched_at&provider=eq.${CACHE_PROVIDER_BASKET}&cle=eq.${encodeURIComponent(cle)}&limit=1`);
@@ -359,6 +361,23 @@ async function recupererMatchsBasketJourOddsApi(dateCible) {
     _cacheOddsApiBasket = new Map();
     return [];
   }
+  // 20/11 : quota mensuel épuisé constaté (marqueur 12 h) → aucun appel, repli API-Sports.
+  // Noté hors « erreurs » : ce n'est pas un refus de ce passage (le suivi des crédits restants
+  // et l'alerte dédiée « Quota mensuel The Odds API » passent par api_quota_usage).
+  const gOdds = oddsApiGarde.creer({ sbSelect, sbRpc, erreurs: stats.erreurs });
+  if (await gOdds.quotaEpuise()) {
+    stats.oddsApi = 'quota mensuel épuisé — appel évité (marqueur 12 h), repli API-Sports';
+    _cacheOddsApiBasket = new Map();
+    return [];
+  }
+  // 20/11 : cotes NBA lues UNE fois par jour (cache 20 h) au passage automatique, au lieu de
+  // ≈2 crédits à chaque passage. Une génération manuelle admin relit toujours en direct.
+  const cleCotesJour = `oddsapi-odds:${dateCible}`;
+  let evenementsCache = utiliserMarqueursVides ? await gOdds.lireCache(cleCotesJour, CACHE_TTL_ODDS_API_COTES_MS) : null;
+  if (Array.isArray(evenementsCache)) {
+    stats.oddsApi = 'cotes NBA du jour lues depuis le cache (aucun crédit)';
+    return traiterEvenementsOddsApi(evenementsCache, dateCible);
+  }
   const url = new URL(`https://${ODDS_API_HOST}/v4/sports/basketball_nba/odds/`);
   url.searchParams.set('apiKey', ODDS_API_KEY);
   url.searchParams.set('regions', 'us');
@@ -373,12 +392,13 @@ async function recupererMatchsBasketJourOddsApi(dateCible) {
     stats.erreurs.push('odds-api basket/odds: ' + e.message);
     return [];
   }
-  await enregistrerQuotaReelOddsApi(resp);
   if (!resp.ok) {
     const texte = await resp.text().catch(() => '');
+    await gOdds.apresAppel(resp, texte);   // compte l'appel + crédits restants + marqueur si quota épuisé
     stats.erreurs.push(`odds-api basket/odds: HTTP ${resp.status} ${texte.slice(0, 300)}`);
     return [];
   }
+  await gOdds.apresAppel(resp);
   let evenements;
   try {
     evenements = await resp.json();
@@ -387,7 +407,16 @@ async function recupererMatchsBasketJourOddsApi(dateCible) {
     return [];
   }
   if (!Array.isArray(evenements)) return [];
+  // Cache du jour : seulement les matchs de cette date (Haïti), jamais toute la saison.
+  const duJour = evenements.filter(ev => {
+    const h = ev && ev.commence_time ? heureHaitiDuMatch(ev.commence_time) : null;
+    return !!(h && h.iso === dateCible);
+  });
+  if (duJour.length) await gOdds.ecrireCache(cleCotesJour, duJour);
+  return traiterEvenementsOddsApi(evenements, dateCible);
+}
 
+async function traiterEvenementsOddsApi(evenements, dateCible) {
   _cacheOddsApiBasket = new Map(); // repart de zéro à chaque appel — jamais un résidu d'un passage précédent
   const resultats = [];
   evenements.forEach(ev => {
@@ -518,6 +547,22 @@ function projeterTotalBasket(profils, homeId, awayId) {
   return Math.round(((attHome + defAway) / 2 + (attAway + defHome) / 2));
 }
 
+// 20/11 (James : « points d'une équipe ») : projection des points de CHAQUE équipe, même formule
+// que projeterTotalBasket (attaque de l'équipe + défense adverse, domicile/extérieur), séparée.
+// null si l'une des deux équipes a moins de HISTORIQUE_MIN_MATCHS_BASKET matchs connus.
+function projeterPointsEquipesBasket(profils, homeId, awayId) {
+  const ph = profils.get(homeId), pa = profils.get(awayId);
+  if (!ph || !pa || ph.n < HISTORIQUE_MIN_MATCHS_BASKET || pa.n < HISTORIQUE_MIN_MATCHS_BASKET) return null;
+  const attHome = ph.nDom >= 2 ? ph.ptsPourDom / ph.nDom : ph.ptsPour / ph.n;
+  const defHome = ph.nDom >= 2 ? ph.ptsContreDom / ph.nDom : ph.ptsContre / ph.n;
+  const attAway = pa.nExt >= 2 ? pa.ptsPourExt / pa.nExt : pa.ptsPour / pa.n;
+  const defAway = pa.nExt >= 2 ? pa.ptsContreExt / pa.nExt : pa.ptsContre / pa.n;
+  return { home: Math.round((attHome + defAway) / 2), away: Math.round((attAway + defHome) / 2) };
+}
+// Marge minimale de la projection (en points) pour proposer « points d'une équipe ».
+const ECART_MIN_PROJECTION_EQUIPE = 3;
+const estMarchePointsBasket = m => m === 'mk_basket_total' || m === 'mk_basket_total_domicile' || m === 'mk_basket_total_exterieur';
+
 // ============================================================================
 // LOG STRUCTURÉ — indépendant de celui du foot (fichier/process séparé).
 // ============================================================================
@@ -539,6 +584,7 @@ const stats = {
 };
 function resetStatsBasket() {
   stats.demarre = new Date().toISOString();
+  stats.oddsApi = null; // 20/11 : état The Odds API de CE passage (quota épuisé / cache)
   stats.dateCible = null;
   stats.urgence = false;
   stats.matchsTrouves = 0;
@@ -549,6 +595,7 @@ function resetStatsBasket() {
   stats.nbSelectionsPossibles = null;
   stats.cibleTirage = null;
   stats.apprentissage = null;
+  stats.nba = null; // 20/11 : priorité NBA (transparence du passage)
   stats.cibleAtteinte = null;
   stats.sourceBasket = null;
   _sourceBasketActuelle = 'api-sports'; // repart toujours prioritaire sur API-Sports à chaque nouveau passage
@@ -775,6 +822,9 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
   const projectionTotal = (profils && infosMatch.equipeDomicileId != null && infosMatch.equipeExterieurId != null)
     ? projeterTotalBasket(profils, infosMatch.equipeDomicileId, infosMatch.equipeExterieurId)
     : null;
+  const projectionEquipes = (profils && infosMatch.equipeDomicileId != null && infosMatch.equipeExterieurId != null)
+    ? projeterPointsEquipesBasket(profils, infosMatch.equipeDomicileId, infosMatch.equipeExterieurId)
+    : null;
 
   const bookmakers = oddsItem.bookmakers || [];
   const bk = bookmakers.find(b => Number(b.id) === 8) || bookmakers[0];
@@ -790,10 +840,11 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
     // informatif seulement (repère SAFE/PREMIUM pour le diagnostic) —
     // jamais lu par construireFicheBasket, qui ne filtre déjà que sur
     // scoreFiabilite/projectionConfirmee, jamais sur tier.
-    const COTE_MIN_BASKET = 1.19, COTE_MAX_BASKET_LEG = 2.90;
+    const COTE_MIN_BASKET = 1.20, COTE_MAX_BASKET_LEG = 2.90; // 20/11 (James) : minimum 1,20 (avant 1,19)
     if (betType.id === 2) {
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
+        if (!['Home', 'Away'].includes(String(v.value || '').trim())) return;   // 18/11 : seulement Home / Away (jamais un pari illisible)
         if (c >= COTE_MIN_BASKET && c <= COTE_MAX_BASKET_LEG) {
           trouvees.push({
             gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
@@ -853,6 +904,44 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
         }
       });
     }
+    // 20/11 (James) : POINTS D'UNE ÉQUIPE (id 28 = équipe à domicile, id 29 = à l'extérieur,
+    // prolongations comprises). Proposé SEULEMENT si la projection maison de cette équipe
+    // confirme le pari d'au moins ECART_MIN_PROJECTION_EQUIPE points ; sans projection (moins de
+    // 3 matchs connus) : jamais proposé. Même règle « côté nettement favori » que le total du match.
+    if ((betType.id === 28 || betType.id === 29) && projectionEquipes) {
+      const domicile = betType.id === 28;
+      const proj = domicile ? projectionEquipes.home : projectionEquipes.away;
+      const ECART_MIN_COTE = 0.15;
+      const parLigne = new Map();
+      (betType.values || []).forEach(v => {
+        const m = String(v.value || '').trim().match(/^(Over|Under)\s+([\d.]+)$/i);
+        if (!m) return;
+        const e = parLigne.get(m[2]) || {};
+        e[m[1].toLowerCase()] = parseFloat(v.odd);
+        parLigne.set(m[2], e);
+      });
+      (betType.values || []).forEach(v => {
+        const m = String(v.value || '').trim().match(/^(Over|Under)\s+([\d.]+)$/i);
+        if (!m) return;   // libellé illisible : jamais publié
+        if (!/\.5$/.test(m[2])) return;   // ligne entière (ex. 54) : égalité possible = pari remboursé, jamais proposée
+        const c = parseFloat(v.odd), seuil = parseFloat(m[2]);
+        const estOver = m[1].toLowerCase() === 'over';
+        const e = parLigne.get(m[2]) || {};
+        const autre = estOver ? e.under : e.over;
+        if (isFinite(autre) && !(c <= autre - ECART_MIN_COTE)) return;
+        if (!isFinite(seuil) || !(c >= COTE_MIN_BASKET && c <= COTE_MAX_BASKET_LEG)) return;
+        const ecart = Math.round((estOver ? proj - seuil : seuil - proj) * 10) / 10;
+        if (!(ecart >= ECART_MIN_PROJECTION_EQUIPE)) return;
+        trouvees.push({
+          gameId: infosMatch.gameId, league: infosMatch.league, leagueCountry: infosMatch.leagueCountry,
+          market: domicile ? 'mk_basket_total_domicile' : 'mk_basket_total_exterieur',
+          pick: `${domicile ? 'Domicile' : 'Extérieur'} : ${traduirePointsBasket(m[1] + ' ' + m[2])}`,
+          odd: c, tier: c <= 1.95 ? 'SAFE' : 'PREMIUM',
+          kickoffUtc: infosMatch.kickoffUtc, matchTimeHaiti: h.heure,
+          projectionTotal: proj, projectionConfirmee: true, projectionEcart: ecart
+        });
+      });
+    }
   });
 
   return trouvees;
@@ -877,7 +966,7 @@ function extraireMarchesBasket(oddsItem, dateCible, infosMatch, profils) {
 // Sans historique suffisant (marché tout neuf), retombe honnêtement sur
 // 1/cote, jamais une valeur inventée.
 // ============================================================================
-const CIBLE_MAX_BASKET = 25;
+const CIBLE_MAX_BASKET = 20; // 20/11 (James) : cote du jour 2 à 20 (avant 25 : 1 fiche gagnée sur 27 au-dessus de 10)
 const MAX_SELECTIONS_BASKET = 10;
 
 // COTE CIBLE DU JOUR (20/09, demande explicite de James : « une seule cote basketball par
@@ -892,7 +981,7 @@ const MAX_SELECTIONS_BASKET = 10;
 // 14/11 (James) : « pour le basket, cote 2 à 25 » — minimum abaissé de 5 à 2 (tirage toujours
 // aléatoire, un entier par jour). La base n'impose aucun minimum aux fiches basket.
 const CIBLE_MIN_JOUR_BASKET = 2;
-const COTE_MIN_BASKET_OPT = 1.19; // même plancher de cote par sélection que l'extraction (COTE_MIN_BASKET)
+const COTE_MIN_BASKET_OPT = 1.20; // 20/11 (James) : cote minimum 1,20 par sélection — même plancher de cote par sélection que l'extraction (COTE_MIN_BASKET)
 function hash32Basket(texte) {
   let h = 2166136261 >>> 0;
   for (let i = 0; i < texte.length; i++) { h ^= texte.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
@@ -1051,8 +1140,13 @@ const LIMITE_NOEUDS_OPTIMISATION = 300000;  // borne de calcul : jamais un temps
 function facteurSelectionBasket(b) {
   return (b && Number.isFinite(b.facteurSegment)) ? b.facteurSegment : FACTEUR_MARGE_PAR_SELECTION;
 }
+// 20/11 (James : « les matchs NBA toujours en priorité ») : dans une fiche MIXTE (pas assez de NBA
+// pour la cote du jour), une sélection NBA garde un léger avantage (+0,03) — la NBA réussit mieux
+// que les autres ligues dans nos résultats réels (63 % contre 58 %).
+const BONUS_PRIORITE_NBA = 0.03;
 function probaSelectionBasket(b) {
-  const p = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd) + (b.projectionConfirmee ? 0.05 : 0);
+  const p = (b.scoreFiabilite != null ? b.scoreFiabilite : 1 / b.odd) + (b.projectionConfirmee ? 0.05 : 0)
+    + (b.prioriteNBA ? BONUS_PRIORITE_NBA : 0);
   return Math.min(0.97, Math.max(0.05, p));
 }
 
@@ -1084,7 +1178,7 @@ function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme, minTo
   const n = jeux.length;
   minTotaux = minTotaux || 0; // 14/11 : nombre MINIMUM de totaux de points dans la fiche (0 = libre)
   let best = null, noeuds = 0;
-  const nbTotaux = choix => choix.reduce((x, b) => x + (b.market === 'mk_basket_total' ? 1 : 0), 0);
+  const nbTotaux = choix => choix.reduce((x, b) => x + (estMarchePointsBasket(b.market) ? 1 : 0), 0); // 20/11 : points d'une équipe comptent aussi
   function meilleurQue(chance, cote) {
     if (!best) return true;
     if (chance > best.chance * (1 + 1e-9)) return true;
@@ -1162,7 +1256,7 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
     if (kMin !== null && k > Math.max(kMin, Math.min(kMin + ECART_MAX_NB_SELECTIONS, kMaxCoteMoyenne))) break;
     // 14/11 : au moins partTotaux x k totaux de points (au moins 1), dans la limite des matchs
     // qui proposent un total eligible.
-    const matchsAvecTotal = jeux.filter(l => l.some(b => b.market === 'mk_basket_total')).length;
+    const matchsAvecTotal = jeux.filter(l => l.some(b => estMarchePointsBasket(b.market))).length;
     const minTot = partTotaux > 0 ? Math.min(matchsAvecTotal, Math.max(1, Math.floor(k * partTotaux))) : 0;
     const c = meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme, minTot);
     if (c) { parK[k] = c; if (kMin === null) kMin = k; }
@@ -1452,18 +1546,37 @@ async function handler(event) {
     }
     return !b.segmentExclu;
   };
-  const poolRenforce = poolBasketFiltre.filter(b => b.market === 'mk_basket_total' ? totalGarde(b) : !b.segmentExclu);
+  const poolRenforce = poolBasketFiltre.filter(b => estMarchePointsBasket(b.market) ? totalGarde(b) : !b.segmentExclu);
   stats.apprentissage.poolComplet = poolBasketFiltre.length;
   stats.apprentissage.poolRenforce = poolRenforce.length;
-  stats.apprentissage.totauxGardes = poolRenforce.filter(b => b.market === 'mk_basket_total').length;
+  stats.apprentissage.totauxGardes = poolRenforce.filter(b => estMarchePointsBasket(b.market)).length;
+  stats.apprentissage.pointsEquipeGardes = poolRenforce.filter(b => b.market !== 'mk_basket_total' && estMarchePointsBasket(b.market)).length;
+  // 20/11 (James : « NBA toujours en priorité, selon la cote du jour ») : si les matchs NBA
+  // suffisent à atteindre la cote du jour (au moins 2 matchs NBA, premier palier de la cascade),
+  // la fiche est 100 % NBA. Sinon : fiche mixte, où la NBA garde un léger avantage (prioriteNBA).
+  // Chiffres réels au 20/11 : fiches 100 % NBA 4 gagnées sur 15, fiches mixtes 2 sur 37.
+  const estNBA = b => String(b.league || '').trim().toUpperCase() === 'NBA';
+  const poolNBA = poolRenforce.filter(estNBA);
+  stats.nba = { selections: poolNBA.length, matchs: new Set(poolNBA.map(b => b.gameId)).size, ficheNBA: false };
+  let cascadeBasket = { fiche: null, cibleRetenue: null, paliers: [], methode: 'classique' };
+  if (stats.nba.matchs >= 2) {
+    const essaisNBA = [
+      cascadeFicheBasket(poolNBA, cibleDuJour, pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible))), { partTotaux: PART_MIN_TOTAUX }),
+      cascadeFicheBasket(poolNBA, cibleDuJour, pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible))))
+    ];
+    const ok = essaisNBA.find(c => c.fiche && c.cibleRetenue === c.paliers[0]);
+    if (ok) { cascadeBasket = ok; stats.nba.ficheNBA = true; }
+  }
+  const avecPrioriteNBA = pool => pool.map(b => (estNBA(b) ? Object.assign({}, b, { prioriteNBA: true }) : b));
+  const poolRenforceMixte = avecPrioriteNBA(poolRenforce);
   const hasardMixte = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
-  let cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardMixte, { partTotaux: PART_MIN_TOTAUX });
+  if (!cascadeBasket.fiche) cascadeBasket = cascadeFicheBasket(poolRenforceMixte, cibleDuJour, hasardMixte, { partTotaux: PART_MIN_TOTAUX });
   stats.apprentissage.avecTotaux = !!cascadeBasket.fiche;
-  if (!cascadeBasket.fiche) cascadeBasket = cascadeFicheBasket(poolRenforce, cibleDuJour, hasardNbSelections);
+  if (!cascadeBasket.fiche) cascadeBasket = cascadeFicheBasket(poolRenforceMixte, cibleDuJour, hasardNbSelections);
   stats.apprentissage.repliPoolComplet = !cascadeBasket.fiche;
   if (!cascadeBasket.fiche) {
     const hasardRepli = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
-    cascadeBasket = cascadeFicheBasket(poolBasketFiltre, cibleDuJour, hasardRepli);
+    cascadeBasket = cascadeFicheBasket(avecPrioriteNBA(poolBasketFiltre), cibleDuJour, hasardRepli);
   }
   const paliersCascadeBasket = cascadeBasket.paliers;
   let fiche = cascadeBasket.fiche, cibleRetenueBasket = cascadeBasket.cibleRetenue;

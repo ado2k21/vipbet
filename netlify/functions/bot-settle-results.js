@@ -74,6 +74,7 @@ const apprentissage = require('./lib/basket-apprentissage.js'); // 14/11 : journ
 // Relais BSD (30/09) : règlement des sélections foot dont le match vient de BSD
 // (fixture_id négatif sur une fiche foot). Voir lib/bsd-relais.js.
 const bsdRelais = require('./lib/bsd-relais.js');
+const oddsApiGarde = require('./lib/odds-api-garde.js'); // 20/11 : quota The Odds API (cache, compteur, marqueur)
 const BSD_API_KEY = (process.env.BSD_API_KEY || '').trim();
 const BSD_HOST = 'sports.bzzoiro.com';
 
@@ -237,6 +238,7 @@ const stats = {
   erreurs: []
 };
 function resetStats() {
+  stats.oddsApi = null; // 20/11 : état The Odds API de CE passage (quota épuisé / cache)
   stats.demarre = new Date().toISOString();
   stats.datesTraitees = [];
   stats.ticketsExamines = 0;
@@ -507,9 +509,24 @@ async function retenterMatchBasketUnique(gameId) {
 // réellement écoulés depuis dateIso, jamais codé en dur.
 // null = source indisponible (clé absente, réseau, HTTP, réponse illisible) ;
 // [] = l'API a répondu et n'a pas ce match. Voir recupererFixturesDate.
+// 20/11 : réponses /scores gardées 3 h (base) et dans le passage (mémoire), appels comptés,
+// marqueur « quota mensuel épuisé » respecté — voir lib/odds-api-garde.js. Avant, chaque
+// passage horaire refaisait l'appel (≈2 crédits) sans le compter : quota épuisé le 20/11.
+const TTL_SCORES_ODDS_API_MS = 3 * 60 * 60 * 1000;
+let _scoresOddsApiPassage = new Map();   // daysFrom -> réponse (remis à zéro à chaque passage)
 async function recupererMatchsBasketDateOddsApi(dateIso) {
   if (!ODDS_API_KEY) return null;
   const joursDepuis = Math.min(3, Math.max(1, joursEcoules(dateIso)));
+  if (_scoresOddsApiPassage.has(joursDepuis)) return _scoresOddsApiPassage.get(joursDepuis);
+  const gOdds = oddsApiGarde.creer({ sbSelect, sbRpc, erreurs: stats.erreurs });
+  const cleCache = `oddsapi-scores:${joursDepuis}`;
+  const enCache = await gOdds.lireCache(cleCache, TTL_SCORES_ODDS_API_MS);
+  if (Array.isArray(enCache)) { _scoresOddsApiPassage.set(joursDepuis, enCache); return enCache; }
+  if (await gOdds.quotaEpuise()) {
+    // Source indisponible (pas une erreur de ce passage) : les sélections restent en attente.
+    stats.oddsApi = 'quota mensuel épuisé — appel évité (marqueur 12 h)';
+    return null;
+  }
   const url = new URL(`https://${ODDS_API_HOST}/v4/sports/basketball_nba/scores/`);
   url.searchParams.set('apiKey', ODDS_API_KEY);
   url.searchParams.set('daysFrom', String(joursDepuis));
@@ -522,9 +539,12 @@ async function recupererMatchsBasketDateOddsApi(dateIso) {
     return null;
   }
   if (!resp.ok) {
-    stats.erreurs.push(`odds-api basket/scores(${dateIso}) → HTTP ${resp.status}`);
+    const texte = await resp.text().catch(() => '');
+    await gOdds.apresAppel(resp, texte);
+    stats.erreurs.push(`odds-api basket/scores(${dateIso}) → HTTP ${resp.status} ${texte.slice(0, 160)}`);
     return null;
   }
+  await gOdds.apresAppel(resp);
   let data;
   try {
     data = await resp.json();
@@ -536,6 +556,8 @@ async function recupererMatchsBasketDateOddsApi(dateIso) {
     stats.erreurs.push(`odds-api basket/scores(${dateIso}) : réponse inattendue (pas une liste)`);
     return null;
   }
+  _scoresOddsApiPassage.set(joursDepuis, data);
+  await gOdds.ecrireCache(cleCache, data);
   return data;
 }
 
@@ -601,6 +623,18 @@ function evaluerLegBasket(leg, ptsHome, ptsAway) {
       const seuil = parseFloat(m[2]);
       return (m[1].toLowerCase() === 'plus' ? total > seuil : total < seuil) ? 'won' : 'lost';
     }
+    // 20/11 : points d'une équipe (« Domicile : Plus de 108.5 points », prolongations comprises).
+    case 'mk_basket_total_domicile':
+    case 'mk_basket_total_exterieur': {
+      const m = /^(Domicile|Extérieur)\s*:\s*(Plus|Moins) de ([\d.]+) points$/i.exec(pick.trim());
+      if (!m || ptsHome == null || ptsAway == null) return null;
+      const domicile = leg.market === 'mk_basket_total_domicile';
+      if (domicile !== /^Domicile/i.test(m[1])) return null;   // libellé incohérent avec le marché : jamais deviné
+      const pts = domicile ? ptsHome : ptsAway;
+      const seuil = parseFloat(m[3]);
+      if (!Number.isFinite(seuil) || pts === seuil) return null;
+      return (m[2].toLowerCase() === 'plus' ? pts > seuil : pts < seuil) ? 'won' : 'lost';
+    }
     default:
       return null;
   }
@@ -646,7 +680,10 @@ function evaluerLeg(leg, golHome, golAway, buteurs) {
       // se fait ici, localement, jamais un format deviné.
       const CORRESPONDANCE_DOUBLE_CHANCE = { X1: ['Home', 'Draw'], '12': ['Home', 'Away'], X2: ['Draw', 'Away'] };
       const val = pick.replace('Double chance : ', '').trim(); // "X1", "12", "X2"
-      const camp = CORRESPONDANCE_DOUBLE_CHANCE[val];
+      // 18/11 : aussi le libelle brut du fournisseur, dans n'importe quel ordre (« Away/Home », cas reel du
+      // 17/11 resté en attente pour toujours).
+      const brut = val.split('/').map(x => x.trim()).filter(Boolean);
+      const camp = CORRESPONDANCE_DOUBLE_CHANCE[val] || (brut.length === 2 && brut[0] !== brut[1] && brut.every(x => ['Home', 'Draw', 'Away'].includes(x)) ? brut : null);
       if (!camp) return null; // format non reconnu (ex. ancien format historique) : jamais deviner, laissé en attente
       return camp.includes(resultat1x2(golHome, golAway)) ? 'won' : 'lost';
     }
@@ -1430,6 +1467,7 @@ async function reglerDate(dateIso) {
 
 async function handler(event) {
   resetSuiviApi();
+  _scoresOddsApiPassage = new Map(); // 20/11 : jamais une réponse d'un passage précédent
   try {
     return await handlerInterne(event);
   } finally {
@@ -1503,4 +1541,4 @@ async function handlerInterne(event) {
 
 module.exports.handler = handler;
 module.exports.config = config;
-module.exports._interne = { reglerDate, stats, raisonReport, doitVerifierReport, noterReponseApi, noterEtatApi, resetSuiviApi, REFUS_API_GRAVE };
+module.exports._interne = { reglerDate, stats, recupererMatchsBasketDateOddsApi, evaluerLegBasket, raisonReport, doitVerifierReport, noterReponseApi, noterEtatApi, resetSuiviApi, REFUS_API_GRAVE };

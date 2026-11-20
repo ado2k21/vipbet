@@ -82,6 +82,7 @@ const TITRES = {
   PUB_MANQUANTE_B: 'Publications (service B)',
   REGLEMENT_BLOQUE_A: 'Calcul des résultats (service A)',
   REGLEMENT_BLOQUE_B: 'Calcul des résultats (service B)',
+  QUOTA_ODDS_API_B: 'Crédits The Odds API (service B)',
   // anciens noms (compatibilité)
   FICHES_MANQUANTES: 'Publications manquantes',
   REGLEMENT_BLOQUE: 'Calcul des résultats'
@@ -307,7 +308,35 @@ function messageAutre(l) {
   return { titre, lignes: [titre, '', corps], courtes: [corps] };
 }
 
+// 20/11 : « Usage quota has been reached » (OUT_OF_USAGE_CREDITS) de The Odds API était lu comme
+// « site Netlify refusé » ou « API bloquée ». C'est en réalité le quota MENSUEL de cette source épuisé.
+function estQuotaOddsApi(l) {
+  const m = String((l.infos || {}).message_api || l.detail || '');
+  return /odds-?api/i.test(m) && /quota has been reached|OUT_OF_USAGE_CREDITS/i.test(m);
+}
+
+// Ligne QUOTA_ODDS_API_B (ajouterQuotaOddsApi) : crédits restants lus dans api_quota_usage.
+const SEUIL_CREDITS_ODDS_API = 50;
+function messageQuotaOddsApi(l) {
+  const i = l.infos || {};
+  const epuise = l.cause === 'EPUISE';
+  const reste = i.restant != null ? i.restant : '?';
+  const limite = i.limite || 500;
+  const titre = epuise ? 'Quota mensuel The Odds API épuisé (service B)' : 'Crédits The Odds API bientôt épuisés (service B)';
+  const c0 = epuise
+    ? 'CE QUI SE PASSE : la source prioritaire des cotes NBA (The Odds API) n\'a plus de crédits pour ce mois. Ce n\'est PAS un site Netlify en trop ni une clé refusée.'
+    : `CE QUI SE PASSE : il reste ${reste} crédit(s) sur ${limite} ce mois-ci chez The Odds API (source prioritaire des cotes NBA).`;
+  const c1 = epuise
+    ? 'Conséquence : les fiches basket continuent avec la source de secours (API-Sports). Les sélections NBA déjà publiées depuis The Odds API ne peuvent pas être calculées tant que les crédits ne sont pas rechargés.'
+    : 'Les appels sont déjà limités (cotes lues 1 fois par jour, scores gardés 3 h). Une fois à 0, les fiches basket passent sur API-Sports et les sélections NBA de The Odds API attendent la recharge.';
+  const c2 = i.releve_le ? `Dernier relevé : ${i.releve_le} (heure Haïti).` : '';
+  const a1 = 'À FAIRE : attendre la recharge mensuelle (date anniversaire de l\'inscription) ou prendre une formule payante sur the-odds-api.com. Inutile d\'ajouter ou supprimer un site Netlify.';
+  return { titre, lignes: [titre, '', c0, c1, c2, '', a1].filter((x, idx, arr) => x !== '' || arr[idx - 1] !== ''),
+    courtes: [c0, c1, 'Action : attendre la recharge mensuelle ou passer à une formule payante.'] };
+}
+
 function construire(l) {
+  if (l.type === 'QUOTA_ODDS_API_B') return messageQuotaOddsApi(l);
   return (l.type.indexOf('API_BLOQUEE_') === 0) ? messageApi(l) : messageAutre(l);
 }
 
@@ -463,6 +492,9 @@ function heuresDepuisHaiti(jjmm, maintenant) {
   return (now - t) / 3600000;
 }
 function alerteUtile(l, maintenant) {
+  // 20/11 : « quota The Odds API épuisé » n'est ni un site en trop ni une API bloquée : l'alerte
+  // dédiée QUOTA_ODDS_API_B (crédits restants) le dit clairement, une seule fois par jour.
+  if (/^(API_BLOQUEE_|API_SITE_OBSOLETE_)/.test(l.type) && estQuotaOddsApi(l)) return false;
   if (/^PUB_MANQUANTE_[AB]$/.test(l.type)) return CAUSES_PUB_URGENTES.includes(l.cause);
   if (/^REGLEMENT_BLOQUE_[AB]$/.test(l.type) || l.type === 'REGLEMENT_BLOQUE') {
     const h = heuresDepuisHaiti((l.infos || {}).plus_ancien, maintenant);
@@ -534,6 +566,36 @@ async function ajouterApiVueParLeCalcul(lignes) {
     if (i >= 0) lignes[i] = ligne; else lignes.push(ligne);
   }
   return lignes;
+}
+
+// 20/11 : crédits The Odds API (quota MENSUEL, 500). Lu dans api_quota_usage (relevé des en-têtes à
+// chaque appel réel). Alerte sous 50 crédits, ou à 0 (épuisé) ; « Rétabli » après la recharge.
+// Relevé de plus de 3 jours : rien (pas de ligne, donc ni alerte ni rétabli).
+async function ajouterQuotaOddsApi(lignes) {
+  const base = process.env.SUPABASE_URL, cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const depuis = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
+  const r = await fetchAvecDelai(`${base}/rest/v1/api_quota_usage?select=date_utc,real_remaining,real_limit,real_captured_at&provider=eq.odds-api-basketball&date_utc=gte.${depuis}&real_remaining=not.is.null&order=date_utc.desc&limit=1`,
+    { headers: { apikey: cle, Authorization: `Bearer ${cle}` } });
+  if (!r.ok) return lignes;
+  const j = await r.json();
+  if (!Array.isArray(j) || !j.length) return lignes;
+  const q = j[0], reste = Number(q.real_remaining);
+  const probleme = Number.isFinite(reste) && reste < SEUIL_CREDITS_ODDS_API;
+  lignes.push({ type: 'QUOTA_ODDS_API_B', probleme, cause: probleme ? (reste <= 0 ? 'EPUISE' : 'BAS') : null,
+    detail: probleme ? `The Odds API : ${reste} crédit(s) restant(s)` : 'ok',
+    infos: { service: 'B', restant: reste, limite: q.real_limit, releve_le: q.real_captured_at ? hhmmHaiti(q.real_captured_at) : null } });
+  return lignes;
+}
+// Quota mensuel : un rappel par jour suffit (alert_claim rappelle toutes les 3 h). Lecture seule.
+async function signaleDepuisMoinsDe24h(cleAlerte) {
+  try {
+    const base = process.env.SUPABASE_URL, cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const r = await fetchAvecDelai(`${base}/rest/v1/alert_state?select=active,last_sent_at&type=eq.${encodeURIComponent(cleAlerte)}&limit=1`,
+      { headers: { apikey: cle, Authorization: `Bearer ${cle}` } });
+    if (!r.ok) return false;
+    const j = await r.json();
+    return !!(Array.isArray(j) && j.length && j[0].active && j[0].last_sent_at && Date.now() - Date.parse(j[0].last_sent_at) < 24 * 3600000);
+  } catch (_) { return false; }
 }
 
 // 12/11 : seules les alertes du site de PRODUCTION partent. Un autre site Netlify (autre équipe)
@@ -665,6 +727,8 @@ async function handler(event) {
   }
   try { lignes = await ajouterApiVueParLeCalcul(Array.isArray(lignes) ? lignes : []); }
   catch (e) { console.log('[ALERTE] fusion API du calcul :', e.message); }
+  try { lignes = await ajouterQuotaOddsApi(Array.isArray(lignes) ? lignes : []); }
+  catch (e) { console.log('[ALERTE] crédits The Odds API :', e.message); }
 
   const bilan = [];
   const aEnvoyer = [];   // { cle, l } : alertes gagnées ce passage (verrou pris)
@@ -689,6 +753,7 @@ async function handler(event) {
         // Un CHANGEMENT de cause (ex. suspendu -> limite du jour) est un nouveau problème :
         // la clé du verrou inclut la cause pour qu'il soit signalé tout de suite.
         const cle = l.cause ? `${l.type}:${l.cause}` : l.type;
+        if (l.type === 'QUOTA_ODDS_API_B' && await signaleDepuisMoinsDe24h(cle)) { bilan.push(`${cle}: actif (signalé il y a moins de 24 h)`); continue; }
         const doitEnvoyer = await rpc('alert_claim', { p_type: cle, p_detail: l.detail });
         if (!doitEnvoyer) { bilan.push(`${cle}: actif (déjà signalé)`); continue; }
         aEnvoyer.push({ cle, l });
@@ -699,6 +764,7 @@ async function handler(event) {
           const i = l.infos || {};
           let ligne = `${titre} : le problème n'est plus détecté.`;
           if (/^PUB_MANQUANTE_/.test(l.type) && i.date_cible) ligne = `${titre} : publications présentes pour le ${i.date_cible}.`;
+          if (l.type === 'QUOTA_ODDS_API_B') ligne = `${titre} : crédits rechargés (${(l.infos || {}).restant} restants).`;
           if (/^REGLEMENT_BLOQUE_/.test(l.type)) ligne = `${titre} : plus aucun élément en attente de résultat depuis plus de 6 h.`;
           retablis.push({ type: l.type, titre, ligne });
         }

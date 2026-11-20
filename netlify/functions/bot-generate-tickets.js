@@ -675,13 +675,16 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       // l'API renvoie "Home/Draw" / "Home/Away" / "Draw/Away" en anglais,
       // jamais reconnu par le grand public haïtien — converti en 1X/12/X2,
       // la notation utilisée partout ailleurs (bookmakers, paryajpam.com).
-      const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': 'X1', 'Home/Away': '12', 'Draw/Away': 'X2' };
+      // 18/11 : le fournisseur donne parfois les issues dans l'AUTRE ordre (« Away/Home »). L'ordre ne
+      // compte plus ; un libelle inconnu n'est JAMAIS publie (la selection est ignoree).
+      const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': 'X1', 'Draw/Home': 'X1', 'Home/Away': '12', 'Away/Home': '12', 'Draw/Away': 'X2', 'Away/Draw': 'X2' };
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
+        if (!LIBELLE_DOUBLE_CHANCE[String(v.value || '').trim()]) return;   // 18/11 : libelle inconnu -> ignore
         if (c >= 1.19 && c <= 1.70) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_double_chance',
-            pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[v.value] || v.value}`, odd: c, tier: 'SAFE',
+            pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[String(v.value || '').trim()]}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }

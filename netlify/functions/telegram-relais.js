@@ -29,6 +29,7 @@
  *  - le token n'est jamais écrit dans les journaux.
  * ============================================================================
  */
+const nomEquipe = require('./lib/nom-equipe.js'); // 20/11 : nom court d'équipe (points d'une équipe au basket)
 
 const config = { schedule: '*/5 * * * *' };
 
@@ -71,7 +72,7 @@ function ficheVisiblePourGroupe(tk, g, groupes) {
   const rang = plafondGroupe(g, groupes || {});
   const min = Number(tk.min_plan_rank);
   if (!Number.isFinite(min) || min > rang) return false;
-  if (g === 1 && tk.sport === 'basket' && Number(tk.total_odd) > 15 &&
+  if (g === 1 && tk.sport === 'basket' && Number(tk.total_odd) >= 16 &&
       String(tk.play_date || '') >= BASKET15_MASQUE_DES) return false;
   return true;
 }
@@ -96,7 +97,8 @@ const MARCHES = {
   mk_over: 'Total points', mk_over_l: 'Plus / Moins de buts', mk_total_l: 'Total points',
   mk_score_exact: 'Score exact', mk_score_l: 'Score exact',
   mk_buteur: 'Buteur', mk_scorer_l: 'Buteur',
-  mk_hand_l: 'Handicap', mk_corners_l: 'Corners', mk_team_goals_l: "Buts d'une équipe"
+  mk_hand_l: 'Handicap', mk_corners_l: 'Corners', mk_team_goals_l: "Buts d'une équipe",
+  mk_basket_total_domicile: "Points d'une équipe", mk_basket_total_exterieur: "Points d'une équipe" // 20/11
 };
 function libelleMarche(m) {
   const k = String(m || '');
@@ -105,8 +107,11 @@ function libelleMarche(m) {
   return t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
 }
 // Meme notation que le site : « Victoire : Home » -> « Victoire : 1 », « Away » -> « 2 ».
-function libellePick(p) {
-  return String(p || '').replace(/^Victoire\s*:\s*Home$/i, 'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i, 'Victoire : 2');
+// 20/11 : avec market + match, « Domicile : Plus de 108.5 points » (points d'une équipe au basket)
+// devient « Orlando : Plus de 108.5 points » (nom court, voir lib/nom-equipe.js).
+function libellePick(p, market, matchLabel) {
+  const base = String(p || '').replace(/^Victoire\s*:\s*Home$/i, 'Victoire : 1').replace(/^Victoire\s*:\s*Away$/i, 'Victoire : 2');
+  return market ? nomEquipe.pickAvecEquipe(base, market, matchLabel) : base;
 }
 
 const MARCHES_SCORE = ['mk_score_l', 'mk_score_exact'];
@@ -140,7 +145,7 @@ function coteGagneeTexte(tk, legs) {
 
 // Libelle du choix, identique au message texte (« Les deux équipes marquent : Oui »).
 function choixLeg(l) {
-  const pick = libellePick(l.pick);
+  const pick = libellePick(l.pick, l.market, l.match_label);
   const marche = libelleMarche(l.market);
   return pick.includes(':') ? pick : (marche ? marche + ' : ' + pick : pick);
 }
@@ -197,7 +202,7 @@ function formaterMessage(tk, legs) {
   lignes.push('');
   legs.forEach((l, i) => {
     const h = heureLeg(l);
-    const pick = libellePick(l.pick);
+    const pick = libellePick(l.pick, l.market, l.match_label);
     const marche = libelleMarche(l.market);
     // Le pick contient deja son libelle (« Les deux équipes marquent : Oui ») : pas de doublon.
     const choix = pick.includes(':') ? pick : (marche ? marche + ' : ' + pick : pick);

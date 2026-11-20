@@ -1338,13 +1338,17 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
       // l'API renvoie "Home/Draw" / "Home/Away" / "Draw/Away" en anglais,
       // jamais reconnu par le grand public haïtien — converti en 1X/12/X2,
       // la notation utilisée partout ailleurs (bookmakers, paryajpam.com).
-      const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': 'X1', 'Home/Away': '12', 'Draw/Away': 'X2' };
+      // 18/11 : le fournisseur donne parfois les issues dans l'AUTRE ordre (« Away/Home », cas reel du
+      // 17/11 : pari illisible pour le calcul, fiche bloquee). L'ordre ne compte plus ; un libelle
+      // inconnu n'est JAMAIS publie (la selection est ignoree).
+      const LIBELLE_DOUBLE_CHANCE = { 'Home/Draw': 'X1', 'Draw/Home': 'X1', 'Home/Away': '12', 'Away/Home': '12', 'Draw/Away': 'X2', 'Away/Draw': 'X2' };
       betType.values.forEach(v => {
         const c = parseFloat(v.odd);
+        if (!LIBELLE_DOUBLE_CHANCE[String(v.value || '').trim()]) return;   // 18/11 : libelle inconnu -> ignore
         if (c >= 1.20 && c <= 1.70) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: 'mk_double_chance',
-            pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[v.value] || v.value}`, odd: c, tier: 'SAFE',
+            pick: `Double chance : ${LIBELLE_DOUBLE_CHANCE[String(v.value || '').trim()]}`, odd: c, tier: 'SAFE',
             kickoffUtc: fixture.date, matchTimeHaiti: h.heure, prioritaire
           });
         }
@@ -1519,6 +1523,7 @@ function extraireMarchesFoot(oddsItem, dateCible, infosFixture) {
         // soit le marché — une
         // cote plus basse n'ajoute pas de fiabilité réelle, seulement une
         // fausse sécurité, et dilue la cote totale sans justification).
+        if (!/^(Over|Under)\s+[\d.]+$/i.test(String(v.value || '').trim())) return;   // 18/11 : libelle inconnu -> ignore (jamais un pari illisible)
         if (c >= 1.20 && c <= 1.30) {
           trouvees.push({
             fixtureId: fixture.id, league: league.name, leagueCountry: league.country || null, equipeDomicileId: infosFixture.equipeDomicileId, equipeExterieurId: infosFixture.equipeExterieurId, market: cote,
@@ -1861,7 +1866,7 @@ function construireFiche(pool, plan, options) {
     // fiches (moitié pour les grosses cotes, où le pool est plus tendu).
     if (b.market !== 'mk_buteur') {
       const nJour = marchesUtiliseesJour.get(b.market) || 0;
-      if (nJour > 0) s -= (cibleMax <= 15 ? MALUS_MARCHE_DEJA_UTILISE : MALUS_MARCHE_DEJA_UTILISE / 2) * Math.min(nJour, 3);
+      if (nJour > 0) s -= (cibleMax < 16 ? MALUS_MARCHE_DEJA_UTILISE : MALUS_MARCHE_DEJA_UTILISE / 2) * Math.min(nJour, 3);
       const nHier = marchesHier.get(b.market) || 0;
       if (nHier >= 2) s -= MALUS_MARCHE_VEILLE * Math.min(nHier - 1, 3);
     }
@@ -2094,7 +2099,7 @@ function construireFiche(pool, plan, options) {
   //     sont concernes, exactement la ou le probleme a ete signale.
   const MAX_SELECTIONS = options.maxSelectionsOverride != null
     ? Number(options.maxSelectionsOverride)
-    : (cibleMax <= 15 ? 7 : 10);   // 16/10 (James) : cote 15 -> 6/7 matchs logique ; c'est un MAXIMUM, jamais une obligation
+    : (cibleMax < 16 ? 7 : 10);   // 16/10 (James) : cote 15 -> 6/7 matchs logique ; c'est un MAXIMUM, jamais une obligation
   // PLAFOND_PAR_MARCHE dynamique selon la cible : pour une fiche <20, le
   // document d'optimisation (point 11) demande explicitement d'éviter
   // plusieurs "Domicile Plus de X buts"/"Extérieur Plus de X buts" dans la
@@ -3970,7 +3975,7 @@ async function handler(event) {
     // Ancien systeme (inchange)
     const vClassique = palier.classique ? construire(palier.classique) : null;
     // Nouveau : variantes autour de la cote visee
-    const nbSelMax = palier.maxSelectionsOverride || (palier.cibleMax <= 15 ? 7 : 10);
+    const nbSelMax = palier.maxSelectionsOverride || (palier.cibleMax < 16 ? 7 : 10);
     const coteMinAuto = palier.cibleMin >= 6 ? Math.round(Math.pow(palier.cibleMin, 1 / nbSelMax) * 100) / 100 : null;
     const configs = [{ coteMin: palier.coteMinSelection, maxSel: palier.maxSelectionsOverride }];
     if (coteMinAuto && (!palier.coteMinSelection || coteMinAuto > palier.coteMinSelection)) configs.push({ coteMin: coteMinAuto, maxSel: palier.maxSelectionsOverride });

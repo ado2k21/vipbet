@@ -18,6 +18,7 @@
  * ============================================================================
  */
 const R = require('./telegram-relais').__test;
+const nomEquipe = require('./lib/nom-equipe.js'); // 20/11
 
 const config = { schedule: '*/30 * * * *' };
 const SEUIL = 70;
@@ -57,7 +58,7 @@ async function fetchDelai(url, opts, ms) {
 function visiblePourRang(tk, rang) {
   const min = Number(tk.min_plan_rank);
   if (!Number.isFinite(min) || min > rang) return false;
-  if (rang === 1 && (tk.sport === 'basket' || tk.sport === 'nba') && Number(tk.total_odd) > 15 &&
+  if (rang === 1 && (tk.sport === 'basket' || tk.sport === 'nba') && Number(tk.total_odd) >= 16 &&
       String(tk.play_date || '') >= BASKET15_MASQUE_DES) return false;
   return true;
 }
@@ -148,6 +149,7 @@ async function imageScores(rp, jour) {
       const parts = String(m.match_label || '').split(/\s+[—–-]\s+/);
       const h = parts[0] || '', a = parts[1] || '';
       let choix = choixCourt(m.pick || m.choix, h, a);
+      if (choix.length > 14) { const [hc, ac] = nomEquipe.nomsCourts(h, a); choix = choixCourt(m.pick || m.choix, hc, ac); }   // 20/11 : nom court sans confusion (« Lakers », pas « Los »)
       if (choix.length > 14) choix = choixCourt(m.pick || m.choix, h.split(' ')[0], a.split(' ')[0]);   // « ARGENTINOS »
       return { home: h, away: a, choix, result: m.result };
     }), 'scores');
