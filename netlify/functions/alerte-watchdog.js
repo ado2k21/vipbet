@@ -598,6 +598,33 @@ async function signaleDepuisMoinsDe24h(cleAlerte) {
   } catch (_) { return false; }
 }
 
+// 21/11 (James : « éviter d'autres problèmes de ce genre ») : état RÉEL du dernier passage d'un
+// service (création des fiches + calcul des résultats, site de production d'abord). Sert à :
+//   - ne JAMAIS envoyer « Rétabli » pour une API tant que le dernier passage de ce service a été
+//     refusé (cas réel du 21/11 : la base attend 12 min avant de compter un refus, et un refus de
+//     moins de 12 min faisait croire la panne finie -> faux « Rétabli » puis nouvelle alerte) ;
+//   - taire « site Netlify refusé » pendant une SUSPENSION du compte (simple conséquence).
+// Lecture seule ; en cas d'échec de lecture : { refuse: false } (comportement d'avant).
+const REFUS_API = /suspend|application key|api key|api_sports_key|access denied|unauthori|forbidden|HTTP 40[13]\b|\[COUPURE API\]/i;
+async function etatDernierPassage(sport) {
+  const base = process.env.SUPABASE_URL, cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const h = { apikey: cle, Authorization: `Bearer ${cle}` };
+  const depuis = new Date(Date.now() - 3 * 3600000).toISOString();
+  for (const table of ['bot_run_log_prod', 'bot_run_log']) {
+    try {
+      const r = await fetchAvecDelai(`${base}/rest/v1/${table}?select=bot,ran_at,stats&bot=in.(${sport},reglement-${sport})&ran_at=gte.${encodeURIComponent(depuis)}&order=ran_at.desc&limit=1`, { headers: h });
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (!Array.isArray(j)) continue;
+      if (!j.length) return { refuse: false, suspendu: false };
+      const st = j[0].stats || {}, txt = JSON.stringify(st.erreurs || []);
+      const refuse = st.refus === true || REFUS_API.test(txt);
+      return { refuse, suspendu: refuse && /suspend/i.test(txt), bot: j[0].bot, a: j[0].ran_at };
+    } catch (_) { /* table suivante */ }
+  }
+  return { refuse: false, suspendu: false };
+}
+
 // 12/11 : seules les alertes du site de PRODUCTION partent. Un autre site Netlify (autre équipe)
 // qui exécute ce même code ne doit JAMAIS envoyer d'alerte. Liste = table alert_sites
 // (la même que pour les passages des bots). Table vide ou illisible = aucun filtre (sécurité :
@@ -733,6 +760,10 @@ async function handler(event) {
   const bilan = [];
   const aEnvoyer = [];   // { cle, l } : alertes gagnées ce passage (verrou pris)
   const retablis = [];   // lignes "Rétabli"
+  // 21/11 : état réel du dernier passage de chaque service (voir etatDernierPassage).
+  const etat = { A: await etatDernierPassage('foot'), B: await etatDernierPassage('basket') };
+  const svcDe = t => (/FOOT|_A$/.test(t) ? 'A' : (/BASKET|_B$/.test(t) ? 'B' : null));
+  const suspendu = k => etat[k].suspendu || (lignes || []).some(x => x && x.probleme && x.cause === 'SUSPENDU' && svcDe(x.type) === k);
 
   for (const l of (lignes || [])) {
     try {
@@ -744,6 +775,11 @@ async function handler(event) {
         const verdict = jugerPublicationManquante(l, d);
         if (verdict === 'silence') { bilan.push(`${l.type}: jour sans assez de matchs, pas un problème (aucune alerte)`); continue; }
         l.cause = verdict;
+      }
+      // 21/11 : pendant une suspension du compte, « site Netlify refusé » n'est qu'une conséquence.
+      if (l.probleme && /^API_SITE_OBSOLETE_[AB]$/.test(l.type) && suspendu(svcDe(l.type))) {
+        bilan.push(`${l.type}: compte suspendu (alerte prioritaire déjà envoyée), pas d'alerte « site »`);
+        continue;
       }
       if (l.probleme && !alerteUtile(l)) {
         bilan.push(`${l.type}${l.cause ? ':' + l.cause : ''}: le bot s'en occupe seul, pas d'alerte`);
@@ -758,6 +794,11 @@ async function handler(event) {
         if (!doitEnvoyer) { bilan.push(`${cle}: actif (déjà signalé)`); continue; }
         aEnvoyer.push({ cle, l });
       } else {
+        // 21/11 : jamais de « Rétabli » API tant que le dernier passage de ce service est refusé.
+        if (/^(API_BLOQUEE_|API_SITE_OBSOLETE_)/.test(l.type) && svcDe(l.type) && etat[svcDe(l.type)].refuse) {
+          bilan.push(`${l.type}: dernier passage encore refusé, pas de « Rétabli »`);
+          continue;
+        }
         const etaitActif = await rpc('alert_resolve', { p_type: l.type });
         if (etaitActif) {
           const titre = TITRES[l.type] || 'Alerte système';
