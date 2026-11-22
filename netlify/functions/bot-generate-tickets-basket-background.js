@@ -186,9 +186,14 @@ async function enregistrerQuotaReelBasket(resp) {
 }
 
 async function apiSportsGetBasketRaw(path, params) {
+  // 21/11 (James : « aucun match NBA alors que la NBA doit passer d'abord ») : API-Sports range
+  // les matchs par date UTC. Un match NBA du soir en Haïti (19:00-22:30) tombe le LENDEMAIN en
+  // UTC : /games?date=J ne le renvoyait jamais. On demande donc la date en heure d'Haïti.
+  if (path === '/games' && params && params.date && !params.timezone) params = Object.assign({}, params, { timezone: 'America/Port-au-Prince' });
   // Cache des listes de matchs par date (30/09) — vérifié AVANT le compteur :
   // une réponse en cache ne consomme aucune requête API-Sports.
-  const cleCache = (path === '/games' && params && params.date) ? `games:${params.date}` : null;
+  // 21/11 : clé « :hti » (date Haïti) — jamais une ancienne liste en date UTC.
+  const cleCache = (path === '/games' && params && params.date) ? `games:${params.date}:hti` : null;
   if (cleCache) {
     const enCache = await lireCacheBasket(cleCache, CACHE_TTL_BASKET_MS);
     if (enCache && Array.isArray(enCache.response)) {

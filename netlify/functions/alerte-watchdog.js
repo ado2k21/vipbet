@@ -83,6 +83,8 @@ const TITRES = {
   REGLEMENT_BLOQUE_A: 'Calcul des résultats (service A)',
   REGLEMENT_BLOQUE_B: 'Calcul des résultats (service B)',
   QUOTA_ODDS_API_B: 'Crédits The Odds API (service B)',
+  BSD_RELAIS_A: 'Relais de secours BSD (service A)',
+  BSD_REGLEMENT_A: 'Résultats via le relais BSD (service A)',
   // anciens noms (compatibilité)
   FICHES_MANQUANTES: 'Publications manquantes',
   REGLEMENT_BLOQUE: 'Calcul des résultats'
@@ -335,8 +337,26 @@ function messageQuotaOddsApi(l) {
     courtes: [c0, c1, 'Action : attendre la recharge mensuelle ou passer à une formule payante.'] };
 }
 
+// 21/11 (« OK alerte BSD » de James) : messages du relais de secours BSD (football seulement).
+function messageBSD(l) {
+  const i = l.infos || {};
+  if (l.type === 'BSD_RELAIS_A') {
+    const titre = '‼️‼️‼️ BSD : API-Sports ET le relais BSD ne répondent pas (service A)';
+    const c0 = 'CE QUI SE PASSE : API-Sports n\'a pas répondu, le relais de secours BSD a été appelé, mais il n\'a fourni aucun match exploitable. AUCUNE fiche football ne peut être créée tant que l\'un des deux ne répond pas.';
+    const c1 = `${i.echecs || 2} passages de suite sans aucun match, dernier à ${i.heure || '?'} (heure Haïti)${i.erreur ? ' — réponse de BSD : « ' + assainir(i.erreur) + ' »' : ''}${i.lus != null ? ` — évènements lus : ${i.lus}, matchs non commencés : ${i.nonCommences != null ? i.nonCommences : 0}` : ''}.`;
+    const a1 = 'À FAIRE : vérifier le compte API-Sports (dashboard.api-football.com) ET le compte BSD (sports.bzzoiro.com) : clé, abonnement, quota. Les clés se mettent dans Netlify (API_SPORTS_KEY, BSD_API_KEY), jamais ailleurs.';
+    return { titre, lignes: [titre, '', c0, c1, '', a1], courtes: [c0, c1, 'Action : vérifier les comptes API-Sports et BSD.'] };
+  }
+  const titre = '‼️‼️‼️ BSD : résultats bloqués (service A)';
+  const c0 = `CE QUI SE PASSE : ${i.nb || '?'} sélection(s) football choisie(s) via le relais BSD n'ont toujours pas de résultat plus de ${i.heures || 8} h après le début du match. Elles ne peuvent être réglées QUE par BSD (BSD en panne, ou match reporté / abandonné chez BSD).`;
+  const c1 = `Plus ancienne : ${i.plus_ancien || '?'} (heure Haïti). Ces sélections restent « en attente » (jamais annulées faute de données) : les fiches concernées ne se terminent pas.`;
+  const a1 = 'À FAIRE : vérifier le compte BSD (sports.bzzoiro.com : clé BSD_API_KEY dans Netlify, abonnement, quota). Si BSD marche, le match a sans doute été reporté : donner le score (ou « annulé ») pour un règlement à la main. Rappel une seule fois par 24 h.';
+  return { titre, lignes: [titre, '', c0, c1, '', a1], courtes: [c0, c1, 'Action : vérifier le compte BSD.'] };
+}
+
 function construire(l) {
   if (l.type === 'QUOTA_ODDS_API_B') return messageQuotaOddsApi(l);
+  if (l.type === 'BSD_RELAIS_A' || l.type === 'BSD_REGLEMENT_A') return messageBSD(l);
   return (l.type.indexOf('API_BLOQUEE_') === 0) ? messageApi(l) : messageAutre(l);
 }
 
@@ -361,16 +381,42 @@ function messageObsoleteFusionne(ls) {
   };
 }
 
+// 21/11 (James : « des icônes différentes pour les différentes alertes ») : une icône par type.
+// BSD garde ‼️‼️‼️ (déjà dans son titre) ; « Rétabli » garde ✅.
+function iconeAlerte(l) {
+  const t = String(l.type || ''), c = String(l.cause || '');
+  if (/^BSD_/.test(t)) return '';
+  if (/^API_BLOQUEE_/.test(t)) {
+    if (c === 'SUSPENDU') return '⛔';
+    if (c === 'CLE_ABSENTE' || c === 'CLE_INVALIDE') return '🔑';
+    if (c === 'LIMITE_JOUR' || c === 'LIMITE_MINUTE') return '⏳';
+    return '🚫';
+  }
+  if (/^API_SITE_OBSOLETE_/.test(t)) return '🌐';
+  if (t === 'QUOTA_ODDS_API_B') return '💳';
+  if (/^QUOTA_/.test(t)) return '📊';
+  if (/^PUB_MANQUANTE/.test(t) || t === 'FICHES_MANQUANTES') return '📭';
+  if (/^REGLEMENT_BLOQUE/.test(t)) return '⏱️';
+  return '🚨';
+}
+function avecIcone(item, icone) {
+  // 21/11 (James) : 🚨 devant chaque icône (« 🚨⛔ Compte API suspendu », « 🚨‼️‼️‼️ BSD : … »).
+  const titre = /^‼️/.test(item.titre) ? `🚨${item.titre}` : `🚨${icone || ''} ${item.titre}`;
+  const lignes = item.lignes.slice(); if (lignes[0] === item.titre) lignes[0] = titre;
+  return Object.assign({}, item, { titre, lignes });
+}
+
 // Retourne { sujet, lignes, courtes } pour un lot d'alertes (ls = lignes de alert_check).
 function grouperAlertes(ls) {
   const obsoletes = ls.filter(l => /^API_SITE_OBSOLETE_/.test(l.type));
   const autres = ls.filter(l => !/^API_SITE_OBSOLETE_/.test(l.type));
-  const items = autres.map(construire);
-  if (obsoletes.length >= 2) items.push(messageObsoleteFusionne(obsoletes));
-  else if (obsoletes.length === 1) items.push(construire(obsoletes[0]));
+  const items = autres.map(l => avecIcone(construire(l), iconeAlerte(l)));
+  if (obsoletes.length >= 2) items.push(avecIcone(messageObsoleteFusionne(obsoletes), '🌐'));
+  else if (obsoletes.length === 1) items.push(avecIcone(construire(obsoletes[0]), iconeAlerte(obsoletes[0])));
 
   if (items.length === 1) {
-    return { sujet: `🚨 Alerte système — ${items[0].titre}`, lignes: items[0].lignes, courtes: items[0].courtes };
+    // 21/11 : le sujet commence par l'icône du type d'alerte (BSD : ‼️‼️‼️ ; autres : ⛔ 🔑 ⏳ 🌐 💳 📊 📭 ⏱️).
+    return { sujet: items[0].titre, lignes: items[0].lignes, courtes: items[0].courtes };
   }
   const sujet = `🚨 Alertes système (${items.length})`;
   let lignes = [];
@@ -598,6 +644,54 @@ async function signaleDepuisMoinsDe24h(cleAlerte) {
   } catch (_) { return false; }
 }
 
+// 21/11 (« OK alerte BSD ») : relais de secours BSD (football). Deux VRAIS problèmes seulement :
+//  (1) BSD_RELAIS_A : au dernier passage de création (moins de 3 h), API-Sports n'a pas répondu, le
+//      relais a été déclenché (stats.relaisBSD.declenche) mais n'a fourni aucun match
+//      (stats.relaisBSD.actif false) -> aucune fiche foot possible. Relais non déclenché (API-Sports
+//      répond) ou réussi -> pas de problème (et « Rétabli » si l'alerte était active).
+//  (2) BSD_REGLEMENT_A : sélections foot venant de BSD (fixture_id < 0) sans résultat plus de 8 h
+//      après le début du match (le calcul les laisse en attente tant que BSD ne répond pas).
+// Lecture seule ; lecture impossible -> aucune ligne (ni alerte ni « Rétabli »).
+async function ajouterAlertesBSD(lignes) {
+  const base = process.env.SUPABASE_URL, cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const h = { apikey: cle, Authorization: `Bearer ${cle}` };
+  try {
+    const depuis = new Date(Date.now() - 3 * 3600000).toISOString();
+    const r = await fetchAvecDelai(`${base}/rest/v1/bot_run_log_prod?select=ran_at,stats&bot=eq.foot&ran_at=gte.${encodeURIComponent(depuis)}&order=ran_at.desc&limit=2`, { headers: h });
+    if (r.ok) {
+      const j = await r.json();
+      if (Array.isArray(j) && j.length) {
+        const rate = x => { const rr = (x && x.stats && x.stats.relaisBSD) || null; return !!(rr && rr.declenche === true && rr.actif !== true); };
+        const rel = (j[0].stats && j[0].stats.relaisBSD) || null;
+        // 21/11 (anti-répétition) : alerte seulement après 2 passages RATÉS DE SUITE (un raté isolé
+        // suivi d'un passage réussi ne doit jamais faire « alerte -> Rétabli -> alerte »).
+        // Un seul passage raté : ni alerte ni « Rétabli » (on attend le passage suivant).
+        if (rate(j[0]) && !(j.length >= 2 && rate(j[1]))) throw new Error('un seul passage raté : on attend le suivant');
+        const enEchec = rate(j[0]);
+        lignes.push({ type: 'BSD_RELAIS_A', probleme: enEchec, cause: enEchec ? 'ECHEC' : null,
+          detail: enEchec ? 'Relais BSD déclenché sans aucun match (API-Sports et BSD indisponibles)' : 'ok',
+          infos: { service: 'A', echecs: 2, heure: hhmmHaiti(j[0].ran_at), erreur: rel && rel.erreur ? String(rel.erreur).slice(0, 200) : null,
+            lus: rel && rel.evenementsLus != null ? rel.evenementsLus : null, nonCommences: rel && rel.matchsNonCommences != null ? rel.matchsNonCommences : null } });
+      }
+    }
+  } catch (e) { console.log('[ALERTE] relais BSD (création) :', e.message); }   // dont « un seul passage raté »
+  try {
+    const HEURES = 8;
+    const limite = new Date(Date.now() - HEURES * 3600000).toISOString();
+    const r = await fetchAvecDelai(`${base}/rest/v1/ticket_legs?select=id,kickoff_at,tickets!inner(sport,published)&result=is.null&fixture_id=lt.0&kickoff_at=lt.${encodeURIComponent(limite)}&tickets.sport=eq.foot&tickets.published=eq.true&order=kickoff_at.asc&limit=50`, { headers: h });
+    if (r.ok) {
+      const j = await r.json();
+      if (Array.isArray(j)) {
+        const nb = j.length;
+        lignes.push({ type: 'BSD_REGLEMENT_A', probleme: nb > 0, cause: nb > 0 ? 'ATTENTE' : null,
+          detail: nb > 0 ? `${nb} sélection(s) BSD sans résultat plus de ${HEURES} h après le début` : 'ok',
+          infos: { service: 'A', nb, heures: HEURES, plus_ancien: nb ? hhmmHaiti(j[0].kickoff_at) : null } });
+      }
+    }
+  } catch (e) { console.log('[ALERTE] relais BSD (résultats) :', e.message); }
+  return lignes;
+}
+
 // 21/11 (James : « éviter d'autres problèmes de ce genre ») : état RÉEL du dernier passage d'un
 // service (création des fiches + calcul des résultats, site de production d'abord). Sert à :
 //   - ne JAMAIS envoyer « Rétabli » pour une API tant que le dernier passage de ce service a été
@@ -756,6 +850,8 @@ async function handler(event) {
   catch (e) { console.log('[ALERTE] fusion API du calcul :', e.message); }
   try { lignes = await ajouterQuotaOddsApi(Array.isArray(lignes) ? lignes : []); }
   catch (e) { console.log('[ALERTE] crédits The Odds API :', e.message); }
+  try { lignes = await ajouterAlertesBSD(Array.isArray(lignes) ? lignes : []); }
+  catch (e) { console.log('[ALERTE] relais BSD :', e.message); }
 
   const bilan = [];
   const aEnvoyer = [];   // { cle, l } : alertes gagnées ce passage (verrou pris)
@@ -781,6 +877,14 @@ async function handler(event) {
         bilan.push(`${l.type}: compte suspendu (alerte prioritaire déjà envoyée), pas d'alerte « site »`);
         continue;
       }
+      // 22/11 (fausse alerte reçue) : un « échec » dont le message est une SUSPENSION du compte n'est
+      // jamais un site Netlify en trop — c'est la suspension elle-même (déjà signalée par ⛔), même
+      // une fois finie (la base garde cet échec 30 h). Alerte « site » fermée sans message.
+      if (l.probleme && /^API_SITE_OBSOLETE_[AB]$/.test(l.type) && /suspend/i.test(String((l.infos || {}).message_api || ''))) {
+        try { await rpc('alert_resolve', { p_type: l.type }); } catch (_) { /* sans conséquence */ }
+        bilan.push(`${l.type}: échec dû à une suspension du compte (pas un site en trop), fermée sans message`);
+        continue;
+      }
       if (l.probleme && !alerteUtile(l)) {
         bilan.push(`${l.type}${l.cause ? ':' + l.cause : ''}: le bot s'en occupe seul, pas d'alerte`);
         continue;
@@ -789,7 +893,7 @@ async function handler(event) {
         // Un CHANGEMENT de cause (ex. suspendu -> limite du jour) est un nouveau problème :
         // la clé du verrou inclut la cause pour qu'il soit signalé tout de suite.
         const cle = l.cause ? `${l.type}:${l.cause}` : l.type;
-        if (l.type === 'QUOTA_ODDS_API_B' && await signaleDepuisMoinsDe24h(cle)) { bilan.push(`${cle}: actif (signalé il y a moins de 24 h)`); continue; }
+        if ((l.type === 'QUOTA_ODDS_API_B' || l.type === 'BSD_REGLEMENT_A') && await signaleDepuisMoinsDe24h(cle)) { bilan.push(`${cle}: actif (signalé il y a moins de 24 h)`); continue; }
         const doitEnvoyer = await rpc('alert_claim', { p_type: cle, p_detail: l.detail });
         if (!doitEnvoyer) { bilan.push(`${cle}: actif (déjà signalé)`); continue; }
         aEnvoyer.push({ cle, l });
@@ -806,6 +910,8 @@ async function handler(event) {
           let ligne = `${titre} : le problème n'est plus détecté.`;
           if (/^PUB_MANQUANTE_/.test(l.type) && i.date_cible) ligne = `${titre} : publications présentes pour le ${i.date_cible}.`;
           if (l.type === 'QUOTA_ODDS_API_B') ligne = `${titre} : crédits rechargés (${(l.infos || {}).restant} restants).`;
+          if (l.type === 'BSD_RELAIS_A') ligne = `${titre} : les matchs football sont de nouveau reçus.`;
+          if (l.type === 'BSD_REGLEMENT_A') ligne = `${titre} : plus aucune sélection BSD bloquée.`;
           if (/^REGLEMENT_BLOQUE_/.test(l.type)) ligne = `${titre} : plus aucun élément en attente de résultat depuis plus de 6 h.`;
           retablis.push({ type: l.type, titre, ligne });
         }
