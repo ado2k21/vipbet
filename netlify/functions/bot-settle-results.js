@@ -460,7 +460,8 @@ async function recupererButeurs(fixtureId) {
 // [] = l'API a répondu « aucun match ».
 async function recupererMatchsBasketDate(dateIso) {
   try {
-    return await apiSportsGetBasket('/games', { date: dateIso });
+    // 21/11 : date en heure d'Haïti (les matchs NBA du soir tombent le lendemain en UTC).
+    return await apiSportsGetBasket('/games', { date: dateIso, timezone: 'America/Port-au-Prince' });
   } catch (e) {
     stats.erreurs.push(`basket/games(${dateIso}): ${e.message}`);
     return null;

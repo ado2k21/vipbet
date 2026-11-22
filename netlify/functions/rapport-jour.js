@@ -11,7 +11,7 @@
  *   - un meme pronostic present dans plusieurs fiches compte UNE seule fois ;
  *   - les matchs annules (void) sont exclus ; aucun minimum de pronostics ;
  *   - calcule seulement quand TOUS les pronostics du jour sont regles ;
- *   - publie si taux >= 70 % ; envoye UNE seule fois sur Telegram (complet -> canal
+ *   - publie si taux >= 60 % (70 % avant le 22/11) ; envoye UNE seule fois sur Telegram (complet -> canal
  *     public ; pN -> groupe VIP du plan N).
  * Lecture seule sur tickets / ticket_legs ; ecrit uniquement dans rapports_jour.
  * Aucune mention de « bot » dans les messages.
@@ -21,7 +21,7 @@ const R = require('./telegram-relais').__test;
 const nomEquipe = require('./lib/nom-equipe.js'); // 20/11
 
 const config = { schedule: '*/30 * * * *' };
-const SEUIL = 70;
+const SEUIL = 60;   // 22/11 (James) : rapport publie a partir de 60 % (avant 70 %)
 const JOURS = 3;
 const RATTRAPAGE_JOURS = 180;   // jours passes calcules apres coup (admin seulement)
 const RATTRAPAGE_MAX_PAR_PASSAGE = 40;
