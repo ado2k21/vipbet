@@ -2125,6 +2125,22 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 .av-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px}
 .av-kpis div{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:14px;padding:12px 8px;text-align:center}
 .av-kpis b{display:block;font-size:22px;color:#F4F3ED}.av-kpis small{font-size:11px;color:var(--gris)}
+/* 22/11 : case « te jwe fich » cliquable + liste des fiches jouees (admin) */
+.av-kpis .av-kpi-clic{cursor:pointer;border-color:rgba(46,212,127,.45);transition:transform .15s,border-color .15s}
+.av-kpis .av-kpi-clic:hover,.av-kpis .av-kpi-clic:focus-visible{border-color:#2ED47F;transform:translateY(-1px);outline:none}
+.av-kpis .av-kpi-clic small{color:#2ED47F}
+.av-conf .avj-box{max-width:480px;max-height:88vh;display:flex;flex-direction:column;padding:18px 16px}
+.avj-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.avj-top h3{margin:0 0 4px}.avj-p{margin:0!important;font-size:12px!important}
+.avj-x{background:none;border:1px solid rgba(244,243,237,.15);color:#F4F3ED;border-radius:10px;width:34px;height:34px;flex-shrink:0;cursor:pointer}
+.avj-tot{font:600 12px Inter,sans-serif;color:#2ED47F;margin:12px 0 8px;letter-spacing:.02em}
+.avj-liste{overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:2px}
+.avj-row{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:14px;padding:12px 12px}
+.avj-g{flex:1;min-width:0}.avj-l1{font-size:13px;color:#F4F3ED;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.avj-l2{font-size:12px;color:#C5D0DC;margin-top:4px}.avj-l2 b{color:#E8CE8A}
+.avj-st{display:inline-block;font:700 10px Inter,sans-serif;letter-spacing:.06em;padding:2px 7px;border-radius:99px;margin-right:4px;vertical-align:1px}
+.avj-st.won{background:rgba(46,212,127,.15);color:#2ED47F}.avj-st.lost{background:rgba(240,115,94,.15);color:#F0735E}
+.avj-n{text-align:center;min-width:64px}.avj-n b{display:block;font:800 24px Sora,Inter,sans-serif;color:#2ED47F;line-height:1}.avj-n small{font-size:10px;color:#C5D0DC}
 .av-card{background:linear-gradient(180deg,#0E1A2F,#0A1324);border:1px solid rgba(244,243,237,.08);border-radius:18px;padding:14px;display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;margin-bottom:12px}
 .av-card a.shot{display:block;width:76px;height:118px;border-radius:10px;overflow:hidden;background:#1f2b44}
 .av-card a.shot img{width:100%;height:100%;object-fit:cover;object-position:top}
@@ -4860,9 +4876,11 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
       </div>
       <div class="lp-help">
         <h3 data-i18n="lp_help_t">Ou gen yon lòt kesyon ?</h3>
-        <p data-i18n="lp_help_d">Ekip nou an disponib sou WhatsApp ak Telegram pou ede w.</p>
+        <p data-i18n="lp_help_d">Ekip nou an disponib sou Telegram pou ede w.</p>
         <div class="lp-help-btns">
+          <!-- WHATSAPP DESACTIVE (23/11, James : compte bloque, en examen) — pour le remettre, retirer ce commentaire :
           <a class="btn lp-btn lp-btn-wa soc-link" href="https://wa.me/50938089335" data-url="https://wa.me/50938089335" target="_blank" rel="noopener noreferrer"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.8 14.14c-.25.7-1.44 1.33-1.99 1.41-.53.08-1.2.11-1.94-.12-.45-.14-1.02-.33-1.76-.65-3.1-1.34-5.13-4.46-5.28-4.67-.16-.21-1.27-1.69-1.27-3.22 0-1.53.8-2.29 1.09-2.6.28-.31.62-.39.82-.39h.59c.19.01.44-.07.69.53.25.6.86 2.07.94 2.22.08.15.13.33.03.54-.1.21-.15.33-.3.51-.15.18-.31.4-.45.53-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.07 1.31 2.36 1.46.29.15.46.13.63-.08.17-.21.73-.85.92-1.14.19-.29.39-.24.65-.15.26.1 1.68.79 1.96.94.29.15.48.22.55.34.07.12.07.7-.18 1.4Z"/></svg>WhatsApp</a>
+          -->
           <a class="btn lp-btn lp-btn-ghost soc-link" href="https://t.me/VipBetcote" data-url="https://t.me/VipBetcote" target="_blank" rel="noopener noreferrer"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.5-1.4ZM8.8 14l9.6-6.1c.5-.3.9-.1.5.2l-8.2 7.4-.3 3.4L8.8 14Z"/></svg>Telegram</a>
         </div>
       </div>
@@ -6778,7 +6796,9 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         </a>
         <p data-i18n="lp_foot_desc">Fich ak pronostik foutbòl ak NBA, analize chak jou pa ekip ekspè nou an pou ParyajPam, ParyajLakay ak 1xBet.</p>
         <div class="foot-social">
+          <!-- WHATSAPP DESACTIVE (23/11, James : compte bloque, en examen) — pour le remettre, retirer ce commentaire :
           <a class="soc-link" href="https://wa.me/50938089335" data-url="https://wa.me/50938089335" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm5.8 14.14c-.25.7-1.44 1.33-1.99 1.41-.53.08-1.2.11-1.94-.12-.45-.14-1.02-.33-1.76-.65-3.1-1.34-5.13-4.46-5.28-4.67-.16-.21-1.27-1.69-1.27-3.22 0-1.53.8-2.29 1.09-2.6.28-.31.62-.39.82-.39h.59c.19.01.44-.07.69.53.25.6.86 2.07.94 2.22.08.15.13.33.03.54-.1.21-.15.33-.3.51-.15.18-.31.4-.45.53-.15.15-.3.31-.13.6.17.29.76 1.25 1.63 2.03 1.12 1 2.07 1.31 2.36 1.46.29.15.46.13.63-.08.17-.21.73-.85.92-1.14.19-.29.39-.24.65-.15.26.1 1.68.79 1.96.94.29.15.48.22.55.34.07.12.07.7-.18 1.4Z"/></svg></a>
+          -->
           <a class="soc-link" href="https://t.me/VipBetcote" data-url="https://t.me/VipBetcote" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.5-1.4ZM8.8 14l9.6-6.1c.5-.3.9-.1.5.2l-8.2 7.4-.3 3.4L8.8 14Z"/></svg></a>
           <a class="soc-link" href="https://www.instagram.com/vipbetcote_/" data-url="https://www.instagram.com/vipbetcote_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#igGrad)" stroke-width="2.1" aria-hidden="true"><defs><linearGradient id="igGrad" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFB400"/><stop offset=".45" stop-color="#F5276C"/><stop offset="1" stop-color="#7A3DF0"/></linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.2" cy="6.8" r="1.2" fill="url(#igGrad)" stroke="none"/></svg></a>
           <a class="soc-link" href="https://www.tiktok.com/@thebetcote" data-url="https://www.tiktok.com/@thebetcote" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 3h-3.1v13.1a2.6 2.6 0 1 1-2.6-2.6c.28 0 .55.05.8.13v-3.1a5.9 5.9 0 0 0-.8-.06 5.68 5.68 0 1 0 5.68 5.68V9.6a7.2 7.2 0 0 0 4.1 1.28V7.78c-2.2-.1-3.9-1.7-4.08-4.78Z"/></svg></a>
@@ -6856,6 +6876,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261122a"></script>
+<script src="app.js?v=20261123a"></script>
 </body>
 </html>

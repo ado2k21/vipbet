@@ -1446,6 +1446,13 @@ async function handler(event) {
   // examinés donnent largement de quoi construire un combiné jusqu'à 10
   // sélections (MAX_SELECTIONS_BASKET) sous le plafond de cote 25.
   const PLAFOND_CANDIDATS = 30;
+  // 23/11 (James : « des matchs NBA aujourd'hui mais aucun dans la fiche ») : 114 matchs reçus,
+  // les 10 NBA (le soir) étaient après le 30e et leurs cotes n'étaient jamais lues (The Odds API
+  // épuisé ce jour-là). Les matchs NBA passent donc EN TÊTE avant le plafond ; les autres gardent
+  // leur ordre (tri stable). Même nombre d'appels.
+  const estMatchNBA = id => String((noms[id] && noms[id].league) || '').trim().toUpperCase() === 'NBA';
+  candidats = candidats.filter(estMatchNBA).concat(candidats.filter(id => !estMatchNBA(id)));
+  stats.candidatsNBA = candidats.filter(estMatchNBA).length;
   if (candidats.length > PLAFOND_CANDIDATS) candidats = candidats.slice(0, PLAFOND_CANDIDATS);
 
   let poolBasket = [];
