@@ -7794,6 +7794,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
   {const b=document.getElementById('dashAutoBtn');
    if(b)b.addEventListener('click',()=>{
+     // 24/11 (bug signale par James : « Kontinye ne marche pas ») : comme les autres boutons du
+     // Dashboard (Renouvle...), on FERME d'abord le Dashboard, sinon l'ecran s'ouvrait DERRIERE lui.
+     closeDash();
      if(b.dataset.action==='reeseye'){if(window.VB_paiementAutoReessayer)window.VB_paiementAutoReessayer();}
      else if(window.VB_openAuthWizardStep4)window.VB_openAuthWizardStep4();
    });}
@@ -7845,7 +7848,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('dashExpired').hidden=pend||life||!isExpired();
     renderSoon();
     const st=getState();
-    const name=(st&&st.fullname?st.fullname.split(' ')[0]:'');
+    // 24/11 (James) : si le nom enregistre est une adresse e-mail, on n'affiche jamais l'adresse
+    // entiere dans « Bonjou … » : seulement ce qui precede le « @ ».
+    const name=(st&&st.fullname?st.fullname.trim().split(/\s+/)[0].split('@')[0]:'');
     document.getElementById('dashHiH').textContent=t('dash_hello').replace('{name}',name).trim();
     document.getElementById('dashHiP').textContent=t('dash_hello_p');
 
