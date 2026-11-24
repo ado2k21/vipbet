@@ -1708,6 +1708,38 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
   border:1px solid rgba(46,212,127,.35);border-radius:8px;padding:7px 12px;cursor:pointer;
 }
 .wiz-auto-retry:hover{background:rgba(46,212,127,.2)}
+/* 24/11 : paiement AUTOMATIQUE non termine (MonCash/NatCash) — jamais utilise pour le manuel */
+.wiz-done.is-auto-pend #wizDoneSub{color:#E4EAF1;font-size:14.5px}
+.wiz-done.is-auto-pend .wiz-done-sum dt{color:#B8C3D0}
+.wiz-done.is-auto-pend .wiz-done-sum dd{color:#fff;font-weight:700}
+.wiz-auto{align-items:stretch}
+.wiz-auto-st{display:flex;align-items:center;justify-content:center;gap:9px}
+.wiz-auto-st .wiz-auto-txt{font-size:14px;font-weight:800;color:#E8CE8A;text-align:left}
+.wiz-auto-dot{width:10px;height:10px;border-radius:50%;background:#E8CE8A;box-shadow:0 0 0 4px rgba(232,206,138,.18);flex-shrink:0;animation:wizAutoPulse 1.6s ease-in-out infinite}
+.wiz-auto.is-err .wiz-auto-dot{background:#F0735E;box-shadow:0 0 0 4px rgba(240,115,94,.18)}
+.wiz-auto.is-err .wiz-auto-st .wiz-auto-txt{color:#FF9A88}
+@keyframes wizAutoPulse{50%{box-shadow:0 0 0 7px rgba(232,206,138,.06)}}
+@media (prefers-reduced-motion:reduce){.wiz-auto-dot{animation:none}}
+.wiz-auto-meta{margin:0;font-size:12px;color:#B8C3D0;text-align:center;line-height:1.5}
+.wiz-auto-reprendre,.wiz-auto-changer{width:100%;padding:13px;border-radius:13px;font:800 14px inherit;cursor:pointer}
+.wiz-auto-reprendre{border:0;background:#E8CE8A;color:#1a1405}
+.wiz-auto-reprendre:disabled{opacity:.6;cursor:wait}
+.wiz-auto-changer{border:1px solid rgba(244,243,237,.25);background:none;color:#F4F3ED;display:flex;justify-content:center;gap:6px}
+.wiz-auto-changer:disabled{opacity:.42;cursor:not-allowed}
+.wiz-auto-note{margin:0;font-size:12px;color:#A9B6C4;text-align:center;line-height:1.45}
+.wiz-auto-chk{display:flex;align-items:center;gap:10px;font-size:14px;color:#F4F3ED;cursor:pointer;padding:6px 2px 0;align-self:flex-start}
+.wiz-auto-chk input{width:20px;height:20px;accent-color:#2ED47F;margin:0;cursor:pointer}
+#wizDoneCta.is-bloque{background:#2b3a4d!important;background-image:none!important;color:#8FA0B5!important;box-shadow:none!important;cursor:not-allowed;transform:none!important}
+.wiz-auto-warn{display:flex;align-items:center;gap:9px;margin:10px 0 0;padding:9px 12px;border-radius:12px;background:rgba(240,90,70,.12);border:1px solid rgba(240,90,70,.5);color:#FF8A78;font-size:13px;font-weight:700}
+.wiz-auto-warn[hidden]{display:none}
+#wizStep4 .wiz-auto-warn,#wizStep4 .wiz-auto-warn span{color:#FF8A78;font-size:13.5px;font-weight:800}
+#wizStep4 .wiz-auto-warn .wiz-auto-tri{color:#F0503C;font-size:19px}
+.wiz-auto-tri{flex-shrink:0;color:#F0503C;font:900 19px/1 'Segoe UI Symbol','Apple Symbols',Arial,sans-serif}
+/* Cercle de chargement pendant l'ouverture de la page MonCash/NatCash (sans fond, ecran visible derriere) */
+.vb-pay-spin{position:fixed;inset:0;z-index:100002;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.vb-pay-spin[hidden]{display:none}
+.vb-pay-spin i{display:block;width:72px;height:72px;border-radius:50%;border:6px solid rgba(46,212,127,.18);border-top-color:#2ED47F;border-right-color:#2ED47F;filter:drop-shadow(0 0 12px rgba(46,212,127,.55));animation:vbPaySpin .8s linear infinite}
+@keyframes vbPaySpin{to{transform:rotate(360deg)}}
 
 /* --- Bandeau de reprise --- */
 .wiz-resume{
@@ -1861,6 +1893,13 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 .dash-menu-item.danger svg{color:#E2634F}
 .dash-menu-item.danger:hover{background:rgba(226,99,79,.1);color:#E2634F}
 .dash-menu-item.danger:hover svg{color:#E2634F}
+.dash-menu-aide{color:#2AABEE!important;text-decoration:none}
+.dash-aide{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:12px;border-radius:14px;border:1px solid rgba(42,171,238,.4);background:#0b1a2a}
+.dash-aide-ic{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(42,171,238,.15);color:#2AABEE}
+.dash-aide-tx{flex:1;min-width:0}
+.dash-aide-tx b{display:block;color:#fff;font-size:14px}
+.dash-aide-tx span{color:#B8C3D0;font-size:12.5px}
+.dash-aide-btn{flex-shrink:0;padding:9px 14px;border-radius:10px;background:#2AABEE;color:#fff;font-weight:800;font-size:13px;text-decoration:none}
 .dash-menu-sep{height:1px;background:var(--ligne);margin:8px 4px}
 
 /* selecteur de langue integre au menu hamburger */
@@ -2047,6 +2086,15 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 @media (max-width:640px){.dash-expired .btn{width:100%}}
 
 /* bandeau de paiement en attente de validation admin (theme dore, pas une erreur) */
+.dash-auto{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:10px 12px;border-radius:14px;border:1px solid rgba(232,206,138,.45);background:#15130b}
+.dash-auto[hidden]{display:none}
+.dash-auto-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#E8CE8A;box-shadow:0 0 0 4px rgba(232,206,138,.18)}
+.dash-auto-tx{flex:1;min-width:0}
+.dash-auto-tx b{display:block;font-size:13.5px;font-weight:800;color:#E8CE8A}
+.dash-auto-tx span{font-size:12px;color:#B8C3D0}
+.dash-auto-btn{flex-shrink:0;padding:8px 14px;border-radius:10px;border:0;background:#E8CE8A;color:#1a1405;font:800 13px inherit;cursor:pointer}
+.dash-man-aide{background:#2AABEE;color:#fff;text-decoration:none}
+.dash-auto-btn:disabled{opacity:.6;cursor:wait}
 .dash-pending{
   display:flex;align-items:center;gap:13px;flex-wrap:wrap;
   padding:15px 17px;margin-bottom:22px;border-radius:var(--r-md);
@@ -5383,15 +5431,24 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
                 <div><dt data-i18n="wiz_d_start">Dat kòmansman</dt><dd id="wizDoneStart"></dd></div>
                 <div><dt data-i18n="wiz_d_end">Dat ekspirasyon</dt><dd id="wizDoneEnd"></dd></div>
                 <div><dt data-i18n="wiz_d_ref">Referans</dt><dd id="wizDoneRef"></dd></div>
+                <!-- 24/11 : lignes affichees SEULEMENT pour un paiement automatique MonCash/NatCash en attente -->
+                <div id="wizDoneMontantRow" hidden><dt data-i18n="wiz_d_montant">Montan</dt><dd id="wizDoneMontant"></dd></div>
+                <div id="wizDoneMoyenRow" hidden><dt data-i18n="wiz_d_moyen">Mwayen</dt><dd id="wizDoneMoyen"></dd></div>
               </dl>
               <div class="wiz-auto" id="wizAutoStatus" hidden>
-                <p class="wiz-auto-txt" id="wizAutoTxt"></p>
-                <div class="wiz-auto-actions">
+                <div class="wiz-auto-st"><span class="wiz-auto-dot" aria-hidden="true"></span><p class="wiz-auto-txt" id="wizAutoTxt"></p></div>
+                <p class="wiz-auto-meta" id="wizAutoMeta"></p>
+                <button type="button" class="wiz-auto-reprendre" id="wizAutoResume" data-i18n="wiz_auto_reprendre">Reprann peman an</button>
+                <button type="button" class="wiz-auto-changer" id="wizAutoChange" disabled><span id="wizAutoChangeTxt" data-i18n="wiz_auto_changer">Chanje mwayen peman</span><span id="wizAutoChangeCd"></span></button>
+                <p class="wiz-auto-note" id="wizAutoChangeNote"></p>
+                <label class="wiz-auto-chk"><input type="checkbox" id="wizAutoPaid"><span data-i18n="wiz_auto_fin_peye">Mwen fin peye</span></label>
+                <div class="wiz-auto-actions" hidden>
                   <a href="#" target="_blank" rel="noopener" class="wiz-auto-link" id="wizAutoOpenLink" data-i18n="wiz_auto_open_cta">Ouvri paj peman an</a>
                   <button type="button" class="wiz-auto-retry" id="wizAutoRetryBtn" data-i18n="wiz_auto_retry_cta">Mwen fin peye a</button>
                 </div>
               </div>
               <button type="button" class="btn btn-or authpage-submit" id="wizDoneCta" data-i18n="wiz_d_cta">Ale nan dashboard la</button>
+              <p class="wiz-auto-warn" id="wizAutoWarn" role="alert" hidden><span class="wiz-auto-tri" aria-hidden="true">&#x26A0;&#xFE0E;</span><span data-i18n="wiz_auto_warn">Koche « Mwen fin peye » anvan.</span></p>
             </div>
           </div>
 
@@ -5699,6 +5756,11 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
             <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="17" rx="2.3"/><path d="M8 2.5v3M16 2.5v3M3.5 9.5h17"/><path d="M8 13.5h3M8 16.5h5"/></svg>
             <span data-i18n="dash_t_subhistory">Istorik abònman</span>
           </button>
+          <!-- 24/11 (James) : aide Telegram (lien direct, ouvert via .soc-link) -->
+          <a class="dash-menu-item dash-menu-aide soc-link" role="menuitem" href="https://t.me/User2k21" data-url="https://t.me/User2k21" target="_blank" rel="noopener noreferrer">
+            <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.5-1.4ZM8.8 14l9.6-6.1c.5-.3.9-.1.5.2l-8.2 7.4-.3 3.4L8.8 14Z"/></svg>
+            <span data-i18n="dash_menu_aide">Èd sou Telegram</span>
+          </a>
           <div class="dash-menu-sep"></div>
           <div class="dash-menu-lang">
             <span class="dash-menu-lang-lbl" data-i18n="dash_menu_lang">Lang</span>
@@ -5742,6 +5804,20 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
         <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         <span data-i18n="dash_back">Retounen</span>
       </button>
+      <!-- 24/11 (James, choix 1) : paiement AUTOMATIQUE non termine — bandeau compact, 1 bouton
+           (Kontinye, puis Reeseye apres 5 min). Disparait a la confirmation ou apres 10 min. Manuel : #dashPending inchange. -->
+      <div class="dash-auto" id="dashAutoPay" hidden>
+        <span class="dash-auto-dot" aria-hidden="true"></span>
+        <span class="dash-auto-tx"><b id="dashAutoH"></b><span id="dashAutoSub"></span></span>
+        <button type="button" class="dash-auto-btn" id="dashAutoBtn"></button>
+      </div>
+      <!-- 24/11 (James, choix B) : paiement MANUEL en attente — meme information, bandeau compact + bouton Ed (Telegram).
+           Affichage seulement : rien ne change dans la validation admin. -->
+      <div class="dash-auto dash-man" id="dashManPay" hidden>
+        <span class="dash-auto-dot" aria-hidden="true"></span>
+        <span class="dash-auto-tx"><b data-i18n="dash_pending_h">Peman ap tann verifikasyon</b><span id="dashManSub"></span></span>
+        <a class="dash-auto-btn dash-man-aide soc-link" href="https://t.me/User2k21" data-url="https://t.me/User2k21" target="_blank" rel="noopener noreferrer" data-i18n="dash_man_aide">Èd</a>
+      </div>
       <div class="dash-pending" id="dashPending" hidden>
         <span class="dash-pending-ic">
           <svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
@@ -5868,6 +5944,12 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
       <div class="dash-pending-banner" id="dashPendingBanner" hidden>
         <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
         <span id="dashPendingBannerTxt"></span>
+      </div>
+      <!-- 24/11 (James) : aide Telegram dans « Abonman m » -->
+      <div class="dash-aide">
+        <span class="dash-aide-ic"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.5-1.4ZM8.8 14l9.6-6.1c.5-.3.9-.1.5.2l-8.2 7.4-.3 3.4L8.8 14Z"/></svg></span>
+        <span class="dash-aide-tx"><b data-i18n="dash_aide_h">Ou gen yon pwoblèm ?</b><span data-i18n="dash_aide_p">Ekri nou sou Telegram.</span></span>
+        <a class="dash-aide-btn soc-link" href="https://t.me/User2k21" data-url="https://t.me/User2k21" target="_blank" rel="noopener noreferrer" data-i18n="dash_aide_btn">Ekri nou</a>
       </div>
       <div class="dash-sub">
         <div class="dash-sub-top dash-sub-planblock" id="dashSubTop">
@@ -6876,6 +6958,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261123a"></script>
+<script src="app.js?v=20261124b"></script>
 </body>
 </html>

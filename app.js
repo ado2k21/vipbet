@@ -268,6 +268,7 @@ wiz_auto_echec_p:"Le paiement n'a pas pu être confirmé. Vous pouvez réessayer
 wiz_auto_echec_changement_p:"Le changement de plan a échoué. Votre abonnement actuel reste actif.",
 wiz_auto_open_cta:"Ouvrir la page de paiement",
 wiz_auto_retry_cta:"J'ai terminé le paiement",
+wiz_d_montant:"Montant", wiz_d_moyen:"Moyen", wiz_auto_suffixe:"automatique", wiz_d_sub_pending_auto2:"Si vous avez déjà payé, votre plan sera activé automatiquement.", wiz_auto_poko:"Paiement pas encore reçu", wiz_auto_meta:"Dernière vérification : il y a {s} s · Paiement ouvert encore : {r}", wiz_auto_meta_ferme:"Fermeture du paiement en cours…", wiz_auto_reprendre:"Reprendre le paiement", wiz_auto_changer:"Réessayer", wiz_auto_changer_note_att:"Vous pourrez réessayer après 5 minutes.", wiz_auto_changer_note_ok:"Avant de changer, nous vérifions avec {m} que vous n'avez pas payé.", wiz_auto_changer_encours:"Vérification…", wiz_auto_changer_ok:"Choisissez votre moyen de paiement.", wiz_auto_changer_err:"Vérification impossible pour le moment. Votre paiement n'a pas été fermé : réessayez dans un instant.", wiz_auto_reprendre_err:"Impossible de rouvrir la page de paiement pour le moment. Réessayez.", wiz_auto_fin_peye:"J'ai terminé le paiement", wiz_auto_warn:"Cochez « J'ai terminé le paiement » d'abord.", wiz_d_h_pending_auto:"Votre paiement n'est pas terminé", dash_auto_kontinye:"Continuer", dash_auto_reeseye:"Réessayer",
 wiz_lock_h:"Tableau de bord verrouillé", wiz_lock_cta:"Continuer mon inscription",
 wiz_lock_r1:"Vous devez d'abord créer un compte pour accéder au tableau de bord.",
 wiz_lock_r2:"Votre adresse e-mail n'est pas encore vérifiée. Terminez la vérification pour continuer.",
@@ -337,7 +338,7 @@ dash_sub_h:"Mon abonnement", dash_sub_p:"Détails de votre plan et de vos dates.
 dash_sub_active:"Actif", dash_sub_pending:"En attente de validation",
 dash_sub_suspended:"Compte suspendu",
 dash_sub_msg_suspended:"Votre compte est suspendu pour : {reason}. Veuillez contacter le service client !", dash_sub_holder:"Titulaire", dash_sub_email:"E-mail", dash_sub_method:"Moyen de paiement",
-dash_pending_change_banner:"Vous avez un changement vers {plan} en attente de confirmation. Votre plan actuel reste actif jusqu'à cette confirmation.",
+dash_pending_change_banner:"Vous avez un changement vers {plan} en attente de confirmation. Votre plan actuel reste actif jusqu'à cette confirmation.", dash_pending_renew_banner:"Votre renouvellement {plan} est en attente de confirmation. Votre plan actuel reste actif.",
 dash_sub_left:"Temps restant", dash_sub_days:"{n} jour(s)", dash_sub_upgrade:"Changer ou renouveler mon plan",
 mk_btts_l:"Les deux équipes marquent", mk_over_l:"Plus / Moins de buts", mk_1x2_l:"1X2",
 mk_dc_l:"Double chance", mk_total_l:"Total NBA", mk_hand_l:"Handicap", mk_score_l:"Score exact",
@@ -416,7 +417,7 @@ pay_timeout_h:"Session de paiement expirée",
 pay_timeout_p:"Par sécurité, veuillez recommencer.",
 session_stale_h:"Compte ouvert ailleurs",
 session_stale_p:"Ce compte est ouvert dans une autre fenêtre. Rafraîchissez la page pour continuer.",
-dash_menu_lang:"Langue",
+dash_menu_lang:"Langue", dash_man_label:"manuel", dash_man_aide:"Aide", dash_menu_aide:"Aide sur Telegram", dash_aide_h:"Un problème ?", dash_aide_p:"Écrivez-nous sur Telegram.", dash_aide_btn:"Écrire",
 adm_role_badge:"ADMIN",
 adm_nav_home:"Vue d'ensemble", adm_nav_users:"Utilisateurs", adm_nav_payments:"Paiements", adm_nav_revenus:"Revenus", adm_nav_plans:"Plans", adm_nav_fiches:"Fiches", adm_nav_faq:"FAQ", adm_nav_testimonials:"Témoignages", adm_nav_landing:"Stats accueil", adm_nav_settings:"Paramètres",
 adm_rev_h:"Revenus", adm_rev_p:"Mêmes chiffres que l'accueil, toujours synchronisés — paiements confirmés uniquement.",
@@ -649,7 +650,7 @@ dash_activate_cta:"Activer mon plan", dash_rejected_ov_p:"Votre paiement n'a pas
 dash_pending_h:"Paiement en cours de vérification",
 dash_pending_sub:"Votre paiement est en attente de confirmation par notre équipe. Vos pronostics seront débloqués automatiquement dès validation.",
 dash_pending_ov_p:"En attente de validation de votre paiement.", dash_sub_msg_pending_plan:"Votre demande d'abonnement {plan} est en attente de validation par notre équipe. Vous pourrez faire une nouvelle demande une fois qu'elle sera confirmée ou refusée.",
-dash_sub_msg_rejected:"Votre changement de plan a échoué. Merci de réessayer.",
+dash_sub_msg_rejected:"Votre paiement n'a pas été accepté. Merci de réessayer.",
 dash_sub_msg_expired:"Votre abonnement est expiré. Veuillez réactiver un abonnement maintenant !",
 dash_sub_msg_renew_soon:"Veuillez renouveler votre abonnement avant le {date}.",
 dash_sub_msg_active:"Votre nouveau plan {plan} est activé avec succès.",
@@ -848,6 +849,7 @@ wiz_auto_echec_p:"The payment could not be confirmed. You can try again.",
 wiz_auto_echec_changement_p:"The plan change failed. Your current subscription remains active.",
 wiz_auto_open_cta:"Open payment page",
 wiz_auto_retry_cta:"I've completed the payment",
+wiz_d_montant:"Amount", wiz_d_moyen:"Method", wiz_auto_suffixe:"automatic", wiz_d_sub_pending_auto2:"If you have already paid, your plan will be activated automatically.", wiz_auto_poko:"Payment not received yet", wiz_auto_meta:"Last check: {s}s ago · Payment still open: {r}", wiz_auto_meta_ferme:"Closing the payment…", wiz_auto_reprendre:"Resume payment", wiz_auto_changer:"Retry", wiz_auto_changer_note_att:"You can retry after 5 minutes.", wiz_auto_changer_note_ok:"Before changing, we check with {m} that you haven't paid.", wiz_auto_changer_encours:"Checking…", wiz_auto_changer_ok:"Choose your payment method.", wiz_auto_changer_err:"Could not check right now. Your payment was not closed: try again in a moment.", wiz_auto_reprendre_err:"Could not reopen the payment page right now. Try again.", wiz_auto_fin_peye:"I've completed the payment", wiz_auto_warn:"Tick « I've completed the payment » first.", wiz_d_h_pending_auto:"Your payment isn't finished", dash_auto_kontinye:"Continue", dash_auto_reeseye:"Retry",
 wiz_lock_h:"Dashboard locked", wiz_lock_cta:"Continue my sign-up",
 wiz_lock_r1:"You need to create an account first to access the dashboard.",
 wiz_lock_r2:"Your email address isn't verified yet. Complete verification to continue.",
@@ -917,7 +919,7 @@ dash_sub_h:"My plan", dash_sub_p:"Your plan details and dates.",
 dash_sub_active:"Active", dash_sub_pending:"Pending verification",
 dash_sub_suspended:"Account suspended",
 dash_sub_msg_suspended:"Your account is suspended for: {reason}. Please contact customer support!", dash_sub_holder:"Account holder", dash_sub_email:"Email", dash_sub_method:"Payment method",
-dash_pending_change_banner:"You have a change to {plan} pending confirmation. Your current plan stays active until then.",
+dash_pending_change_banner:"You have a change to {plan} pending confirmation. Your current plan stays active until then.", dash_pending_renew_banner:"Your {plan} renewal is pending confirmation. Your current plan stays active.",
 dash_sub_left:"Time remaining", dash_sub_days:"{n} day(s)", dash_sub_upgrade:"Change or renew my plan",
 mk_btts_l:"Both teams to score", mk_over_l:"Over / Under goals", mk_1x2_l:"1X2",
 mk_dc_l:"Double chance", mk_total_l:"NBA total", mk_hand_l:"Handicap", mk_score_l:"Correct score",
@@ -996,7 +998,7 @@ pay_timeout_h:"Payment session expired",
 pay_timeout_p:"For security, please start again.",
 session_stale_h:"Account open elsewhere",
 session_stale_p:"This account is open in another window. Refresh the page to continue.",
-dash_menu_lang:"Language",
+dash_menu_lang:"Language", dash_man_label:"manual", dash_man_aide:"Help", dash_menu_aide:"Help on Telegram", dash_aide_h:"A problem?", dash_aide_p:"Message us on Telegram.", dash_aide_btn:"Message us",
 adm_role_badge:"ADMIN",
 adm_nav_home:"Overview", adm_nav_users:"Users", adm_nav_payments:"Payments", adm_nav_revenus:"Revenue", adm_nav_plans:"Plans", adm_nav_fiches:"Tickets", adm_nav_faq:"FAQ", adm_nav_testimonials:"Testimonials", adm_nav_landing:"Homepage stats", adm_nav_settings:"Settings",
 adm_rev_h:"Revenue", adm_rev_p:"Same figures as the overview page, always in sync — confirmed payments only.",
@@ -1229,7 +1231,7 @@ dash_activate_cta:"Activate my plan", dash_rejected_ov_p:"Your payment didn't go
 dash_pending_h:"Payment under verification",
 dash_pending_sub:"Your payment is awaiting confirmation by our team. Your picks will unlock automatically once validated.",
 dash_pending_ov_p:"Awaiting validation of your payment.", dash_sub_msg_pending_plan:"Your {plan} subscription request is awaiting validation by our team. You will be able to make a new request once it is confirmed or declined.",
-dash_sub_msg_rejected:"Your plan change failed. Please try again.",
+dash_sub_msg_rejected:"Your payment was not accepted. Please try again.",
 dash_sub_msg_expired:"Your subscription has expired. Please reactivate a plan now!",
 dash_sub_msg_renew_soon:"Please renew your subscription before {date}.",
 dash_sub_msg_active:"Your new {plan} plan is now successfully activated.",
@@ -1428,6 +1430,7 @@ wiz_auto_echec_p:"Nou pa t kapab konfime peman an. Ou ka eseye ankò.",
 wiz_auto_echec_changement_p:"Chanjman plan an echwe. Abònman aktyèl ou rete aktif.",
 wiz_auto_open_cta:"Ouvri paj peman an",
 wiz_auto_retry_cta:"Mwen fin peye a",
+wiz_d_montant:"Montan", wiz_d_moyen:"Mwayen", wiz_auto_suffixe:"otomatik", wiz_d_sub_pending_auto2:"Si w te deja peye, plan ou ap aktive otomatikman.", wiz_auto_poko:"Nou poko resevwa peman an", wiz_auto_meta:"Dènye verifikasyon : gen {s} segonn · Peman an rete louvri : {r}", wiz_auto_meta_ferme:"N ap fèmen peman an…", wiz_auto_reprendre:"Reprann peman an", wiz_auto_changer:"Reeseye", wiz_auto_changer_note_att:"Ou ka reeseye apre 5 minit.", wiz_auto_changer_note_ok:"Anvan nou chanje, nou verifye avèk {m} si ou pa t peye.", wiz_auto_changer_encours:"N ap verifye…", wiz_auto_changer_ok:"Chwazi mwayen peman ou.", wiz_auto_changer_err:"Nou pa ka verifye kounye a. Peman ou an pa fèmen : eseye ankò nan yon ti moman.", wiz_auto_reprendre_err:"Nou pa ka relouvri paj peman an kounye a. Eseye ankò.", wiz_auto_fin_peye:"Mwen fin peye", wiz_auto_warn:"Koche « Mwen fin peye » anvan.", wiz_d_h_pending_auto:"Peman ou an poko fini", dash_auto_kontinye:"Kontinye", dash_auto_reeseye:"Reeseye",
 wiz_lock_h:"Dashboard la fèmen", wiz_lock_cta:"Kontinye enskripsyon m",
 wiz_lock_r1:"Ou dwe kreye yon kont anvan pou w jwenn dashboard la.",
 wiz_lock_r2:"Imèl ou poko verifye. Fini verifikasyon an pou w kontinye.",
@@ -1497,7 +1500,7 @@ dash_sub_h:"Abònman m", dash_sub_p:"Detay plan ou ak dat yo.",
 dash_sub_active:"Aktif", dash_sub_pending:"Ap tann validasyon",
 dash_sub_suspended:"Kont sispann",
 dash_sub_msg_suspended:"Kont ou sispann pou: {reason}. Tanpri kontakte sèvis kliyan!", dash_sub_holder:"Titilè", dash_sub_email:"Imèl", dash_sub_method:"Mwayen peman",
-dash_pending_change_banner:"Ou gen yon chanjman pou {plan} k ap tann konfimasyon. Plan aktyèl ou rete aktif jiskaske sa konfime.",
+dash_pending_change_banner:"Ou gen yon chanjman pou {plan} k ap tann konfimasyon. Plan aktyèl ou rete aktif jiskaske sa konfime.", dash_pending_renew_banner:"Renouvèlman {plan} ou an ap tann konfimasyon. Plan aktyèl ou rete aktif.",
 dash_sub_left:"Tan ki rete", dash_sub_days:"{n} jou", dash_sub_upgrade:"Chanje oswa renouvle plan an",
 mk_btts_l:"De ekip yo make", mk_over_l:"Plis / Mwens gòl", mk_1x2_l:"1X2",
 mk_dc_l:"Doub chans", mk_total_l:"Total NBA", mk_hand_l:"Andikap", mk_score_l:"Eskò egzak",
@@ -1576,7 +1579,7 @@ pay_timeout_h:"Sesyon peman ekspire",
 pay_timeout_p:"Pou sekirite, tanpri rekòmanse.",
 session_stale_h:"Kont ouvri yon lòt kote",
 session_stale_p:"Kont sa a ouvri nan yon lòt fenèt. Rafrechi paj la pou kontinye.",
-dash_menu_lang:"Lang",
+dash_menu_lang:"Lang", dash_man_label:"manyèl", dash_man_aide:"Èd", dash_menu_aide:"Èd sou Telegram", dash_aide_h:"Ou gen yon pwoblèm ?", dash_aide_p:"Ekri nou sou Telegram.", dash_aide_btn:"Ekri nou",
 adm_role_badge:"ADMIN",
 adm_nav_home:"Vi jeneral", adm_nav_users:"Itilizatè", adm_nav_payments:"Peman", adm_nav_revenus:"Revni", adm_nav_plans:"Plan", adm_nav_fiches:"Fich", adm_nav_faq:"FAQ", adm_nav_testimonials:"Temwayaj", adm_nav_landing:"Estatistik akèy", adm_nav_settings:"Paramèt",
 adm_rev_h:"Revni", adm_rev_p:"Menm chif ak akèy la, toujou senkwonize — sèlman peman ki konfime.",
@@ -1809,7 +1812,7 @@ dash_activate_cta:"Aktive plan mwen", dash_rejected_ov_p:"Peman ou pa t pase. Ak
 dash_pending_h:"Peman ap tann verifikasyon",
 dash_pending_sub:"Peman ou an ap tann yon admin konfime li. Pronostik yo ap debloke otomatikman apre sa.",
 dash_pending_ov_p:"Ap tann validasyon peman ou.", dash_sub_msg_pending_plan:"Demann abònman {plan} ou an ap tann validasyon ekip nou an. W ap ka fè yon nouvo demann lè li konfime oswa refize.",
-dash_sub_msg_rejected:"Chanjman plan ou echwe. Tanpri eseye ankò.",
+dash_sub_msg_rejected:"Peman ou an pa t aksepte. Tanpri eseye ankò.",
 dash_sub_msg_expired:"Abònman ou ekspire. Tanpri reyaktive yon plan kounye a !",
 dash_sub_msg_renew_soon:"Tanpri renouvle abònman ou anvan {date}.",
 dash_sub_msg_active:"Nouvo plan {plan} ou aktive avèk siksè.",
@@ -2941,6 +2944,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   const PAIEMENT_AUTO_METHODS=METHODS.map(m=>m.id);
   const PAIEMENT_CREATE_URL='/.netlify/functions/paiement-create';
   const PAIEMENT_VERIFY_URL='/.netlify/functions/paiement-verify';
+  const PAIEMENT_CHANGER_URL='/.netlify/functions/paiement-changer';   // 24/11 : changer de moyen (paiement auto)
 
   function renderRecap(){
     /* Le plan PREVISUALISE (avant paiement) ne doit jamais ecraser le plan
@@ -3427,6 +3431,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      par le parcours MonCash/NatCash et par le parcours Stripe, pour que
      les deux affichent exactement le meme refus au meme endroit. */
   function afficherRefusPaiement(raison){
+    // 24/11 : refus « paiement deja en attente » alors qu'il s'agit d'un paiement AUTOMATIQUE
+    // non termine -> l'ecran qui permet de le reprendre ou de changer de moyen (pas le manuel).
+    if(raison==='renew_err_pending'&&paiementAutoNonTermine()&&window.VB_openAuthWizardStep4){
+      window.VB_openAuthWizardStep4();return;
+    }
     const TITRE={
       renew_err_encours:'renew_toast_h', renew_err_lifetime:'lifetime_toast_h',
       renew_err_inferieur:'change_toast_h', renew_err_pending:'pending_toast_h',
@@ -3526,8 +3535,85 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   function renderStatutPaiementAuto(etat){
     const txt=document.getElementById('wizAutoTxt');
     if(!txt)return;
-    const CLES={attente:'wiz_auto_attente_p',verification_manuelle:'wiz_auto_verif_p',erreur:'wiz_auto_erreur_p'};
-    txt.textContent=t(CLES[etat]||'wiz_auto_attente_p');
+    // 24/11 : « Nou poko resevwa peman an » (point jaune) = derniere reponse REELLE du prestataire,
+    // obtenue par le serveur (paiement-verify). Le site ne devine jamais un statut.
+    const CLES={attente:'wiz_auto_poko',verification_manuelle:'wiz_auto_verif_p',erreur:'wiz_auto_erreur_p'};
+    txt.textContent=t(CLES[etat]||'wiz_auto_poko');
+    const box=document.getElementById('wizAutoStatus');
+    if(box)box.classList.toggle('is-err',etat==='erreur');
+  }
+
+  /* ===== 24/11 (James) : paiement AUTOMATIQUE non termine — reprendre, changer de moyen, suivi =====
+     Rien ici ne s'applique au paiement manuel ni a Stripe (garde : state.autoPaymentId, qui n'existe
+     que pour MonCash/NatCash automatique). Un paiement CONFIRME garde son chemin d'avant : envoi
+     direct au Dashboard (appliquerResultatVerifAuto -> VB_reprendreApresAdmin). */
+  const DELAI_CHANGER_MS=5*60*1000;              // meme regle que le serveur (paiement-changer.js)
+  let autoDetails=null, derniereVerifAuto=0, tickerAuto=null, changerEnCours=false;
+  function libelleMoyenAuto(m){
+    const nom=m==='natcash'?'NatCash':m==='moncash'?'MonCash':String(m||'—');
+    return nom+' '+t('wiz_auto_suffixe');
+  }
+  async function chargerDetailsPaiementAuto(){
+    const id=state.autoPaymentId;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!id||!sb)return;
+    try{
+      const {data,error}=await sb.from('payments')
+        .select('id,reference,amount_htg,method,status,created_at,expires_at,provider_checked_at')
+        .eq('id',id).maybeSingle();
+      if(error||!data||id!==state.autoPaymentId)return;
+      autoDetails=data;
+      if(data.provider_checked_at){const c=new Date(data.provider_checked_at).getTime();if(c>derniereVerifAuto)derniereVerifAuto=c;}
+      appliquerDetailsAuto();
+      tickAuto();
+    }catch(e){ /* jamais bloquant : l'ecran garde les valeurs locales */ }
+  }
+  function appliquerDetailsAuto(){
+    const d=autoDetails;if(!d)return;
+    const ref=document.getElementById('wizDoneRef');if(ref&&d.reference)ref.textContent=d.reference;
+    const mt=document.getElementById('wizDoneMontant');if(mt&&d.amount_htg!=null)mt.textContent=money(Number(d.amount_htg))+' HTG';
+    const mo=document.getElementById('wizDoneMoyen');if(mo&&d.method)mo.textContent=libelleMoyenAuto(d.method);
+  }
+  function debutPaiementAutoMs(){
+    if(autoDetails&&autoDetails.id===state.autoPaymentId&&autoDetails.created_at)return new Date(autoDetails.created_at).getTime();
+    if(state.autoExpiresAt)return new Date(state.autoExpiresAt).getTime()-10*60*1000;   // repli : TTL serveur de 10 min
+    return null;
+  }
+  function finPaiementAutoMs(){
+    if(autoDetails&&autoDetails.id===state.autoPaymentId&&autoDetails.expires_at)return new Date(autoDetails.expires_at).getTime();
+    return state.autoExpiresAt?new Date(state.autoExpiresAt).getTime():null;
+  }
+  const mmss=ms=>{const x=Math.max(0,Math.ceil(ms/1000));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0');};
+  function tickAuto(){
+    const box=document.getElementById('wizAutoStatus');
+    if(!state.autoPaymentId||!box||box.hidden){arreterTickerAuto();return;}
+    const now=Date.now(), fin=finPaiementAutoMs(), debut=debutPaiementAutoMs();
+    // 24/11 (James : « trop de texte ») : plus de ligne « Dènye verifikasyon / rete louvri ».
+    const meta=document.getElementById('wizAutoMeta');
+    if(meta){meta.textContent='';meta.hidden=true;}
+    void fin;
+    const btn=document.getElementById('wizAutoChange'), cd=document.getElementById('wizAutoChangeCd'), note=document.getElementById('wizAutoChangeNote');
+    if(btn&&!changerEnCours){
+      const reste=debut!=null?debut+DELAI_CHANGER_MS-now:DELAI_CHANGER_MS;
+      const pret=reste<=0;
+      btn.disabled=!pret;
+      if(cd)cd.textContent=pret?'':' · '+mmss(reste);
+      if(note){note.textContent='';note.hidden=true;}   // 24/11 : seulement le compteur sur le bouton
+    }
+  }
+  function demarrerTickerAuto(){arreterTickerAuto();tickAuto();tickerAuto=setInterval(tickAuto,1000);}
+  function arreterTickerAuto(){if(tickerAuto){clearInterval(tickerAuto);tickerAuto=null;}}
+  /* Case « Mwen fin peye » : tant qu'un paiement automatique est en attente sur cet ecran, le bouton
+     « Ale nan dashboard la » reste grise jusqu'a ce qu'elle soit cochee (meme fonction ensuite). */
+  function dashBloqueParAuto(){
+    const box=document.getElementById('wizAutoStatus'), chk=document.getElementById('wizAutoPaid');
+    return !!(state.autoPaymentId&&state.step===4&&box&&!box.hidden&&chk&&!chk.checked);
+  }
+  function majCtaDashboardAuto(){
+    const cta=document.getElementById('wizDoneCta');
+    if(cta)cta.classList.toggle('is-bloque',dashBloqueParAuto());
+    const w=document.getElementById('wizAutoWarn');
+    if(w&&!dashBloqueParAuto())w.hidden=true;
   }
 
   async function verifierPaiementAutoUneFois(){
@@ -3540,7 +3626,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
         body:JSON.stringify({payment_id:state.autoPaymentId})
       });
-      return await rep.json().catch(()=>null);
+      const res=await rep.json().catch(()=>null);
+      // 24/11 : heure de la derniere VRAIE reponse du prestataire, et lien/reference a jour (serveur).
+      if(res&&res.etat&&res.etat!=='erreur')derniereVerifAuto=Date.now();
+      if(res&&res.etat==='attente'&&res.url&&state.autoPaymentId){state.autoProviderUrl=res.url;save();}
+      return res;
     }catch(e){return {ok:false,etat:'erreur'};}
   }
 
@@ -3549,6 +3639,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      de relance manuelle, jamais les deux a la fois — voir leurs gardes). */
   async function appliquerResultatVerifAuto(res){
     if(!res)return;
+    // 24/11 : reponse sans statut (erreur serveur 500, reponse illisible...) = incident passager,
+    // JAMAIS un echec du paiement : on reessaie (avant : l'ecran affichait « pa t kapab konfime »).
+    if(!res.etat)res={ok:false,etat:'erreur'};
     if(res.etat==='confirme'){
       state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;state.autoWasRenew=null;save();
       // Reconstruit l'etat local depuis la VRAIE ligne subscriptions —
@@ -3575,7 +3668,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     // expire / refuse / clos / manuel : tentative definitivement close,
     // sans succes. Deux cas, jamais confondus :
-    const etaitChangement=!!state.pendingPlanId;
+    // 24/11 : resultat tardif d'une verification deja depassee (paiement deja ferme par
+    // « Chanje mwayen peman », ou deja traite) : rien a refaire.
+    if(!state.autoPaymentId)return;
+    arreterTickerAuto();
+    // 24/11 (James : « apres 10 min l'ecran disparait ») : comportement d'AVANT conserve — petit
+    // message, puis choix du moyen de paiement (ou ecran du plan actif s'il en reste un).
+    // 24/11 : renouvellement du MEME plan -> pendingPlanId peut avoir ete efface par la
+    // synchronisation ; un plan CONFIRME (payStatus) compte donc aussi comme « plan actif garde ».
+    const etaitChangement=!!state.pendingPlanId||state.payStatus==='confirmed';
     state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;state.autoWasRenew=null;
     if(etaitChangement){
       // Le plan ACTIF n'a jamais ete touche par cette tentative : la
@@ -3618,6 +3719,29 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      subscriptions ET payments sont crees cote serveur (service_role), avec
      le VRAI montant et une reference prestataire jamais exposee ici — voir
      netlify/functions/paiement-create.js. */
+  /* 24/11 (James) : cercle de chargement au premier plan, SANS fond (l'ecran reste visible
+     derriere), pendant l'ouverture de la page MonCash/NatCash. Il reste affiche jusqu'a ce que la
+     page du prestataire remplace le site (vrai temps de chargement) ; retire sur chaque chemin
+     d'erreur (restaurerBoutonPayer) et au retour arriere du navigateur (pageshow). Paiement
+     AUTOMATIQUE seulement : le manuel et Stripe ne l'utilisent pas. */
+  let spinPayEl=null;
+  function spinPaiementAuto(on){
+    if(on&&!spinPayEl){
+      spinPayEl=document.createElement('div');spinPayEl.className='vb-pay-spin';spinPayEl.hidden=true;
+      spinPayEl.setAttribute('role','status');spinPayEl.setAttribute('aria-label',t('wiz_p_pay_loading'));
+      spinPayEl.innerHTML='<i></i>';document.body.appendChild(spinPayEl);
+    }
+    if(spinPayEl)spinPayEl.hidden=!on;
+  }
+  let libellePayerAvantSpin=null;
+  window.addEventListener('pageshow',()=>{
+    spinPaiementAuto(false);
+    // Retour arriere depuis MonCash/NatCash avec la page gardee en memoire : bouton « Payer » rendu.
+    if(paySubmit&&paySubmit.disabled&&paySubmit.textContent===t('wiz_p_pay_loading')){
+      paySubmit.disabled=false;if(libellePayerAvantSpin)paySubmit.textContent=libellePayerAvantSpin;
+    }
+  });
+
   async function lancerPaiementAutomatique({method,pl,planCible,planEnCoursValide,ancienPlan,wasRenew,fenetreAuto}){
     /* AJOUTE (17/09) : etat de chargement explicite sur le bouton pendant
        l'appel serveur (~1-3s). Avant, la page vide ouverte a part jouait
@@ -3629,7 +3753,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const libelleInitial=paySubmit.textContent;
     paySubmit.disabled=true;
     paySubmit.textContent=t('wiz_p_pay_loading');
+    libellePayerAvantSpin=libelleInitial;
+    spinPaiementAuto(true);   // 24/11 : cercle qui tourne jusqu'a l'ouverture de la page MonCash/NatCash
     function restaurerBoutonPayer(){
+      spinPaiementAuto(false);
       paySubmit.disabled=false;
       paySubmit.textContent=libelleInitial;
     }
@@ -4217,7 +4344,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const enAttenteChangement=!!state.pendingPlanId;
     const pl=planById(enAttenteChangement?state.pendingPlanId:state.planId);
     const fmt=iso=>iso?new Date(iso).toLocaleDateString(currentLang==='en'?'en-US':'fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—';
-    const pend=enAttenteChangement||state.payStatus==='pending';
+    // 24/11 : un paiement AUTOMATIQUE encore ouvert compte toujours comme « en attente » (cas du
+    // renouvellement du MEME plan, ou la synchronisation efface pendingPlanId).
+    const pend=enAttenteChangement||state.payStatus==='pending'||paiementAutoNonTermine();
     // CORRECTIF : state.payMethod ('moncash'/'natcash') ne distingue pas
     // auto/manuel — sans state.payMode!=='manuel', un depot MANUEL affichait
     // a tort le texte "confirmation automatique" (methodeAuto se basait
@@ -4228,11 +4357,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     ic.innerHTML=pend
       ?'<svg class="ic" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'
       :'<svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>';
-    document.getElementById('wizDoneH').textContent=t(pend?'wiz_d_h_pending':'wiz_d_h');
+    // 24/11 (James, choix A) : paiement AUTOMATIQUE non termine -> « Peman ou an poko fini » ;
+    // le manuel garde « Peman an ap verifye ».
+    document.getElementById('wizDoneH').textContent=t(pend?((methodeAuto&&!!state.autoPaymentId)?'wiz_d_h_pending_auto':'wiz_d_h_pending'):'wiz_d_h');
     // La copie "notre equipe va valider" ne convient qu'au flux
     // manuel/admin : pour MonCash/NatCash, la verification est reellement
     // automatique et le panneau de statut ci-dessous donne le detail.
-    document.getElementById('wizDoneSub').textContent=t(pend?(methodeAuto?'wiz_d_sub_pending_auto':'wiz_d_sub_pending'):'wiz_d_sub');
+    // 24/11 : paiement AUTOMATIQUE non termine -> texte plus clair (le manuel garde son texte).
+    const autoPend=pend&&methodeAuto&&!!state.autoPaymentId;
+    document.getElementById('wizDoneSub').textContent=t(pend?(methodeAuto?(autoPend?'wiz_d_sub_pending_auto2':'wiz_d_sub_pending_auto'):'wiz_d_sub_pending'):'wiz_d_sub');
     document.getElementById('wizDonePlan').textContent=pl?stripTags(window.VB_planLabel(pl)):'—';
     // Tant que ce n'est pas confirme, on ne peut pas encore montrer de
     // vraies dates (elles ne sont fixees qu'a la confirmation admin) —
@@ -4241,6 +4374,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('wizDoneStart').textContent=enAttenteChangement?t('wiz_d_pending_dates'):fmt(state.startDate);
     document.getElementById('wizDoneEnd').textContent=enAttenteChangement?t('wiz_d_pending_dates'):(state.endDate?fmt(state.endDate):t('wiz_d_never'));
     document.getElementById('wizDoneRef').textContent=(enAttenteChangement?state.pendingRef:state.ref)||'—';
+    /* 24/11 : lignes Montant / Moyen + vraie reference lue sur le serveur — SEULEMENT pour un
+       paiement automatique en attente ; sinon (manuel, Stripe, confirme) tout reste comme avant. */
+    // 24/11 : l'avertissement « Koche Mwen fin peye » n'apparait QUE sur un clic du bouton
+    // Dashboard sans case cochee ; a chaque nouvel affichage de l'ecran, il repart cache.
+    {const w=document.getElementById('wizAutoWarn');if(w)w.hidden=true;}
+    const wizDoneBox=document.querySelector('#wizStep4 .wiz-done');
+    if(wizDoneBox)wizDoneBox.classList.toggle('is-auto-pend',autoPend);
+    ['wizDoneMontantRow','wizDoneMoyenRow'].forEach(id=>{const r=document.getElementById(id);if(r)r.hidden=!autoPend;});
+    // 24/11 : dates (pas encore fixees) cachees pour le paiement auto non termine ; manuel inchange.
+    ['wizDoneStart','wizDoneEnd'].forEach(id=>{const d=document.getElementById(id);if(d&&d.parentNode)d.parentNode.hidden=autoPend;});
+    if(autoPend){
+      // Montant : UNIQUEMENT celui du paiement enregistre (lu ci-dessous), jamais le prix local.
+      document.getElementById('wizDoneMontant').textContent='—';
+      document.getElementById('wizDoneMoyen').textContent=libelleMoyenAuto(state.payMethod);
+      if(autoDetails&&autoDetails.id===state.autoPaymentId)appliquerDetailsAuto();
+    }
+    majCtaDashboardAuto();
 
     /* Paiement automatique MonCash/NatCash en attente : panneau de statut
        + reprise du sondage si cette page est rouverte (F5, retour sur
@@ -4255,6 +4405,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         const lien=document.getElementById('wizAutoOpenLink');
         if(lien)lien.href=state.autoProviderUrl||'#';
         renderStatutPaiementAuto('attente');
+        chargerDetailsPaiementAuto();   // 24/11 : reference, montant, heures reelles (serveur)
+        demarrerTickerAuto();
         if(!pollAutoTimer){
           /* AJOUTE (bug signale par James : risque de paiement rempli 2
              fois) : le lien "Ouvri paj peman an" devenait actif des cette
@@ -4282,8 +4434,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         }
       }else{
         arreterPollAuto();
+        arreterTickerAuto();
       }
     }
+    majCtaDashboardAuto();   // 24/11 : apres l'affichage (ou non) de la boite auto
   }
 
   /* Relance manuelle : utile si la personne revient sur cet onglet apres
@@ -4304,6 +4458,88 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }finally{
         wizAutoRetryBtn.disabled=false;
       }
+    });
+  }
+
+  /* ===== 24/11 (James) : actions du paiement AUTOMATIQUE non termine ===== */
+  // « Reprann peman an » : le lien est redemande au SERVEUR (meme paiement, meme reference chez
+  // le prestataire) — jamais un deuxieme paiement. Paye entre-temps -> chemin habituel (Dashboard).
+  const wizAutoResume=document.getElementById('wizAutoResume');
+  if(wizAutoResume){
+    wizAutoResume.addEventListener('click',async()=>{
+      if(!state.autoPaymentId||wizAutoResume.disabled)return;
+      wizAutoResume.disabled=true;
+      renderStatutPaiementAuto('verification_manuelle');
+      let res=null;
+      try{res=await verifierPaiementAutoUneFois();}catch(e){res=null;}
+      if(res&&res.etat==='attente'){
+        const url=res.url||state.autoProviderUrl;
+        if(url&&/^https:\/\//i.test(url)){
+          spinPaiementAuto(true);
+          setTimeout(()=>{wizAutoResume.disabled=false;spinPaiementAuto(false);},15000);   // filet si la page ne s'ouvre pas
+          try{window.location.href=url;}catch(e){}
+          return;
+        }
+      }
+      wizAutoResume.disabled=false;
+      if(res&&res.etat&&res.etat!=='attente'&&res.etat!=='erreur'){await appliquerResultatVerifAuto(res);return;}
+      renderStatutPaiementAuto(res&&res.etat==='attente'?'attente':'erreur');
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('wiz_auto_reprendre_err'));
+    });
+  }
+
+  // Retour au choix du moyen de paiement apres fermeture CONFIRMEE par le serveur.
+  function revenirAuChoixPaiement(){
+    arreterPollAuto();arreterTickerAuto();
+    // Un plan reste-t-il ACTIF (renouvellement / changement) ? Alors on n'y touche jamais.
+    const planActifGarde=state.payStatus==='confirmed';
+    state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;state.autoWasRenew=null;
+    autoDetails=null;
+    if(planActifGarde){
+      state.pendingRef=null;               // le plan actif n'a jamais ete touche ; le plan choisi reste propose
+    }else{
+      state.paid=false;state.payStatus=null;state.ref=null;state.startDate=null;state.endDate=null;
+    }
+    save();
+    const chk=document.getElementById('wizAutoPaid');if(chk)chk.checked=false;
+    if(window.VB_toast)window.VB_toast('renew_toast_h',t('wiz_auto_changer_ok'));
+    showStep(3);
+  }
+
+  // « Chanje mwayen peman » : seulement 5 min apres le lancement ; le SERVEUR interroge le
+  // prestataire avant toute fermeture (paye -> confirme ; pas de reponse -> rien n'est ferme).
+  const wizAutoChange=document.getElementById('wizAutoChange');
+  if(wizAutoChange){
+    wizAutoChange.addEventListener('click',async()=>{
+      if(!state.autoPaymentId||changerEnCours||wizAutoChange.disabled)return;
+      changerEnCours=true;wizAutoChange.disabled=true;
+      const txt=document.getElementById('wizAutoChangeTxt'),cd=document.getElementById('wizAutoChangeCd');
+      if(txt)txt.textContent=t('wiz_auto_changer_encours');if(cd)cd.textContent='';
+      let data=null;
+      try{
+        const token=await getAccessTokenWizard();
+        if(token){
+          const rep=await fetch(PAIEMENT_CHANGER_URL,{method:'POST',
+            headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+            body:JSON.stringify({payment_id:state.autoPaymentId})});
+          data=await rep.json().catch(()=>null);
+        }
+      }catch(e){data=null;}
+      changerEnCours=false;
+      if(txt)txt.textContent=t('wiz_auto_changer');
+      if(data&&data.ok&&data.etat==='confirme'){derniereVerifAuto=Date.now();await appliquerResultatVerifAuto({etat:'confirme'});return;}
+      if(data&&data.ok&&(data.etat==='annule'||data.etat==='ferme')){revenirAuChoixPaiement();return;}
+      tickAuto();
+      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t(data&&data.code==='TROP_TOT'?'wiz_auto_changer_note_att':'wiz_auto_changer_err'));
+    });
+  }
+
+  // Case « Mwen fin peye » : debloque « Ale nan dashboard la » et lance une verification immediate.
+  const wizAutoPaid=document.getElementById('wizAutoPaid');
+  if(wizAutoPaid){
+    wizAutoPaid.addEventListener('change',()=>{
+      majCtaDashboardAuto();
+      if(wizAutoPaid.checked&&wizAutoRetryBtn&&!wizAutoRetryBtn.disabled)wizAutoRetryBtn.click();
     });
   }
 
@@ -4636,6 +4872,13 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     showStep(pageDe(requiredStep(state)));
   });
   document.getElementById('wizDoneCta').addEventListener('click',()=>{
+    /* 24/11 (James) : paiement AUTOMATIQUE en attente seulement — tant que « Mwen fin peye »
+       n'est pas cochee, petit avertissement au lieu d'ouvrir le Dashboard. Sinon (manuel,
+       confirme, case cochee) : exactement la meme fonction qu'avant. */
+    if(dashBloqueParAuto()){
+      const w=document.getElementById('wizAutoWarn');if(w)w.hidden=false;
+      return;
+    }
     renewMode=false;renewFrom=false;
     setChrome(false);
     modeWizard.classList.remove('renew');
@@ -5213,6 +5456,45 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      navigation vers le prestataire). Sert au retour sur le site apres la
      redirection meme onglet (voir tenterRestaurationSession plus bas) pour
      savoir s'il faut rouvrir l'etape 4 du wizard plutot que le dashboard. */
+  // 24/11 : un paiement AUTOMATIQUE (jamais manuel) est-il encore ouvert sur cet appareil ?
+  function paiementAutoNonTermine(){
+    return !!state.autoPaymentId&&PAIEMENT_AUTO_METHODS.includes(state.payMethod)&&state.payMode!=='manuel';
+  }
+  /* 24/11 (James, Dashboard choix 1) : outils du bandeau compact du Dashboard, paiement AUTOMATIQUE
+     non termine seulement. Aucun nouveau chemin de paiement : memes fonctions que l'ecran de retour. */
+  let chargementDetailsDash=false, dernierChargementDetailsDash=0;
+  window.VB_paiementAutoInfo=function(){
+    if(!paiementAutoNonTermine())return null;
+    const lu=autoDetails&&autoDetails.id===state.autoPaymentId;
+    // Lecture du paiement au plus une fois toutes les 20 s (jamais en boucle si la base ne repond pas).
+    if(!lu&&!chargementDetailsDash&&Date.now()-dernierChargementDetailsDash>20000){
+      chargementDetailsDash=true;dernierChargementDetailsDash=Date.now();
+      chargerDetailsPaiementAuto().finally(()=>{chargementDetailsDash=false;});
+    }
+    // Montant : UNIQUEMENT celui du paiement enregistre en base ; tant qu'il n'est pas lu, rien.
+    return {debut:debutPaiementAutoMs(),fin:finPaiementAutoMs(),methode:state.payMethod,
+      montant:(lu&&autoDetails.amount_htg!=null)?Number(autoDetails.amount_htg):null};
+  };
+  // Verification depuis le Dashboard : confirme -> chemin habituel ; ferme (10 min) -> on oublie
+  // simplement le paiement local, SANS fenetre (choix 1 : comme avant, le bandeau disparait).
+  window.VB_paiementAutoVerifierDashboard=async function(){
+    if(!paiementAutoNonTermine())return null;
+    let res=null;
+    try{res=await verifierPaiementAutoUneFois();}catch(e){res=null;}
+    if(!res||!res.etat||res.etat==='erreur'||res.etat==='attente')return res;
+    if(res.etat==='confirme'){await appliquerResultatVerifAuto(res);return res;}
+    arreterPollAuto();arreterTickerAuto();
+    state.autoPaymentId=null;state.autoProviderUrl=null;state.autoExpiresAt=null;state.autoWasRenew=null;
+    autoDetails=null;save();
+    if(window.VB_syncPayStatus){try{await window.VB_syncPayStatus();}catch(e){}}
+    return res;
+  };
+  // « Reeseye » depuis le Dashboard : meme ecran et meme verification que « Reeseye » au retour.
+  window.VB_paiementAutoReessayer=function(){
+    if(!paiementAutoNonTermine()||!window.VB_openAuthWizardStep4)return;
+    window.VB_openAuthWizardStep4();
+    setTimeout(()=>{const b=document.getElementById('wizAutoChange');if(b&&!b.disabled)b.click();},400);
+  };
   window.VB_paiementAutoEnAttente=()=>state.payStatus==='pending'&&!!state.autoPaymentId&&PAIEMENT_AUTO_METHODS.includes(state.payMethod);
   /* CORRIGE (bug tres grave signale par James, capture d'ecran : stepper
      "Kont/Peman/Aksè" reaffiche a une personne qui avait DEJA acces au
@@ -5536,7 +5818,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
             // compte comme changement en attente que s'il differe du
             // plan actif — sinon (meme plan) on l'ignore ici.
             let changementUid=null;
-            if(pendUid&&pendUid.plan_id!==actifUid.plan_id){
+            /* 24/11 (James) : le renouvellement du MEME plan en attente compte aussi (avant : ignore,
+               l'abonne ne voyait nulle part que son paiement attendait). Toujours SEULEMENT si un
+               paiement 'pending' existe vraiment en base pour ce plan (controle ci-dessous). */
+            if(pendUid){
               // CORRECTIF : le statut de l'abonnement seul ne suffit jamais a
               // decider d'afficher ce message — seul un PAIEMENT reellement
               // 'pending' en base, pour ce meme plan, l'autorise. Sans cette
@@ -5685,6 +5970,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   window.VB_openWizardPay=function(from,fromDashboard){
     const need=requiredStep(state);
     if(need<3){openAuth('wizard',from,need);return;}   // parcours encore incomplet
+    /* 24/11 (James) : paiement AUTOMATIQUE MonCash/NatCash non termine -> depuis le Dashboard, on
+       rouvre l'ecran « Peman an ap verifye » (Reprann peman an / Chanje mwayen peman apres 5 min)
+       au lieu de bloquer jusqu'a la fin des 10 min. Jamais un 2e paiement : cet ecran reprend le
+       MEME paiement ou le ferme via le serveur. Le paiement MANUEL garde son message d'avant. */
+    if(paiementAutoNonTermine()&&window.VB_openAuthWizardStep4){window.VB_openAuthWizardStep4();return;}
     // Aucun deuxieme paiement tant que le premier attend confirmation admin.
     if(state.paid&&state.payStatus==='pending'){
       if(window.VB_toast)window.VB_toast('pending_toast_h',t('renew_err_pending'));
@@ -7461,11 +7751,90 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('dashSoonH').textContent=t('dash_soon_h').replace('{n}',d);
   }
 
+  /* 24/11 (James, choix 1) : bandeau COMPACT du paiement AUTOMATIQUE non termine. Avant 5 min :
+     « Kontinye » (meme paiement) ; apres 5 min : « Reeseye » (MonCash/NatCash interroge d'abord).
+     Disparait des que le paiement est confirme, ou a 10 min (comme avant, sans rien a la place).
+     Verifie le paiement toutes les 20 s tant qu'il est affiche. Le MANUEL ne passe jamais ici. */
+  let autoDashTimer=null, autoDashDerniereVerif=0, autoDashVerifEnCours=false;
+  function infoAutoDash(){
+    const i=window.VB_paiementAutoInfo&&window.VB_paiementAutoInfo();
+    return (i&&i.fin&&i.fin>Date.now())?i:null;
+  }
+  function renderAutoDash(){
+    const box=document.getElementById('dashAutoPay');if(!box)return false;
+    const i=infoAutoDash();
+    box.hidden=!i;
+    if(!i){if(autoDashTimer){clearInterval(autoDashTimer);autoDashTimer=null;}return false;}
+    const nom=i.methode==='natcash'?'NatCash':'MonCash';
+    document.getElementById('dashAutoH').textContent=t('wiz_d_h_pending_auto');
+    document.getElementById('dashAutoSub').textContent=nom+(i.montant!=null?' · '+Number(i.montant).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' HTG':'');
+    const btn=document.getElementById('dashAutoBtn');
+    const reste=(i.debut!=null?i.debut+5*60*1000:0)-Date.now();
+    btn.textContent=reste>0?t('dash_auto_kontinye'):t('dash_auto_reeseye');
+    btn.dataset.action=reste>0?'kontinye':'reeseye';
+    if(!autoDashTimer)autoDashTimer=setInterval(tickAutoDash,1000);
+    return true;
+  }
+  async function tickAutoDash(){
+    const visible=renderAutoDash();
+    if(!visible){
+      // 10 min passees : derniere verification, puis l'etat reel est relu (comme avant).
+      if(window.VB_paiementAutoInfo&&window.VB_paiementAutoInfo()&&!autoDashVerifEnCours){
+        autoDashVerifEnCours=true;
+        try{await window.VB_paiementAutoVerifierDashboard();}finally{autoDashVerifEnCours=false;}
+        renderToday();if(typeof renderSub==='function')renderSub();
+      }
+      return;
+    }
+    if(Date.now()-autoDashDerniereVerif>20000&&!autoDashVerifEnCours){
+      autoDashDerniereVerif=Date.now();autoDashVerifEnCours=true;
+      try{await window.VB_paiementAutoVerifierDashboard();}finally{autoDashVerifEnCours=false;}
+      renderAutoDash();
+    }
+  }
+  {const b=document.getElementById('dashAutoBtn');
+   if(b)b.addEventListener('click',()=>{
+     if(b.dataset.action==='reeseye'){if(window.VB_paiementAutoReessayer)window.VB_paiementAutoReessayer();}
+     else if(window.VB_openAuthWizardStep4)window.VB_openAuthWizardStep4();
+   });}
+
+  /* 24/11 : texte du bandeau MANUEL. Le MONTANT vient UNIQUEMENT du paiement reellement enregistre
+     en base (payments.amount_htg, fixe par la base au prix du plan) ; s'il ne peut pas etre lu, il
+     n'est PAS affiche (jamais un prix devine). Le moyen vient du meme enregistrement. */
+  let manDashCache={ref:null,data:null}, manDashLecture=null;
+  function renderManDash(){
+    const sub=document.getElementById('dashManSub');if(!sub)return;
+    const st=getState()||{};
+    const ref=st.pendingRef||st.ref||null;
+    const ecrire=d=>{
+      const parts=[];
+      const m=(d&&d.method)||null;
+      if(m==='moncash'||m==='natcash')parts.push((m==='natcash'?'NatCash':'MonCash')+' '+t('dash_man_label'));
+      if(d&&d.amount_htg!=null&&Number(d.amount_htg)>0)parts.push(Number(d.amount_htg).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' HTG');
+      if(!parts.length&&ref)parts.push(ref);
+      sub.textContent=parts.join(' · ');
+    };
+    if(manDashCache.ref===ref&&manDashCache.data){ecrire(manDashCache.data);return;}
+    ecrire(null);
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!ref||manDashLecture===ref)return;
+    manDashLecture=ref;
+    sb.from('payments').select('reference,amount_htg,method,status').eq('reference',ref).maybeSingle()
+      .then(({data,error})=>{manDashLecture=null;if(error||!data||data.reference!==ref)return;manDashCache={ref,data};ecrire(data);})
+      .catch(()=>{manDashLecture=null;});
+  }
+
   function renderToday(){
     const life=!!(window.VB_isLifetime&&window.VB_isLifetime());
-    const pend=isPending();
+    const autoDash=renderAutoDash();   // 24/11 : paiement auto non termine -> bandeau compact
+    const pend=isPending()&&!autoDash;
     const pendBox=document.getElementById('dashPending');
-    pendBox.hidden=!pend;
+    // 24/11 (James, choix B) : MANUEL en attente -> bandeau compact (#dashManPay) a la place de la
+    // grande carte, quand les memes conditions qu'avant sont reunies. Affichage seulement.
+    const manBox=document.getElementById('dashManPay');
+    const estManuel=pend&&((getState()||{}).payMode==='manuel');
+    if(manBox){manBox.hidden=!estManuel;if(estManuel)renderManDash();}
+    pendBox.hidden=!pend||estManuel;   // tout autre cas : exactement l'affichage d'avant
     if(pend){
       const st=getState()||{};
       document.getElementById('dashPendingSub').textContent=
@@ -8267,7 +8636,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return p?String(window.VB_planLabel(p)).replace(/<[^>]*>/g,''):'—';
     })();
     if(changementEnAttente&&aUnPlan){
-      msgTxt=t('dash_pending_change_banner').replace('{plan}',nomPlanAttendu);
+      // 24/11 : meme plan = renouvellement (texte juste), autre plan = changement (texte d'avant).
+      msgTxt=t(st.pendingPlanId===st.planId?'dash_pending_renew_banner':'dash_pending_change_banner').replace('{plan}',nomPlanAttendu);
     }else if(changementEnAttente||pend){
       msgTxt=t('dash_sub_msg_pending_plan').replace('{plan}',nomPlanAttendu);
     }else if(rej){
@@ -14472,8 +14842,12 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       const url=a.dataset.url;
       if(!url)return;
       ev.preventDefault();
-      const w=window.open(url,'_blank','noopener,noreferrer');
-      if(w)w.opener=null; else location.href=url; // repli si la fenetre est bloquee
+      /* 24/11 : avec 'noopener', window.open renvoie TOUJOURS null (norme) -> le repli ci-dessous
+         renvoyait aussi CETTE page vers le reseau social (le site disparaissait). On ouvre donc sans
+         ce parametre puis on coupe le lien avec le site (w.opener=null) : meme securite. Le repli ne
+         sert plus qu'au vrai blocage de fenetre. */
+      const w=window.open(url,'_blank');
+      if(w){try{w.opener=null;}catch(e){}} else location.href=url;
     });
   });
 })();
