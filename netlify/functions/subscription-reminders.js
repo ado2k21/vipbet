@@ -18,6 +18,9 @@
 
 const JOURS_AVANT_EXPIRATION = 3;
 
+// 25/11 (James) : alerte Telegram admin si Resend refuse l'e-mail.
+const { alerterEchecEmail } = require('./lib/alerte-email-echec');
+
 exports.handler = async () => {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -126,7 +129,9 @@ exports.handler = async () => {
           envoyes++;
         } else {
           echecs++;
-          erreurs.push({ email, detail: await envoiResp.text() });
+          const detailEchec = await envoiResp.text();
+          erreurs.push({ email, detail: detailEchec });
+          await alerterEchecEmail({ source: 'rappel_expiration', email, statut: envoiResp.status, detail: detailEchec });
         }
       } catch (e) {
         echecs++;

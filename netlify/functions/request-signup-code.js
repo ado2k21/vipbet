@@ -12,6 +12,58 @@
    ============================================================ */
 
 const crypto = require('crypto');
+const dns = require('dns').promises;
+
+/* 25/11 (James : « refuser les adresses impossibles ») : aucun code n'est envoye vers un domaine
+   qui ne recoit pas d'e-mails (ex. « garryson@1.com ») — chaque envoi rate videait le quota Resend
+   (plan gratuit : 100/jour). Verification DNS (enregistrement MX) avec delai court.
+   SECURITE : si la recherche DNS elle-meme est en panne (meme gmail.com introuvable) ou trop lente,
+   on LAISSE PASSER — jamais bloquer les inscriptions par erreur. */
+const DOMAINES_SURS = new Set(['gmail.com','googlemail.com','yahoo.com','yahoo.fr','yahoo.ca','yahoo.co.uk','ymail.com','rocketmail.com',
+  'hotmail.com','hotmail.fr','hotmail.ca','outlook.com','outlook.fr','live.com','live.fr','msn.com','icloud.com','me.com','mac.com',
+  'aol.com','protonmail.com','proton.me','gmx.com','zoho.com','mail.com']);
+const cacheMx = new Map();
+function avecDelai(promesse, ms) {
+  return Promise.race([promesse, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error('delai'), { code: 'DELAI' })), ms))]);
+}
+/* 25/11 (James : « un e-mail professionnel ou Yahoo doit toujours etre accepte ») : un domaine SANS
+   enregistrement MX mais qui EXISTE (adresse IP) peut quand meme recevoir des e-mails (RFC 5321) :
+   il est accepte. On ne refuse QUE les domaines qui n'existent pas du tout, ou qui declarent
+   explicitement ne recevoir aucun e-mail (MX nul). */
+async function domaineExiste(domaine) {
+  for (const f of [dns.resolve4, dns.resolve6]) {
+    try { const r = await avecDelai(f.call(dns, domaine), 3000); if (r && r.length) return 'oui'; }
+    catch (e) { if (!(e && (e.code === 'ENOTFOUND' || e.code === 'ENODATA' || e.code === 'NXDOMAIN'))) return 'inconnu'; }
+  }
+  return 'non';
+}
+async function aDesMx(domaine) {
+  try {
+    const mx = await avecDelai(dns.resolveMx(domaine), 3000);
+    // « MX nul » (RFC 7505) : le domaine declare explicitement ne recevoir aucun e-mail
+    return (mx || []).some(m => m && m.exchange && m.exchange !== '.') ? 'oui' : 'non';
+  } catch (e) {
+    if (e && (e.code === 'ENOTFOUND' || e.code === 'ENODATA' || e.code === 'NXDOMAIN')) return 'non';
+    return 'inconnu';   // delai, SERVFAIL, reseau... : on ne conclut rien
+  }
+}
+async function domaineRecoitEmails(email) {
+  const domaine = String(email.split('@')[1] || '').toLowerCase();
+  if (DOMAINES_SURS.has(domaine)) return true;
+  if (cacheMx.has(domaine)) return cacheMx.get(domaine);
+  const r = await aDesMx(domaine);
+  if (r === 'oui') { cacheMx.set(domaine, true); return true; }
+  if (r === 'inconnu') return true;
+  if (r === 'non') {
+    const existe = await domaineExiste(domaine);
+    if (existe !== 'non') { cacheMx.set(domaine, true); return true; }   // existe (ou on ne sait pas) : accepte
+  }
+  // « non » : on verifie que le DNS fonctionne (gmail.com doit avoir des MX) avant de refuser
+  const controle = await aDesMx('gmail.com');
+  if (controle !== 'oui') { console.warn('[request-signup-code] DNS indisponible : verification du domaine ignoree'); return true; }
+  cacheMx.set(domaine, false);
+  return false;
+}
 
 const CODE_TTL_MINUTES = 10;
 const MAX_CODES_PER_WINDOW = 5;
@@ -53,6 +105,12 @@ exports.handler = async function (event) {
   if (!isValidEmail(email)) {
     console.error('[request-signup-code] email invalide recu:', email);
     return { statusCode: 400, body: JSON.stringify({ error: 'email_invalide' }) };
+  }
+
+  // Partie avant @ contenant deja un domaine (« nomgmail.comnom@... ») : adresse collee deux fois.
+  if (/(gmail|hotmail|outlook|icloud)\.?com/.test(email.split('@')[0] || '') || !(await domaineRecoitEmails(email))) {
+    console.warn('[request-signup-code] adresse impossible refusee (aucun e-mail envoye) :', email);
+    return { statusCode: 400, body: JSON.stringify({ error: 'adresse_impossible' }) };
   }
 
   const base = process.env.SUPABASE_URL + '/rest/v1';
