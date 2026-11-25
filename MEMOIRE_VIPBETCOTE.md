@@ -1,6 +1,6 @@
 # VIPBETCOTE — Mémoire et roadmap (à coller au début d'une nouvelle conversation)
 
-*Mis à jour le 14/11/2026 (sections 2, 3, 4 et 5 ; leçons jusqu'à la n° 62).*
+*Mis à jour le 26/11/2026 (sections 2, 4, 5 ; leçons jusqu'à la n° 96).*
 
 ---
 
@@ -22,6 +22,13 @@
 - **Avant chaque « Met sur git » : rappeler les migrations SQL** du lot pas encore appliquées (vérifier en base) et dire si elles peuvent être appliquées tout de suite sans danger. L'utilisateur les applique lui-même (SQL Editor ou autre conversation) : `apply_migration` du MCP expire ; `execute_sql` en lecture fonctionne pour vérifier.
 - **Alertes** : seulement quand l'API a un vrai problème (ou ce que le bot ne peut pas régler seul). Aucune alerte pour ce que le bot gère lui-même, aucune alerte venue d'un autre site Netlify. Ne pas « déranger » le bot : petites modifications ciblées, testées.
 - **TikTok** : jamais de lien, de cote, de pourcentage ni de nom du site dans l'image ; jamais « lien an nan bio ». Compte : `https://www.tiktok.com/@thebetcote`.
+- **Règle d'or (25/11) : « aucun dérangement du site, aucun bug ».** Petites modifications ciblées ; tester AVANT/APRÈS (rejouer le cas sur l'ancienne version pour prouver la cause) ; relire tout le diff avant « Met sur git » ; relancer les tests existants (navigation 8 situations, paiement, inscription).
+- **Paiement MANUEL : ne rien modifier** sans accord explicite (« Ne modifie rien côté manuel »). Le paiement AUTOMATIQUE (MonCash/NatCash via PLOP PLOP) est celui qu'on fait évoluer.
+- **Côté abonné : jamais un code interne de fiche** (BOT-…, AUTO-…).
+- **Espace abonné : « Retounen », Échap, croix ✕ ne mènent JAMAIS à la page publique**, toujours au Dashboard. Vocabulaire : « page publique (landing) » ≠ « Dashboard / Fich jodi a ».
+- **Inscription : une adresse e-mail professionnelle ou Yahoo doit TOUJOURS être acceptée** ; on ne refuse que l'impossible (domaine inexistant, adresse collée deux fois, faute de frappe connue). Jamais de paiement sans compte réel ; jamais de paiement sans code pour un nouvel e-mail.
+- **Comptes créés directement en base (SQL)** : seulement avec l'accord explicite de James ; mot de passe aléatoire, le client passe par « Modpas bliye ».
+- **Écrire en français dans la conversation**, phrases claires, tableaux avant/après quand c'est utile.
 
 ---
 
@@ -29,12 +36,13 @@
 
 | Élément | Valeur |
 |---|---|
-| Dépôt | `ado2k21/vipbet`. On pousse sur **`main`** et **`claude/refonte-landing`** |
+| Dépôt | `ado2k21/vipbet`. Branche de travail : celle donnée par la conversation (26/11 : **`claude/magical-albattani-5guo2z`** ; avant : `claude/vipbetcote-memory-roadmap-i0sbf0`) → une PR vers **`main`** à chaque « Met sur git » ; James fusionne lui-même. Après chaque fusion : `git checkout -B <branche> origin/main`, puis commit, `push --force-with-lease`, nouvelle PR |
 | Netlify | Site **betcote** (id `01c52d33-a994-4fd8-a6f1-e2c36c0407ae`), qui déploie `main` |
 | Domaine | **vipbetcote.com**, servi par Cloudflare, qui interroge Netlify sous le nom **betcote.netlify.app** |
 | Supabase | Projet `llqifjfcpyddwjkferpn`. Clés `sb_publishable_…` et `sb_secret_…` ; les anciennes clés JWT sont désactivées |
 | Site | `index.html` + `app.js` statiques, `sw.js`, `manifest.webmanifest`, `offline.html`, `_headers`, `netlify.toml`, `netlify/functions/` |
-| Email | Resend, expéditeur `VipBetcote <contact@vipbetcote.com>` |
+| Email | Resend (compte « footinedit »), expéditeur `VipBetcote <contact@vipbetcote.com>`. **Plan GRATUIT : 100 e-mails/jour, 3 000/mois — dépassé le 25/11 (114/100)** ; alerte Telegram admin si Resend n'envoie plus (leçon 93) |
+| Paiement auto | MonCash / NatCash via le prestataire **PLOP PLOP** : `paiement-create`, `paiement-verify`, `paiement-changer`, `paiement-poll-background` (3 min), `paiement-reconciliation-background` (20 min, 24 h) — leçons 85 à 92 |
 | API sport | API-Sports : **10 requêtes/minute**, quota remis à zéro à 00:00 UTC. `settle-results` partage le compteur avec les bots |
 
 **Base** : dernières migrations appliquées et vérifiées le 13/11 : `rapports_jour`, `avis_abonnes`, `annonces` (enregistrée en base sous le nom `20261113_annonces_dashboard`). **14/11** : `20261114120000_journal_basket.sql` (table `basket_journal`) appliquée par `apply_migration` (MCP) et vérifiée (RLS active, 0 politique, anon/authenticated sans accès, 3 index). Aucune migration en attente.
@@ -155,56 +163,63 @@
 91. **Inscription sans compte réel → plus jamais de paiement sans compte (25/11, client isaacjonaiky)** — DÉFAUT présent depuis le 16/10 : le mot de passe n'est gardé qu'en mémoire ; page rechargée au retour de Gmail (téléphone) → `creerCompteSupabase` ne contactait pas Supabase mais répondait « ok/hors_ligne » et le parcours passait à l'étape 3 → paiement possible SANS compte (dépôt manuel : 190 échecs « session absente »). ~1 inscription sur 10 (7 personnes en 30 j, 0 compte). Rare avant car peu d'inscriptions. CORRECTIF INVISIBLE (`app.js?v=20261125g`, James a refusé un champ « retaper le mot de passe » : « pas professionnel ») : (1) mot de passe gardé dans l'ONGLET (sessionStorage `vipbetcote.inscr.onglet`, {e,m}) entre le formulaire et la création du compte, effacé dès la création / « Chanje imèl la » / nouvelle inscription / fermeture de l'onglet → survit au rechargement au retour de Gmail ; dernier recours (autre onglet) : retour au formulaire (nom/e-mail remplis) + toast, AVANT de consommer le code ; (2) attente de Supabase (8 s) avant de consommer le code ; (3) échec de création = on RESTE sur la page avec un message (wiz_v_err_reseau / wiz_v_err_creation), mot de passe gardé pour réessayer, code non redemandé (`codeValidePour`) ; (4) étape 3 hors renouvellement sans `supabaseUserId` ni session → retour au formulaire (nom/e-mail remplis) + toast « Kont lan poko fini » ; (5) reçu manuel sans session → « Nou pa jwenn kont ou… » (wiz_m_err_nocompte) ; (6) e-mail réaffiché sur la page du code après rechargement. Règles d'inscription existantes INCHANGÉES (nom, e-mail valide non jetable, 8 car. + chiffre, 18+, code 10 min, 5 codes/15 min, 5 essais) ; comportements gardés : compte réel à l'étape 3 non payé + déconnecté → « compte déjà là » → connexion → étape 3 ; compte passé par le Dashboard → Dashboard. Contrôle SQL : `signup_codes.consumed` sans `auth.users` correspondant (10 cas au 25/11 : bredadesir19, larosewilvanel66, janvierwithson6, louimasmichelet764, isaacjonaiky, kersaintdjimitry, jguyoldens, pierrejohnpetedoherty, charlescarljerry93, mackendyduverne.officiel).
 92. **Plan activé pendant l'étape 3 + 10 comptes recréés (25/11, James)** — (a) Étape 3 d'une INSCRIPTION (pas renouvellement) : toutes les 20 s (minuterie des prix des plans) et au retour sur l'onglet, `verifierPlanActifEtape3` cherche un abonnement ACTIF non expiré en base ; trouvé → `closeAuth` + `VB_reprendreApresAdmin` (Dashboard) + toast « Plan ou aktive ✓ » (wiz_plan_active_h/p). Un abonnement 'pending' (paiement auto en cours) ne fait JAMAIS basculer. (b) Envoi d'un reçu manuel (avant l'envoi de l'image) et `completePayment` : état local sans plan confirmé mais plan ACTIF en base → aucun 2e paiement, Dashboard. (c) 25/11 : les 10 comptes « code validé sans compte » (voir 91) CRÉÉS par SQL avec l'accord explicite de James (« 1 ») : auth.users + auth.identities (provider email, colonnes de jetons à '' — jamais NULL), e-mail confirmé, mot de passe ALÉATOIRE inconnu, username = partie avant @, profil créé par le trigger `handle_new_user` (email_verified=true). Le client passe par « Modpas bliye ? » pour choisir son mot de passe. Procédure James : le client se connecte (Modpas bliye), choisit le paiement manuel, envoie le reçu, l'admin valide — pas d'attribution manuelle du plan. `app.js?v=20261125g`. (d) Admin « Itilizatè » : la liste (profiles) n'était chargée qu'UNE fois par session admin (`usersCache`) → « 92 kont » alors que « Vi jeneral » (compté à chaque ouverture) disait 103 ; maintenant relue à CHAQUE ouverture de la page, limite 200 → 1000. Base vérifiée : 103 auth.users = 103 profiles. `app.js?v=20261125h`.
 93. **Resend : plan GRATUIT dépassé + alerte Telegram (25/11)** — Resend (compte « footinedit ») = plan Free : 100 e-mails/JOUR, 3 000/mois ; le 25/11 : 114/100 par jour (≈120 e-mails, surtout codes d'inscription + renvois + adresses mal tapées). Conseil donné : Upgrade (Pro). NOUVEAU `netlify/functions/lib/alerte-email-echec.js` : chaque refus de Resend → error_log `email_echec` ; alerte Telegram admin (chatAlerte) AU PLUS toutes les 30 min (`alerte_email_echec` dans error_log), raison lisible (quota jour/mois, débit, clé, domaine…), nombre d'échecs depuis la dernière alerte. Branché sur send-email (codes inscription), request-password-reset, subscription-reminders, parrainage-recompenses. PRÉCISION James (« l'alerte c'est quand Resend est épuisé et n'envoie pas ») : alerte SEULEMENT si Resend n'envoie plus rien (`resendBloque` : quota jour/mois, 429, clé 401/403, domaine, injoignable, 5xx) ; le refus d'UNE adresse (400/422) = trace `email_refuse_adresse`, jamais d'alerte. Ne fait jamais échouer l'envoi. RISQUE NOTÉ (non corrigé) : send-email est appelable publiquement (e-mail + code au choix) → peut vider le quota.
-94. **Adresses e-mail impossibles refusées à l'inscription (25/11, James) — RÈGLE : « aucun dérangement, un e-mail professionnel ou Yahoo doit TOUJOURS être accepté »** — SITE (`problemeEmail`, inscription seulement, jamais la connexion) : partie avant @ contenant un domaine COMPLET (« nomgmail.com… », regex étroite `(gmail|hotmail|outlook|icloud)\.?com`) → « Imèl sa a pa egziste… » ; fautes de frappe connues (FAUTES_DOMAINE : gmial.com, gmail.con, hotmial.com…) → « Ou vle di nom@gmail.com ? ». PAS de règle « domaine en chiffres » (163.com est une vraie messagerie). SERVEUR (request-signup-code) : refuse SEULEMENT un domaine qui N'EXISTE PAS (ni MX, ni adresse IP) → 400 `adresse_impossible`, aucun code ni e-mail ; domaine sans MX mais existant = accepté (pro) ; domaines courants (gmail, yahoo.*, ymail, rocketmail, hotmail, outlook, live, msn, icloud…) jamais interrogés ; DNS lent/en panne (contrôle gmail.com) → accepté. Vérifié : 0 compte existant refusé ; testés acceptés : yahoo.fr/.ca/.com, ymail, pro avec et sans MX, 163.com. `app.js?v=20261125i`.
+94. **Adresses e-mail impossibles refusées à l'inscription (25/11, James) — RÈGLE : « aucun dérangement, un e-mail professionnel ou Yahoo doit TOUJOURS être accepté »** — SITE (`problemeEmail`, inscription seulement, jamais la connexion) : partie avant @ contenant un domaine COMPLET (« nomgmail.com… », regex étroite `(gmail|hotmail|outlook|icloud)\.?com`) → « Imèl sa a pa egziste… » ; fautes de frappe connues (FAUTES_DOMAINE : gmial.com, gmail.con, hotmial.com…) → « Ou vle di nom@gmail.com ? ». PAS de règle « domaine en chiffres » (163.com est une vraie messagerie). SERVEUR (request-signup-code) : refuse SEULEMENT un domaine qui N'EXISTE PAS (ni MX, ni adresse IP) → 400 `adresse_impossible`, aucun code ni e-mail ; domaine sans MX mais existant = accepté (pro) ; domaines courants (gmail, yahoo.*, ymail, rocketmail, hotmail, outlook, live, msn, icloud…) jamais interrogés ; DNS lent/en panne (contrôle gmail.com) → accepté. Vérifié : 0 compte existant refusé ; testés acceptés : yahoo.fr/.ca/.com, ymail, pro avec et sans MX, 163.com. `app.js?v=20261125i`. AJOUT (25/11, « he@gmaili.com » est parti : domaine-piège qui EXISTE) : `domaineProche` — domaine à 1 lettre près (2 pour gmail.com, Damerau-Levenshtein) de gmail/hotmail/outlook/icloud/yahoo, MÊME 1re lettre seulement (protège cloud.com…), liste blanche `VRAIS_DOMAINES` (ymail, email.com, mail.com, gmx, live, yahoo.ca…) → « Ou vle di … ? ». Testé : 17 fautes attrapées, 41 vraies/pro acceptées, 0 faux positif (dont tous les domaines de la base). `app.js?v=20261125k`.
 95. **Autre e-mail sans vérification → paiement (25/11, signalé par James, DÉFAUT ANCIEN présent au 23/11)** — après la connexion d'un compte vérifié SANS plan, `routerApresConnexion` garde emailVerified=true (step 1 par défaut) ; « Kreye kont » réaffichait le formulaire et un AUTRE e-mail (ex. « g@mail.com ») passait à l'étape 3 sans code. Correctif (f1 submit) : e-mail différent de celui déjà vérifié = NOUVELLE inscription (emailVerified=false, supabaseUserId=null, codeFor=null, code obligatoire). Même e-mail vérifié : inchangé (étape 3). `app.js?v=20261125j`.
+96. **`send-email` fermée au public + 60 s entre deux codes (26/11, James : points 6 et 8)** — DÉFAUT : `send-email` acceptait de N'IMPORTE QUI un e-mail et un « code » en texte libre inséré tel quel dans le HTML → vider le quota Resend ou envoyer un faux message (lien piégé) signé contact@vipbetcote.com. Seul `request-signup-code` l'appelait (par HTTP, via `SITE_URL`). Maintenant : modèle + envoi Resend dans `netlify/functions/lib/email-code.js` (`envoyerEmailCode({email, code, type})`, code = exactement 6 chiffres, adresse valide — apostrophe acceptée —, alerte Resend inchangée) ; `request-signup-code` l'appelle DIRECTEMENT (plus d'appel HTTP) ; `send-email` répond toujours 403 `appel_interdit` (fichier gardé). E-mail reçu identique (comparé : seule l'indentation du HTML change). **60 s** : `request-signup-code` et `request-password-reset` refusent un 2e code pour la même adresse en moins de 60 s → 429 `{error:'attendre', secondes}` sans appeler Resend (limites 5 codes / 15 min inchangées) ; site : `window.VB_attenteCode` (sessionStorage `vb_attente_code`, survit au rechargement) → boutons `#wizResend` / `#pwrResend` grisés « Voye l ankò · 0:59 » ; réponse 'attendre' = code déjà envoyé (pas d'erreur, compte à rebours repris) ; autre e-mail = pas bloqué. CSS `.authpage-switch-link:disabled`. Aucune migration. `app.js?v=20261126a`. À tester en ligne : vraie inscription (le code arrive) + « Voye l ankò » gris 60 s. Reste ouvert : « Modpas bliye » révèle si une adresse a un compte (« compte introuvable », ancien comportement).
 62. **Images Telegram perdues (15/11)** — la fiche score exact gagnée du 14/11 est partie en TEXTE seul dans le canal public : « fichier introuvable : resvg/index_bg.wasm ». Cause : le 09/11, les blocs `rapport-jour` / `avis-telegram` ont été insérés AU MILIEU du bloc `[functions."telegram-public"]` de `netlify.toml` → sa ligne `included_files` (moteur d'image + police) est passée sous `avis-telegram`. Corrigé : `included_files` remis pour `telegram-public` et ajouté pour `rapport-jour`. **Règle : toute fonction qui appelle `lib/image-fiche` (rendrePng) doit avoir `included_files` resvg + fonts ; en ajoutant un bloc dans `netlify.toml`, ne jamais l'insérer au milieu d'un autre.**
 ---
 
-## 4. État au 13/11/2026
+## 4. État au 25/11/2026
 
-**Sur git (`main`, commit `a2fde35`, 13/11) — PAS ENCORE DÉPLOYÉ** : plus de crédit Netlify, remise à zéro **dimanche**. Le site en ligne garde l'ancienne version (rien ne casse : les nouvelles tables ne sont pas lues par l'ancien code). `app.js?v=20261113a`. Contenu :
-- **Annonces du Dashboard** (leçon 47) : menu admin « Anons », public abonné / non abonné / tous, défilement 30 s, glisser du doigt, liste prête de 10 annonces (seule l'ancienne note active ; parrainage prêt à activer).
-- **Avis abonnés** : preuve de gain (capture obligatoire, fiche optionnelle), validation admin Wi/Non, landing, groupe Telegram public (`avis-telegram.js`).
-- **Rapport du jour** (`rapport-jour.js`) : landing, historique abonné et admin, partage WhatsApp, image TikTok (sans pourcentage).
-- **Bot foot** : compétitions élargies (32 compétitions en plus, filtre `competitionAutorisee`, rang de priorité).
-- **Calcul des résultats** : match reporté annulé (`void`) tout de suite, sans alerte (leçon 44) ; API surveillée pendant le calcul (leçon 46).
-- **Alertes** (`alerte-watchdog.js`, leçon 45) : seulement les vraies pannes ; sites hors production ignorés ; diagnostics clairs.
-- **Paiements** : Stripe sans montant attendu laissé en attente, `paiement-verify` limité à 20/min, comparaison de secret en temps constant.
-- **Écran de démarrage iPhone** : 13 images `assets/splash/` (`?v=20261112`).
-- TikTok `@thebetcote` (JSON-LD et pied de page ; empreinte CSP du JSON-LD recalculée dans `_headers`).
+**26/11** : leçon 96 (send-email fermée, 60 s entre deux codes) mise sur git (branche `claude/magical-albattani-5guo2z`). **PERDU** : la `v=20261125k` (`domaineProche`, fautes proches de gmail/yahoo…, leçon 94 « AJOUT ») n'a jamais été mise sur git → à refaire si James le veut.
 
-**Tests** (scratchpad de la conversation précédente, non gardés) : toutes les séries réussies, dont 33/33 pour les annonces.
+**En ligne (`main`)** : PR #15 à #25 fusionnées (la #25 le 25/11 : « un autre e-mail que celui déjà vérifié exige toujours le code », leçon 95). Version du site : `app.js?v=20261125j` (en local : `v=20261125k`, fautes de frappe proches de gmail…).
+
+**Fait du 22 au 25/11** (détails : leçons 80 à 95) :
+- Basket : NBA en tête ; WhatsApp désactivé (gardé en mémoire, réactivable).
+- Paiement AUTOMATIQUE non terminé : écran « Peman ou an poko fini » (Reprann / Reeseye après 5 min / case « Mwen fin peye »), bandeaux Kontinye / Reeseye du Dashboard, croix ✕ → Dashboard, rattrapage 24 h côté serveur, alerte admin.
+- Dashboard : « Pi bon cote » = vraie plus grosse cote SEULEMENT pour un compte sans plan actif ; aide Telegram ; « Bonjou » sans e-mail.
+- Cercle de chargement à la connexion et à l'inscription (seulement si l'attente dépasse 300 ms).
+- **Inscription fiabilisée** : mot de passe gardé dans l'onglet jusqu'à la création du compte ; plus jamais de paiement sans compte réel ; plan activé → Dashboard automatique (20 s) ; reçu en double bloqué ; adresses impossibles refusées (version prudente) ; nouvel e-mail = code obligatoire.
+- Admin « Itilizatè » : liste relue à chaque ouverture (même chiffre que « Vi jeneral »).
+- **10 comptes recréés en base le 25/11** (code validé sans compte, défaut ancien) : bredadesir19, larosewilvanel66, janvierwithson6, louimasmichelet764, **isaacjonaiky** (a payé un dépôt manuel, à valider), kersaintdjimitry, jguyoldens, pierrejohnpetedoherty, charlescarljerry93, mackendyduverne.officiel (tous @gmail.com). Ils passent par « Modpas bliye ».
+
+**Tests** : scripts Playwright dans le scratchpad de la conversation (non gardés). Méthode : faux Supabase injecté par `addInitScript`, routes servant le dépôt sur `http://vipbet.local`, vérifier le premier plan avec `document.elementFromPoint`.
 
 ---
 
 ## 5. Roadmap
 
-### Priorité 1 — dimanche, après le retour des crédits Netlify
-1. L'utilisateur lance le déploiement de `main`. Vérifier `commit_ref` = `a2fde35` (ou plus récent) via le MCP Netlify (site betcote).
-2. Vérifier en ligne : `app.js?v=20261113a` servi ; annonce affichée au-dessus des fiches du jour ; menu admin « Anons » ; fenêtre « avis » dans l'Istorik et la partie « genyen ».
-3. Vers **19:00 heure d'Haïti** : vérifier que la fiche foot du soir est créée (compétitions élargies) et la fiche basket.
-4. Le lendemain matin : vérifier le rapport du jour (landing + Telegram public) et le calcul des résultats (aucune alerte inutile).
-5. iPhone : supprimer puis rajouter le raccourci pour voir le nouvel écran de démarrage.
+### Priorité 1 — tout de suite
+1. **PR #25 fusionnée : tester en ligne** : se connecter avec un compte vérifié sans plan → « Kreye kont » → un AUTRE e-mail → doit afficher la page du code (jamais le paiement).
+2. **Resend : passer au plan payant** (« Upgrade », Transactional). Plan gratuit dépassé le 25/11 : au-delà de 100/jour, plus aucun code d'inscription ni « Modpas bliye » n'arrive. L'alerte Telegram prévient (au plus 1 / 30 min).
+3. **Isaac** (isaacjonaiky@gmail.com) : il se connecte via « Modpas bliye », choisit le paiement MANUEL, renvoie son reçu ; James valide (pas d'attribution manuelle du plan). Vérifier en base sa connexion (`auth.users.last_sign_in_at`) et son paiement.
+4. **Contrôle quotidien en base** (doit rester à 0 depuis la PR #23) : codes validés sans compte —
+   `select s.email from signup_codes s left join auth.users u on lower(u.email)=lower(s.email) where s.consumed and u.id is null and s.created_at > now()-interval '2 days';`
 
-### Priorité 2 — lot du 14/11 (fait en local, PAS encore sur git)
-6. ✅ Match basket reporté (leçon 49) ; ✅ « Reyisit NBA » (`app.js?v=20261113b`) ; ✅ apprentissage du bot basket (leçon 51). Migration `20261114120000_journal_basket.sql` appliquée et vérifiée le 14/11.
-7. Après déploiement : suivre `bot_run_log` (bot `basket`, `stats.apprentissage`) et remplissage de `basket_journal` ; dans 2-3 semaines, relire les facteurs par segment.
-8. ❌ Écarter les matchs déjà reportés à la création des fiches : ABANDONNÉ. **RÈGLE DE JAMES (15/11) : un match reporté PEUT être choisi à sa nouvelle date si le bot le juge bon** (aucune règle ne l'en empêche ; l'anti-doublon ne compare que les fiches du MÊME jour ; ex. réel : Atletico Nacional — Once Caldas reporté du 12/11 au 14/11, repris dans le score exact du 14/11). Seule règle active : la fiche de la date D'ORIGINE annule ce match (void). Ne pas reproposer d'exclusion.
-9. ✅ Score exact dans Telegram (leçon 52), fait le 14/11.
+### Priorité 2 — propositions faites, en attente de la décision de James
+5. **E-mails jetables** : liste publique complète (serveur + site) + `bocably.com`, `archifun.com` (déjà passés) ; fautes de frappe vues en base : `gmaio.com`, `yhoo.fr`. Connexion jamais touchée.
+6. ~~Attente de 60 s avant « Voye l ankò »~~ — FAIT le 26/11 (leçon 96).
+7. **Règle Gmail : au moins 6 caractères avant @gmail.com** (règle officielle de Gmail, sûre). Pas de règle de longueur pour les autres domaines.
+8. ~~Sécurité `send-email`~~ — FAIT le 26/11 (leçon 96).
+8b. **Refaire `domaineProche`** (v=20261125k perdue, leçon 94).
+9. **Pousser VIP 30 JOU et LIFETIME** (affichage seulement) : badge « Pi popilè », mise en avant du score exact, message après un score exact gagné. Attention : le prix par jour favorise VIP 21 JOU.
+10. « Pi bon cote » : ignorer les fiches déjà perdues mais pas encore réglées (non choisi).
+11. Toast d'expiration encore titré « Nou pa ka renouvle » → « Mwayen peman » ? (question ouverte).
 
 ### Priorité 3 — anciens points encore ouverts
-10. Search Console : indexation de `https://vipbetcote.com/`, sitemap, suivi de `site:vipbetcote.com`.
-11. Mode hors ligne de l'app : SANS OBJET depuis la suppression de la version application le 19/10 (leçon 0) — à retirer si James confirme.
-12. Écrans « vérification email » et « plan et paiement » au nouveau style (aperçu d'abord).
-13. Plus tard : vraies apps App Store / Google Play (TWA Android, Capacitor iOS).
+12. Search Console : indexation de `https://vipbetcote.com/`, sitemap, suivi de `site:vipbetcote.com` ; résultat Google du forum Netlify à retirer.
+13. Écrans « vérification e-mail » et « plan et paiement » au nouveau style (aperçu d'abord).
+14. Plus tard : vraies apps App Store / Google Play (TWA Android, Capacitor iOS).
+15. WhatsApp : réactiver quand le compte sera débloqué (leçon 84).
 
 ### Priorité 4 — sécurité et exploitation
-14. Netlify : validation en 2 étapes, variables secrètes « sensibles », Deploy Previews désactivés si inutiles.
-15. GitHub : retirer les apps inutilisées, ménage dans les vieilles branches.
-16. Validation en 2 étapes sur `contact@vipbetcote.com`.
+16. Netlify : validation en 2 étapes, variables secrètes « sensibles », Deploy Previews désactivés si inutiles ; suivre les crédits Netlify.
+17. GitHub : retirer les apps inutilisées, ménage dans les vieilles branches.
+18. Validation en 2 étapes sur `contact@vipbetcote.com`.
 
 ---
 
 ## 6. Phrase à coller dans la nouvelle conversation
 
-> Lis `MEMOIRE_VIPBETCOTE.md` à la racine du dépôt et respecte strictement les règles de la section 1. Réponds en français. Rien sur git sans mon accord (« Met sur git »), à chaque fois. Aucune modification du backend ni de la base sans mon accord. Continue la roadmap à partir de la priorité 1 (déploiement de dimanche et vérifications).
+> Lis `MEMOIRE_VIPBETCOTE.md` à la racine du dépôt et respecte strictement les règles de la section 1 (règle d'or : aucun dérangement du site, aucun bug). Réponds et écris en français. Rien sur git sans mon accord (« Met sur git »), à chaque fois. Aucune modification du backend ni de la base sans mon accord. Montre un aperçu avant toute modification visuelle. Continue la roadmap à partir de la priorité 1 (test de la PR #25, Resend, Isaac, contrôle des inscriptions).
