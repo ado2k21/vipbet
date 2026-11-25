@@ -4502,7 +4502,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     save();
     const chk=document.getElementById('wizAutoPaid');if(chk)chk.checked=false;
-    if(window.VB_toast)window.VB_toast('renew_toast_h',t('wiz_auto_changer_ok'));
+    if(window.VB_toast)window.VB_toast('wiz_p_method',t('wiz_auto_changer_ok'));   // 25/11 : titre neutre « Mwayen peman »
+    // 25/11 : depuis le Dashboard la page n'est pas encore ouverte -> style abonne, etape 3 ;
+    // sinon (ecran de paiement deja ouvert) : etape 3 avec « Retounen » visible.
+    if(!page.classList.contains('open')){if(window.VB_closeDash)window.VB_closeDash();ouvrirEcranPaiementAutoAbonne(3);return;}
+    if(modeWizard.classList.contains('renew'))backBtn.hidden=false;
     showStep(3);
   }
 
@@ -4510,28 +4514,38 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   // prestataire avant toute fermeture (paye -> confirme ; pas de reponse -> rien n'est ferme).
   const wizAutoChange=document.getElementById('wizAutoChange');
   if(wizAutoChange){
-    wizAutoChange.addEventListener('click',async()=>{
-      if(!state.autoPaymentId||changerEnCours||wizAutoChange.disabled)return;
-      changerEnCours=true;wizAutoChange.disabled=true;
-      const txt=document.getElementById('wizAutoChangeTxt'),cd=document.getElementById('wizAutoChangeCd');
-      if(txt)txt.textContent=t('wiz_auto_changer_encours');if(cd)cd.textContent='';
-      let data=null;
-      try{
-        const token=await getAccessTokenWizard();
-        if(token){
-          const rep=await fetch(PAIEMENT_CHANGER_URL,{method:'POST',
-            headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-            body:JSON.stringify({payment_id:state.autoPaymentId})});
-          data=await rep.json().catch(()=>null);
-        }
-      }catch(e){data=null;}
-      changerEnCours=false;
-      if(txt)txt.textContent=t('wiz_auto_changer');
-      if(data&&data.ok&&data.etat==='confirme'){derniereVerifAuto=Date.now();await appliquerResultatVerifAuto({etat:'confirme'});return;}
-      if(data&&data.ok&&(data.etat==='annule'||data.etat==='ferme')){revenirAuChoixPaiement();return;}
-      tickAuto();
-      if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t(data&&data.code==='TROP_TOT'?'wiz_auto_changer_note_att':'wiz_auto_changer_err'));
-    });
+    wizAutoChange.addEventListener('click',()=>{lancerReeseye(false);});
+  }
+
+  /* « Reeseye » : seulement 5 min apres le lancement ; le SERVEUR interroge le prestataire avant
+     toute fermeture (paye -> confirme ; pas de reponse -> rien n'est ferme). 25/11 : appelable depuis
+     le Dashboard (depuisDash=true) SANS ouvrir l'ecran de paiement avant (plus d'ecran intermediaire) :
+     cercle de chargement pendant la verification, puis directement le choix du moyen de paiement. */
+  async function lancerReeseye(depuisDash){
+    const btn=document.getElementById('wizAutoChange');
+    if(!state.autoPaymentId||changerEnCours)return;
+    if(!depuisDash&&btn&&btn.disabled)return;
+    changerEnCours=true;if(btn)btn.disabled=true;
+    const txt=document.getElementById('wizAutoChangeTxt'),cd=document.getElementById('wizAutoChangeCd');
+    if(txt)txt.textContent=t('wiz_auto_changer_encours');if(cd)cd.textContent='';
+    if(depuisDash)spinPaiementAuto(true);
+    let data=null;
+    try{
+      const token=await getAccessTokenWizard();
+      if(token){
+        const rep=await fetch(PAIEMENT_CHANGER_URL,{method:'POST',
+          headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
+          body:JSON.stringify({payment_id:state.autoPaymentId})});
+        data=await rep.json().catch(()=>null);
+      }
+    }catch(e){data=null;}
+    changerEnCours=false;
+    if(depuisDash)spinPaiementAuto(false);
+    if(txt)txt.textContent=t('wiz_auto_changer');
+    if(data&&data.ok&&data.etat==='confirme'){derniereVerifAuto=Date.now();await appliquerResultatVerifAuto({etat:'confirme'});return;}
+    if(data&&data.ok&&(data.etat==='annule'||data.etat==='ferme')){revenirAuChoixPaiement();return;}
+    tickAuto();
+    if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t(data&&data.code==='TROP_TOT'?'wiz_auto_changer_note_att':'wiz_auto_changer_err'));
   }
 
   // Case « Mwen fin peye » : debloque « Ale nan dashboard la » et lance une verification immediate.
@@ -5491,9 +5505,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   };
   // « Reeseye » depuis le Dashboard : meme ecran et meme verification que « Reeseye » au retour.
   window.VB_paiementAutoReessayer=function(){
-    if(!paiementAutoNonTermine()||!window.VB_openAuthWizardStep4)return;
-    window.VB_openAuthWizardStep4();
-    setTimeout(()=>{const b=document.getElementById('wizAutoChange');if(b&&!b.disabled)b.click();},400);
+    if(!paiementAutoNonTermine())return;
+    lancerReeseye(true);   // 25/11 : directement, sans afficher l'ecran de paiement avant
   };
   window.VB_paiementAutoEnAttente=()=>state.payStatus==='pending'&&!!state.autoPaymentId&&PAIEMENT_AUTO_METHODS.includes(state.payMethod);
   /* CORRIGE (bug tres grave signale par James, capture d'ecran : stepper
@@ -5511,9 +5524,32 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   /* 14/11 : ouvre la page de connexion (session perdue pendant l'utilisation du Dashboard). */
   window.VB_openLogin=()=>{openAuth('login');};
   window.VB_openAuthWizardStep4=()=>{
+    // 25/11 (James : en-tete « ESPAS MANM » / « Etap 3/3 » et retour vers l'accueil) : un paiement
+    // AUTOMATIQUE en cours s'ouvre toujours dans le style « abonne » (sans en-tete ni etapes) avec
+    // « Retounen » -> Dashboard. Aucune donnee de plan n'est modifiee (contrairement a openRenew).
+    if(paiementAutoNonTermine()){ouvrirEcranPaiementAutoAbonne();return;}
     if(state.autoWasRenew)openRenew(null,4);
     else openAuth('wizard',null,4);
   };
+  function ouvrirEcranPaiementAutoAbonne(etape){
+    fillLogos();
+    modeWizard.classList.remove('pwreset');
+    renewMode=state.payStatus==='confirmed';   // titres « renouvellement » seulement si un plan est actif
+    renewFrom=true;                             // « Retounen » -> Dashboard
+    backBtn.querySelector('span').setAttribute('data-i18n','auth_back');
+    backBtn.querySelector('span').textContent=t('auth_back');
+    setChrome(true);
+    opener=null;
+    page.classList.add('open');
+    page.scrollTop=0;
+    document.body.style.overflow='hidden';
+    showMode('wizard');
+    modeWizard.classList.add('renew');
+    // 25/11 (James : « Retounen a-t-il un vrai role ? ») : a l'etape 4, non — doublon de « Ale nan
+    // dashboard la » (qui, lui, respecte la case « Mwen fin peye »). Garde seulement a l'etape 3.
+    backBtn.hidden=(etape||4)===4;
+    showStep(etape||4);
+  }
   /* CORRECTIF (acces automatique apres action admin) : au chargement de
      la page (F5, pas une nouvelle connexion), quelqu'un dont l'inscription
      est terminee mais qui n'a localement jamais eu de plan (paid=false)
@@ -7816,9 +7852,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
    if(b)b.addEventListener('click',()=>{
      // 24/11 (bug signale par James : « Kontinye ne marche pas ») : comme les autres boutons du
      // Dashboard (Renouvle...), on FERME d'abord le Dashboard, sinon l'ecran s'ouvrait DERRIERE lui.
+     // 25/11 : « Reeseye » -> le Dashboard RESTE ouvert pendant la verification (cercle de chargement) ;
+     // il n'est ferme que si la page de choix du paiement s'ouvre (erreur : l'abonne reste ici).
+     if(b.dataset.action==='reeseye'){if(window.VB_paiementAutoReessayer)window.VB_paiementAutoReessayer();return;}
      closeDash();
-     if(b.dataset.action==='reeseye'){if(window.VB_paiementAutoReessayer)window.VB_paiementAutoReessayer();}
-     else if(window.VB_openAuthWizardStep4)window.VB_openAuthWizardStep4();
+     if(window.VB_openAuthWizardStep4)window.VB_openAuthWizardStep4();
    });}
 
   /* 24/11 : texte du bandeau MANUEL. Le MONTANT vient UNIQUEMENT du paiement reellement enregistre
@@ -9121,6 +9159,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   function arreterResyncPeriodique(){
     if(resyncTimer){clearInterval(resyncTimer);resyncTimer=null;}
   }
+  window.VB_closeDash=()=>closeDash();   // 25/11 : utilise par « Reeseye » lance depuis le Dashboard
   function closeDash(){
     dash.classList.remove('open');
     notifBox.classList.remove('on');
@@ -15197,7 +15236,12 @@ async function tenterRestaurationSession(){
            (demarrerPollAuto) et la verification immediate au retour sur
            l'onglet. Une fois confirme, appliquerResultatVerifAuto() prend
            le relais normalement (voir plus haut dans le fichier). */
-        if(window.VB_paiementAutoEnAttente&&window.VB_paiementAutoEnAttente()&&window.VB_openAuthWizardStep4){
+        /* 25/11 (James : « si l'abonne rafraichit la page, il se retrouve sur l'ecran de paiement ») :
+           un RECHARGEMENT (bouton actualiser) garde l'abonne sur le Dashboard (son bandeau
+           « Kontinye » y est) ; un vrai RETOUR depuis MonCash/NatCash ouvre toujours l'ecran de paiement. */
+        let rechargement=false;
+        try{const nv=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];rechargement=!!(nv&&nv.type==='reload');}catch(e){}
+        if(!rechargement&&window.VB_paiementAutoEnAttente&&window.VB_paiementAutoEnAttente()&&window.VB_openAuthWizardStep4){
           window.VB_openAuthWizardStep4();
         }else if(window.VB_openDash){
           window.VB_openDash();
