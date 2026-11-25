@@ -2547,7 +2547,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(n===4)bar.style.visibility='hidden';
     if(n===1&&submitBtn)submitBtn.textContent=t('wiz_btn_next1');
     if(n==='verify')setTimeout(()=>{erreurCreationCompte(null);
-      const m=document.getElementById('wizInlineMail');if(m&&!m.textContent.trim()&&state&&state.email)m.textContent=state.email;},0);   // e-mail aussi apres rechargement
+      const m=document.getElementById('wizInlineMail');if(m&&!m.textContent.trim()&&state&&state.email)m.textContent=state.email;
+      // 26/11 : compte a rebours de « Voye l ankò » (aussi apres rechargement)
+      if(window.VB_attenteCode&&state)window.VB_attenteCode.reprendre('signup',document.getElementById('wizResend'),state.email);},0);   // e-mail aussi apres rechargement
     if(n===3&&!modeWizard.classList.contains('renew'))setTimeout(verifierCompteReelEtape3,0);
     if(n===3){renderStep3();armPaymentTimeout();demarrerSyncPlansWizard();}
     else{disarmPaymentTimeout();arreterSyncPlansWizard();}
@@ -2756,6 +2758,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       openInlineOtp();
       window.VB_requestSignupCode(state.email,submitBtn).then(res=>{
         if(!res.ok&&/adresse_impossible/.test(String(res.erreur||''))){retourEmailImpossible();return;}
+        if(res.ok&&window.VB_attenteCode)window.VB_attenteCode.demarrer('signup',document.getElementById('wizResend'),state.email,res.secondes||60);
         if(res.ok&&window.VB_toast)window.VB_toast('toast_mail_h',t('toast_mail_p').replace('{email}',state.email));
         else if(!res.ok&&(res.reseau||navigator.onLine===false)){
           closeInlineOtp();
@@ -3070,8 +3073,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     state.codeFor=state.email;
     save();
     openInlineOtp();
-    window.VB_requestSignupCode(state.email,ev.currentTarget).then(res=>{
+    const btnRenvoi=ev.currentTarget;
+    window.VB_requestSignupCode(state.email,btnRenvoi).then(res=>{
       if(!res.ok&&/adresse_impossible/.test(String(res.erreur||''))){retourEmailImpossible();return;}
+      if(res.ok&&window.VB_attenteCode)window.VB_attenteCode.demarrer('signup',btnRenvoi,state.email,res.secondes||60);
       if(res.ok&&window.VB_toast)window.VB_toast('toast_mail_h',t('toast_mail_p').replace('{email}',state.email));
       else if(!res.ok){
         if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('renvoi_code_signup',res.erreur);
@@ -4780,7 +4785,8 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     document.getElementById('pwrSub').textContent=t(subs[stage]);
     pwrSubmit.textContent=t(btns[stage]);
     // 18/10 : l'adresse a laquelle le code a ete envoye etait laissee vide.
-    if(stage==='code'){const mt=document.getElementById('pwrMailTo');if(mt)mt.textContent=pwr.email||'';}
+    if(stage==='code'){const mt=document.getElementById('pwrMailTo');if(mt)mt.textContent=pwr.email||'';
+      if(window.VB_attenteCode)window.VB_attenteCode.reprendre('pwr',document.getElementById('pwrResend'),pwr.email);}
     const first=pwrStages.find(x=>x.dataset.pwr===stage).querySelector('input');
     if(first&&window.innerWidth>860)first.focus({preventScroll:true});
   }
@@ -4852,7 +4858,10 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       });
       const data=await resp.json().catch(()=>({}));
       if(btn)btn.disabled=false;
-      if(!resp.ok)return {ok:false, erreur:(data&&data.error)||'erreur'};
+      // 26/11 : 'attendre' = code deja envoye il y a moins de 60 s (toujours valable) -> pas une erreur
+      const attendre=resp.status===429&&data&&data.error==='attendre';
+      if(!resp.ok&&!attendre)return {ok:false, erreur:(data&&data.error)||'erreur'};
+      if(window.VB_attenteCode)window.VB_attenteCode.demarrer('pwr',document.getElementById('pwrResend'),pwr.email,attendre?(Number(data.secondes)||60):60);
       if(window.VB_toast)window.VB_toast('toast_mail_h',t('toast_mail_p').replace('{email}',pwr.email));
       return {ok:true};
     }catch(e){
@@ -13941,6 +13950,42 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
    n'affiche plus le code a l'ecran en cas d'echec d'envoi : un echec reste
    un echec, signale clairement, jamais contourne. */
 (function(){
+  /* 26/11 (James, point 6 : quota Resend) : « Voye l ankò » attend 60 s apres chaque envoi
+     (inscription ET « Modpas bliye »). Le bouton affiche le compte a rebours (« Voye l ankò · 0:42 »).
+     Le serveur refuse aussi un 2e code en moins de 60 s ('attendre') : le site le traite comme
+     « code deja envoye » (aucune erreur montree). Garde dans l'ONGLET (sessionStorage) : survit
+     au rechargement au retour de Gmail. */
+  window.VB_attenteCode=(function(){
+    const CLE='vb_attente_code', minuteries={};
+    const tr=k=>{const D=translations[currentLang]||translations.fr;return D[k]!=null?D[k]:(translations.fr[k]||'');};
+    function lire(){try{return JSON.parse(sessionStorage.getItem(CLE)||'{}')||{};}catch(e){return {};}}
+    function ecrire(o){try{sessionStorage.setItem(CLE,JSON.stringify(o));}catch(e){}}
+    function reste(flux,email){
+      const o=lire()[flux];
+      if(!o||!email||o.e!==String(email).toLowerCase())return 0;
+      return Math.max(0,Math.min(60,Math.ceil((o.u-Date.now())/1000)));
+    }
+    function afficher(flux,btn,email){
+      clearInterval(minuteries[flux]);
+      const tick=()=>{
+        const r=reste(flux,email);
+        if(r<=0){clearInterval(minuteries[flux]);btn.disabled=false;btn.textContent=tr('wiz_v_resend');return false;}
+        btn.disabled=true;
+        btn.textContent=tr('wiz_v_resend')+' · '+Math.floor(r/60)+':'+String(r%60).padStart(2,'0');
+        return true;
+      };
+      if(tick())minuteries[flux]=setInterval(tick,1000);
+    }
+    return {
+      demarrer(flux,btn,email,secondes){
+        const o=lire();
+        o[flux]={e:String(email||'').toLowerCase(),u:Date.now()+Math.max(1,Math.min(60,Number(secondes)||60))*1000};
+        ecrire(o);
+        if(btn)afficher(flux,btn,email);
+      },
+      reprendre(flux,btn,email){if(btn)afficher(flux,btn,email);}
+    };
+  })();
   window.VB_requestSignupCode=async function(email,btn){
     let orig=null, texteEnvoi=null;
     if(btn){
@@ -13959,6 +14004,8 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       if(!resp.ok){
         const base=(data&&data.error)||('HTTP '+resp.status);
         const detail=(data&&data.detail)?(typeof data.detail==='string'?data.detail:JSON.stringify(data.detail)):'';
+        // 26/11 : code deja envoye il y a moins de 60 s -> le precedent est valable, ce n'est pas une erreur
+        if(base==='attendre')return {ok:true, attendre:true, secondes:Number(data.secondes)||60};
         return {ok:false, erreur:detail?(base+' — '+detail):base};
       }
       return {ok:true};

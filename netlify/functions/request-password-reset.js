@@ -20,6 +20,8 @@ const crypto = require('crypto');
 const CODE_TTL_MINUTES = 15;
 const MAX_CODES_PER_WINDOW = 5;
 const WINDOW_MINUTES = 15;
+// 26/11 (point 6, quota Resend) : au moins 60 s entre deux codes pour la meme adresse.
+const ATTENTE_ENTRE_CODES_S = 60;
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(code).digest('hex');
@@ -61,15 +63,22 @@ exports.handler = async (event) => {
     // en boucle quels emails ont un compte (voir plus bas).
     const fenetre = new Date(Date.now() - WINDOW_MINUTES * 60000).toISOString();
     const countUrl =
-      `${SUPABASE_URL}/rest/v1/password_reset_codes?select=id` +
+      `${SUPABASE_URL}/rest/v1/password_reset_codes?select=id,created_at` +
       `&email=eq.${encodeURIComponent(emailNorm)}` +
-      `&created_at=gte.${encodeURIComponent(fenetre)}&limit=${MAX_CODES_PER_WINDOW + 1}`;
+      `&created_at=gte.${encodeURIComponent(fenetre)}&order=created_at.desc&limit=${MAX_CODES_PER_WINDOW + 1}`;
     const countResp = await fetch(countUrl, {
       headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
     });
     const countRows = countResp.ok ? await countResp.json() : [];
     if (countRows.length >= MAX_CODES_PER_WINDOW) {
       return { statusCode: 429, body: JSON.stringify({ error: 'trop_de_demandes' }) };
+    }
+    // Code envoye il y a moins de 60 s : pas de nouvel e-mail (le precedent reste valable).
+    const dernier = countRows[0] && Date.parse(countRows[0].created_at);
+    const ecoule = dernier ? (Date.now() - dernier) / 1000 : Infinity;
+    if (ecoule >= 0 && ecoule < ATTENTE_ENTRE_CODES_S) {
+      const secondes = Math.max(1, Math.ceil(ATTENTE_ENTRE_CODES_S - ecoule));
+      return { statusCode: 429, body: JSON.stringify({ error: 'attendre', secondes }) };
     }
 
     // Le compte doit reellement exister cote Supabase Auth (Admin API) —

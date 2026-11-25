@@ -13,6 +13,8 @@
 
 const crypto = require('crypto');
 const dns = require('dns').promises;
+// 26/11 (point 8) : envoi DIRECT, sans repasser par la fonction publique send-email (fermee).
+const { envoyerEmailCode } = require('./lib/email-code');
 
 /* 25/11 (James : « refuser les adresses impossibles ») : aucun code n'est envoye vers un domaine
    qui ne recoit pas d'e-mails (ex. « garryson@1.com ») — chaque envoi rate videait le quota Resend
@@ -68,6 +70,8 @@ async function domaineRecoitEmails(email) {
 const CODE_TTL_MINUTES = 10;
 const MAX_CODES_PER_WINDOW = 5;
 const WINDOW_MINUTES = 15;
+// 26/11 (point 6, quota Resend) : au moins 60 s entre deux codes pour la meme adresse.
+const ATTENTE_ENTRE_CODES_S = 60;
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(code).digest('hex');
@@ -118,8 +122,8 @@ exports.handler = async function (event) {
   try {
     // Anti-abus : trop de demandes recentes pour cette adresse ?
     const fenetre = new Date(Date.now() - WINDOW_MINUTES * 60000).toISOString();
-    const countUrl = base + '/signup_codes?select=id&email=eq.' + encodeURIComponent(email) +
-      '&created_at=gte.' + encodeURIComponent(fenetre) + '&limit=' + (MAX_CODES_PER_WINDOW + 1);
+    const countUrl = base + '/signup_codes?select=id,created_at&email=eq.' + encodeURIComponent(email) +
+      '&created_at=gte.' + encodeURIComponent(fenetre) + '&order=created_at.desc&limit=' + (MAX_CODES_PER_WINDOW + 1);
     const countResp = await fetch(countUrl, { headers: sbHeaders() });
     if (!countResp.ok) {
       console.error('[request-signup-code] lecture signup_codes echouee, status:', countResp.status, await countResp.text());
@@ -128,6 +132,14 @@ exports.handler = async function (event) {
     if (countRows.length >= MAX_CODES_PER_WINDOW) {
       console.error('[request-signup-code] rate limit atteint pour', email);
       return { statusCode: 429, body: JSON.stringify({ error: 'trop_de_demandes' }) };
+    }
+    // Code envoye il y a moins de 60 s : on n'en envoie PAS un nouveau (le precedent est valable 10 min).
+    const dernier = countRows[0] && Date.parse(countRows[0].created_at);
+    const ecoule = dernier ? (Date.now() - dernier) / 1000 : Infinity;
+    if (ecoule >= 0 && ecoule < ATTENTE_ENTRE_CODES_S) {
+      const secondes = Math.max(1, Math.ceil(ATTENTE_ENTRE_CODES_S - ecoule));
+      console.log('[request-signup-code] code deja envoye il y a', Math.round(ecoule), 's pour', email);
+      return { statusCode: 429, body: JSON.stringify({ error: 'attendre', secondes }) };
     }
 
     // Génération du vrai code — jamais renvoyé au navigateur.
@@ -155,26 +167,11 @@ exports.handler = async function (event) {
     }
     console.log('[request-signup-code] code stocke en base pour', email);
 
-    // Envoi réel : on réutilise send-email, déjà connectée à Resend,
-    // plutôt que de dupliquer cette intégration ici.
-    const siteUrl = process.env.SITE_URL || ('https://' + (event.headers.host || 'vipbet2.netlify.app'));
-    const sendEmailUrl = siteUrl + '/.netlify/functions/send-email';
-    console.log('[request-signup-code] appel de send-email sur:', sendEmailUrl);
-    const sendResp = await fetch(sendEmailUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code })
-    });
-
-    if (!sendResp.ok) {
-      let detail = 'HTTP ' + sendResp.status;
-      try {
-        const d = await sendResp.json();
-        detail = (d && d.error) ? JSON.stringify(d.error).slice(0, 300) : detail;
-      } catch (e2) {
-        try { detail = (await sendResp.text()).slice(0, 300); } catch (e3) {}
-      }
-      console.error('[request-signup-code] send-email a echoue:', detail);
+    // Envoi reel : directement via lib/email-code (meme modele d'e-mail que l'ancien send-email).
+    const envoi = await envoyerEmailCode({ email, code, type: 'verification' });
+    if (!envoi.ok) {
+      const detail = typeof envoi.erreur === 'string' ? envoi.erreur : JSON.stringify(envoi.erreur || {}).slice(0, 300);
+      console.error('[request-signup-code] envoi du code echoue:', envoi.statut, detail);
       return { statusCode: 502, body: JSON.stringify({ error: 'envoi_echoue', detail }) };
     }
 
