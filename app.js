@@ -5796,6 +5796,26 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!sb||!state.paid)return false;
     let changed=false;
     try{
+      /* 24/11 (bug signale par James : apres une reconnexion, le bandeau « Peman ou an poko fini »
+         etait remplace par l'ancienne carte « admin ») : la reconnexion reconstruit le compte depuis
+         la base SANS le paiement automatique en cours. On le recupere ici : paiement 'pending' AVEC
+         une date d'expiration (seuls les paiements automatiques MonCash/NatCash en ont une ; un depot
+         manuel n'en a jamais), encore ouvert. Lecture seule ; aucun paiement n'est cree ni modifie. */
+      if(state.supabaseUserId&&!state.autoPaymentId){
+        try{
+          const {data:pAuto}=await sb.from('payments')
+            .select('id,method,expires_at,provider_url,status')
+            .eq('user_id',state.supabaseUserId).eq('status','pending')
+            .not('expires_at','is',null).gt('expires_at',new Date().toISOString())
+            .order('created_at',{ascending:false}).limit(1);
+          const pa=pAuto&&pAuto[0];
+          if(pa&&pa.id&&(pa.method==='moncash'||pa.method==='natcash')){
+            state.autoPaymentId=pa.id;state.autoExpiresAt=pa.expires_at;state.autoProviderUrl=pa.provider_url||null;
+            state.payMethod=pa.method;state.payMode='auto';
+            changed=true;
+          }
+        }catch(e){ /* jamais bloquant */ }
+      }
       /* CORRECTIF SYNCHRONISATION (prioritaire) : avant tout le reste, on
          relit l'etat REEL des abonnements de cette personne directement
          par son identifiant Supabase. C'est la seule maniere de detecter
@@ -8978,6 +8998,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
              l'etaient. renderSub() lit `state` en direct a chaque appel,
              donc ce seul ajout suffit : pas de nouvelle logique. */
           renderSub();
+          renderToday();   // 24/11 : bandeaux de « Fich jodi a » (paiement auto recupere apres reconnexion)
         }
       });
     }
@@ -9079,7 +9100,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       verifierSessionDashboard();  // 14/11 : session perdue -> page de connexion
       if(window.VB_syncPayStatus){
         window.VB_syncPayStatus().then(changed=>{
-          if(changed){rafraichirFiches(true);renderSub();}
+          if(changed){rafraichirFiches(true);renderSub();renderToday();}
         });
       }
       // Publication, modification, suppression ou changement de statut
