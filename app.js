@@ -388,7 +388,7 @@ hero_why:"POURQUOI CHOISIR VIPBETCOTE ?",
 hero_price_from:"Abonnements dès",
 auth_lbl_username:"Nom d'utilisateur", auth_ph_username:"Choisissez un nom d'utilisateur",
 auth_optional:"(facultatif)",
-auth_err_email_temp:"Les adresses e-mail temporaires ne sont pas acceptées",
+auth_err_email_temp:"Les adresses e-mail temporaires ne sont pas acceptées", auth_err_email_impossible:"Cette adresse e-mail n'existe pas. Vérifiez-la (ex. nom@gmail.com)", auth_err_email_typo:"Vouliez-vous dire {sugg} ?",
 dash_soon_h:"Votre abonnement expire dans {n} jour(s)",
 dash_soon_sub:"Renouvelez maintenant pour ne pas perdre l'accès aux fiches.",
 dash_change_pass:"Changer mon mot de passe",
@@ -969,7 +969,7 @@ hero_why:"WHY CHOOSE VIPBETCOTE?",
 hero_price_from:"Plans from",
 auth_lbl_username:"Username", auth_ph_username:"Choose a username",
 auth_optional:"(optional)",
-auth_err_email_temp:"Temporary email addresses are not accepted",
+auth_err_email_temp:"Temporary email addresses are not accepted", auth_err_email_impossible:"This email address does not exist. Please check it (e.g. name@gmail.com)", auth_err_email_typo:"Did you mean {sugg}?",
 dash_soon_h:"Your plan expires in {n} day(s)",
 dash_soon_sub:"Renew now so you don't lose access to the slips.",
 dash_change_pass:"Change my password",
@@ -1550,7 +1550,7 @@ hero_why:"POUKISA CHWAZI VIPBETCOTE ?",
 hero_price_from:"Abònman apati",
 auth_lbl_username:"Non itilizatè", auth_ph_username:"Chwazi yon non itilizatè",
 auth_optional:"(fakiltatif)",
-auth_err_email_temp:"Nou pa aksepte imèl tanporè",
+auth_err_email_temp:"Nou pa aksepte imèl tanporè", auth_err_email_impossible:"Imèl sa a pa egziste. Verifye l byen (egz. non@gmail.com)", auth_err_email_typo:"Ou vle di {sugg} ?",
 dash_soon_h:"Abònman ou ap ekspire nan {n} jou",
 dash_soon_sub:"Renouvle kounye a pou w pa pèdi aksè a fich yo.",
 dash_change_pass:"Chanje modpas",
@@ -2649,6 +2649,32 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(val.indexOf('..')>-1)return false;
     return true;
   }
+  /* 25/11 (James : « refuser les adresses impossibles ») : des codes partaient vers des adresses
+     qui ne peuvent pas exister (« garryson@1.com », « nomgmail.comnom@1.com ») et videaient le
+     quota d'e-mails. Inscription seulement (jamais la connexion d'un compte existant).
+     Retourne null si l'adresse semble correcte, sinon {cle, sugg?}. Le serveur verifie en plus
+     que le domaine recoit vraiment des e-mails (request-signup-code). */
+  const FAUTES_DOMAINE={'gmial.com':'gmail.com','gmal.com':'gmail.com','gmaill.com':'gmail.com','gmai.com':'gmail.com','gamil.com':'gmail.com',
+    'gnail.com':'gmail.com','gmil.com':'gmail.com','gmali.com':'gmail.com','gemail.com':'gmail.com','gmail.co':'gmail.com','gmail.con':'gmail.com',
+    'gmail.cm':'gmail.com','gmail.om':'gmail.com','gmail.comm':'gmail.com','gmail.cpm':'gmail.com','gmail.fr':'gmail.com','gmail.ht':'gmail.com',
+    'yaho.com':'yahoo.com','yahooo.com':'yahoo.com','yahoo.con':'yahoo.com','yahoo.co':'yahoo.com','yhoo.com':'yahoo.com',
+    'hotmial.com':'hotmail.com','hotmal.com':'hotmail.com','homail.com':'hotmail.com','hotmail.con':'hotmail.com','hotmail.co':'hotmail.com','hotmai.com':'hotmail.com',
+    'outlok.com':'outlook.com','outlook.con':'outlook.com','outllook.com':'outlook.com',
+    'iclod.com':'icloud.com','icoud.com':'icloud.com','icluod.com':'icloud.com','icloud.con':'icloud.com','iclould.com':'icloud.com'};
+  function problemeEmail(v){
+    const val=String(v||'').trim().toLowerCase();
+    const at=val.lastIndexOf('@');if(at<1)return null;
+    const loc=val.slice(0,at),dom=val.slice(at+1);
+    // nom qui contient deja un domaine COMPLET (« nomgmail.com… », « nomgmailcom… ») : adresse collee deux fois.
+    // Regle etroite : jamais une adresse professionnelle ou Yahoo valide.
+    if(/(gmail|hotmail|outlook|icloud)\.?com/.test(loc))return {cle:'auth_err_email_impossible'};
+    if(FAUTES_DOMAINE[dom])return {cle:'auth_err_email_typo',sugg:loc+'@'+FAUTES_DOMAINE[dom]};
+    return null;
+  }
+  function erreurEmailImpossible(champ,pb){
+    setErr(champ,pb.cle);
+    if(pb.sugg){const e=champ.querySelector('.field-err');if(e)e.textContent=t(pb.cle).replace('{sugg}',pb.sugg);}
+  }
   function isDisposable(v){
     const dom=String(v||'').trim().toLowerCase().split('@')[1]||'';
     return DISPOSABLE.some(d=>dom===d||dom.endsWith('.'+d));
@@ -2677,6 +2703,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     if(!fn.value.trim()){setErr(fn.closest('.field'),'auth_err_required');ok=false}else setErr(fn.closest('.field'),null);
     if(!isEmail(em.value.trim())){setErr(em.closest('.field'),'auth_err_email');ok=false}
     else if(isDisposable(em.value.trim())){setErr(em.closest('.field'),'auth_err_email_temp');ok=false}
+    else if(problemeEmail(em.value)){erreurEmailImpossible(em.closest('.field'),problemeEmail(em.value));ok=false}
     else setErr(em.closest('.field'),null);
     if(pw.value.length<8){setErr(pw.closest('.field'),'auth_err_password_len');ok=false}
     else if(!/\d/.test(pw.value)){setErr(pw.closest('.field'),'auth_err_password_digit');ok=false}
@@ -2719,6 +2746,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       closeInlineOtp();
       openInlineOtp();
       window.VB_requestSignupCode(state.email,submitBtn).then(res=>{
+        if(!res.ok&&/adresse_impossible/.test(String(res.erreur||''))){retourEmailImpossible();return;}
         if(res.ok&&window.VB_toast)window.VB_toast('toast_mail_h',t('toast_mail_p').replace('{email}',state.email));
         else if(!res.ok&&(res.reseau||navigator.onLine===false)){
           closeInlineOtp();
@@ -2984,6 +3012,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     showStep('verify');
     otpInputs[0].focus({preventScroll:true});
   }
+  /* 25/11 : le serveur a refuse l'adresse (domaine sans messagerie) -> retour au formulaire,
+     message sur le champ e-mail. Aucun code n'a ete envoye (quota preserve). */
+  function retourEmailImpossible(){
+    closeInlineOtp();state.codeFor=null;save();
+    showStep(1);
+    const f=document.getElementById('wizStep1');
+    if(f&&f.email){
+      if(!f.email.value&&state.email)f.email.value=state.email;
+      if(!f.fullname.value&&state.fullname)f.fullname.value=state.fullname;
+      setErr(f.email.closest('.field'),'auth_err_email_impossible');f.email.focus();
+    }
+  }
   function closeInlineOtp(){
     otp.classList.remove('invalid');
     otpErr.style.display='none';
@@ -3022,6 +3062,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     save();
     openInlineOtp();
     window.VB_requestSignupCode(state.email,ev.currentTarget).then(res=>{
+      if(!res.ok&&/adresse_impossible/.test(String(res.erreur||''))){retourEmailImpossible();return;}
       if(res.ok&&window.VB_toast)window.VB_toast('toast_mail_h',t('toast_mail_p').replace('{email}',state.email));
       else if(!res.ok){
         if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('renvoi_code_signup',res.erreur);

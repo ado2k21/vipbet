@@ -25,6 +25,9 @@ function hashCode(code) {
   return crypto.createHash('sha256').update(code).digest('hex');
 }
 
+// 25/11 (James) : alerte Telegram admin si Resend refuse l'e-mail.
+const { alerterEchecEmail } = require('./lib/alerte-email-echec');
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -118,6 +121,7 @@ exports.handler = async (event) => {
     });
     if (!envoiResp.ok) {
       const detail = await envoiResp.text();
+      await alerterEchecEmail({ source: 'modpas_bliye', email: emailNorm, statut: envoiResp.status, detail });
       return { statusCode: 500, body: JSON.stringify({ error: 'Envoi email echoue', detail }) };
     }
 

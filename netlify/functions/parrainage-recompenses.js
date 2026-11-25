@@ -1,3 +1,4 @@
+const { alerterEchecEmail } = require('./lib/alerte-email-echec');   // 25/11 : alerte Telegram si Resend refuse
 /* ============================================================
    VIP BETCOTE — Parrainage : recompenses (16/10, ADDITIF)
    ------------------------------------------------------------
@@ -73,7 +74,12 @@ async function envoyerEmailsRecompense(url, h) {
           html: emailRecompense(parrain.username || '', (filleul && filleul.username) || '', Number(pa.jours) || 0, cas)
         })
       });
-      if (envoi.ok) { await marquer(); bilan.envoyes++; } else { bilan.echecs++; console.log('[PARRAINAGE] resend', envoi.status, (await envoi.text()).slice(0, 200)); }
+      if (envoi.ok) { await marquer(); bilan.envoyes++; } else {
+        bilan.echecs++;
+        const detailEchec = (await envoi.text()).slice(0, 300);
+        console.log('[PARRAINAGE] resend', envoi.status, detailEchec);
+        await alerterEchecEmail({ source: 'parrainage', email: parrain.email, statut: envoi.status, detail: detailEchec });   // 25/11
+      }
     } catch (e) { bilan.echecs++; console.log('[PARRAINAGE] email:', e.message); }
   }
   return bilan;

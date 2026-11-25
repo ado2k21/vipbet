@@ -1,3 +1,6 @@
+// 25/11 (James) : alerte Telegram admin si Resend refuse un e-mail (quota du plan gratuit, cle...).
+const { alerterEchecEmail } = require('./lib/alerte-email-echec');
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
@@ -471,10 +474,14 @@ exports.handler = async (event) => {
      * =========================================================
      */
 
-    const data = await resp.json();
+    const data = await resp.json().catch(() => ({}));
 
 
     if (!resp.ok) {
+      await alerterEchecEmail({
+        source: type === 'password_reset' ? 'modpas_bliye' : 'code_inscription',
+        email, statut: resp.status, detail: JSON.stringify(data || {})
+      });
 
       return {
         statusCode: 500,
@@ -506,6 +513,8 @@ exports.handler = async (event) => {
 
 
   } catch (err) {
+
+    await alerterEchecEmail({ source: 'code_inscription', email: null, statut: 0, detail: err && err.message });
 
     return {
 
