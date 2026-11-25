@@ -2725,6 +2725,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
 
+    /* 25/11 (James : « g@mail.com -> pas de code, etape paiement ») : DEFAUT ANCIEN. Apres une
+       connexion d'un compte verifie sans plan, le telephone garde emailVerified=true ; en repassant
+       par « Kreye kont », un AUTRE e-mail sautait la verification. Un e-mail different de celui
+       deja verifie = NOUVELLE inscription : code obligatoire, aucun lien avec l'ancien compte. */
+    const emailTape=em.value.trim().toLowerCase();
+    if(state.emailVerified&&String(state.email||'').trim().toLowerCase()!==emailTape){
+      state.emailVerified=false;state.supabaseUserId=null;state.codeFor=null;state.step=1;
+      codeValidePour=null;
+    }
     state.fullname=fn.value.trim();
     state.site=sitePickValue();          // site prefere, facultatif
     state.email=em.value.trim().toLowerCase();   // normalisee : jamais de casse imprevisible
