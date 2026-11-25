@@ -1,3 +1,25 @@
+/* 25/11 (James) — CERCLE DE CHARGEMENT de l'inscription et de la connexion : meme cercle que la
+   page de paiement (classe vb-pay-spin, sans fond, ecran visible derriere). Il n'apparait QUE si
+   l'attente depasse 300 ms (connexion lente) et disparait des que la reponse arrive ; filet de 30 s. */
+window.VB_chargement=(function(){
+  let el=null,n=0,attente=null,filet=null;
+  function cacher(){clearTimeout(attente);clearTimeout(filet);if(el)el.hidden=true;}
+  function afficher(){
+    if(!el){el=document.createElement('div');el.className='vb-pay-spin';el.id='vbChargeSpin';
+      el.setAttribute('role','status');el.setAttribute('aria-label','…');el.innerHTML='<i></i>';document.body.appendChild(el);}
+    el.hidden=false;
+  }
+  window.addEventListener('pageshow',()=>{n=0;cacher();});
+  return function(on){
+    if(on){
+      n++;
+      if(n===1){clearTimeout(attente);attente=setTimeout(afficher,300);clearTimeout(filet);filet=setTimeout(()=>{n=0;cacher();},30000);}
+    }else{
+      n=Math.max(0,n-1);
+      if(n===0)cacher();
+    }
+  };
+})();
 /* 15/11 (James) — CODE D'AFFICHAGE des fiches, ADMIN seulement. Le code REEL en base ne change
    jamais (les bots s'en servent). « BOT-2026-11-14-FOOT-R1-P2 » -> « AUTO-1411-FOOT1-2 » ;
    ADM… -> « MAN-… » (fiche faite a la main) ; BASKET -> NBA ; -EXACT -> S.EXACT. */
@@ -2737,10 +2759,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     const submitBtnVerify=fVerify.querySelector('button[type=submit]');
     submitBtnVerify.disabled=true;
+    window.VB_chargement(true);
     // Le VRAI code n'est plus verifie que cote serveur — jamais de
     // comparaison locale a une valeur connue du navigateur.
     const codeRes=await window.VB_confirmSignupCode(state.email,entered);
     if(!codeRes.ok){
+      window.VB_chargement(false);
       submitBtnVerify.disabled=false;
       otp.classList.add('invalid');
       otpErr.textContent=t('wiz_v_err');
@@ -2749,6 +2773,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
     creerCompteSupabase().then(res=>{
+      window.VB_chargement(false);
       submitBtnVerify.disabled=false;
       if(!res.ok&&res.raison==='existe_deja'){
         // Compte reellement deja existant : meme traitement que l'ancienne
@@ -5075,7 +5100,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   /* ================= CONNEXION ================= */
   const fL=document.getElementById('authFormLogin');
-  fL.addEventListener('submit',async ev=>{
+  fL.addEventListener('submit',ev=>{
+    window.VB_chargement(true);
+    soumettreConnexion(ev).catch(()=>{}).finally(()=>window.VB_chargement(false));
+  });
+  async function soumettreConnexion(ev){
     ev.preventDefault();
     const id=fL.querySelector('[name=loginId]'),pw=fL.querySelector('[name=loginPassword]');
     const seSouvenir=fL.querySelector('[name=remember]');
@@ -5236,7 +5265,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     }
     // Jamais « mot de passe incorrect » quand Supabase n'a pas repondu clairement (erreur technique/reseau).
     setErr(id.closest('.field'),navigator.onLine===false?'auth_err_offline':(reseauKO?'auth_err_serveur':'auth_err_nouser'));
-  });
+  }
 
   /* ================= OUVERTURE / FERMETURE ================= */
   function fillLogos(){
@@ -7952,7 +7981,6 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // TOUTES les fiches (cote deja visible sur chaque carte verrouillee,
     // jamais les selections). Un compte avec des fiches accessibles garde
     // exactement son comportement d'avant (meilleure cote de SES fiches).
-    const best=visible.length?Math.max.apply(null,visible.map(totalOdd)):(todays.length?Math.max.apply(null,todays.map(totalOdd)):0);
     // CHANGÉ (31/08 v2, demande explicite de James) : le CHIFFRE des KPI
     // "Fiches disponibles"/"Fiches verrouillées", lui, doit compter TOUTE
     // fiche en cours du jour sans exception -- fiche normale + score exact
@@ -7962,6 +7990,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // "todays"/"visible" (qui restent, eux, la base de la liste rendue).
     const todaysTout=DATA.tickets.filter(k=>estDuJour(k));
     const visibleTout=todaysTout.filter(k=>accessibleTk(k));
+    // 25/11 (James, choix « A » — SEULEMENT sans plan actif) : compte sans plan, plan expire, plan
+    // retire par l'admin, compte suspendu (userRank()===0) -> « Pi bon cote » = la VRAIE plus grosse
+    // cote de TOUTES les fiches en cours (score exact et fiches de tous les plans compris ; seul le
+    // chiffre, deja visible sur les cartes verrouillees). Plan actif : calcul d'avant, inchange.
+    const coteMax=l=>l.length?Math.max.apply(null,l.map(k=>Number(totalOdd(k))||0)):0;
+    const best=userRank()===0
+      ?coteMax(todaysTout)
+      :(visible.length?Math.max.apply(null,visible.map(totalOdd)):(todays.length?Math.max.apply(null,todays.map(totalOdd)):0));
     // CHANGÉ (31/08, demande explicite de James : "le nombre de fiches
     // disponibles reste toujours affiché, toujours synchronisé avec le
     // nombre total de fiches disponibles, mais les fiches restent
@@ -13725,6 +13761,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       btn.disabled=true;
       btn.textContent=texteEnvoi;
     }
+    if(window.VB_chargement)window.VB_chargement(true);
     try{
       const resp=await fetch('/.netlify/functions/request-signup-code',{
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -13741,6 +13778,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       // fetch rejete = aucune reponse du serveur (reseau coupe)
       return {ok:false, reseau:true, erreur:(e&&e.message)?e.message:String(e)};
     }finally{
+      if(window.VB_chargement)window.VB_chargement(false);
       if(btn){
         btn.disabled=false;
         if(btn.textContent===texteEnvoi)btn.textContent=orig;
