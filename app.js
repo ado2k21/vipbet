@@ -7847,6 +7847,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       .catch(()=>{manDashLecture=null;});
   }
 
+  let syncInitDashFaite=true;   // 25/11 : false entre l'ouverture du Dashboard et la fin de la 1re synchro
   function renderToday(){
     const life=!!(window.VB_isLifetime&&window.VB_isLifetime());
     const autoDash=renderAutoDash();   // 24/11 : paiement auto non termine -> bandeau compact
@@ -7857,7 +7858,11 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     const manBox=document.getElementById('dashManPay');
     const estManuel=pend&&((getState()||{}).payMode==='manuel');
     if(manBox){manBox.hidden=!estManuel;if(estManuel)renderManDash();}
-    pendBox.hidden=!pend||estManuel;   // tout autre cas : exactement l'affichage d'avant
+    // 25/11 (James : « l'ancien bandeau s'affiche une milliseconde avant le nouveau ») : a l'ouverture
+    // du Dashboard, tant que la 1re synchronisation avec la base n'est pas finie, on ne sait pas encore
+    // s'il s'agit d'un paiement automatique (recupere par VB_syncPayStatus) -> la carte d'attente reste
+    // cachee ; elle s'affiche juste apres si c'est bien le cas (toujours affichee si la synchro echoue).
+    pendBox.hidden=!pend||estManuel||!syncInitDashFaite;
     if(pend){
       const st=getState()||{};
       document.getElementById('dashPendingSub').textContent=
@@ -8979,12 +8984,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     dash.scrollTop=0;
     document.body.style.overflow='hidden';
     viewStack=[];
+    syncInitDashFaite=!window.VB_syncPayStatus;   // 25/11 : carte d'attente cachee jusqu'a la 1re synchro
     renderAll();
     document.getElementById('dashMenuBtn').focus();
     // Rafraichissement silencieux : un admin a peut-etre valide/refuse
     // le paiement depuis la derniere visite. Ne bloque jamais l'ouverture.
     if(window.VB_syncPayStatus){
-      window.VB_syncPayStatus().then(changed=>{
+      const finSyncInit=()=>{if(!syncInitDashFaite){syncInitDashFaite=true;renderToday();}};
+      setTimeout(finSyncInit,8000);   // filet : jamais plus de 8 s sans la carte si la base ne repond pas
+      window.VB_syncPayStatus().catch(()=>false).then(changed=>{
+        finSyncInit();
         // Un plan qui vient de changer donne acces a d'autres fiches :
         // on relit la base, on ne se contente pas de re-afficher.
         if(changed){
