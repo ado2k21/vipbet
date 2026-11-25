@@ -4506,7 +4506,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // 25/11 : depuis le Dashboard la page n'est pas encore ouverte -> style abonne, etape 3 ;
     // sinon (ecran de paiement deja ouvert) : etape 3 avec « Retounen » visible.
     if(!page.classList.contains('open')){if(window.VB_closeDash)window.VB_closeDash();ouvrirEcranPaiementAutoAbonne(3);return;}
-    if(modeWizard.classList.contains('renew'))backBtn.hidden=false;
+    if(modeWizard.classList.contains('renew')){backBtn.hidden=false;var xF=document.getElementById('authpageClose');if(xF)xF.hidden=true;}
     showStep(3);
   }
 
@@ -5365,7 +5365,23 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     });
   });
 
-  document.getElementById('authpageClose').addEventListener('click',closeAuth);
+  // Croix visible dans l'ecran abonne (renew) ouvert depuis le Dashboard = paiement auto non termine :
+  // elle ramene au Dashboard (meme chemin que « Retounen »), jamais a la page d'accueil.
+  function croixVersDashboard(){
+    return modeWizard.classList.contains('renew')&&!!renewFrom&&!closeBtn.hidden;
+  }
+  function fermerVersDashboard(){
+    renewMode=false;
+    setChrome(false);
+    modeWizard.classList.remove('renew');
+    closeAuth();
+    renewFrom=false;
+    requestAnimationFrame(()=>{if(window.VB_openDash)window.VB_openDash();});
+  }
+  document.getElementById('authpageClose').addEventListener('click',()=>{
+    if(croixVersDashboard()){fermerVersDashboard();return;}
+    closeAuth();
+  });
   backBtn.addEventListener('click',()=>{
     // Reinitialisation du mot de passe ouverte depuis le Dashboard : le
     // bouton ramene UNIQUEMENT a l'interface principale du Dashboard.
@@ -5385,7 +5401,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       return;
     }
     // sinon on revient a l'ecran d'ou l'on vient (dashboard le plus souvent)
-    const cameFromDash=!!renewFrom;
+    // 25/11 (James : « Retounen ne mene jamais au landing page ») : dans l'ecran abonne (classe
+    // renew, hors reinitialisation de mot de passe), « Retounen » ramene TOUJOURS au Dashboard.
+    const cameFromDash=!!renewFrom||(modeWizard.classList.contains('renew')&&!modeWizard.classList.contains('pwreset'));
     renewMode=false;
     setChrome(false);
     modeWizard.classList.remove('renew');
@@ -5398,6 +5416,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   page.addEventListener('click',ev=>{
     if(ev.target!==page)return;
     if(modeWizard.classList.contains('pwreset')&&pwr.origin==='dashboard'){backBtn.click();return;}
+    if(modeWizard.classList.contains('renew')&&!modeWizard.classList.contains('pwreset')){backBtn.click();return;}   // 25/11 : ecran abonne -> Dashboard (comme « Retounen »), jamais la page publique
     closeAuth();
   });
   document.addEventListener('keydown',ev=>{
@@ -5409,6 +5428,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       backBtn.click();
       return;
     }
+    if(modeWizard.classList.contains('renew')&&!modeWizard.classList.contains('pwreset')){backBtn.click();return;}   // 25/11 : ecran abonne -> Dashboard (comme « Retounen »), jamais la page publique
     closeAuth();
   });
   document.querySelectorAll('[data-auth-tab],[data-auth-switch]').forEach(b=>{
@@ -5528,7 +5548,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // AUTOMATIQUE en cours s'ouvre toujours dans le style « abonne » (sans en-tete ni etapes) avec
     // « Retounen » -> Dashboard. Aucune donnee de plan n'est modifiee (contrairement a openRenew).
     if(paiementAutoNonTermine()){ouvrirEcranPaiementAutoAbonne();return;}
-    if(state.autoWasRenew)openRenew(null,4);
+    if(state.autoWasRenew){renewFrom=true;openRenew(null,4);}
     else openAuth('wizard',null,4);
   };
   function ouvrirEcranPaiementAutoAbonne(etape){
@@ -5548,6 +5568,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // 25/11 (James : « Retounen a-t-il un vrai role ? ») : a l'etape 4, non — doublon de « Ale nan
     // dashboard la » (qui, lui, respecte la case « Mwen fin peye »). Garde seulement a l'etape 3.
     backBtn.hidden=(etape||4)===4;
+    // 25/11 (James : « juste un X pour fermer ») : a l'etape 4, une croix ✕ = « je quitte pour
+    // l'instant » -> Dashboard (bandeau « Kontinye » toujours la), SANS exiger la case « Mwen fin peye ».
+    closeBtn.hidden=(etape||4)!==4;
     showStep(etape||4);
   }
   /* CORRECTIF (acces automatique apres action admin) : au chargement de
