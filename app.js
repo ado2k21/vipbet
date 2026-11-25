@@ -268,7 +268,7 @@ wiz_btn_next1:"Continuer",
 wiz_resume_h:"Inscription non terminée",
 wiz_resume_at:"Reprenez à l'étape « {step} » — votre plan est conservé.",
 wiz_v_h:"Vérifiez votre e-mail", wiz_v_sub:"Nous vous avons envoyé un code à 6 chiffres.",
-wiz_v_err:"Le code est incorrect", wiz_v_demo:"Mode démonstration — votre code est",
+wiz_v_err:"Le code est incorrect", wiz_v_pass_note:"Retapez votre mot de passe pour terminer la création de votre compte.", wiz_v_err_creation:"Votre compte n'a pas pu être créé. Réessayez.", wiz_v_err_reseau:"Le serveur ne répond pas. Vérifiez votre connexion et réessayez.", wiz_compte_absent_h:"Compte non terminé", wiz_compte_absent_p:"Votre compte n'a pas été créé. Retapez votre mot de passe pour le terminer avant de payer.", wiz_plan_active_h:"Plan activé ✓", wiz_plan_active_p:"Votre plan est actif. Bienvenue dans votre espace VIP.", wiz_m_err_nocompte:"Votre compte est introuvable. Connectez-vous ou terminez votre inscription avant d'envoyer le reçu.", wiz_v_demo:"Mode démonstration — votre code est",
 wiz_v_noreceive:"Vous ne l'avez pas reçu ?", wiz_v_resend:"Renvoyer le code",
 wiz_btn_verify:"Vérifier",
 wiz_p_h:"Activez votre abonnement", wiz_p_sub:"Vérifiez votre plan puis choisissez votre moyen de paiement.",
@@ -849,7 +849,7 @@ wiz_btn_next1:"Continue",
 wiz_resume_h:"Sign-up not completed",
 wiz_resume_at:"Resume at the \"{step}\" step — your plan has been saved.",
 wiz_v_h:"Verify your email", wiz_v_sub:"We sent you a 6-digit code.",
-wiz_v_err:"That code is incorrect", wiz_v_demo:"Demo mode — your code is",
+wiz_v_err:"That code is incorrect", wiz_v_pass_note:"Re-enter your password to finish creating your account.", wiz_v_err_creation:"Your account could not be created. Please try again.", wiz_v_err_reseau:"The server is not responding. Check your connection and try again.", wiz_compte_absent_h:"Account not finished", wiz_compte_absent_p:"Your account was not created. Re-enter your password to finish it before paying.", wiz_plan_active_h:"Plan activated ✓", wiz_plan_active_p:"Your plan is active. Welcome to your VIP space.", wiz_m_err_nocompte:"Your account could not be found. Sign in or finish signing up before sending the receipt.", wiz_v_demo:"Demo mode — your code is",
 wiz_v_noreceive:"Didn't get it?", wiz_v_resend:"Resend the code",
 wiz_btn_verify:"Verify",
 wiz_p_h:"Activate your plan", wiz_p_sub:"Check your plan, then choose a payment method.",
@@ -1430,7 +1430,7 @@ wiz_btn_next1:"Kontinye",
 wiz_resume_h:"Enskripsyon ou pa fini",
 wiz_resume_at:"Kontinye nan etap « {step} » — plan ou an konsève.",
 wiz_v_h:"Verifye imèl ou", wiz_v_sub:"Nou voye yon kòd 6 chif ba ou.",
-wiz_v_err:"Kòd la pa kòrèk", wiz_v_demo:"Mòd demonstrasyon — kòd ou a se",
+wiz_v_err:"Kòd la pa kòrèk", wiz_v_pass_note:"Tape modpas ou ankò pou fini kreye kont ou.", wiz_v_err_creation:"Nou pa t ka kreye kont ou. Eseye ankò.", wiz_v_err_reseau:"Sèvè a pa reponn. Verifye koneksyon ou epi eseye ankò.", wiz_compte_absent_h:"Kont lan poko fini", wiz_compte_absent_p:"Kont ou pa t kreye. Tape modpas ou ankò pou fini l anvan ou peye.", wiz_plan_active_h:"Plan ou aktive ✓", wiz_plan_active_p:"Plan ou aktif. Byenveni nan espas VIP ou.", wiz_m_err_nocompte:"Nou pa jwenn kont ou. Konekte oswa fini enskripsyon an anvan ou voye resi a.", wiz_v_demo:"Mòd demonstrasyon — kòd ou a se",
 wiz_v_noreceive:"Ou pa resevwa l?", wiz_v_resend:"Voye l ankò",
 wiz_btn_verify:"Verifye",
 wiz_p_h:"Aktive abònman ou", wiz_p_sub:"Verifye plan ou epi chwazi mwayen peman an.",
@@ -2497,6 +2497,29 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   }
 
   /* ---- Affichage d'une etape ---- */
+  /* 25/11 (James) : inscription restee « a moitie faite » sur l'appareil (code valide mais compte
+     jamais cree, ancien defaut) : l'etape 3 (paiement) n'est plus jamais montree sans compte reel.
+     Aucun identifiant de compte ET aucune session -> retour au formulaire d'inscription (nom et
+     e-mail deja remplis), avec un message. Si Supabase n'est pas charge, on ne decide rien. */
+  async function verifierCompteReelEtape3(){
+    if(!state||!state.email||state.supabaseUserId||state.paid)return;
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return;
+    let session=null;
+    try{session=(await sb.auth.getSession()).data.session;}catch(e){return;}
+    if(session&&session.user)return;
+    if(!panels.find(p=>p.dataset.step==='3'&&p.classList.contains('on')))return;
+    state.emailVerified=false;state.codeFor=null;state.step=1;save();
+    showStep(1);
+    const f=document.getElementById('wizStep1');
+    if(f){
+      if(!f.fullname.value&&state.fullname)f.fullname.value=state.fullname;
+      if(!f.email.value&&state.email)f.email.value=state.email;
+      if(state.site&&typeof sitePickSet==='function')sitePickSet(state.site);
+    }
+    if(window.VB_toast)window.VB_toast('wiz_compte_absent_h',t('wiz_compte_absent_p'));
+    if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('compte_absent_etape3','inscription sans compte reel : retour au formulaire');
+  }
   function showStep(n){
     panels.forEach(p=>p.classList.toggle('on',p.dataset.step===String(n)));
     if(n==='lock'||n==='pwreset'){bar.style.visibility='hidden';return;}
@@ -2523,6 +2546,9 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
        juste la barre a la toute fin, seulement pour n===4. */
     if(n===4)bar.style.visibility='hidden';
     if(n===1&&submitBtn)submitBtn.textContent=t('wiz_btn_next1');
+    if(n==='verify')setTimeout(()=>{erreurCreationCompte(null);
+      const m=document.getElementById('wizInlineMail');if(m&&!m.textContent.trim()&&state&&state.email)m.textContent=state.email;},0);   // e-mail aussi apres rechargement
+    if(n===3&&!modeWizard.classList.contains('renew'))setTimeout(verifierCompteReelEtape3,0);
     if(n===3){renderStep3();armPaymentTimeout();demarrerSyncPlansWizard();}
     else{disarmPaymentTimeout();arreterSyncPlansWizard();}
     if(n===4)renderStep4();
@@ -2592,6 +2618,18 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
   /* ================= ETAPE 1 : creation du compte ================= */
   const f1=document.getElementById('wizStep1');
   let pendingPlainPassword=null;   // en memoire uniquement, jamais persiste
+  /* 25/11 (James, client sans compte) : sur telephone, la page se recharge souvent au retour de
+     Gmail -> le mot de passe en memoire etait perdu et le compte jamais cree. Il est maintenant
+     garde dans l'ONGLET (sessionStorage : jamais envoye ailleurs, efface a la fermeture de
+     l'onglet) SEULEMENT entre le formulaire et la creation du compte, puis efface aussitot. */
+  const CLE_MDP_ONGLET='vipbetcote.inscr.onglet';
+  function garderMdpOnglet(email,mdp){try{sessionStorage.setItem(CLE_MDP_ONGLET,JSON.stringify({e:email,m:mdp}));}catch(e){}}
+  function oublierMdpOnglet(){try{sessionStorage.removeItem(CLE_MDP_ONGLET);}catch(e){}}
+  function relireMdpOnglet(email){
+    try{const o=JSON.parse(sessionStorage.getItem(CLE_MDP_ONGLET)||'null');
+      if(o&&o.m&&o.e&&email&&o.e===email)return o.m;}catch(e){}
+    return null;
+  }
   const fVerify=document.getElementById('wizVerify');  // declare tot : utilise par le submit de l'etape 1
   function setErr(field,key){
     field.classList.toggle('invalid',!!key);
@@ -2668,6 +2706,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     // le temps strictement necessaire pour creer le compte Supabase apres
     // verification du code. Efface des utilisation ou en cas d'abandon.
     pendingPlainPassword=pw.value;
+    garderMdpOnglet(state.email,pw.value);
     state.started=true;                       // inscription reellement commencee
     state.startedAt=state.startedAt||Date.now();
 
@@ -2703,10 +2742,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      reellement cette adresse — le point de confiance naturel pour
      enregistrer un compte durable, visible depuis n'importe quel appareil. */
   async function creerCompteSupabase(){
+    /* 25/11 (James, client sans compte apres un depot manuel) : l'ancienne regle « ne jamais bloquer »
+       laissait passer au paiement SANS compte reel (mot de passe perdu au rechargement de la page,
+       Supabase non charge, erreur reseau). Desormais : pas de compte reel = on reste sur la
+       verification avec un message clair. Le mot de passe n'est efface de la memoire qu'apres SUCCES
+       (il sert a reessayer sans tout retaper). */
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     const motdepasse=pendingPlainPassword;
-    pendingPlainPassword=null;              // efface de la memoire aussitot utilise
-    if(!sb||!motdepasse)return {ok:true,hors_ligne:true};  // degrade sans jamais bloquer
+    if(!motdepasse)return {ok:false,raison:'modpas'};
+    if(!sb)return {ok:false,raison:'reseau',erreur:'supabase non charge'};
     try{
       const {data,error}=await sb.auth.signUp({
         email:state.email,
@@ -2718,9 +2762,12 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         // plus fiable que l'ancien registre local.
         if(/already|existe|registered/i.test(error.message||''))
           return {ok:false,raison:'existe_deja'};
-        return {ok:true,hors_ligne:true,erreur:error.message};  // ne bloque pas l'inscription locale
+        const reseau=error.status===0||/fetch|network|retryable|load failed/i.test(String(error.name||'')+' '+String(error.message||''));
+        return {ok:false,raison:reseau?'reseau':'erreur',erreur:error.message||String(error.status||'')};
       }
       state.supabaseUserId=data&&data.user?data.user.id:null;
+      if(!state.supabaseUserId)return {ok:false,raison:'erreur',erreur:'signUp sans utilisateur'};
+      pendingPlainPassword=null;oublierMdpOnglet();   // compte cree : efface de la memoire ET de l'onglet
       // Ecriture explicite du nom dans profiles.username : la routine
       // automatique qui cree la fiche profil ne recopie pas forcement le
       // nom depuis les metadonnees du compte — on ne depend pas d'elle
@@ -2733,8 +2780,22 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       }
       return {ok:true};
     }catch(e){
-      return {ok:true,hors_ligne:true,erreur:e.message};  // reseau indisponible : on degrade, jamais on ne bloque
+      return {ok:false,raison:'reseau',erreur:e&&e.message};
     }
+  }
+  let codeValidePour=null;   // e-mail dont le code a deja ete accepte par le serveur (ne pas le redemander)
+  /* Dernier recours (tres rare : code ouvert dans un AUTRE onglet, onglet ferme puis rouvert) :
+     mot de passe introuvable -> retour au formulaire d'inscription (nom et e-mail deja remplis),
+     comme « Chanje imel la », avec un message. Jamais de paiement sans compte. */
+  function retourFormulaireMdp(){
+    document.getElementById('wizVerifyBack').click();
+    if(window.VB_toast)window.VB_toast('wiz_compte_absent_h',t('wiz_v_pass_note'));
+  }
+  function erreurCreationCompte(cle){
+    const e=document.getElementById('wizCreateErr');
+    if(!e)return;
+    if(!cle){e.style.display='none';return;}
+    e.textContent=t(cle);e.style.display='block';
   }
 
   fVerify.addEventListener('submit',async ev=>{
@@ -2757,12 +2818,30 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       otpInputs[0].focus();
       return;
     }
+    erreurCreationCompte(null);
+    // 25/11 : mot de passe perdu par un rechargement -> relu dans l'onglet ; introuvable -> formulaire.
+    if(!pendingPlainPassword)pendingPlainPassword=relireMdpOnglet(state.email);
+    if(!pendingPlainPassword){retourFormulaireMdp();return;}
     const submitBtnVerify=fVerify.querySelector('button[type=submit]');
     submitBtnVerify.disabled=true;
     window.VB_chargement(true);
+    // 25/11 : Supabase doit etre pret AVANT de consommer le code (meme attente que la connexion, 8 s).
+    let sbPret=window.VB_getSupabase&&window.VB_getSupabase();
+    for(let i=0;!sbPret&&i<40;i++){
+      if(i===15&&window.VB_rechargerSupabase)window.VB_rechargerSupabase();
+      await new Promise(r=>setTimeout(r,200));sbPret=window.VB_getSupabase&&window.VB_getSupabase();
+    }
+    if(!sbPret){
+      window.VB_chargement(false);submitBtnVerify.disabled=false;
+      erreurCreationCompte('wiz_v_err_reseau');
+      if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('creation_compte','supabase non charge (verification)');
+      return;
+    }
     // Le VRAI code n'est plus verifie que cote serveur — jamais de
     // comparaison locale a une valeur connue du navigateur.
-    const codeRes=await window.VB_confirmSignupCode(state.email,entered);
+    // Code deja accepte pour cet e-mail (2e essai apres une erreur de creation) : pas redemande.
+    const codeRes=codeValidePour===state.email?{ok:true}:await window.VB_confirmSignupCode(state.email,entered);
+    if(codeRes.ok)codeValidePour=state.email;
     if(!codeRes.ok){
       window.VB_chargement(false);
       submitBtnVerify.disabled=false;
@@ -2789,10 +2868,14 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
          l'utilisateur ("subscriptions: ...", "auth.uid() est null", etc.) —
          message generique cote utilisateur, detail reel enregistre pour
          l'admin (voir VB_logErreurTechnique). */
-      if(res.hors_ligne){
-        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('creation_compte',res.erreur);
-        if(window.VB_toast)window.VB_toast('err_action_unavailable_h',t('err_action_unavailable_p'));
+      // 25/11 : pas de compte reel = on RESTE ici (plus jamais de paiement sans compte).
+      if(!res.ok){
+        if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('creation_compte',res.raison+(res.erreur?' : '+res.erreur:''));
+        if(res.raison==='modpas'){retourFormulaireMdp();return;}
+        erreurCreationCompte(res.raison==='reseau'?'wiz_v_err_reseau':'wiz_v_err_creation');
+        return;
       }
+      codeValidePour=null;
       state.emailVerified=true;
       state.step=3;
       save();
@@ -2800,7 +2883,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     });
   });
   document.getElementById('wizVerifyBack').addEventListener('click',()=>{
-    pendingPlainPassword=null;   // on quitte la verification : plus besoin, on efface
+    pendingPlainPassword=null;oublierMdpOnglet();   // on quitte la verification : plus besoin, on efface
     closeInlineOtp();
     showStep(1);
     /* 18/10 : si la page a ete rechargee pendant la verification (retour de
@@ -3944,6 +4027,16 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         const {data:sd}=await sbChk.auth.getSession();
         uidChk=(sd&&sd.session&&sd.session.user)?sd.session.user.id:null;
       }
+      // 25/11 (James) : ecran reste ouvert pendant que l'admin activait le plan -> l'etat local dit
+      // « pas de plan » mais la base a un plan ACTIF : pas de 2e paiement, on ouvre le Dashboard.
+      if(sbChk&&uidChk&&!(state.paid&&state.payStatus==='confirmed')&&!renewMode){
+        const userActif=await chercherPlanActifReel();
+        if(userActif){
+          fermerFenetreAuto(fenetreAuto);
+          await ouvrirDashApresActivation(userActif);
+          return;
+        }
+      }
       if(sbChk&&uidChk){
         const {data:pend}=await sbChk.from('payments')
           .select('reference').eq('user_id',uidChk).eq('status','pending').limit(1);
@@ -4212,9 +4305,15 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
         /* Sans session, la policy storage refuserait de toute facon
            l'upload : on echoue tout de suite avec un message clair plutot
            que de laisser partir une requete vouee a un 403. */
-        erreurManuelle('wiz_m_err_upload');
+        erreurManuelle('wiz_m_err_nocompte');
         if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel','session absente a la soumission');
         return;
+      }
+      // 25/11 (James) : plan deja ACTIF en base (active par l'admin pendant que cet ecran etait ouvert)
+      // -> pas de 2e recu ni de 2e paiement : le Dashboard s'ouvre. Avant meme l'envoi de l'image.
+      if(!(state.paid&&state.payStatus==='confirmed')&&!renewMode){
+        const userActif=await chercherPlanActifReel();
+        if(userActif){await ouvrirDashApresActivation(userActif);return;}
       }
 
       const ext=(manualFichier.type==='image/png')?'png':(manualFichier.type==='image/webp')?'webp':'jpg';
@@ -5323,7 +5422,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
   function signupEntry(){
     if(requiredStep(state)===4){
-      pendingPlainPassword=null;   // nouvelle inscription : on repart propre
+      pendingPlainPassword=null;oublierMdpOnglet();   // nouvelle inscription : on repart propre
       state=blank();
       save();
       f1.reset();
@@ -5689,6 +5788,44 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      qu'on la quitte (change d'etape ou ferme le parcours) — jamais actif
      ailleurs, pour ne rien consommer inutilement. */
   let wizPlansChannel=null, wizPlansPollTimer=null;
+  /* 25/11 (James) : un plan ACTIVE pendant que la personne est sur l'etape 3 d'une INSCRIPTION
+     (depot manuel valide par l'admin, plan attribue) -> le Dashboard s'ouvre tout seul (20 s au plus,
+     ou des le retour sur l'onglet), avec « Plan ou aktive ». Seulement un abonnement ACTIF et non
+     expire : un paiement automatique en cours (abonnement 'pending') ne fait JAMAIS basculer l'ecran.
+     Meme reprise que le rechargement de page (VB_reprendreApresAdmin). Renouvellement : rien. */
+  let verifPlanEtape3EnCours=false;
+  async function chercherPlanActifReel(){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb)return null;
+    let user=null;
+    try{const {data}=await sb.auth.getSession();user=data&&data.session&&data.session.user;}catch(e){return null;}
+    if(!user)return null;
+    try{
+      const {data:subs}=await sb.from('subscriptions').select('plan_id,expires_at')
+        .eq('user_id',user.id).eq('status','active').limit(5);
+      const ok=(subs||[]).some(x=>!x.expires_at||new Date(x.expires_at).getTime()>Date.now());
+      return ok?user:null;
+    }catch(e){return null;}
+  }
+  async function ouvrirDashApresActivation(user){
+    renewMode=false;setChrome(false);modeWizard.classList.remove('renew');
+    closeAuth();
+    await window.VB_reprendreApresAdmin(user);
+    if(window.VB_toast)window.VB_toast('wiz_plan_active_h',t('wiz_plan_active_p'));
+  }
+  async function verifierPlanActifEtape3(){
+    if(verifPlanEtape3EnCours)return;
+    if(!page.classList.contains('open')||modeWizard.classList.contains('renew'))return;
+    if(!panels.find(p=>p.dataset.step==='3'&&p.classList.contains('on')))return;
+    if(state.paid&&state.payStatus==='confirmed')return;
+    verifPlanEtape3EnCours=true;
+    try{
+      const user=await chercherPlanActifReel();
+      if(user&&panels.find(p=>p.dataset.step==='3'&&p.classList.contains('on'))&&page.classList.contains('open'))await ouvrirDashApresActivation(user);
+    }finally{verifPlanEtape3EnCours=false;}
+  }
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')verifierPlanActifEtape3();});
+  window.addEventListener('focus',()=>{verifierPlanActifEtape3();});
   function demarrerSyncPlansWizard(){
     arreterSyncPlansWizard();
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
@@ -5701,7 +5838,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
           .subscribe();
       }catch(e){}
     }
-    wizPlansPollTimer=setInterval(()=>{if(!document.hidden)window.VB_syncPlansFromSupabase();},20000);
+    wizPlansPollTimer=setInterval(()=>{if(!document.hidden){window.VB_syncPlansFromSupabase();verifierPlanActifEtape3();}},20000);
   }
   function arreterSyncPlansWizard(){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
@@ -9315,7 +9452,8 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
     document.querySelectorAll('#admDash .dash-view').forEach(v=>v.classList.toggle('on',v.dataset.adview===view));
     dash.scrollTop=0;
     if(view==='home')renderHome();
-    if(view==='users')renderUsers();
+    // 25/11 (James : « 92 kont » ici, 103 dans Vi jeneral) : la liste est relue dans la base a CHAQUE ouverture.
+    if(view==='users'){usersCache=null;renderUsers();}
     if(view==='payments')renderPayments();
     if(view==='revenus'){renderRevenue();renderStripeUsd();renderRevenueTransactions(true);}
     if(view==='renouvellement')renderRenouvellementPage();
@@ -10619,7 +10757,7 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       const {data,error}=await sb.from('profiles')
         .select('id,email,username,role,preferred_site,created_at,suspended_at,suspended_by,suspended_reason')
         .order('created_at',{ascending:false})
-        .limit(200);
+        .limit(1000);   // 25/11 : 200 aurait cache des comptes au-dela de 200 inscrits
       usersCache=(!error&&data)?data:[];
     }catch(e){
       usersCache=[];   // jamais d'exception non interceptee : on degrade proprement

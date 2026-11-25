@@ -1735,6 +1735,8 @@ body:has(:is(.authpage,.dash,.legalpage,.faqpage).open) :is(.lp-nav,.ticker,.lp-
 #wizStep4 .wiz-auto-warn,#wizStep4 .wiz-auto-warn span{color:#FF8A78;font-size:13.5px;font-weight:800}
 #wizStep4 .wiz-auto-warn .wiz-auto-tri{color:#F0503C;font-size:19px}
 .wiz-auto-tri{flex-shrink:0;color:#F0503C;font:900 19px/1 'Segoe UI Symbol','Apple Symbols',Arial,sans-serif}
+/* 25/11 : page du code - message si le compte n'a pas pu etre cree */
+#wizCreateErr{display:none;color:#FF8A78;font-weight:700}
 /* Cercle de chargement pendant l'ouverture de la page MonCash/NatCash (sans fond, ecran visible derriere) */
 .vb-pay-spin{position:fixed;inset:0;z-index:100002;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .vb-pay-spin[hidden]{display:none}
@@ -5279,6 +5281,7 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
               <input type="text" inputmode="numeric" maxlength="1" aria-label="6" autocomplete="one-time-code">
             </div>
             <span class="field-err" id="wizOtpErr" style="display:none;text-align:center" data-i18n="wiz_v_err">Kòd la pa kòrèk</span>
+            <span class="field-err" id="wizCreateErr" style="display:none;text-align:center"></span>
             <p class="authpage-switch" style="margin:0">
               <span data-i18n="wiz_v_noreceive">Ou pa resevwa l?</span><button type="button" class="authpage-switch-link" id="wizResend" data-i18n="wiz_v_resend">Voye l ankò</button>
             </p>
@@ -6958,6 +6961,6 @@ html[lang=en] .authpage:not(:has(#authModeLogin.on)) .wiz-head:has(.wiz-node:nth
     </div>
   </div>
 </div>
-<script src="app.js?v=20261125f"></script>
+<script src="app.js?v=20261125h"></script>
 </body>
 </html>
