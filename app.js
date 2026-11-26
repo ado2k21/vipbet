@@ -388,7 +388,7 @@ hero_why:"POURQUOI CHOISIR VIPBETCOTE ?",
 hero_price_from:"Abonnements dès",
 auth_lbl_username:"Nom d'utilisateur", auth_ph_username:"Choisissez un nom d'utilisateur",
 auth_optional:"(facultatif)",
-auth_err_email_temp:"Les adresses e-mail temporaires ne sont pas acceptées", auth_err_email_impossible:"Cette adresse e-mail n'existe pas. Vérifiez-la (ex. nom@gmail.com)", auth_err_email_typo:"Vouliez-vous dire {sugg} ?",
+auth_err_email_temp:"Les adresses e-mail temporaires ne sont pas acceptées", auth_err_email_impossible:"Cette adresse e-mail n'existe pas. Vérifiez-la (ex. nom@gmail.com)", auth_err_email_typo:"Vouliez-vous dire {sugg} ?", auth_err_email_proche:"Vouliez-vous dire {sugg} ? Sinon, appuyez à nouveau pour continuer.", auth_err_email_gmail:"Cette adresse Gmail ne peut pas exister : avant @gmail.com, il faut au moins 6 lettres ou chiffres (seulement lettres, chiffres et points).",
 dash_soon_h:"Votre abonnement expire dans {n} jour(s)",
 dash_soon_sub:"Renouvelez maintenant pour ne pas perdre l'accès aux fiches.",
 dash_change_pass:"Changer mon mot de passe",
@@ -969,7 +969,7 @@ hero_why:"WHY CHOOSE VIPBETCOTE?",
 hero_price_from:"Plans from",
 auth_lbl_username:"Username", auth_ph_username:"Choose a username",
 auth_optional:"(optional)",
-auth_err_email_temp:"Temporary email addresses are not accepted", auth_err_email_impossible:"This email address does not exist. Please check it (e.g. name@gmail.com)", auth_err_email_typo:"Did you mean {sugg}?",
+auth_err_email_temp:"Temporary email addresses are not accepted", auth_err_email_impossible:"This email address does not exist. Please check it (e.g. name@gmail.com)", auth_err_email_typo:"Did you mean {sugg}?", auth_err_email_proche:"Did you mean {sugg}? If not, tap again to continue.", auth_err_email_gmail:"This Gmail address cannot exist: before @gmail.com it needs at least 6 letters or numbers (only letters, numbers and dots).",
 dash_soon_h:"Your plan expires in {n} day(s)",
 dash_soon_sub:"Renew now so you don't lose access to the slips.",
 dash_change_pass:"Change my password",
@@ -1550,7 +1550,7 @@ hero_why:"POUKISA CHWAZI VIPBETCOTE ?",
 hero_price_from:"Abònman apati",
 auth_lbl_username:"Non itilizatè", auth_ph_username:"Chwazi yon non itilizatè",
 auth_optional:"(fakiltatif)",
-auth_err_email_temp:"Nou pa aksepte imèl tanporè", auth_err_email_impossible:"Imèl sa a pa egziste. Verifye l byen (egz. non@gmail.com)", auth_err_email_typo:"Ou vle di {sugg} ?",
+auth_err_email_temp:"Nou pa aksepte imèl tanporè", auth_err_email_impossible:"Imèl sa a pa egziste. Verifye l byen (egz. non@gmail.com)", auth_err_email_typo:"Ou vle di {sugg} ?", auth_err_email_proche:"Ou vle di {sugg} ? Si se pa sa, peze ankò pou w kontinye.", auth_err_email_gmail:"Adrès Gmail sa a pa ka egziste : anvan @gmail.com, fòk gen omwen 6 lèt oswa chif (sèlman lèt, chif ak pwen).",
 dash_soon_h:"Abònman ou ap ekspire nan {n} jou",
 dash_soon_sub:"Renouvle kounye a pou w pa pèdi aksè a fich yo.",
 dash_change_pass:"Chanje modpas",
@@ -2663,17 +2663,61 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     'hotmial.com':'hotmail.com','hotmal.com':'hotmail.com','homail.com':'hotmail.com','hotmail.con':'hotmail.com','hotmail.co':'hotmail.com','hotmai.com':'hotmail.com',
     'outlok.com':'outlook.com','outlook.con':'outlook.com','outllook.com':'outlook.com',
     'iclod.com':'icloud.com','icoud.com':'icloud.com','icluod.com':'icloud.com','icloud.con':'icloud.com','iclould.com':'icloud.com'};
+  /* 26/11 (James, refait : la version du 25/11 « v=20261125k » avait ete perdue) : domaine a UNE lettre
+     pres (DEUX pour gmail.com) d'une grande messagerie -> « Ou vle di … ? ». Cas reels en base :
+     gmaio.com, gmaili.com, gmai.com, yhoo.fr. Meme 1re lettre seulement (protege cloud.com, email.com…),
+     vrais domaines jamais touches (VRAIS_DOMAINES). Avertissement DOUX : si la personne renvoie la MEME
+     adresse, elle est acceptee (regle : une adresse professionnelle doit toujours passer). */
+  const CIBLES_DOMAINE=['gmail.com','yahoo.com','yahoo.fr','hotmail.com','hotmail.fr','outlook.com','outlook.fr','icloud.com'];
+  const VRAIS_DOMAINES=new Set(['gmail.com','googlemail.com','yahoo.com','yahoo.fr','yahoo.ca','yahoo.co.uk','yahoo.es','yahoo.de','yahoo.it',
+    'yahoo.com.br','yahoo.com.mx','ymail.com','rocketmail.com','hotmail.com','hotmail.fr','hotmail.ca','hotmail.co.uk','hotmail.be','hotmail.es',
+    'hotmail.it','hotmail.de','outlook.com','outlook.fr','outlook.be','outlook.es','outlook.de','outlook.it','live.com','live.fr','live.ca','live.be',
+    'msn.com','icloud.com','me.com','mac.com','mail.com','email.com','gmx.com','gmx.fr','gmx.de','gmx.net','aol.com','aol.fr','proton.me',
+    'protonmail.com','zoho.com','yandex.com','mail.ru','163.com','qq.com','orange.fr','free.fr','sfr.fr','laposte.net','wanadoo.fr']);
+  function distanceDL(a,b){   // Damerau-Levenshtein (transposition de 2 lettres = 1)
+    const d=[];for(let i=0;i<=a.length;i++){d[i]=[i];}for(let j=0;j<=b.length;j++)d[0][j]=j;
+    for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++){
+      const c=a[i-1]===b[j-1]?0:1;
+      d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+c);
+      if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1);
+    }
+    return d[a.length][b.length];
+  }
+  function domaineProche(dom){
+    if(!dom||VRAIS_DOMAINES.has(dom))return null;
+    let best=null,bd=99;
+    CIBLES_DOMAINE.forEach(c=>{
+      if(c[0]!==dom[0])return;
+      const dd=distanceDL(dom,c),max=(c==='gmail.com')?2:1;
+      if(dd>0&&dd<=max&&dd<bd){bd=dd;best=c;}
+    });
+    return best;
+  }
+  /* Adresse « proche » deja signalee a l'ecran : {val, t}. Elle est acceptee si la personne continue avec
+     la MEME adresse apres avoir vu le message (au moins 0,8 s : un clic sur « Kontinye » qui fait quitter
+     le champ affiche le message mais ne le fait pas passer sans qu'il ait ete vu). */
+  let avertiProche={val:null,t:0};
   function problemeEmail(v){
     const val=String(v||'').trim().toLowerCase();
     const at=val.lastIndexOf('@');if(at<1)return null;
     const loc=val.slice(0,at),dom=val.slice(at+1);
+    /* 26/11 (James, point 7) : regle OFFICIELLE de Gmail — 6 a 30 caracteres, seulement lettres, chiffres
+       et points (le « +alias » est permis). Une adresse plus courte (« basil@ ») ou avec un tiret
+       (« mr-osias@ ») ne peut pas recevoir le code. Inscription seulement : la connexion n'est pas touchee. */
+    if(dom==='gmail.com'||dom==='googlemail.com'){
+      const nom=loc.split('+')[0];
+      if(!/^[a-z0-9.]+$/.test(nom)||nom.replace(/\./g,'').length<6)return {cle:'auth_err_email_gmail'};
+    }
     // nom qui contient deja un domaine COMPLET (« nomgmail.com… », « nomgmailcom… ») : adresse collee deux fois.
     // Regle etroite : jamais une adresse professionnelle ou Yahoo valide.
     if(/(gmail|hotmail|outlook|icloud)\.?com/.test(loc))return {cle:'auth_err_email_impossible'};
     if(FAUTES_DOMAINE[dom])return {cle:'auth_err_email_typo',sugg:loc+'@'+FAUTES_DOMAINE[dom]};
+    const proche=domaineProche(dom);
+    if(proche&&!(avertiProche.val===val&&Date.now()-avertiProche.t>800))return {cle:'auth_err_email_proche',sugg:loc+'@'+proche,doux:val};
     return null;
   }
   function erreurEmailImpossible(champ,pb){
+    if(pb.doux&&avertiProche.val!==pb.doux)avertiProche={val:pb.doux,t:Date.now()};   // message vu -> la MEME adresse passera ensuite
     setErr(champ,pb.cle);
     if(pb.sugg){const e=champ.querySelector('.field-err');if(e)e.textContent=t(pb.cle).replace('{sugg}',pb.sugg);}
   }
@@ -2975,6 +3019,19 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
     showMode('login');
   });
   f1.querySelector('[name=email]').addEventListener('input',()=>{takenBox.hidden=true;});
+  /* 26/11 (James : « certains sites affichent l'erreur des que l'e-mail est saisi ») : l'adresse est
+     verifiee quand la personne QUITTE le champ (jamais pendant qu'elle tape : « jean@gm » serait faux) ;
+     pendant une correction, l'erreur disparait des que l'adresse devient correcte. Memes regles que
+     « Kontinye » (format, e-mail temporaire, fautes de domaine, regle Gmail) ; champ vide = rien. */
+  (function(){
+    const em=f1.querySelector('[name=email]'), champ=em.closest('.field');
+    const erreurDe=v=>{v=String(v||'').trim();if(!v)return null;
+      if(!isEmail(v))return {cle:'auth_err_email'};
+      if(isDisposable(v))return {cle:'auth_err_email_temp'};
+      return problemeEmail(v);};
+    em.addEventListener('blur',()=>{const pb=erreurDe(em.value);if(pb)erreurEmailImpossible(champ,pb);else setErr(champ,null);});
+    em.addEventListener('input',()=>{if(champ.classList.contains('invalid')&&!erreurDe(em.value))setErr(champ,null);});
+  })();
 
   /* ---- Indicateur de robustesse du mot de passe (temps reel) ---- */
   (function(){
