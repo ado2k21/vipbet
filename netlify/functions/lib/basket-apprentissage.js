@@ -17,6 +17,12 @@
  * 3. JOURNAL (table basket_journal) : toutes les selections envisagees (choisies ou non)
  *    avec leur resultat reel -> l'apprentissage progresse vite, chaque jour.
  *
+ * 4. CHAMPIONNATS (26/11, James : « exclure ceux qui echouent toujours ») : meme calcul par
+ *    championnat (nom + pays). Un championnat avec au moins MIN_RESULTATS_EXCLUSION resultats
+ *    ET un facteur lisse < SEUIL_EXCLUSION est ecarte du pool renforce (ex. au 26/11 :
+ *    Euroleague 52 % reussis pour 66 % annonces sur 190 resultats). La NBA n'est JAMAIS ecartee.
+ *    Un championnat qui se reprend revient tout seul (calcul refait a chaque passage).
+ *
  * Tout est NON BLOQUANT : table absente, erreur reseau... -> le bot fait exactement
  * comme avant (facteur fixe 0,91, aucune exclusion).
  */
@@ -59,6 +65,8 @@ function ligneDuPick(pick) {
   return m ? parseFloat(m[1]) : null;
 }
 const borne = (x, a, b) => Math.min(b, Math.max(a, x));
+const cleLigue = (league, pays) => league ? `${String(league).trim()}|${String(pays || '').trim()}` : null;
+const estLigueNBA = league => String(league || '').trim().toUpperCase() === 'NBA';
 const aLigne = m => m === 'mk_basket_total' || m === 'mk_basket_total_domicile' || m === 'mk_basket_total_exterieur'; // 20/11
 
 // lignes : [{ play_date, game_id, market, pick, odd, result }] (won/lost seulement comptent).
@@ -66,6 +74,7 @@ const aLigne = m => m === 'mk_basket_total' || m === 'mk_basket_total_domicile' 
 function calculerCalibration(lignes) {
   const vus = new Set();
   const parSeg = new Map();
+  const parLigue = new Map();
   let N = 0, W = 0, P = 0;
   (lignes || []).forEach(l => {
     if (l.result !== 'won' && l.result !== 'lost') return;
@@ -79,6 +88,12 @@ function calculerCalibration(lignes) {
     const s = parSeg.get(seg) || { n: 0, w: 0, p: 0 };
     s.n++; s.p += 1 / odd; if (l.result === 'won') s.w++;
     parSeg.set(seg, s);
+    const lg = cleLigue(l.league, l.league_country);
+    if (lg) {
+      const x = parLigue.get(lg) || { n: 0, w: 0, p: 0 };
+      x.n++; x.p += 1 / odd; if (l.result === 'won') x.w++;
+      parLigue.set(lg, x);
+    }
     N++; P += 1 / odd; if (l.result === 'won') W++;
   });
   // Facteur global, lisse vers l'ancien facteur fixe.
@@ -95,7 +110,19 @@ function calculerCalibration(lignes) {
       exclu: s.n >= MIN_RESULTATS_EXCLUSION && facteur < SEUIL_EXCLUSION
     };
   });
-  return { global: Math.round(global * 10000) / 10000, resultats: N, segments };
+  const ligues = {};
+  parLigue.forEach((x, lg) => {
+    const pMoy = x.p / x.n;
+    const facteur = borne((x.w + K_SEGMENT * global * pMoy) / (x.n + K_SEGMENT) / pMoy, FACTEUR_MIN, FACTEUR_MAX);
+    ligues[lg] = {
+      n: x.n, gagnes: x.w,
+      reussite: Math.round(1000 * x.w / x.n) / 10,
+      annoncee: Math.round(1000 * pMoy) / 10,
+      facteur: Math.round(facteur * 10000) / 10000,
+      exclu: !estLigueNBA(lg.split('|')[0]) && x.n >= MIN_RESULTATS_EXCLUSION && facteur < SEUIL_EXCLUSION
+    };
+  });
+  return { global: Math.round(global * 10000) / 10000, resultats: N, segments, ligues };
 }
 
 // Annote chaque selection du pool : b.segment, b.facteurSegment, b.segmentExclu.
@@ -105,6 +132,9 @@ function appliquerCalibration(pool, calib) {
     const s = calib && b.segment ? calib.segments[b.segment] : null;
     b.facteurSegment = s ? s.facteur : (calib ? calib.global : FACTEUR_DEFAUT);
     b.segmentExclu = !!(s && s.exclu);
+    // 26/11 : championnat qui perd nettement plus que ses cotes (jamais la NBA)
+    const lg = calib && calib.ligues ? calib.ligues[cleLigue(b.league, b.leagueCountry)] : null;
+    b.ligueExclue = !!(lg && lg.exclu) && !estLigueNBA(b.league);
   });
   return pool;
 }
@@ -165,14 +195,15 @@ async function lireCalibration(erreurs) {
   let lignes = [];
   try {
     const j = await lireTout('basket_journal',
-      `select=play_date,game_id,market,pick,odd,result&result=in.(won,lost)&play_date=gte.${depuis}`, 'play_date.asc,game_id.asc,market.asc,pick.asc');
+      `select=play_date,game_id,market,pick,odd,result,league,league_country&result=in.(won,lost)&play_date=gte.${depuis}`, 'play_date.asc,game_id.asc,market.asc,pick.asc');
     lignes = lignes.concat(j);
   } catch (e) { if (erreurs) erreurs.push(`apprentissage: journal illisible (${e.message})`); }
   try {
     const legs = await lireTout('ticket_legs',
-      `select=id,fixture_id,market,pick,odd,result,tickets!inner(play_date,sport)&tickets.sport=eq.basket&tickets.play_date=gte.${depuis}&result=in.(won,lost)`, 'id.asc');
+      `select=id,fixture_id,market,pick,odd,result,league,league_country,tickets!inner(play_date,sport)&tickets.sport=eq.basket&tickets.play_date=gte.${depuis}&result=in.(won,lost)`, 'id.asc');
     legs.forEach(l => lignes.push({
-      play_date: l.tickets && l.tickets.play_date, game_id: l.fixture_id, market: l.market, pick: l.pick, odd: l.odd, result: l.result
+      play_date: l.tickets && l.tickets.play_date, game_id: l.fixture_id, market: l.market, pick: l.pick, odd: l.odd, result: l.result,
+      league: l.league, league_country: l.league_country
     }));
   } catch (e) { if (erreurs) erreurs.push(`apprentissage: fiches publiees illisibles (${e.message})`); }
   if (!lignes.length) return null;
@@ -290,7 +321,7 @@ async function lireHistoriquePoints(dateCible, jours, erreurs) {
 
 module.exports = {
   TRANCHES, FACTEUR_DEFAUT, SEUIL_EXCLUSION, MIN_RESULTATS_EXCLUSION,
-  typePari, tranche, segment, ligneDuPick, calculerCalibration, appliquerCalibration,
+  typePari, tranche, segment, cleLigue, ligneDuPick, calculerCalibration, appliquerCalibration,
   lireCalibration, lignesJournal, journaliserPool, marquerChoisies,
   reglerJournalDate, datesJournalARegler, enregistrerPointsMatchs, lireHistoriquePoints
 };

@@ -1178,6 +1178,11 @@ const COTE_MOYENNE_MIN_PAR_SELECTION = 1.55;
 // de totaux dans la fiche du bot automatique (la generation manuelle n'est pas concernee).
 const ECART_MIN_PROJECTION_TOTAL = 4;
 const PART_MIN_TOTAUX = 1 / 3;
+// 26/11 (James) : sur nos fiches reglees, 100 % NBA = 5 gagnees sur 17, fiches SANS NBA = 2 gagnees
+// sur 43 (4,6 a 5,6 matchs). Jour SANS AUCUN match NBA : meme cote du jour (tirage 2 a 20, inchange),
+// mais 2, 3 ou 4 matchs seulement (nombre toujours tire au hasard). Jour avec NBA : systeme d'avant,
+// inchange. Impossible -> ancienne fiche (jamais un jour sans fiche de plus qu'avant).
+const MAX_SELECTIONS_SANS_NBA = 4;
 
 function meilleureCombinaisonPourK(jeux, cible, bas, haut, k, KF, maxMeme, minTotaux) {
   const n = jeux.length;
@@ -1253,7 +1258,8 @@ function construireFicheBasketOptimisee(pool, cible, fractionBasse, rnd, maxMeme
   // Meilleure combinaison pour chaque nombre de sélections possible, en partant du plus petit.
   const parK = {};
   let kMin = null;
-  const kMaxAbsolu = Math.min(MAX_SELECTIONS_BASKET, jeux.length);
+  const kMaxOption = (options && Number.isFinite(options.kMax)) ? options.kMax : MAX_SELECTIONS_BASKET; // 26/11 : fiche courte
+  const kMaxAbsolu = Math.min(MAX_SELECTIONS_BASKET, kMaxOption, jeux.length);
   const kMaxCoteMoyenne = Math.floor(Math.log(cible) / Math.log(COTE_MOYENNE_MIN_PAR_SELECTION));
   for (let k = 2; k <= kMaxAbsolu; k++) {
     // jamais trop de combiné : au plus kMin+2 sélections ET cote moyenne >= 1,45 par sélection
@@ -1300,7 +1306,8 @@ function cascadeFicheBasket(pool, cibleNominale, rnd, options) {
            || construireFicheBasketOptimisee(pool, cible, 0.93, rnd, 3, options) || construireFicheBasketOptimisee(pool, cible, 0.85, rnd, 3, options);
       if (essai) methodeEssai = 'optimisee';
     }
-    if (!essai) essai = construireFicheBasket(pool, cible);
+    // 26/11 : fiche courte (options.kMax) -> jamais l'ancienne methode gloutonne (elle empile les matchs)
+    if (!essai) essai = (options && Number.isFinite(options.kMax)) ? { valide: false } : construireFicheBasket(pool, cible);
     const dernierPalier = cible === paliers[paliers.length - 1];
     // Palier retenu si la cote atteinte s'approche vraiment de CE palier (>=85 % de sa valeur) ;
     // sur le tout dernier palier, on accepte le meilleur résultat valide même en dessous.
@@ -1558,7 +1565,11 @@ async function handler(event) {
     }
     return !b.segmentExclu;
   };
-  const poolRenforce = poolBasketFiltre.filter(b => estMarchePointsBasket(b.market) ? totalGarde(b) : !b.segmentExclu);
+  // 26/11 (James : « exclure ceux qui echouent toujours ») : sans les championnats qui perdent nettement
+  // plus que leurs cotes (apprentissage par championnat, jamais la NBA).
+  const poolRenforce = poolBasketFiltre.filter(b => !b.ligueExclue && (estMarchePointsBasket(b.market) ? totalGarde(b) : !b.segmentExclu));
+  stats.apprentissage.liguesExclues = calibration && calibration.ligues ? Object.keys(calibration.ligues).filter(k => calibration.ligues[k].exclu) : [];
+  stats.apprentissage.selectionsLiguesExclues = poolBasketFiltre.filter(b => b.ligueExclue).length;
   stats.apprentissage.poolComplet = poolBasketFiltre.length;
   stats.apprentissage.poolRenforce = poolRenforce.length;
   stats.apprentissage.totauxGardes = poolRenforce.filter(b => estMarchePointsBasket(b.market)).length;
@@ -1581,6 +1592,15 @@ async function handler(event) {
   }
   const avecPrioriteNBA = pool => pool.map(b => (estNBA(b) ? Object.assign({}, b, { prioriteNBA: true }) : b));
   const poolRenforceMixte = avecPrioriteNBA(poolRenforce);
+  // 26/11 (James) : jour SANS AUCUN match NBA -> 2, 3 ou 4 matchs seulement, meme cote du jour.
+  stats.sansNBA = null;
+  if (!cascadeBasket.fiche && !poolBasketFiltre.some(estNBA)) {
+    const hasardSans = () => pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
+    for (const opt of [{ partTotaux: PART_MIN_TOTAUX, kMax: MAX_SELECTIONS_SANS_NBA }, { kMax: MAX_SELECTIONS_SANS_NBA }]) {
+      const c = cascadeFicheBasket(poolRenforceMixte, cibleDuJour, hasardSans(), opt);
+      if (c.fiche) { cascadeBasket = c; stats.sansNBA = { maxMatchs: MAX_SELECTIONS_SANS_NBA, cible: cibleDuJour, cibleAtteinte: c.cibleRetenue }; break; }
+    }
+  }
   const hasardMixte = pseudoAleatoireBasket(hash32Basket('basket-nb-' + String(dateCible)));
   if (!cascadeBasket.fiche) cascadeBasket = cascadeFicheBasket(poolRenforceMixte, cibleDuJour, hasardMixte, { partTotaux: PART_MIN_TOTAUX });
   stats.apprentissage.avecTotaux = !!cascadeBasket.fiche;
@@ -1666,6 +1686,7 @@ module.exports.CIBLE_MIN_JOUR_BASKET = CIBLE_MIN_JOUR_BASKET;
 module.exports.tirerCibleDuJourBasket = tirerCibleDuJourBasket;
 module.exports.construireFicheBasket = construireFicheBasket;
 module.exports.cascadeFicheBasket = cascadeFicheBasket;
+module.exports.MAX_SELECTIONS_SANS_NBA = MAX_SELECTIONS_SANS_NBA;
 module.exports.construireFicheBasketOptimisee = construireFicheBasketOptimisee;
 module.exports.construireFicheBasketClassique = construireFicheBasketClassique;
 module.exports.construireFicheBasketVarie = construireFicheBasketVarie;
