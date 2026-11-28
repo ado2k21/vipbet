@@ -268,7 +268,7 @@ wiz_btn_next1:"Continuer",
 wiz_resume_h:"Inscription non terminée",
 wiz_resume_at:"Reprenez à l'étape « {step} » — votre plan est conservé.",
 wiz_v_h:"Vérifiez votre e-mail", wiz_v_sub:"Nous vous avons envoyé un code à 6 chiffres.",
-wiz_v_err:"Le code est incorrect", wiz_v_pass_note:"Retapez votre mot de passe pour terminer la création de votre compte.", wiz_v_err_creation:"Votre compte n'a pas pu être créé. Réessayez.", wiz_v_err_reseau:"Le serveur ne répond pas. Vérifiez votre connexion et réessayez.", wiz_compte_absent_h:"Compte non terminé", wiz_compte_absent_p:"Votre compte n'a pas été créé. Retapez votre mot de passe pour le terminer avant de payer.", wiz_plan_active_h:"Plan activé ✓", wiz_plan_active_p:"Votre plan est actif. Bienvenue dans votre espace VIP.", wiz_m_err_nocompte:"Votre compte est introuvable. Connectez-vous ou terminez votre inscription avant d'envoyer le reçu.", wiz_v_demo:"Mode démonstration — votre code est",
+wiz_v_err:"Le code est incorrect", wiz_v_pass_note:"Retapez votre mot de passe pour terminer la création de votre compte.", wiz_v_err_creation:"Votre compte n'a pas pu être créé. Réessayez.", wiz_v_err_reseau:"Le serveur ne répond pas. Vérifiez votre connexion et réessayez.", wiz_compte_absent_h:"Compte non terminé", wiz_compte_absent_p:"Votre compte n'a pas été créé. Retapez votre mot de passe pour le terminer avant de payer.", wiz_plan_active_h:"Plan activé ✓", wiz_plan_active_p:"Votre plan est actif. Bienvenue dans votre espace VIP.", wiz_m_err_nocompte:"Votre compte est introuvable. Connectez-vous ou terminez votre inscription avant d'envoyer le reçu.", wiz_session_fini_h:"Reconnectez-vous", wiz_session_fini_p:"Pour continuer le paiement.", wiz_v_demo:"Mode démonstration — votre code est",
 wiz_v_noreceive:"Vous ne l'avez pas reçu ?", wiz_v_resend:"Renvoyer le code",
 wiz_btn_verify:"Vérifier",
 wiz_p_h:"Activez votre abonnement", wiz_p_sub:"Vérifiez votre plan puis choisissez votre moyen de paiement.",
@@ -576,7 +576,7 @@ adm_user_profile_h:"Profil", adm_user_role:"Rôle", adm_user_site:"Site préfér
 adm_user_current_plan:"Plan actuel", adm_user_no_plan:"Aucun",
 adm_user_change_plan_h:"Changer le plan", adm_user_change_plan_lbl:"Nouveau plan",
 adm_user_change_plan_reason_lbl:"Note (optionnelle)", adm_user_change_plan_reason_ph:"Ex. : geste commercial, correction d'erreur...",
-adm_user_change_plan_apply:"Appliquer le changement", adm_user_change_plan_same:"C'est déjà le plan actuel de cet utilisateur.",
+adm_user_change_plan_apply:"Appliquer le changement", adm_user_change_plan_same:"C'est déjà le plan actuel de cet utilisateur.", adm_paye_lbl:"Le client a payé (enregistrer le paiement)", adm_paye_method:"Moyen de paiement", adm_paye_choisir:"— Choisir —", adm_paye_apercu:"Paiement qui sera enregistré : {plan} · {montant} HTG · {moyen}", adm_paye_note:"Ce montant sera ajouté au revenu total (badge ATTRIBUÉ).", adm_paye_lecture:"Lecture du prix…", adm_paye_err_method:"Choisissez le moyen de paiement.", adm_paye_err_plan:"Choisissez un plan pour enregistrer un paiement.", adm_paye_err_prix:"Impossible de lire le prix du plan. Réessayez.", adm_confirm_q_paye:"Enregistrer le paiement de {montant} HTG ({moyen}) ? Ce montant sera ajouté au revenu total.", adm_paye_ok_p:"Plan activé et paiement enregistré.", adm_paye_err_insert:"Plan activé, mais le paiement n'a pas été enregistré : ",
 adm_user_change_plan_err:"Le changement a échoué.",
 adm_user_suspend_h:"Suspension du compte",
 adm_user_suspend_reason_lbl:"Raison (obligatoire — visible par le service client)",
@@ -628,7 +628,7 @@ wiz_m_err_type:"Format non accepté — utilisez JPG, PNG ou WebP",
 wiz_m_err_size:"Image trop lourde — 5 Mo maximum",
 wiz_m_err_upload:"L'envoi de l'image a échoué. Réessayez.", wiz_m_prog:"Envoi du reçu… {p} %", wiz_m_prog_ok:"Reçu bien arrivé ✓", wiz_m_err_reseau:"Échec : l'image n'est pas arrivée, le réseau est trop faible. Vérifiez votre connexion et réessayez.", wiz_m_err_compte:"Un autre compte est connecté sur cet appareil. Rechargez la page et connectez-vous avec le compte qui paie.", wiz_m_err_session:"Votre session a expiré. Reconnectez-vous puis réessayez.",
 wiz_m_done_h:"Demande envoyée", wiz_m_done_p:"Votre reçu a bien été reçu. Votre abonnement sera activé dès la vérification du paiement.",
-adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUEL",
+adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUEL", adm_pay_mode_attribue:"ATTRIBUÉ",
 adm_pay_manual_ref:"ID transaction (saisi)",
 adm_pay_proof_h:"Reçu envoyé par l'utilisateur", adm_pay_proof_open:"Ouvrir le reçu",
 adm_pay_proof_err:"Impossible de charger le reçu",
@@ -849,7 +849,7 @@ wiz_btn_next1:"Continue",
 wiz_resume_h:"Sign-up not completed",
 wiz_resume_at:"Resume at the \"{step}\" step — your plan has been saved.",
 wiz_v_h:"Verify your email", wiz_v_sub:"We sent you a 6-digit code.",
-wiz_v_err:"That code is incorrect", wiz_v_pass_note:"Re-enter your password to finish creating your account.", wiz_v_err_creation:"Your account could not be created. Please try again.", wiz_v_err_reseau:"The server is not responding. Check your connection and try again.", wiz_compte_absent_h:"Account not finished", wiz_compte_absent_p:"Your account was not created. Re-enter your password to finish it before paying.", wiz_plan_active_h:"Plan activated ✓", wiz_plan_active_p:"Your plan is active. Welcome to your VIP space.", wiz_m_err_nocompte:"Your account could not be found. Sign in or finish signing up before sending the receipt.", wiz_v_demo:"Demo mode — your code is",
+wiz_v_err:"That code is incorrect", wiz_v_pass_note:"Re-enter your password to finish creating your account.", wiz_v_err_creation:"Your account could not be created. Please try again.", wiz_v_err_reseau:"The server is not responding. Check your connection and try again.", wiz_compte_absent_h:"Account not finished", wiz_compte_absent_p:"Your account was not created. Re-enter your password to finish it before paying.", wiz_plan_active_h:"Plan activated ✓", wiz_plan_active_p:"Your plan is active. Welcome to your VIP space.", wiz_m_err_nocompte:"Your account could not be found. Sign in or finish signing up before sending the receipt.", wiz_session_fini_h:"Log in again", wiz_session_fini_p:"To continue your payment.", wiz_v_demo:"Demo mode — your code is",
 wiz_v_noreceive:"Didn't get it?", wiz_v_resend:"Resend the code",
 wiz_btn_verify:"Verify",
 wiz_p_h:"Activate your plan", wiz_p_sub:"Check your plan, then choose a payment method.",
@@ -1157,7 +1157,7 @@ adm_user_profile_h:"Profile", adm_user_role:"Role", adm_user_site:"Preferred sit
 adm_user_current_plan:"Current plan", adm_user_no_plan:"None",
 adm_user_change_plan_h:"Change plan", adm_user_change_plan_lbl:"New plan",
 adm_user_change_plan_reason_lbl:"Note (optional)", adm_user_change_plan_reason_ph:"E.g.: goodwill gesture, error correction...",
-adm_user_change_plan_apply:"Apply change", adm_user_change_plan_same:"This is already the user's current plan.",
+adm_user_change_plan_apply:"Apply change", adm_user_change_plan_same:"This is already the user's current plan.", adm_paye_lbl:"Customer paid (record the payment)", adm_paye_method:"Payment method", adm_paye_choisir:"— Choose —", adm_paye_apercu:"Payment to be recorded: {plan} · {montant} HTG · {moyen}", adm_paye_note:"This amount will be added to total revenue (ASSIGNED badge).", adm_paye_lecture:"Reading the price…", adm_paye_err_method:"Choose the payment method.", adm_paye_err_plan:"Choose a plan to record a payment.", adm_paye_err_prix:"Could not read the plan price. Try again.", adm_confirm_q_paye:"Record a payment of {montant} HTG ({moyen})? This amount will be added to total revenue.", adm_paye_ok_p:"Plan activated and payment recorded.", adm_paye_err_insert:"Plan activated, but the payment was not recorded: ",
 adm_user_change_plan_err:"The change failed.",
 adm_user_suspend_h:"Account suspension",
 adm_user_suspend_reason_lbl:"Reason (required — visible to customer support)",
@@ -1209,7 +1209,7 @@ wiz_m_err_type:"Format not accepted — use JPG, PNG or WebP",
 wiz_m_err_size:"Image too large — 5 MB maximum",
 wiz_m_err_upload:"Image upload failed. Please try again.", wiz_m_prog:"Uploading receipt… {p} %", wiz_m_prog_ok:"Receipt received ✓", wiz_m_err_reseau:"Failed: the image did not arrive, the network is too weak. Check your connection and try again.", wiz_m_err_compte:"Another account is signed in on this device. Reload the page and sign in with the account that is paying.", wiz_m_err_session:"Your session has ended. Sign in again and retry.",
 wiz_m_done_h:"Request sent", wiz_m_done_p:"Your receipt was received. Your plan will be activated once the payment is verified.",
-adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUAL",
+adm_pay_mode_auto:"AUTO", adm_pay_mode_manual:"MANUAL", adm_pay_mode_attribue:"ASSIGNED",
 adm_pay_manual_ref:"Transaction ID (entered)",
 adm_pay_proof_h:"Receipt sent by the user", adm_pay_proof_open:"Open receipt",
 adm_pay_proof_err:"Couldn't load the receipt",
@@ -1430,7 +1430,7 @@ wiz_btn_next1:"Kontinye",
 wiz_resume_h:"Enskripsyon ou pa fini",
 wiz_resume_at:"Kontinye nan etap « {step} » — plan ou an konsève.",
 wiz_v_h:"Verifye imèl ou", wiz_v_sub:"Nou voye yon kòd 6 chif ba ou.",
-wiz_v_err:"Kòd la pa kòrèk", wiz_v_pass_note:"Tape modpas ou ankò pou fini kreye kont ou.", wiz_v_err_creation:"Nou pa t ka kreye kont ou. Eseye ankò.", wiz_v_err_reseau:"Sèvè a pa reponn. Verifye koneksyon ou epi eseye ankò.", wiz_compte_absent_h:"Kont lan poko fini", wiz_compte_absent_p:"Kont ou pa t kreye. Tape modpas ou ankò pou fini l anvan ou peye.", wiz_plan_active_h:"Plan ou aktive ✓", wiz_plan_active_p:"Plan ou aktif. Byenveni nan espas VIP ou.", wiz_m_err_nocompte:"Nou pa jwenn kont ou. Konekte oswa fini enskripsyon an anvan ou voye resi a.", wiz_v_demo:"Mòd demonstrasyon — kòd ou a se",
+wiz_v_err:"Kòd la pa kòrèk", wiz_v_pass_note:"Tape modpas ou ankò pou fini kreye kont ou.", wiz_v_err_creation:"Nou pa t ka kreye kont ou. Eseye ankò.", wiz_v_err_reseau:"Sèvè a pa reponn. Verifye koneksyon ou epi eseye ankò.", wiz_compte_absent_h:"Kont lan poko fini", wiz_compte_absent_p:"Kont ou pa t kreye. Tape modpas ou ankò pou fini l anvan ou peye.", wiz_plan_active_h:"Plan ou aktive ✓", wiz_plan_active_p:"Plan ou aktif. Byenveni nan espas VIP ou.", wiz_m_err_nocompte:"Nou pa jwenn kont ou. Konekte oswa fini enskripsyon an anvan ou voye resi a.", wiz_session_fini_h:"Konekte ankò", wiz_session_fini_p:"Pou w kontinye peman an.", wiz_v_demo:"Mòd demonstrasyon — kòd ou a se",
 wiz_v_noreceive:"Ou pa resevwa l?", wiz_v_resend:"Voye l ankò",
 wiz_btn_verify:"Verifye",
 wiz_p_h:"Aktive abònman ou", wiz_p_sub:"Verifye plan ou epi chwazi mwayen peman an.",
@@ -1738,7 +1738,7 @@ adm_user_profile_h:"Pwofil", adm_user_role:"Wòl", adm_user_site:"Sit prefere", 
 adm_user_current_plan:"Plan aktyèl", adm_user_no_plan:"Okenn",
 adm_user_change_plan_h:"Chanje plan", adm_user_change_plan_lbl:"Nouvo plan",
 adm_user_change_plan_reason_lbl:"Nòt (opsyonèl)", adm_user_change_plan_reason_ph:"Egz. : jès komèsyal, korije yon erè...",
-adm_user_change_plan_apply:"Aplike chanjman an", adm_user_change_plan_same:"Se deja plan aktyèl itilizatè a.",
+adm_user_change_plan_apply:"Aplike chanjman an", adm_user_change_plan_same:"Se deja plan aktyèl itilizatè a.", adm_paye_lbl:"Kliyan an te peye (anrejistre peman an)", adm_paye_method:"Ki jan li peye", adm_paye_choisir:"— Chwazi —", adm_paye_apercu:"Peman ki pral anrejistre : {plan} · {montant} HTG · {moyen}", adm_paye_note:"Montan sa a ap ajoute nan revni total la (badj ATRIBYE).", adm_paye_lecture:"N ap li pri a…", adm_paye_err_method:"Chwazi ki jan kliyan an peye.", adm_paye_err_plan:"Chwazi yon plan pou anrejistre yon peman.", adm_paye_err_prix:"Nou pa ka li pri plan an. Eseye ankò.", adm_confirm_q_paye:"Anrejistre peman {montant} HTG ({moyen}) ? Montan sa a ap ajoute nan revni total la.", adm_paye_ok_p:"Plan an aktive epi peman an anrejistre.", adm_paye_err_insert:"Plan an aktive, men peman an pa t anrejistre : ",
 adm_user_change_plan_err:"Chanjman an echwe.",
 adm_user_suspend_h:"Sispansyon kont lan",
 adm_user_suspend_reason_lbl:"Rezon (obligatwa — sèvis kliyan ap wè li)",
@@ -1790,7 +1790,7 @@ wiz_m_err_type:"Fòma sa a pa aksepte — sèvi ak JPG, PNG oswa WebP",
 wiz_m_err_size:"Imaj la twò lou — 5 Mo maksimòm",
 wiz_m_err_upload:"Nou pa t ka voye imaj la. Eseye ankò.", wiz_m_prog:"Ap voye resi a… {p} %", wiz_m_prog_ok:"Resi a rive ✓", wiz_m_err_reseau:"Echèk : imaj la pa rive, rezo a twò fèb. Verifye koneksyon ou epi eseye ankò.", wiz_m_err_compte:"Ou konekte ak yon lòt kont sou aparèy sa a. Rechaje paj la epi konekte ak kont ki ap peye a.", wiz_m_err_session:"Sesyon ou fini. Konekte ankò epi eseye ankò.",
 wiz_m_done_h:"Demann nan voye", wiz_m_done_p:"Nou resevwa resi ou a. Abònman ou ap aktive kou nou fin verifye peman an.",
-adm_pay_mode_auto:"OTOMATIK", adm_pay_mode_manual:"MANYÈL",
+adm_pay_mode_auto:"OTOMATIK", adm_pay_mode_manual:"MANYÈL", adm_pay_mode_attribue:"ATRIBYE",
 adm_pay_manual_ref:"ID tranzaksyon (antre)",
 adm_pay_proof_h:"Resi itilizatè a voye", adm_pay_proof_open:"Ouvri resi a",
 adm_pay_proof_err:"Nou pa t ka chaje resi a",
@@ -2501,8 +2501,43 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
      jamais cree, ancien defaut) : l'etape 3 (paiement) n'est plus jamais montree sans compte reel.
      Aucun identifiant de compte ET aucune session -> retour au formulaire d'inscription (nom et
      e-mail deja remplis), avec un message. Si Supabase n'est pas charge, on ne decide rien. */
+  /* 28/11 (James : jeanoliverarmando06 n'arrive pas a envoyer son recu — 41 refus en 2 h ; meme cas
+     qu'Isaac le 26/11) : le compte existe (supabaseUserId garde sur l'appareil) mais la SESSION a expire
+     (pas de « Sonje m » : 2 h). Le recu partait alors avec la cle publique -> refus RLS a chaque essai,
+     message generique, la personne reessayait sans fin. Desormais : session absente = message clair +
+     page de connexion (e-mail prerempli). Apres connexion, routerApresConnexion ramene a l'etape 3. */
+  // 28/11 : la session peut expirer pendant que l'ecran de paiement reste ouvert (application quittee) :
+  // controle aussi au retour sur l'onglet.
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'&&panels.find(p=>p.dataset.step==='3'&&p.classList.contains('on'))&&document.querySelector('#authpage.open'))
+      verifierCompteReelEtape3();
+  });
+  function sessionFinieVersConnexion(contexte){
+    if(window.VB_toast)window.VB_toast('wiz_session_fini_h',t('wiz_session_fini_p'));
+    if(window.VB_logErreurTechnique)window.VB_logErreurTechnique(contexte||'session_fini_etape3','session expiree : retour a la connexion');
+    showMode('login');
+    const id=document.querySelector('#authFormLogin [name=loginId]');
+    if(id&&!id.value&&state&&state.email)id.value=state.email;
+  }
   async function verifierCompteReelEtape3(){
-    if(!state||!state.email||state.supabaseUserId||state.paid)return;
+    if(!state||!state.email)return;
+    /* 28/11 (James : « sans une vraie connexion, l'utilisateur ne doit pas arriver sur l'ecran de
+       paiement ») : vaut pour l'inscription ET le renouvellement, a l'arrivee sur l'ecran et au
+       retour sur l'onglet. */
+    if(state.supabaseUserId){
+      // compte existant : seule la SESSION compte (sinon tout paiement serait refuse par la base)
+      const sb0=window.VB_getSupabase&&window.VB_getSupabase();
+      if(!sb0)return;
+      // sans reseau, ou verification en echec : on ne conclut RIEN (jamais une fausse deconnexion)
+      if(navigator.onLine===false)return;
+      let s0=null;
+      try{const r0=await sb0.auth.getSession();if(r0.error)return;s0=r0.data.session;}catch(e){return;}
+      if(s0&&s0.user)return;
+      if(!panels.find(p=>p.dataset.step==='3'&&p.classList.contains('on')))return;
+      sessionFinieVersConnexion('session_fini_etape3');
+      return;
+    }
+    if(state.paid)return;
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return;
     let session=null;
@@ -2550,7 +2585,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const m=document.getElementById('wizInlineMail');if(m&&!m.textContent.trim()&&state&&state.email)m.textContent=state.email;
       // 26/11 : compte a rebours de « Voye l ankò » (aussi apres rechargement)
       if(window.VB_attenteCode&&state)window.VB_attenteCode.reprendre('signup',document.getElementById('wizResend'),state.email);},0);   // e-mail aussi apres rechargement
-    if(n===3&&!modeWizard.classList.contains('renew'))setTimeout(verifierCompteReelEtape3,0);
+    if(n===3)setTimeout(verifierCompteReelEtape3,0);   // 28/11 : renouvellement compris (session obligatoire)
     if(n===3){renderStep3();armPaymentTimeout();demarrerSyncPlansWizard();}
     else{disarmPaymentTimeout();arreterSyncPlansWizard();}
     if(n===4)renderStep4();
@@ -4409,10 +4444,21 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
 
     try{
       const sb=window.VB_getSupabase&&window.VB_getSupabase();
-      let uid=state.supabaseUserId;
-      let session=null;
-      if(sb){try{session=(await sb.auth.getSession()).data.session;}catch(e){}}
-      if(sb&&!uid)uid=(session&&session.user)?session.user.id:null;
+      let session=null, sessionIncertaine=navigator.onLine===false;
+      if(sb){try{const rs=await sb.auth.getSession();if(rs.error)sessionIncertaine=true;session=rs.data.session;}catch(e){sessionIncertaine=true;}}
+      if(sb&&!session&&sessionIncertaine){
+        // reseau coupe / verification en echec : message reseau habituel, jamais une fausse deconnexion
+        erreurManuelle('wiz_m_err_reseau');
+        return;
+      }
+      /* 28/11 : le dossier ET le jeton viennent TOUJOURS de la session reellement ouverte (lecon 18),
+         jamais de state.supabaseUserId + cle publique (refus RLS assure). */
+      const uid=(session&&session.user&&session.access_token)?session.user.id:null;
+      if(sb&&!uid&&state.supabaseUserId){
+        // compte existant, session expiree : connexion d'abord (le recu n'est jamais envoye pour rien)
+        sessionFinieVersConnexion('depot_manuel_session_fini');
+        return;
+      }
       if(!sb||!uid){
         /* Sans session, la policy storage refuserait de toute facon
            l'upload : on echoue tout de suite avec un message clair plutot
@@ -4432,7 +4478,7 @@ document.querySelectorAll('[data-goto]').forEach(btn=>{
       const chemin=uid+'/'+state.payMethod+'-'+Date.now()+'.'+ext;
       // Envoi avec progression visible (pourcentage) ; echec annonce vite.
       // Meme jeton que le client Supabase : celui de la session, sinon la cle publique.
-      const envoi=await envoyerRecuAvecProgression(sb,(session&&session.access_token)||sb.supabaseKey,chemin,manualFichier);
+      const envoi=await envoyerRecuAvecProgression(sb,session.access_token,chemin,manualFichier);
       if(!envoi.ok){
         erreurManuelle(envoi.reseau?'wiz_m_err_reseau':'wiz_m_err_upload');
         if(window.VB_logErreurTechnique)window.VB_logErreurTechnique('depot_manuel_upload',envoi.message||'echec');
@@ -9954,10 +10000,13 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
      montant en gourdes eventuellement paye par le client. Lecture seule (RPC get_stripe_stats). */
   /* Montant + badge AUTO/MANUEL d'une ligne de paiement : meme regle dans l'onglet Paiements et dans
      l'historique des transactions (Revenus). Stripe confirme par le webhook signe -> dollars + AUTO. */
+  /* 28/11 (James) : paiement enregistre pour un plan ATTRIBUE depuis l'admin (client qui avait paye
+     mais n'arrivait pas a envoyer son recu) : reference « VB-ADM-… » -> badge ATRIBYE. */
+  const estPaiementAttribue=p=>/^VB-ADM-/.test(String(p&&p.reference||''));
   const montantEtBadgePaiement=p=>{
     const estStripeAuto=(p.method==='stripe'&&p.provider==='stripe');
     const montant=(estStripeAuto&&p.provider_amount!=null)?usd(p.provider_amount):((p.amount_htg||0)+' HTG');
-    const badge=estStripeAuto?' <span class="admdash-mode-badge auto">'+t('adm_pay_mode_auto')+'</span>':
+    const badge=estPaiementAttribue(p)?' <span class="admdash-mode-badge attribue">'+t('adm_pay_mode_attribue')+'</span>':estStripeAuto?' <span class="admdash-mode-badge auto">'+t('adm_pay_mode_auto')+'</span>':
       (p.method==='moncash'||p.method==='natcash')?
         ' <span class="admdash-mode-badge '+(p.provider?'auto':'manuel')+'">'+t(p.provider?'adm_pay_mode_auto':'adm_pay_mode_manual')+'</span>':'';
     return {montant,badge};
@@ -11038,6 +11087,15 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
       '<select id="admUserPlanSelect">'+optionsPlans+'</select></label>'+
       '<label class="field" style="margin-top:10px"><span class="field-lbl">'+t('adm_user_change_plan_reason_lbl')+'</span>'+
       '<textarea id="admUserPlanReason" placeholder="'+t('adm_user_change_plan_reason_ph')+'"></textarea></label>'+
+      /* 28/11 (James) : client qui a paye mais n'a pas pu envoyer son recu -> la case enregistre aussi
+         le paiement (prix lu en base, reference VB-ADM-…, badge ATRIBYE). Decochee par defaut : un test
+         ou un cadeau ne compte JAMAIS dans le revenu. */
+      '<label class="adm-paye-row"><input type="checkbox" id="admUserPlanPaye"> <span>'+t('adm_paye_lbl')+'</span></label>'+
+      '<div id="admUserPlanPayeBox" hidden>'+
+        '<label class="field" style="margin-top:8px"><span class="field-lbl">'+t('adm_paye_method')+'</span>'+
+        '<select id="admUserPlanPayeMethod"><option value="">'+t('adm_paye_choisir')+'</option><option value="natcash">NatCash</option><option value="moncash">MonCash</option></select></label>'+
+        '<div id="admUserPlanPayeApercu" class="adm-paye-apercu"></div>'+
+      '</div>'+
       '<button type="button" class="btn btn-confirm" id="admUserPlanApply" style="width:100%;margin-top:12px">'+t('adm_user_change_plan_apply')+'</button>'+
       '<div id="admUserPlanErr" class="field-err" style="display:none;margin-top:8px"></div>'+
 
@@ -11106,8 +11164,51 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
         err.textContent=t('adm_user_change_plan_same');err.style.display='block';return;
       }
       err.style.display='none';
-      demanderConfirmation(this,t('adm_confirm_q_planchange'),()=>changerPlanAdmin(u,planActif,nouveauPlan,raison),'plan');
+      const cocheePaye=!!(document.getElementById('admUserPlanPaye')||{}).checked;
+      if(!cocheePaye){
+        demanderConfirmation(this,t('adm_confirm_q_planchange'),()=>changerPlanAdmin(u,planActif,nouveauPlan,raison),'plan');
+        return;
+      }
+      // 28/11 : plan + paiement enregistre — verifications, prix LU EN BASE, puis DOUBLE confirmation.
+      const methode=(document.getElementById('admUserPlanPayeMethod')||{}).value||'';
+      if(!nouveauPlan){err.textContent=t('adm_paye_err_plan');err.style.display='block';return;}
+      if(methode!=='natcash'&&methode!=='moncash'){err.textContent=t('adm_paye_err_method');err.style.display='block';return;}
+      const bouton=this;
+      if(bouton.disabled)return;
+      bouton.disabled=true;
+      lirePrixPlanAdmin(nouveauPlan).then(montant=>{
+        bouton.disabled=false;
+        if(!(montant>0)){err.textContent=t('adm_paye_err_prix');err.style.display='block';return;}
+        const moyen=methode==='natcash'?'NatCash':'MonCash';
+        demanderConfirmation(bouton,t('adm_confirm_q_planchange'),()=>{
+          // 2e confirmation (le montant exact), apres la fermeture de la 1re
+          setTimeout(()=>demanderConfirmation(bouton,t('adm_confirm_q_paye').replace('{montant}',montant).replace('{moyen}',moyen),
+            ()=>changerPlanAdmin(u,planActif,nouveauPlan,raison,{methode:methode,montant:montant}),'payment'),60);
+        },'plan');
+      });
     });
+    // Apercu en direct du paiement qui sera enregistre (case cochee).
+    (function(){
+      const caseP=document.getElementById('admUserPlanPaye'),boite=document.getElementById('admUserPlanPayeBox');
+      const selP=document.getElementById('admUserPlanSelect'),selM=document.getElementById('admUserPlanPayeMethod');
+      const ap=document.getElementById('admUserPlanPayeApercu');
+      if(!caseP||!boite)return;
+      let jeton=0;
+      async function majApercu(){
+        boite.hidden=!caseP.checked;
+        if(!caseP.checked)return;
+        const plan=selP.value, m=selM.value;
+        if(!plan){ap.textContent=t('adm_paye_err_plan');return;}
+        const mon=++jeton; ap.textContent=t('adm_paye_lecture');
+        const montant=await lirePrixPlanAdmin(plan);
+        if(mon!==jeton)return;
+        if(!(montant>0)){ap.textContent=t('adm_paye_err_prix');return;}
+        const pl=window.VB_planById?window.VB_planById(plan):null;
+        ap.textContent=t('adm_paye_apercu').replace('{plan}',plan.toUpperCase()+(pl&&pl.name?' ('+pl.name+')':''))
+          .replace('{montant}',montant).replace('{moyen}',m==='natcash'?'NatCash':m==='moncash'?'MonCash':'—')+' — '+t('adm_paye_note');
+      }
+      caseP.addEventListener('change',majApercu);selP.addEventListener('change',majApercu);selM.addEventListener('change',majApercu);
+    })();
 
     document.getElementById('admUserSuspendBtn').addEventListener('click',function(){
       const err=document.getElementById('admUserSuspendErr');
@@ -11128,7 +11229,25 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
      paiement client. On cloture l'abonnement actif existant (s'il y en a
      un) puis on cree le nouveau, deja 'active'. Aucune ligne payments
      n'est creee : aucun argent n'a transite par le site pour ce geste. */
-  async function changerPlanAdmin(u,ancienSub,nouveauPlanId,raison){
+  // 28/11 : prix ACTUEL du plan, lu en base a chaque fois (jamais une copie locale ni une saisie).
+  async function lirePrixPlanAdmin(planId){
+    const sb=window.VB_getSupabase&&window.VB_getSupabase();
+    if(!sb||!planId)return 0;
+    try{
+      const {data,error}=await sb.from('plans').select('price_htg').eq('id',planId).single();
+      if(error||!data)return 0;
+      const n=Number(data.price_htg);
+      return isFinite(n)&&n>0?Math.round(n):0;
+    }catch(e){return 0;}
+  }
+  let enregistrementPlanEnCours=false;   // 28/11 : jamais deux enregistrements en meme temps (double clic)
+  async function changerPlanAdmin(u,ancienSub,nouveauPlanId,raison,paiement){
+    if(enregistrementPlanEnCours)return;
+    enregistrementPlanEnCours=true;
+    try{ await changerPlanAdminInterne(u,ancienSub,nouveauPlanId,raison,paiement); }
+    finally{ enregistrementPlanEnCours=false; }
+  }
+  async function changerPlanAdminInterne(u,ancienSub,nouveauPlanId,raison,paiement){
     const sb=window.VB_getSupabase&&window.VB_getSupabase();
     if(!sb)return;
     const btn=document.getElementById('admUserPlanApply');
@@ -11179,11 +11298,35 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
         await sb.from('subscriptions').update({status:'cancelled'})
           .eq('user_id',u.id).eq('status','active');
       }catch(e){}
-      const {error:insErr}=await sb.from('subscriptions').insert({
-        user_id:u.id, plan_id:nouveauPlanId, status:'active',
-        starts_at:maintenant.toISOString(), expires_at:fin
-      });
+      // Case « le client a paye » decochee : insertion EXACTEMENT comme avant ; cochee : on recupere l'id du plan cree.
+      const ligneSub={ user_id:u.id, plan_id:nouveauPlanId, status:'active', starts_at:maintenant.toISOString(), expires_at:fin };
+      const {data:nouvSub,error:insErr}=paiement
+        ? await sb.from('subscriptions').insert(ligneSub).select('id').single()
+        : await sb.from('subscriptions').insert(ligneSub);
       if(insErr)throw insErr;
+      /* 28/11 : case « le client a paye » cochee -> UN paiement confirme rattache a CE plan. Montant deja lu
+         en base (lirePrixPlanAdmin) ; reference VB-ADM-… (badge ATRIBYE). Un echec ici n'annule pas le plan :
+         message clair, jamais de deuxieme essai automatique (pas de doublon possible). */
+      let erreurPaiement=null;
+      if(paiement&&paiement.montant>0&&(paiement.methode==='natcash'||paiement.methode==='moncash')&&nouvSub&&nouvSub.id){
+        try{
+          const d=maintenant;
+          const ref='VB-ADM-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+Math.floor(1000+Math.random()*9000);
+          const {error:payErr}=await sb.from('payments').insert({
+            user_id:u.id, subscription_id:nouvSub.id, plan_id:nouveauPlanId, amount_htg:paiement.montant,
+            method:paiement.methode, status:'confirmed', reference:ref,
+            confirmed_at:maintenant.toISOString(), confirmed_by:(currentUser&&currentUser.id)||null
+          });
+          if(payErr)throw payErr;
+          try{
+            await sb.from('audit_log').insert({
+              admin_id:(currentUser&&currentUser.id)||null, action:'admin_payment_recorded', target_user_id:u.id,
+              old_value:null, new_value:{plan_id:nouveauPlanId, subscription_id:nouvSub.id, amount_htg:paiement.montant, method:paiement.methode, reference:ref},
+              reason:raison||null
+            });
+          }catch(e){}
+        }catch(e){ erreurPaiement=(e&&e.message)?e.message:String(e); }
+      }
       try{
         await sb.from('audit_log').insert({
           admin_id:(currentUser&&currentUser.id)||null,
@@ -11202,7 +11345,9 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
           user_id:u.id, type:'admin_plan_change', plan_id:nouveauPlanId, reason:raison||null
         });
       }catch(e){}
-      if(window.VB_toast)window.VB_toast('adm_user_plan_changed_h',t('adm_user_plan_changed_p'));
+      if(erreurPaiement){
+        if(window.VB_toast)window.VB_toast('adm_user_plan_changed_h',t('adm_paye_err_insert')+erreurPaiement.slice(0,120));
+      }else if(window.VB_toast)window.VB_toast('adm_user_plan_changed_h',t(paiement?'adm_paye_ok_p':'adm_user_plan_changed_p'));
       renderUserDetail();
     }catch(e){
       const err=document.getElementById('admUserPlanErr');
@@ -11383,7 +11528,8 @@ window.VB_statsPronosHtml=function(st,titre,note,lib){
            l'utilisateur a transfere lui-meme et a joint un recu. Le badge
            evite de confondre avec un paiement deja verifie par PLOP PLOP. */
         '<div><dt>'+t('adm_pay_method')+'</dt><dd>'+(methodLbl[p.method]||p.method||'—')+
-          ((p.method==='moncash'||p.method==='natcash')?
+          (estPaiementAttribue(p)?' <span class="wiz-paym-badge" style="background:#5B8DEF">'+t('adm_pay_mode_attribue')+'</span>':
+          (p.method==='moncash'||p.method==='natcash')?
             ' <span class="wiz-paym-badge" style="background:'+(p.provider?'var(--vert-vif)':'var(--or)')+'">'+
             t(p.provider?'adm_pay_mode_auto':'adm_pay_mode_manual')+'</span>':
             (p.method==='stripe'&&p.provider==='stripe'?
